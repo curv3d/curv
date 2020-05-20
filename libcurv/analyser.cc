@@ -757,11 +757,6 @@ Binary_Phrase::analyse(Environ& env, unsigned) const
             share(*this),
             analyse_op(*left_, env),
             analyse_op(*right_, env));
-    case Token::k_at:
-        return make<Apply_Lens_Expr>(
-            share(*this),
-            analyse_op(*left_, env),
-            analyse_op(*right_, env));
     case Token::k_in:
         throw Exception(At_Token(op_, *this, env), "syntax error");
     case Token::k_colon:
@@ -773,8 +768,15 @@ Binary_Phrase::analyse(Environ& env, unsigned) const
     }
 }
 
-Shared<Meaning>
-Dot_Phrase::analyse(Environ& env, unsigned) const
+Shared<Meaning> Apply_Lens_Phrase::analyse(Environ& env, unsigned) const
+{
+    return make<Apply_Lens_Expr>(
+        share(*this),
+        analyse_op(*arg_, env),
+        analyse_op(*function_, env));
+}
+
+Shared<Meaning> Dot_Phrase::analyse(Environ& env, unsigned) const
 {
     if (auto id = cast<const Identifier>(right_)) {
         return make<Dot_Expr>(

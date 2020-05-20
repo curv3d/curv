@@ -645,6 +645,7 @@ assert([1,2,3]@0 == 1);
 assert({a:1,b:2}@#b == 2);
 assert({a:1,b:2}@[#b,#a] == [2,1]);
 assert(42@[] == []);
+assert([1,2,3]@sum == 6);
 
 // script return value:
 in null

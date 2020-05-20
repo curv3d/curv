@@ -22,7 +22,7 @@ bool prints_as(Value val, const char* expect)
 struct Id_Function : public Legacy_Function
 {
     Id_Function() : Legacy_Function(1,"id") {}
-    Value call(Frame& args) override
+    Value call(Frame& args) const override
     {
         return args[0];
     }

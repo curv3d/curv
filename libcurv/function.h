@@ -48,8 +48,8 @@ struct Function : public Ref_Value
     }
 
     // call the function during evaluation
-    virtual Value call(Value, Frame&) = 0;
-    virtual void tail_call(Value, std::unique_ptr<Frame>&);
+    virtual Value call(Value, Frame&) const = 0;
+    virtual void tail_call(Value, std::unique_ptr<Frame>&) const;
 
     // Attempt a function call: return `missing` if the parameter pattern
     // doesn't match the value; otherwise call the function and return result.
@@ -100,11 +100,11 @@ struct Legacy_Function : public Function
     {}
 
     // call the function during evaluation, with specified argument value.
-    virtual Value call(Value, Frame&) override;
+    virtual Value call(Value, Frame&) const override;
     virtual Value try_call(Value, Frame&) override;
 
     // call the function during evaluation, with arguments stored in the frame.
-    virtual Value call(Frame& args) = 0;
+    virtual Value call(Frame& args) const = 0;
 
     // Generate a call to the function during geometry compilation.
     // The argument is represented as an expression.
@@ -181,8 +181,8 @@ struct Closure : public Function
         argpos_ = lambda.argpos_;
     }
 
-    virtual Value call(Value, Frame&) override;
-    virtual void tail_call(Value, std::unique_ptr<Frame>&) override;
+    virtual Value call(Value, Frame&) const override;
+    virtual void tail_call(Value, std::unique_ptr<Frame>&) const override;
     virtual Value try_call(Value, Frame&) override;
     virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) override;
 
@@ -203,8 +203,8 @@ struct Piecewise_Function : public Function
     {}
 
     // call the function during evaluation, with specified argument value.
-    virtual Value call(Value, Frame&) override;
-    virtual void tail_call(Value, std::unique_ptr<Frame>&) override;
+    virtual Value call(Value, Frame&) const override;
+    virtual void tail_call(Value, std::unique_ptr<Frame>&) const override;
     virtual Value try_call(Value, Frame&) override;
     virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) override;
 

@@ -53,7 +53,7 @@ Function::try_call(Value arg, Frame& f)
 }
 
 void
-Function::tail_call(Value arg, std::unique_ptr<Frame>& f)
+Function::tail_call(Value arg, std::unique_ptr<Frame>& f) const
 {
     f->result_ = call(arg, *f);
     f->next_op_ = nullptr;
@@ -80,7 +80,7 @@ const
 }
 
 Value
-Legacy_Function::call(Value arg, Frame& f)
+Legacy_Function::call(Value arg, Frame& f) const
 {
     if (nargs_ == 1) {
         f[0] = arg;
@@ -149,7 +149,7 @@ Legacy_Function::sc_call_legacy(SC_Frame& f) const
 }
 
 Value
-Closure::call(Value arg, Frame& f)
+Closure::call(Value arg, Frame& f) const
 {
     f.nonlocals_ = &*nonlocals_;
     pattern_->exec(f.array_, arg, At_Arg(*this, f), f);
@@ -157,7 +157,7 @@ Closure::call(Value arg, Frame& f)
 }
 
 void
-Closure::tail_call(Value arg, std::unique_ptr<Frame>& f)
+Closure::tail_call(Value arg, std::unique_ptr<Frame>& f) const
 {
     f->nonlocals_ = &*nonlocals_;
     pattern_->exec(f->array_, arg, At_Arg(*this, *f), *f);
@@ -211,7 +211,7 @@ Piecewise_Function::maxslots(std::vector<Shared<Function>>& cases)
 }
 
 Value
-Piecewise_Function::call(Value arg, Frame& f)
+Piecewise_Function::call(Value arg, Frame& f) const
 {
     for (auto c : cases_) {
         Value result = c->try_call(arg, f);
@@ -223,7 +223,7 @@ Piecewise_Function::call(Value arg, Frame& f)
 }
 
 void
-Piecewise_Function::tail_call(Value arg, std::unique_ptr<Frame>& f)
+Piecewise_Function::tail_call(Value arg, std::unique_ptr<Frame>& f) const
 {
     for (auto c : cases_) {
         if (c->try_tail_call(arg, f))

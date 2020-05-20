@@ -395,8 +395,18 @@ struct Program_Phrase : public Phrase
     virtual Shared<Definition> as_definition(Environ&) const override;
 };
 
-/// A function call. Call_Phrase is the union of all syntaxes that denote
-/// function calls. op_.kind_ specifies which syntax was used.
+// This is the base class for phrases that may evaluate to a function call.
+// If they do, a function call Frame is constructed and a reference to the
+// call phrase is stored in Frame::call_phrase_.
+//
+// The internal interface is: the part of the phrase denoting the function
+// is function_; the part denoting the function argument is arg_.
+// The external interface is the free functions func_part() and arg_part().
+//
+// Some function call phrases are encoded in the base class, in which case
+// op_.kind_ specifies which syntax was used (used by location()).
+// Other function call phrases are defined as subclasses of Call_Phrase;
+// eg, Predicate_Assertion_Phrase and Apply_Lens_Phrase.
 struct Call_Phrase : public Phrase
 {
     Shared<Phrase> function_;
@@ -435,6 +445,22 @@ struct Predicate_Assertion_Phrase : public Call_Phrase
         Shared<Phrase> predicate)
     :
         Call_Phrase(std::move(predicate), std::move(arg), std::move(op))
+    {}
+    virtual Location location() const override
+    {
+        return arg_->location().ending_at(function_->location().token());
+    }
+    virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
+};
+
+struct Apply_Lens_Phrase : public Call_Phrase
+{
+    Apply_Lens_Phrase(
+        Shared<Phrase> value,
+        Token op,
+        Shared<Phrase> lens)
+    :
+        Call_Phrase(std::move(lens), std::move(value), std::move(op))
     {}
     virtual Location location() const override
     {

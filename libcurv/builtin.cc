@@ -50,7 +50,7 @@ struct Unary_Array_Func : public Function
 {
     using Function::Function;
     using Op = Unary_Array_Op<Prim>;
-    Value call(Value arg, Frame& f) override
+    Value call(Value arg, Frame& f) const override
     {
         return Op::call(At_Arg(*this, f), arg);
     }
@@ -66,7 +66,7 @@ struct Binary_Array_Func : public Legacy_Function
 {
     Binary_Array_Func(const char* nm) : Legacy_Function(2,nm) {}
     using Op = Binary_Array_Op<Prim>;
-    Value call(Frame& args) override
+    Value call(Frame& args) const override
     {
         return Op::call(At_Arg(*this, args), args[0], args[1]);
     }
@@ -82,7 +82,7 @@ struct Monoid_Func final : public Function
 {
     using Function::Function;
     using Op = Binary_Array_Op<Prim>;
-    Value call(Value arg, Frame& f) override
+    Value call(Value arg, Frame& f) const override
     {
         return Op::reduce(At_Arg(*this, f), Prim::zero(), arg);
     }
@@ -101,7 +101,7 @@ struct Monoid_Func final : public Function
 struct Is_Bool_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Frame&) override
+    Value call(Value arg, Frame&) const override
     {
         return {is_bool(arg)};
     }
@@ -109,7 +109,7 @@ struct Is_Bool_Function : public Function
 struct Is_Symbol_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Frame&) override
+    Value call(Value arg, Frame&) const override
     {
         return {is_symbol(arg)};
     }
@@ -117,7 +117,7 @@ struct Is_Symbol_Function : public Function
 struct Is_Num_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Frame&) override
+    Value call(Value arg, Frame&) const override
     {
         return {is_num(arg)};
     }
@@ -125,7 +125,7 @@ struct Is_Num_Function : public Function
 struct Is_String_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Frame&) override
+    Value call(Value arg, Frame&) const override
     {
         return {is_string(arg)};
     }
@@ -133,7 +133,7 @@ struct Is_String_Function : public Function
 struct Is_List_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Frame&) override
+    Value call(Value arg, Frame&) const override
     {
         return {is_list(arg)};
     }
@@ -141,7 +141,7 @@ struct Is_List_Function : public Function
 struct Is_Record_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Frame&) override
+    Value call(Value arg, Frame&) const override
     {
         return {arg.maybe<Record>() != nullptr};
     }
@@ -149,7 +149,7 @@ struct Is_Record_Function : public Function
 struct Is_Fun_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Frame&) override
+    Value call(Value arg, Frame&) const override
     {
         return {arg.maybe<Function>() != nullptr};
     }
@@ -412,7 +412,7 @@ struct Bool32_To_Nat_Function : public Function
         }
     };
     static Unary_Array_Op<Prim> array_op;
-    Value call(Value arg, Frame& f) override
+    Value call(Value arg, Frame& f) const override
     {
         return array_op.call(At_Arg(*this, f), arg);
     }
@@ -436,7 +436,7 @@ struct Nat_To_Bool32_Function : public Function
         }
     };
     static Unary_Array_Op<Prim> array_op;
-    Value call(Value arg, Frame& f) override
+    Value call(Value arg, Frame& f) const override
     {
         return array_op.call(At_Arg(*this, f), arg);
     }
@@ -537,7 +537,7 @@ select(Value a, Value b, Value c, const Context& cx)
 struct Select_Function : public Legacy_Function
 {
     Select_Function(const char* nm) : Legacy_Function(3,nm) {}
-    Value call(Frame& args) override
+    Value call(Frame& args) const override
     {
         return select(args[0], args[1], args[2], At_Arg(*this, args));
     }
@@ -714,7 +714,7 @@ Value dot(Value a, Value b, const At_Syntax& cx)
 struct Dot_Function : public Legacy_Function
 {
     Dot_Function(const char* nm) : Legacy_Function(2,nm) {}
-    Value call(Frame& args) override
+    Value call(Frame& args) const override
     {
         return dot(args[0], args[1], At_Arg(*this, args));
     }
@@ -746,7 +746,7 @@ struct Dot_Function : public Legacy_Function
 struct Mag_Function : public Legacy_Function
 {
     Mag_Function(const char* nm) : Legacy_Function(1,nm) {}
-    Value call(Frame& args) override
+    Value call(Frame& args) const override
     {
         // Use hypot() or BLAS DNRM2 or Eigen stableNorm/blueNorm?
         // Avoids overflow/underflow due to squaring of large/small values.
@@ -820,7 +820,7 @@ struct Mag_Function : public Legacy_Function
 struct Count_Function : public Legacy_Function
 {
     Count_Function(const char* nm) : Legacy_Function(1,nm) {}
-    Value call(Frame& args) override
+    Value call(Frame& args) const override
     {
         if (auto list = args[0].maybe<const List>())
             return {double(list->size())};
@@ -860,7 +860,7 @@ struct Fields_Function : public Legacy_Function
         else
             throw Exception(cx, stringify(arg, " is not a record"));
     }
-    Value call(Frame& args) override
+    Value call(Frame& args) const override
     {
         return fields(args[0], At_Arg(*this, args));
     }
@@ -869,7 +869,7 @@ struct Fields_Function : public Legacy_Function
 struct Strcat_Function : public Legacy_Function
 {
     Strcat_Function(const char* nm) : Legacy_Function(1,nm) {}
-    Value call(Frame& args) override
+    Value call(Frame& args) const override
     {
         if (auto list = args[0].maybe<const List>()) {
             String_Builder sb;
@@ -883,7 +883,7 @@ struct Strcat_Function : public Legacy_Function
 struct Repr_Function : public Legacy_Function
 {
     Repr_Function(const char* nm) : Legacy_Function(1,nm) {}
-    Value call(Frame& args) override
+    Value call(Frame& args) const override
     {
         String_Builder sb;
         sb << args[0];
@@ -893,7 +893,7 @@ struct Repr_Function : public Legacy_Function
 struct Decode_Function : public Legacy_Function
 {
     Decode_Function(const char* nm) : Legacy_Function(1,nm) {}
-    Value call(Frame& f) override
+    Value call(Frame& f) const override
     {
         String_Builder sb;
         At_Arg cx(*this, f);
@@ -906,7 +906,7 @@ struct Decode_Function : public Legacy_Function
 struct Encode_Function : public Legacy_Function
 {
     Encode_Function(const char* nm) : Legacy_Function(1,nm) {}
-    Value call(Frame& f) override
+    Value call(Frame& f) const override
     {
         List_Builder lb;
         At_Arg cx(*this, f);
@@ -920,7 +920,7 @@ struct Encode_Function : public Legacy_Function
 struct Match_Function : public Legacy_Function
 {
     Match_Function(const char* nm) : Legacy_Function(1,nm) {}
-    Value call(Frame& f) override
+    Value call(Frame& f) const override
     {
         At_Arg ctx0(*this, f);
         auto list = f[0].to<List>(ctx0);

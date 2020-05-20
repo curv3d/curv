@@ -610,7 +610,7 @@ parse_postfix(Scanner& scanner)
                 parse_primary(scanner, "expression following ."));
             continue;
         case Token::k_at:
-            postfix = make<Binary_Phrase>(postfix, tok,
+            postfix = make<Apply_Lens_Phrase>(postfix, tok,
                 parse_primary(scanner, "expression following @"));
             continue;
         default:

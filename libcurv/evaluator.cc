@@ -414,7 +414,7 @@ Value value_at(Value list, Value index, Shared<const Phrase> callph, Frame& f)
     auto path = index.to<List>(state.icx);
     return value_at_path(list, path->begin(), path->end(), state);
 }
-Value lens_get(Value val, Value lens, const Context& cx)
+Value lens_get(Value val, Value lens, const At_Syntax& cx)
 {
     if (lens.is_num()) {
         double num = lens.to_num_unsafe();
@@ -443,8 +443,14 @@ Value lens_get(Value val, Value lens, const Context& cx)
             result->at(i) = lens_get(val, list->at(i), cx);
         return {result};
     }
-    //else if (auto func = maybe_function(lens)) {
-    //}
+    else if (auto func = maybe_function(lens, cx)) {
+        std::unique_ptr<Frame> f2 =
+            Frame::make(func->nslots_, cx.system(), cx.frame(),
+                share(cx.syntax()), nullptr);
+        f2->func_ = func;
+        func->tail_call(val, f2);
+        return tail_eval_frame(std::move(f2));
+    }
     throw Exception(cx, stringify(lens," is not a lens"));
 }
 Value Apply_Lens_Expr::eval(Frame& f) const
