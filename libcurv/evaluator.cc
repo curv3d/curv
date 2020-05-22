@@ -5,6 +5,7 @@
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
+#include <libcurv/lens.h>
 #include <libcurv/list.h>
 #include <libcurv/meaning.h>
 #include <libcurv/module.h>
@@ -413,45 +414,6 @@ Value value_at(Value list, Value index, Shared<const Phrase> callph, Frame& f)
     // TODO: support reactive index
     auto path = index.to<List>(state.icx);
     return value_at_path(list, path->begin(), path->end(), state);
-}
-Value lens_get(Value val, Value lens, const At_Syntax& cx)
-{
-    if (lens.is_num()) {
-        double num = lens.to_num_unsafe();
-        double intf;
-        double frac = modf(num, &intf);
-        if (frac == 0.0 && num >= 0 && num <= double(unsigned(-1))) {
-            unsigned n = unsigned(num);
-            auto list = val.maybe<List>();
-            if (list == nullptr) {
-                throw Exception(cx, stringify(
-                    val,"@",lens,": left argument is not a list"));
-            }
-            if (n >= list->size()) {
-                throw Exception(cx,
-                    stringify(val,"@",n,": index out of range"));
-            }
-            return list->at(n);
-        }
-    }
-    else if (auto sym = maybe_symbol(lens)) {
-        return val.at(sym, cx);
-    }
-    else if (auto list = lens.maybe<List>()) {
-        Shared<List> result = List::make(list->size());
-        for (unsigned i = 0; i < list->size(); ++i)
-            result->at(i) = lens_get(val, list->at(i), cx);
-        return {result};
-    }
-    else if (auto func = maybe_function(lens, cx)) {
-        std::unique_ptr<Frame> f2 =
-            Frame::make(func->nslots_, cx.system(), cx.frame(),
-                share(cx.syntax()), nullptr);
-        f2->func_ = func;
-        func->tail_call(val, f2);
-        return tail_eval_frame(std::move(f2));
-    }
-    throw Exception(cx, stringify(lens," is not a lens"));
 }
 Value Apply_Lens_Expr::eval(Frame& f) const
 {

@@ -33,6 +33,15 @@ num_to_int(double num, int lo, int hi, const Context& cx)
     return int(intf);
 }
 
+bool num_is_int(double num)
+{
+    if (std::isfinite(num)) {
+        double intf;
+        return modf(num, &intf) == 0.0;
+    }
+    return false;
+}
+
 unsigned
 num_to_nat(double num, const Context& cx)
 {

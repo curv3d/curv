@@ -1191,10 +1191,14 @@ struct Assert_Error_Metafunction : public Metafunction
     using Metafunction::Metafunction;
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
-        auto parens = cast<Paren_Phrase>(ph.arg_);
-        Shared<Comma_Phrase> commas = nullptr;
-        if (parens) commas = cast<Comma_Phrase>(parens->body_);
-        if (parens && commas && commas->args_.size() == 2) {
+        Shared<const Comma_Phrase> commas = nullptr;
+        if (auto parens = cast<Paren_Phrase>(ph.arg_)) {
+            commas = cast<Comma_Phrase>(parens->body_);
+        }
+        else if (auto brackets = cast<Bracket_Phrase>(ph.arg_)) {
+            commas = cast<Comma_Phrase>(brackets->body_);
+        }
+        if (commas && commas->args_.size() == 2) {
             auto msg = analyse_op(*commas->args_[0].expr_, env);
             Shared<Operation> expr = nullptr;
             Shared<const String> actual_msg = nullptr;
