@@ -1,0 +1,37 @@
+Reification
+-----------
+https://www.expressionsofchange.org/reification-of-interaction/
+
+  Many of the advantages of Command Line Interfaces can be attributed to the
+  fact that they reify the user interaction: the interaction itself is made
+  into something that’s visible and can be interacted with.
+
+Ideas:
+* Reify the camera parameters as a Curv expression that can be copied and
+  pasted into code. Like, '>> camera {a:1,b:2}'.
+* Ditto for the current time, in a model that is time sensitive.
+  There is also a time slider. Like, '>> with time 2.5'.
+* Ditto for the parameters of a parametric shape.
+
+  In CLIs, as mentioned above, the commands as given and their outputs are
+  displayed on screen. In typical setups the support for reification is a
+  bit more powerful than that:
+  * Keyboard shortcuts to retrieve history (old commands).
+  * Copy/paste from screen (output or old commands) to new commands.
+    Copy/paste from internet forum solution of a problem to UI.
+  * Persistent history. Remember what you did before.
+
+Ideas:
+* Copy/paste Viewer parameters from elsewhere, into the Viewer window.
+* Store a persistent log of GUI interactions as executable CLI commands.
+  Eg, what files I opened, etc.
+* Persistent history for the Curv REPL.
+* What you do in the Viewer can also be done in the REPL.
+
+  One standard for history-keeping is the following: If we start with a clean
+  system, and replay all the commands from the history, will we end up with
+  the same system? This is a way of measuring how much of the relationship
+  between the past and the present is actually captured by the history.
+
+  With complete REPL history, properly organized, you can implement Undo
+  in the REPL.
