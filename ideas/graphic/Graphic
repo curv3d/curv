@@ -1,0 +1,113 @@
+New Graphical Values
+====================
+The new shape library has the following (redesigned) graphical value types:
+  Shape, Colour, Colour_Map, Intensity_Field, Colour_Field.
+
+All of them can be animated using the new reactive `time` variable.
+See also: language/Time.
+
+Some of them (all of them?) have an (optional?) duration field, which allows
+for temporal concatenation using the `seq` operator, and which specifies an
+upper bound on the time slider in the Viewer UI? Or not: see language/Time.
+
+All graphical values are self-identifying, so that we can have logic
+for automatically displaying the values graphically in the Viewer.
+They are all represented by records. Alternatives:
+ 1. A graphical value type is recognized by a pattern of record fields.
+    (Duck typing, structural type equivalence, same as today.)
+    There is a hard coded list of these patterns used by the Viewer.
+ 2. A graphical value has a #graphical field whose value specifies
+    how the value is rendered.
+ 3. Traits (nominal interface types).
+
+Shape
+-----
+New design:
+    sdfield: [x,y,z] -> dist
+    cfield: [x,y,z] -> Colour
+    bounds: [[xmin,ymin,zmin],[xmax,ymax,zmax]]
+    duration: # seconds, in range [0,inf)       /* disputed feature */
+    is_2d: Bool
+    is_3d: Bool
+It is a subtype of Colour_Field, no conflict with Colour field names.
+
+Alternatives to cfield:
+    colour_field
+    colourf
+    colour_f
+    colourfn
+    colour_at[x,y,z] => Colour
+
+Previous new design:
+    distance: [x,y,z] -> dist
+    colour: [x,y,z] -> Colour
+    bounds: [[xmin,ymin,zmin],[xmax,ymax,zmax]]
+    duration: # seconds, in range [0,inf)
+    is_2d: Bool
+    is_3d: Bool
+
+This depends on two new features: reactive `time`, and new Colour.
+
+make_shape is overloaded over the old and new fields, and translates the
+old fields to the new structure. The distinction is made based on whether
+`dist` or `sdfield` is specified.
+
+Rationale:
+ * Support new animation API based on reactive `time` variable.
+ * Support new Colour type (as a graphical value).
+
+The `colour` function is overloaded to accept either a Colour or a
+Colour_Field as first argument. Because Shape is now a subtype of Colour_Field
+(both have a 'cfield' member) you can pass a Shape in place of a Colour_Field.
+
+Colour
+------
+The new Colour type is a record:
+    {colour: [linearRed,linearGreen,linearBlue]}
+
+Standard colour constructors like sRGB now construct this new type.
+
+SubCurv recognizes this type and represents it internally as vec3.
+Or, add record types to SubCurv.
+
+The REPL will recognize Colour values as graphical values,
+and display them in the Viewer.
+
+Rationale:
+ * Colour is now a graphical type, opens many UI possibilities.
+
+Colour_Map
+----------
+A Colour Map is a function mapping an Intensity onto a Colour:
+  {colour_map: func}
+Eg,
+  rainbow = {colour_map i = sRGB.HSV(i,1,1)};
+
+Intensity_Field
+---------------
+A 2D or 3D Intensity Field maps a point [x,y] or [x,y,z] to an Intensity.
+
+New design:
+    {ifield[x,y,z] = <intensity value>}
+
+Old design: a variant of the Shape structure, with these fields:
+    intensity[x,y,z] = <intensity value>
+    is_2d: Bool
+    is_3d: Bool
+What are is_2d and is_3d used for? Not used by Viewer. Which operations
+require it?
+
+Colour_Field
+------------
+A 2D or 3D Colour Field maps a point [x,y] or [x,y,z] to a Colour.
+
+New design:
+    {cfield: [x,y,z] -> <Colour>}
+It is a supertype of Shape, no conflict with Colour field names.
+
+Old design: a supertype of the Shape structure, with these fields:
+  { colour: [x,y,z] -> <Colour>
+    is_2d: Bool
+    is_3d: Bool }
+What are is_2d and is_3d used for? Not used by Viewer. Which operations
+require it?

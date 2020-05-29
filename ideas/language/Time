@@ -10,19 +10,20 @@ Reactive Time Variable
 ----------------------
 Using the new Reactive Values feature, it is now possible to represent
 time as a global reactive variable. This means that distance and colour
-functions could be represented as functions with [x,y,z] arguments,
-and referencing `time` as a global variable if needed.
+functions can be represented as functions with [x,y,z] arguments,
+and reference `time` as a global variable if needed.
 
 If a function `dist` references the reactive variable `time`, then
-`dist[1,2,3]` does not return a number. It instead returns a Reactive_Expression
-that contains references to `time`.
+`dist[1,2,3]` does not return a plain number. It instead returns a
+Reactive_Expression of type Num that contains references to `time`
+(which is a kind of number).
 
-With the current protocol, it is possible to simply call a distance function
-at different time values. With the new protocol, this is also possible,
-using hypothetical syntax like this:
-    dist[x,y,z]@{time=42}
-if `val` is a regular (non-reactive) value, or if `val` contains no references
-to `time`, then `val@{time=n}` is equivalent to `val`.
+In the old protocol, a distance function is called at different time values
+using `dist[x,y,z,t]`. In the new protocol, this is done using:
+    dist[x,y,z] >> with time t
+If `val` is a regular (non-reactive) value, or if `val` contains no references
+to `time`, then `val >> with time n` is equivalent to `val`.
+The `with` function takes a reactive variable as its first argument.
 
 So, we can still just as easily write Curv code that transforms time.
 
@@ -34,8 +35,8 @@ Advantages of this technique:
 * Fixes a problem with the proposed `animated` field. A shape may be animated
   due to its distance field, its colour field, or both. When we upcast a Shape
   to a Colour_Field, the animated field might be a false positive. The fix is
-  for the colour and dist functions to independently be tagged with whether they
-  depend on the time, and this happens automatically in the Time proposal.
+  for the colour and dist functions to independently be tagged with whether
+  they depend on the time, and this happens automatically in the Time proposal.
 * In short, we are not manually maintaining the same information in two places
   and attempting to keep it in sync.
 * Passing the t argument around is slightly annoying in some cases.
@@ -45,3 +46,83 @@ Advantages of this technique:
   and are accessed the same way as time, without changing APIs or adding
   additional arguments to distance/colour functions.
 * Upward compatible with full FRP.
+
+Animation Primitives
+--------------------
+These are additions to the shape library for playing with time.
+They may place constraints on the semantics of `time`, so work out the details.
+
+### Bollu's Animation Primitives
+https://bollu.github.io/mathemagic/declarative/index.html
+ a mechanism for defining (named) reactive expressions
+ seq[anim1,anim2] -- run anim2 once anim1 has completed.
+ par[anim1,anim2] -- run animations in parallel. Same as `union`.
+ delay dur -- do nothing for duration 'dur'.
+ interpolated[ease, time_expr, target_val, dur]
+    Continuously change a time expression to target_val over duration dur
+    using easing function ease.
+
+Bounded Animations
+------------------
+The 'seq' operation introduces animated shapes that are bounded in time.
+ * Original idea:
+   The bounding box of a shape includes time bounds: min_time and max_time.
+   This is consistent with the treatment of spacial coordinates.
+ * New idea: A bounded animation contains a duration, and to play it in the
+   viewer, you run the time variable from 0 to duration. An unbounded animation
+   has a duration of infinity. (So min_time is always fixed at 0.)
+   This is a bit simpler, and consistent with standard file formats like MPEG
+   where animations have a duration but not a start time.
+
+The start time is irrelevant for operations like 'play' and 'seq':
+is it needed at all?
+
+There are operations where negative time is important.
+Eg, transformations that integrate over time like motion trails and motion blur.
+These may reference negative time near time=0 in the source shape.
+An animated shape's colour and distance function is defined over all times
+from -huge to +huge, even if the parts of interest are bounded between 0
+and duration.
+
+seq [a1,a2] =
+    (if (time < a1.duration) a1 else a2 >> with time (time + a1.duration))
+    >> set_duration (a1.duration + a2.duration);
+
+If a `duration` field is added to Shape, then every Shape combinator needs to
+set the duration of its result based on the durations of its inputs.
+What a nuisance. What is the result duration when the inputs have different
+durations?
+
+*Any* value can be animated (shapes, ifields, cfields, cmaps, integers, ...).
+Therefore, any pair of values can be sequenced. Do we add a `duration` field
+to every graphic value type? Alternatives:
+ * Each list element in `seq[a1,a2,...]` is either a [value,duration] pair,
+   or it is a record with a `duration` field. The duration field is not part
+   of the shape/ifield/cfield/cmap/colour/... abstraction, and so is not
+   preserved by combinators on values of those types.
+
+In a 3D shape, the 3D bounding box describes a feature of the SDF: the bounds
+of the zero isosurface. By analogy, in a 4D space/time SDF, the temporal
+component of the bounding box *should* describe where in a temporally finite
+SDF that the SDF contains negative points (non-zero volume). No volumes should
+exist outside of the bounding box, spacially or temporally. With this design,
+ * The union of 2 4D SDFs is as today, same sdf and bbox algorithm.
+ * This notion of temporal bounds does not apply to other graphic values
+   that are lacking an SDF.
+ * If you stick a `duration` value into an otherwise eternal animated shape,
+   you aren't describing the SDF, you are adding metadata to be used by
+   the `seq` operator.
+
+Reactive Variables
+------------------
+At present, I have two reactive variables planned (time and last).
+More "continuous function of time" input variables could be added for doing
+music and video art projects: eg, a webcam feed.
+
+Reactive variables are branded values, and I have no plan to support user
+definition of primitive new reactive variables before branded values are
+implemented.
+
+At present, I have no operations for testing if a value is the reactive
+variable `time`, or for testing if a value is a reactive expression.
+The expression `x==time` either returns #false or a reactive boolean.
