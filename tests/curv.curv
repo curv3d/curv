@@ -22,7 +22,7 @@ sc_test {
 assert(cross([2,3,4],[5,6,7]) == (-3,6,-3));
 
 assert(
-  identity 3 ==
+  idmatrix 3 ==
   [[1,0,0],
    [0,1,0],
    [0,0,1]]
@@ -699,6 +699,7 @@ assert_error [
 
 // match and compose form a non-commutative ring with error and id
 assert(match[error,n->n+1] 2 == 3);
+assert(compose[id,n->n+1] 2 == 3);
 
 // script return value:
 in null

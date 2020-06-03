@@ -57,7 +57,6 @@ reduce [zero, f] list =
         in r;
 //sum = reduce[0, [x,y]->x+y];
 product = reduce[1, [x,y]->x*y];
-compose = reduce[x->x, [f,g]->x->g(f x)];
 sort a =
     if (a == [])
         []
@@ -75,6 +74,9 @@ contains [list, x] =
             i := i + 1;
     in i < count list;
 
+// functions
+id x = x;
+compose = reduce[id, [f,g]->x->g(f x)];
 into f rest first = f [first, ...rest];
 
 merge rs = {for (r in rs) ...r};
@@ -94,7 +96,7 @@ is_vec2 x = is_list x && count x == 2 && is_num(x[0]) && is_num(x[1]);
 is_vec3 x = is_list x && count x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]);
 indices a = 0..<count a;
 cross[p,q] = [p[Y]*q[Z] - p[Z]*q[Y], p[Z]*q[X] - p[X]*q[Z], p[X]*q[Y] - p[Y]*q[X]];
-identity n = [for(i in 1..n) [for(j in 1..n) if(i==j) 1 else 0]];
+idmatrix n = [for(i in 1..n) [for(j in 1..n) if(i==j) 1 else 0]];
 transpose a = [for (i in indices(a[0])) [for (j in indices a) a[j,i]]];
 normalize v = v / mag v;
 
