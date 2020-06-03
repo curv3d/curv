@@ -47,7 +47,7 @@ Function::print_repr(std::ostream& out) const
 }
 
 Value
-Function::try_call(Value arg, Frame& f)
+Function::try_call(Value arg, Frame& f) const
 {
     return call(arg, f);
 }
@@ -95,7 +95,7 @@ Legacy_Function::call(Value arg, Frame& f) const
 }
 
 Value
-Legacy_Function::try_call(Value arg, Frame& f)
+Legacy_Function::try_call(Value arg, Frame& f) const
 {
     if (nargs_ == 1) {
         f[0] = arg;
@@ -165,7 +165,7 @@ Closure::tail_call(Value arg, std::unique_ptr<Frame>& f) const
 }
 
 Value
-Closure::try_call(Value arg, Frame& f)
+Closure::try_call(Value arg, Frame& f) const
 {
     f.nonlocals_ = &*nonlocals_;
     if (!pattern_->try_exec(f.array_, arg, At_Arg(*this, f), f))
@@ -234,7 +234,7 @@ Piecewise_Function::tail_call(Value arg, std::unique_ptr<Frame>& f) const
 }
 
 Value
-Piecewise_Function::try_call(Value arg, Frame& f)
+Piecewise_Function::try_call(Value arg, Frame& f) const
 {
     for (auto c : cases_) {
         Value result = c->try_call(arg, f);

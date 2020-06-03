@@ -1,0 +1,39 @@
+TODO:
+ * `id` is the identity function. It never fails.
+   (When 'Lens' is implemented, `id` is extended to be the identity Lens.)
+ * `identity` is renamed to `idmatrix`.
+ * `error` is a function value when used in an expression context.
+   It always fails.
+ * `compose` is reimplemented as a primitive function, so that it satisfies
+   the following requirements.
+ * consider if `co` should be an abbreviated form of `compose`.
+ * When 'Printable' is implemented, function compositions print
+   as `compose` expressions.
+
+x >> compose[f,g,h] means x>>f>>g>>h
+ * The function returned by compose reports a pattern match failure if any
+   of the constituent functions reports a pattern match failure.
+ * This means that several of the constituent functions are called before a
+   pattern match failure is detected.
+
+You can test if a value is in the domain of a function F using:
+  in_domain F = match[compose[F,_->true],_->false]
+This only works with the new implementation of `compose`.
+
+Function values comprise a non-commutative semiring,
+with `compose` as product and `match` as sum.
+ * Compose and Match are associative but not commutative.
+ * Compose is a monoid with `id` as the identity. compose[] == id.
+   The id function is total, and corresponds to '1' in the semiring.
+ * Match is a monoid with `error` as the identity. match[] == error.
+   The error function has an empty domain, and corresponds to '0'.
+ * error `compose` x == x `compose` error == error. Like zero in a product.
+ * Product distributes over sum. That is,
+     compose[a,match[b,c]] == compose[a,b] `match` compose[a,c]
+     compose[match[a,b],c] == compose[a,c] `match` compose[b,c]
+   Test it with a disjoint match:
+     compose[match[#true->1,#false->0],string]
+      == compose[#true->1,string] `match` compose[#false->0,string]
+ * It would be a true semiring if match was commutative, requiring all
+   arguments to have disjoint domains (which is how `case` and `match` work
+   in some other programming languages).

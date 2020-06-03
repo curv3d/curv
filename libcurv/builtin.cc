@@ -1040,6 +1040,18 @@ struct Warning_Metafunction : public Metafunction
     }
 };
 
+struct Error_Function : public Function
+{
+    using Function::Function;
+    virtual Value call(Value arg, Frame& f) const override
+    {
+        throw Exception{At_Frame(f), to_print_string(arg)};
+    }
+    virtual Value try_call(Value, Frame&) const override
+    {
+        return {};
+    }
+};
 /// The meaning of a call to `error`, such as `error("foo")`.
 struct Error_Operation : public Operation
 {
@@ -1073,6 +1085,10 @@ struct Error_Metafunction : public Metafunction
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
         return make<Error_Operation>(share(ph), analyse_op(*ph.arg_, env));
+    }
+    virtual Shared<Operation> to_operation(System&, Frame*) override
+    {
+        return make<Constant>(syntax_, Value{make<Error_Function>("error")});
     }
 };
 

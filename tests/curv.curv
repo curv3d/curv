@@ -697,5 +697,8 @@ assert_error [
     "{} is not a lens",
     {}@{} ];
 
+// match and compose form a non-commutative ring with error and id
+assert(match[error,n->n+1] 2 == 3);
+
 // script return value:
 in null

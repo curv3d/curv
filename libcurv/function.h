@@ -53,7 +53,7 @@ struct Function : public Ref_Value
 
     // Attempt a function call: return `missing` if the parameter pattern
     // doesn't match the value; otherwise call the function and return result.
-    virtual Value try_call(Value, Frame&);
+    virtual Value try_call(Value, Frame&) const;
     virtual bool try_tail_call(Value, std::unique_ptr<Frame>&);
 
     // Generate a call to the function during geometry compilation.
@@ -101,7 +101,7 @@ struct Legacy_Function : public Function
 
     // call the function during evaluation, with specified argument value.
     virtual Value call(Value, Frame&) const override;
-    virtual Value try_call(Value, Frame&) override;
+    virtual Value try_call(Value, Frame&) const override;
 
     // call the function during evaluation, with arguments stored in the frame.
     virtual Value call(Frame& args) const = 0;
@@ -183,7 +183,7 @@ struct Closure : public Function
 
     virtual Value call(Value, Frame&) const override;
     virtual void tail_call(Value, std::unique_ptr<Frame>&) const override;
-    virtual Value try_call(Value, Frame&) override;
+    virtual Value try_call(Value, Frame&) const override;
     virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) override;
 
     // generate a call to the function during geometry compilation
@@ -205,7 +205,7 @@ struct Piecewise_Function : public Function
     // call the function during evaluation, with specified argument value.
     virtual Value call(Value, Frame&) const override;
     virtual void tail_call(Value, std::unique_ptr<Frame>&) const override;
-    virtual Value try_call(Value, Frame&) override;
+    virtual Value try_call(Value, Frame&) const override;
     virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) override;
 
     // generate a call to the function during geometry compilation
