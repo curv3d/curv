@@ -75,8 +75,8 @@ struct Shape_Program final : public Shape
 
     // shape fields, filled in by recognize()
     Shared<Record> record_;
-    Shared<Function> dist_fun_;
-    Shared<Function> colour_fun_;
+    Shared<const Function> dist_fun_;
+    Shared<const Function> colour_fun_;
     std::unique_ptr<Frame> dist_frame_;
     std::unique_ptr<Frame> colour_frame_;
 

@@ -54,7 +54,7 @@ struct Function : public Ref_Value
     // Attempt a function call: return `missing` if the parameter pattern
     // doesn't match the value; otherwise call the function and return result.
     virtual Value try_call(Value, Frame&) const;
-    virtual bool try_tail_call(Value, std::unique_ptr<Frame>&);
+    virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) const;
 
     // Generate a call to the function during geometry compilation.
     // The argument is represented as an expression.
@@ -72,6 +72,9 @@ struct Function : public Ref_Value
 // May throw an exception if fetching the `call` field fails (currently
 // only happens for directory records).
 Shared<const Function> maybe_function(Value, const Context&);
+
+// If Value is not a Function, throw an exception.
+Shared<const Function> value_to_function(Value, const Context&);
 
 // Call a function or index into a list or string.
 // Implements the Curv juxtaposition operator: `func arg`.
@@ -184,7 +187,7 @@ struct Closure : public Function
     virtual Value call(Value, Frame&) const override;
     virtual void tail_call(Value, std::unique_ptr<Frame>&) const override;
     virtual Value try_call(Value, Frame&) const override;
-    virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) override;
+    virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) const override;
 
     // generate a call to the function during geometry compilation
     virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const override;
@@ -192,11 +195,11 @@ struct Closure : public Function
 
 struct Piecewise_Function : public Function
 {
-    std::vector<Shared<Function>> cases_;
+    std::vector<Shared<const Function>> cases_;
 
-    static slot_t maxslots(std::vector<Shared<Function>>&);
+    static slot_t maxslots(std::vector<Shared<const Function>>&);
 
-    Piecewise_Function(std::vector<Shared<Function>> cases)
+    Piecewise_Function(std::vector<Shared<const Function>> cases)
     :
         Function(maxslots(cases)),
         cases_(std::move(cases))
@@ -206,7 +209,7 @@ struct Piecewise_Function : public Function
     virtual Value call(Value, Frame&) const override;
     virtual void tail_call(Value, std::unique_ptr<Frame>&) const override;
     virtual Value try_call(Value, Frame&) const override;
-    virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) override;
+    virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) const override;
 
     // generate a call to the function during geometry compilation
     virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const override;

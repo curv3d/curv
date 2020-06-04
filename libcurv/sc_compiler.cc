@@ -705,19 +705,8 @@ SC_Value Call_Expr::sc_eval(SC_Frame& f) const
                 f, At_SC_Phrase(arg_->syntax_, f));
     }
     Value val = sc_constify(*func_, f);
-    Value v = val;
-    for (;;) {
-        if (auto func = v.maybe<Function>()) {
-            return func->sc_call_expr(*arg_, syntax_, f);
-        }
-        if (auto r = v.maybe<Record>()) {
-            static Symbol_Ref call_key = make_symbol("call");
-            if (r->hasfield(call_key)) {
-                v = r->getfield(call_key,At_SC_Phrase(func_->syntax_,f));
-                continue;
-            }
-        }
-        break;
+    if (auto func = maybe_function(val, At_SC_Phrase(func_->syntax_,f))) {
+        return func->sc_call_expr(*arg_, syntax_, f);
     }
     throw Exception(At_SC_Phrase(func_->syntax_, f),
         stringify("",val," is not an array or function"));

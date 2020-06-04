@@ -88,16 +88,11 @@ Shape_Program::recognize(Value val, Render_Opts* opts)
             "at least one of is_2d and is_3d must be true");
     bbox_ = BBox::from_value(bbox_val, At_Field("bbox", cx));
 
-    dist_fun_ = dist_val.maybe<Function>();
-    if (dist_fun_ == nullptr)
-        throw Exception(At_Field("dist", cx), "dist is not a function");
+    dist_fun_ = value_to_function(dist_val, At_Field("dist", cx));
     dist_frame_ = Frame::make(
         dist_fun_->nslots_, system_, nullptr, nullptr, nullptr);
 
-    colour_fun_ = colour_val.maybe<Function>();
-    if (colour_fun_ == nullptr)
-        throw Exception(At_Field("colour", cx),
-            "colour is not a function");
+    colour_fun_ = value_to_function(colour_val, At_Field("colour", cx));
     colour_frame_ = Frame::make(
         colour_fun_->nslots_, system_, nullptr, nullptr, nullptr);
 
@@ -135,13 +130,13 @@ Shape_Program::Shape_Program(
     At_Program cx(*this);
 
     if (r->hasfield(dist_key))
-        dist_fun_ = r->getfield(dist_key, cx).to<Function>(cx);
+        dist_fun_ = value_to_function(r->getfield(dist_key, cx), cx);
     else
         throw Exception{cx, stringify(
             "bad parametric shape: call result has no 'dist' field: ", r)};
 
     if (r->hasfield(colour_key))
-        colour_fun_ = r->getfield(colour_key, cx).to<Function>(cx);
+        colour_fun_ = value_to_function(r->getfield(colour_key, cx), cx);
     else
         throw Exception{cx, stringify(
             "bad parametric shape: call result has no 'colour' field: ", r)};

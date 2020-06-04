@@ -917,16 +917,16 @@ struct Encode_Function : public Legacy_Function
     }
 };
 
-struct Match_Function : public Legacy_Function
+struct Match_Function : public Function
 {
-    Match_Function(const char* nm) : Legacy_Function(1,nm) {}
-    Value call(Frame& f) const override
+    using Function::Function;
+    virtual Value call(Value arg, Frame& f) const override
     {
         At_Arg ctx0(*this, f);
-        auto list = f[0].to<List>(ctx0);
-        std::vector<Shared<Function>> cases;
+        auto list = arg.to<List>(ctx0);
+        std::vector<Shared<const Function>> cases;
         for (size_t i = 0; i < list->size(); ++i)
-            cases.push_back(list->at(i).to<Function>(At_Index(i,ctx0)));
+            cases.push_back(value_to_function(list->at(i), At_Index(i,ctx0)));
         auto mf = make<Piecewise_Function>(cases);
         mf->name_ = name_;
         mf->argpos_ = 1;

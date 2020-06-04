@@ -32,6 +32,15 @@ maybe_function(Value funv, const Context& cx)
     }
 }
 
+Shared<const Function>
+value_to_function(Value funv, const Context& cx)
+{
+    auto fun = maybe_function(funv, cx);
+    if (fun != nullptr)
+        return fun;
+    throw Exception(cx, stringify(funv," is not a function"));
+}
+
 const char Function::name[] = "function";
 
 void
@@ -60,7 +69,7 @@ Function::tail_call(Value arg, std::unique_ptr<Frame>& f) const
 }
 
 bool
-Function::try_tail_call(Value arg, std::unique_ptr<Frame>& f)
+Function::try_tail_call(Value arg, std::unique_ptr<Frame>& f) const
 {
     Value result = try_call(arg, *f);
     if (!result.is_missing()) {
@@ -174,7 +183,7 @@ Closure::try_call(Value arg, Frame& f) const
 }
 
 bool
-Closure::try_tail_call(Value arg, std::unique_ptr<Frame>& f)
+Closure::try_tail_call(Value arg, std::unique_ptr<Frame>& f) const
 {
     f->nonlocals_ = &*nonlocals_;
     if (!pattern_->try_exec(f->array_, arg, At_Arg(*this, *f), *f))
@@ -202,7 +211,7 @@ Lambda::print_repr(std::ostream& out) const
 }
 
 slot_t
-Piecewise_Function::maxslots(std::vector<Shared<Function>>& cases)
+Piecewise_Function::maxslots(std::vector<Shared<const Function>>& cases)
 {
     slot_t result = 0;
     for (auto c : cases)
@@ -245,7 +254,7 @@ Piecewise_Function::try_call(Value arg, Frame& f) const
 }
 
 bool
-Piecewise_Function::try_tail_call(Value arg, std::unique_ptr<Frame>& f)
+Piecewise_Function::try_tail_call(Value arg, std::unique_ptr<Frame>& f) const
 {
     for (auto c : cases_) {
         if (c->try_tail_call(arg, f))
