@@ -76,8 +76,52 @@ Value lens_get(Value source, Value lens, const At_Syntax& cx)
 }
 
 #if 0
-Value slice_get(Value val, const List& slice, const At_Syntax& cx)
+Value slice_get(Value source,
+    const Value* path, const Value* endpath, const At_Syntax& cx);
+Value list_slice_get(const List& source,
+    const Value* path, const Value* endpath, const At_Syntax& cx)
 {
+}
+Value slice_get(Value source,
+    const Value* path, const Value* endpath, const At_Syntax& cx)
+{
+    if (path == endpath) return source;
+    Value index = path[0];
+    if (auto list = source.maybe<List>()) {
+        return list_at_path(*list, index, path+1, endpath, state);
+    }
+    else if (auto string = source.maybe<String>()) {
+        if (path+1 == endpath) {
+            // TODO: this code only works for ASCII strings.
+            if (index.is_num()) {
+                int i = index.to_int(0, int(string->size()-1), state.icx);
+                return {make_string(string->data()+i, 1)};
+            }
+            else if (auto indices = index.maybe<List>()) {
+                String_Builder sb;
+                for (auto ival : *indices) {
+                    int i = ival.to_int(0, int(string->size()-1), state.icx);
+                    sb << string->at(i);
+                }
+                return {sb.get_string()};
+            }
+            // reactive index not supported because String is not in SubCurv
+        }
+    }
+    else if (auto rx = source.maybe<Reactive_Value>()) {
+        // TODO: what to do for pathsize > 1? punt for now.
+        if (path+1 == endpath && is_num(index)) {
+            auto iph = state.iph();
+            auto lph = state.lph();
+            Shared<List_Expr> ix = List_Expr::make({to_expr(index,*iph)}, iph);
+            ix->init();
+            return {make<Reactive_Expression>(
+                rx->sctype_.elem_type(),
+                make<Call_Expr>(state.ph(), to_expr(source,*lph), ix),
+                state.cx)};
+        }
+    }
+    throw Exception(state.cx, state.err(source, index, path+1, endpath));
 }
 #endif
 #if 0
