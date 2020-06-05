@@ -215,5 +215,25 @@ struct Piecewise_Function : public Function
     virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const override;
 };
 
+struct Composite_Function : public Function
+{
+    std::vector<Shared<const Function>> cases_;
+
+    static slot_t maxslots(std::vector<Shared<const Function>>&);
+
+    Composite_Function(std::vector<Shared<const Function>> cases)
+    :
+        Function(maxslots(cases)),
+        cases_(std::move(cases))
+    {}
+
+    // call the function during evaluation, with specified argument value.
+    virtual Value call(Value, Frame&) const override;
+    virtual Value try_call(Value, Frame&) const override;
+
+    // generate a call to the function during geometry compilation
+//  virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const override;
+};
+
 } // namespace curv
 #endif // header guard

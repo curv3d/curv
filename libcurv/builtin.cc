@@ -934,6 +934,23 @@ struct Match_Function : public Function
     }
 };
 
+struct Compose_Function : public Function
+{
+    using Function::Function;
+    virtual Value call(Value arg, Frame& f) const override
+    {
+        At_Arg ctx0(*this, f);
+        auto list = arg.to<List>(ctx0);
+        std::vector<Shared<const Function>> cases;
+        for (size_t i = 0; i < list->size(); ++i)
+            cases.push_back(value_to_function(list->at(i), At_Index(i,ctx0)));
+        auto mf = make<Composite_Function>(cases);
+        mf->name_ = name_;
+        mf->argpos_ = 1;
+        return {mf};
+    }
+};
+
 // The filename argument to "file", if it is a relative filename,
 // is interpreted relative to the parent directory of the source file from
 // which "file" is called.
@@ -1365,6 +1382,7 @@ builtin_namespace()
     FUNCTION("decode", Decode_Function),
     FUNCTION("encode", Encode_Function),
     FUNCTION("match", Match_Function),
+    FUNCTION("compose", Compose_Function),
 
     {make_symbol("file"), make<Builtin_Meaning<File_Metafunction>>()},
     {make_symbol("print"), make<Builtin_Meaning<Print_Metafunction>>()},

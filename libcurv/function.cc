@@ -7,6 +7,8 @@
 #include <libcurv/context.h>
 #include <libcurv/sc_compiler.h>
 #include <libcurv/sc_context.h>
+#include <typeinfo>
+#include <boost/core/demangle.hpp>
 
 namespace curv {
 
@@ -85,7 +87,9 @@ Function::sc_call_expr(Operation& arg, Shared<const Phrase> call_phrase, SC_Fram
 const
 {
     throw Exception(At_SC_Phrase(func_part(call_phrase), f),
-        "this function is not supported");
+        stringify("function class <",
+            boost::core::demangle(typeid(*this).name()),
+            "> is not supported"));
 }
 
 Value
@@ -154,7 +158,9 @@ SC_Value
 Legacy_Function::sc_call_legacy(SC_Frame& f) const
 {
     throw Exception(At_SC_Phrase(func_part(f.call_phrase_), f),
-        "this function is not supported");
+        stringify("function class <",
+            boost::core::demangle(typeid(*this).name()),
+            "> is not supported"));
 }
 
 Value
@@ -271,5 +277,48 @@ const
     throw Exception(At_SC_Phrase(func_part(call_phrase), f),
         "piecewise function is not supported");
 }
+
+slot_t
+Composite_Function::maxslots(std::vector<Shared<const Function>>& cases)
+{
+    slot_t result = 0;
+    for (auto c : cases)
+        result = std::max(result, c->nslots_);
+    return result;
+}
+
+Value
+Composite_Function::call(Value arg, Frame& f) const
+{
+    for (auto c : cases_)
+        arg = c->call(arg, f);
+    return arg;
+}
+
+Value
+Composite_Function::try_call(Value arg, Frame& f) const
+{
+    for (auto c : cases_) {
+        arg = c->try_call(arg, f);
+        if (arg.is_missing())
+            break;
+    }
+    return arg;
+}
+
+#if 0
+// This won't work until we replace Function::sc_call_expr()
+// with Function::sc_call(SC_Value, SC_Frame&).
+SC_Value
+Composite_Function::sc_call_expr(
+    Operation& arg, Shared<const Phrase> call_phrase, SC_Frame& f)
+const
+{
+    auto val = sc_eval_op(f, arg);
+    for (auto c : cases_)
+        val = c->sc_call_expr(
+        arg = c->call(arg, f);
+}
+#endif
 
 } // namespace curv
