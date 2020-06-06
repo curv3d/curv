@@ -34,7 +34,7 @@ using Negative_Expr = Unary_Op_Expr<Negative_Op>;
 
 struct Not_Prim : public Unary_Bool_Prim
 {
-    static const char* name() {return "!";};
+    static const char* name() {return "not";};
     static Value call(bool x, const Context&) { return {!x}; }
     static SC_Value sc_call(SC_Frame& f, SC_Value x) {
         if (x.type.is_bool())

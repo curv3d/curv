@@ -20,17 +20,19 @@ struct File_Analyser
     /// to add a stack trace to compile time errors.
     Frame* file_frame_;
 
-    // Have we already emitted a 'var deprecated' warning?
+    // Have we already emitted a 'deprecated' warning for this topic?
     // Used to prevent an avalanche of warning messages.
     bool var_deprecated_ = false;
-
     bool paren_list_deprecated_ = false;
+    bool not_deprecated_ = false;
 
     File_Analyser(System& system, Frame* file_frame)
     :
         system_(system),
         file_frame_(file_frame)
     {}
+
+    void deprecate(bool File_Analyser::*, const Context&, const String_Ref&);
 };
 
 // Local analysis state that changes when entering a new name-binding scope.

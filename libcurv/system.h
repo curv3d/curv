@@ -26,6 +26,9 @@ struct System
     /// used by the `file` primitive to interpret Curv source files.
     virtual const Namespace& std_namespace() = 0;
 
+    // Set by the `-v` command line argument.
+    bool verbose_ = false;
+
     // Set to true if you want coloured text to be written on the console.
     bool use_colour_ = false;
 

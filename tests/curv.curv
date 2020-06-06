@@ -43,7 +43,7 @@ assert(
 
 assert(
   let r = {a:1};
-  in defined(r.a) && defined(r."a") && !defined(r.b)
+  in defined(r.a) && defined(r."a") && not(defined(r.b))
 );
 
 assert((0..<5) == [0,1,2,3,4]);
@@ -152,7 +152,8 @@ assert(
 
 assert(
     is_bool false && is_num 42 && is_string "" && is_list ()
-    && is_record{a:1} && is_record{a=1} && is_record(cube 1) && !is_record()
+    && is_record{a:1} && is_record{a=1} && is_record(cube 1)
+    && not(is_record[])
     && is_fun(x->x) && is_shape(cube 1)
 );
 
@@ -261,7 +262,7 @@ in assert( [f(1,2,3), f 17] == [6,null] );
 
 assert( (3 `max` 5) == 5 );
 
-let (b :: is_bool, n :: is_num) = (false,0) in assert(!b && n==0);
+let (b :: is_bool, n :: is_num) = (false,0) in assert(not b && n==0);
 
 assert(
     (42 >> match [
@@ -333,7 +334,7 @@ in (
     //assert(r2.argument == {a:10,b:20});
 );
 let
-    r = parametric b=false,n=1 in { x=if(!b) n else 0; }
+    r = parametric b=false,n=1 in { x=if(not b) n else 0; }
 in
     assert(r.x==1 && r{n:17}.x == 17);
 
@@ -341,12 +342,12 @@ let s = slider(1,10);
 in (
     // assert(is_fun s); // TODO: is_fun doesn't work on picker predicates
     assert(s 10);
-    assert(!(s true));
+    assert(not(s true));
 );
 
 let a = b where b = 1; in assert(a == 1);
 
-assert(contains([1,2,3],1) && !contains([1,2,3],7));
+assert(contains([1,2,3],1) && not(contains([1,2,3],7)));
 
 assert((
     let
@@ -484,7 +485,7 @@ assert(#true == #'true');
 assert(#foo != #bar);
 assert(#foo != "foo");
 assert(fields{'':0, 'a b':1, 'foo':2} == [#'', #'a b', #foo]);
-assert(!fields{true:1} == [#false]);
+assert(not(fields{true:1}) == [#false]);
 assert(is_symbol #true && is_symbol #foo);
 let f = match [ /*0->#zero,*/ #one->1 ]; in (
     /*assert(f 0 == #zero);*/
@@ -584,16 +585,16 @@ in sc_test {
     "nat_to_bool32": _->
         nat_to_bool32 0 ==
         [f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f];
-    "!": _-> !none == all;
-    "and": _-> !and[true,false] && and[] &&
+    "not": _-> not none == all;
+    "and": _-> not(and[true,false]) && and[] &&
             and[bits 0xFF00FF00, bits 0xFF0000FF] == bits 0xFF000000 &&
             ([bits 0xFF00FF00, bits 0x00FF00FF]
               `and` [bits 0x00FFFF00,bits 0xFF0000FF])
               == [bits 0x0000FF00, bits 0x000000FF];
-    "or": _-> or[true,false] && !or[] &&
+    "or": _-> or[true,false] && not(or[]) &&
             or[bits 0xFF00FF00, bits 0xFF0000FF] == bits 0xFF00FFFF &&
             or[[T,T,f,f],[T,f,T,f]] == [T,T,T,f];
-    "xor": _-> xor[true,false] && !xor[] &&
+    "xor": _-> xor[true,false] && not(xor[]) &&
             xor[bits 0xFF00FF00, bits 0xFF0000FF] == bits 0x0000FFFF;
     "lshift": _-> lshift[bits 0xFF00FF00, 8] == bits 0x00FF0000;
     "rshift": _-> rshift[bits 0xFF00FF00, 8] == bits 0x00FF00FF;

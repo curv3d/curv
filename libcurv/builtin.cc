@@ -241,6 +241,8 @@ using Min_Function = Monoid_Func<Min_Prim>;
 
 using Sum_Function = Monoid_Func<Add_Prim>;
 
+using Not_Function = Unary_Array_Func<Not_Prim>;
+
 #define BOOL_OP(CppName,Name,Zero,LogOp,BitOp)\
 struct CppName##_Prim : public Binary_Bool_Prim\
 {\
@@ -1359,6 +1361,7 @@ builtin_namespace()
     FUNCTION("max", Max_Function),
     FUNCTION("min", Min_Function),
     FUNCTION("sum", Sum_Function),
+    FUNCTION("not", Not_Function),
     FUNCTION("and", And_Function),
     FUNCTION("or", Or_Function),
     FUNCTION("xor", Xor_Function),

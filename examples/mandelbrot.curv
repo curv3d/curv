@@ -5,7 +5,7 @@ make_shape {
             local z = [x,y];
             local color = [0,0,0];
             local done = false;
-            for (i in 0 ..< 100 while !done) (
+            for (i in 0 ..< 100 while not done) (
                 z := csqr(z) + [x,y];
                 if (dot[z,z] > 4) (
                     local cr = (i-1)-log(log(dot[z,z])/log 2)/log 2;

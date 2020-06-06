@@ -289,11 +289,11 @@ TEST(curv, eval)
     SUCCESS("{x:1,y:2}=={x=1;y=2}", "#true");
     SUCCESS("{x=1;y=2}=={x:1;y:2}", "#true");
     SUCCESS("sqrt==sqrt", "#true");
-    SUCCESS("!true", "#false");
-    SUCCESS("!false", "#true");
-    SUCCESS("![false,true,[false]]","[#true,#false,[#true]]");
-    SUCCESS("![]","[]");
-    FAILMSG("!null", "#null: domain error");
+    SUCCESS("not true", "#false");
+    SUCCESS("not false", "#true");
+    SUCCESS("not[false,true,[false]]","[#true,#false,[#true]]");
+    SUCCESS("not[]","[]");
+    FAILMSG("not null", "argument #1 of not: #null: domain error");
     SUCCESS("null!=null", "#false");
     SUCCESS("null!=false", "#true");
     SUCCESS("0 < 1", "#true");

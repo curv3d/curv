@@ -20,6 +20,15 @@
 namespace curv
 {
 
+void File_Analyser::deprecate(bool File_Analyser::* flag,
+    const Context& cx, const String_Ref& msg)
+{
+    if (system_.verbose_ || !((*this).*flag)) {
+        system_.warning(Exception{cx, msg});
+        (*this).*flag = true;
+    }
+}
+
 Shared<Operation>
 analyse_op(const Phrase& ph, Environ& env, unsigned edepth)
 {
@@ -303,6 +312,9 @@ Unary_Phrase::analyse(Environ& env, unsigned) const
 {
     switch (op_.kind_) {
     case Token::k_not:
+        env.analyser_.deprecate(&File_Analyser::not_deprecated_,
+            At_Phrase(*this, env),
+            "'!a' is deprecated. Use 'not(a)' instead.");
         return make<Not_Expr>(
             share(*this),
             analyse_op(*arg_, env));
@@ -468,12 +480,10 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
             "syntax error in local definition");
     }
     if (auto vardef = cast<const Var_Definition_Phrase>(stmt)) {
-        if (!scope.analyser_.var_deprecated_) {
-            scope.analyser_.system_.warning(Exception{At_Phrase(*vardef, scope),
-                "'var pattern := expr' is deprecated.\n"
-                "Use 'local pattern = expr' instead."});
-            scope.analyser_.var_deprecated_ = true;
-        }
+        scope.analyser_.deprecate(&File_Analyser::var_deprecated_,
+            At_Phrase(*vardef, scope),
+            "'var pattern := expr' is deprecated.\n"
+            "Use 'local pattern = expr' instead.");
         auto pat = make_pattern(*vardef->left_, scope, 0);
         auto expr = analyse_op(*vardef->right_, scope, edepth);
         pat->analyse(scope);

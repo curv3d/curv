@@ -87,7 +87,7 @@ struct Unary_Array_Op
                 return reactive_op(cx, (Reactive_Value&)rx);
             }
         }
-        throw Exception(cx, domain_error(x));
+        throw domain_error(cx, x);
     }
     static SC_Value
     sc_op(const At_Syntax& cx, Operation& argx, SC_Frame& f)
@@ -119,13 +119,13 @@ struct Unary_Array_Op
                     share(cx.syntax()), rx.expr()),
                 cx)};
         } else {
-            throw domain_error({share(rx)});
+            throw domain_error(cx, {share(rx)});
         }
     }
 
-    static Shared<const String> domain_error(Value x)
+    static Exception domain_error(const Context& cx, Value x)
     {
-        return stringify(x, ": domain error");
+        return Exception(cx, stringify(x, ": domain error"));
     }
 };
 

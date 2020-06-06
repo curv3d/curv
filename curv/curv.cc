@@ -35,9 +35,11 @@ extern "C" {
 namespace fs = curv::Filesystem;
 
 curv::System&
-make_system(const char* argv0, std::list<const char*>& libs, std::ostream& out)
+make_system(const char* argv0, std::list<const char*>& libs, std::ostream& out,
+    bool verbose)
 {
     static curv::System_Impl sys(out);
+    sys.verbose_ = verbose;
     if (isatty(2)) sys.use_colour_ = true;
     try {
         curv::geom::add_builtins(sys);
@@ -272,7 +274,7 @@ main(int argc, char** argv)
     // Create system, a precondition for parsing -O parameters.
     // This can fail, so we do as much argument validation as possible
     // before this point.
-    curv::System& sys(make_system(usestdlib, libs, std::cerr));
+    curv::System& sys(make_system(usestdlib, libs, std::cerr, verbose));
     atexit(curv::geom::remove_all_tempfiles);
 
     try {
