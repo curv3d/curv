@@ -962,21 +962,17 @@ Paren_Phrase::analyse(Environ& env, unsigned edepth) const
 {
     if (cast<const Empty_Phrase>(body_)) {
       #if 0 // TODO: enable once I have 'curv --fix' to automatically fix source
-        if (!env.analyser_.paren_list_deprecated_) {
-            env.analyser_.system_.warning(Exception{At_Phrase(*this, env),
-                "'()' is deprecated. Use '[]' instead."});
-            env.analyser_.paren_list_deprecated_ = true;
-        }
+        env.analyser_.deprecate(&File_Analyser::paren_list_deprecated_,
+            At_Phrase(*this, env),
+            "'()' is deprecated. Use '[]' instead.");
       #endif
         return List_Expr::make(0, share(*this));
     }
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
       #if 0 // TODO: enable once I have 'curv --fix' to automatically fix source
-        if (!env.analyser_.paren_list_deprecated_) {
-            env.analyser_.system_.warning(Exception{At_Phrase(*this, env),
-                "'(a,b,c)' is deprecated. Use '[a,b,c]' instead."});
-            env.analyser_.paren_list_deprecated_ = true;
-        }
+        env.analyser_.deprecate(&File_Analyser::paren_list_deprecated_,
+            At_Phrase(*this, env),
+            "'(a,b,c)' is deprecated. Use '[a,b,c]' instead.");
       #endif
         auto& items = commas->args_;
         Shared<List_Expr> list = List_Expr::make(items.size(), share(*this));
