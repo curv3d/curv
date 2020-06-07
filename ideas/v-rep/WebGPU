@@ -1,11 +1,12 @@
 OpenGL to WebGPU transition plan.
 
-Some dates:
- * WebGPU is expected to attain a minimum-viable-product version of the spec
-   and implementations by the end of 2020.
+Dates:
+ * Minimum-viable-product by the end of 2020.
    https://hacks.mozilla.org/2020/04/experimental-webgpu-in-firefox/
- * Apple is reported to be releasing ARM based Macs in 2021. I expect that
-   OpenGL will not be supported on the new hardware.
+ * Apple may release ARM based Macs in 2021. I expect no OpenGL support.
+Basic Info:
+  spec: https://gpuweb.github.io/gpuweb/
+  https://github.com/gpuweb/gpuweb/wiki/Implementation-Status
 
 On the desktop, use the Dawn library. This provides a platform independent
 GPU API, in C, with Vulkan, Metal, DX12 and OpenGL on the back end.
@@ -17,6 +18,14 @@ translator, so I will continue to use GLSL with WebGPU.
 * Create a Dawn binding for ImGui. Maybe use the experimental 'docking'
   branch which supports multiple OS windows? Get an ImGUI example running.
 * Port Curv to Dawn. No new features.
+
+As of 28Apr2020, Dawn deprecates old APIs for two weeks before removing them,
+so you can write C/C++ code and keep up with the changes. SPIR-V is supported
+long term in native. Emscripten support.
+  https://hackmd.io/Et7xlhoaThmi8dEX_s-xSw?view
+A Dawn backend for the Viewer would run on Mac/Win (no Linux), so I'd use
+OpenGL on Linux and get compute on Mac. But no compute texture storage yet.
+wgpu supports Mac/Win/Linux, no render in window, I'd have Rust as dependency.
 
 At this point, I'm using WebGPU on the desktop, but I'm using GLSL, and
 Curved is free to use WebGL. Curved won't break unless I use GLSL features
@@ -45,11 +54,10 @@ in MacOS OpenGL or in WebGL 2. There are alternative portable GPU frameworks,
 or I could write my own layer, but these will have to eventually target WebGPU
 anyway for next-gen web support with compute shaders.
 
-Right now (May 2019), WebGPU is designed to support Vulkan, Metal, DX12.
+WebGPU primarily targets Vulkan, Metal, DX12.
 To support all modern GPUs with compute shaders (2012+) there is also
 a need to run on OpenGL ES 3.1 (some Android phones) and DX11 (Windows 7).
-Raspberry Pi 4 currently has OpenGL ES 3.0; driver support for compute shaders
-is written but not released; not sure if/when Vulkan will be supported.
+Raspberry Pi 4 currently has OpenGL ES 3.1; Vulkan is in progress.
 Mozilla wgpu has DX11 support and Google Dawn has best effort OpenGL support,
 with compatible C APIs.
 

@@ -1,0 +1,10 @@
+From Gilad Bracha to Everyone: (12:24 PM) Morphic lets you rotate them :-)
+From Kartik Agaram to Everyone: (12:26 PM) One of my all-time favorite papers has a lot of relevant UX ideas here: https://web.archive.org/web/20150905171238/http://www.soe.berkeley.edu/boxer/20reasons.pdf
+From marcel to Everyone: (12:28 PM) Constraints really need to be a basic feature of PLs
+From Tomas Petricek to Everyone: (12:29 PM) @Jake - Yes, it's a reference to Salon des Refusés! There is some background on this in my introduction to the first edition: http://tpetricek.github.io/Talks/2018/salon-des-refuses/welcome/index.html
+From Jake Brownson to Everyone: (12:31 PM) Thanks :)
+From Tomas Petricek to Everyone: (12:37 PM) (we thought we were very clever with that name, but then people thought we're only interested in papers rejected elsewhere, so it's just "Salon" this year!)
+From Brian Hempel to Everyone: (12:38 PM) marcel: maybe. lots of programming problems are constraint problems. but constraint-oriented programming has been tried a number of times and never sticks. someone needs to figure out why 
+
+type systems are evil
+except maybe Strongtalk and Shen

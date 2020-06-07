@@ -1,0 +1,11 @@
+Techne is a radical new platform and user interface wherein:
+ * The UI combines graphics and direct manipulation (from GUIs)
+   with programmability, abstraction mechanisms and composability (from CLIs).
+ * Whenever you edit something, change its state, using the user interface,
+   you are always _editing source code_.
+ * T-Code is the universal representation for all code and data in this system.
+   It is a hierarchical data structure that supports abstraction mechanisms.
+   Like S-Expressions, it is simple and hierarchical.
+   It is higher level than byte sequences.
+ * Source code is made of out T-Code. Data is made out of T-Code.
+   Maybe Data is T-Code in head-normal form.

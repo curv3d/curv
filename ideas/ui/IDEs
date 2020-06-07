@@ -1,0 +1,12 @@
+IDE frameworks that I could try to integrate Curv into.
+
+https://www.jetbrains.com/mps/ -- Apache 2, Java. Highly regarded by devs.
+But 3D graphics in Java? Nobody writes games in Java. So I'd have to futz
+with half-working OpenGL bindings or something.
+
+Glamorous Toolkit -- custom distro of Pharo Smalltalk using Skia
+for graphics. I would have to fork it and integrate a GPU API (WebGPU)
+into Smalltalk, integrated with Skia so that WebGPU and Skia APIs can render
+into the same context.
+
+Jupyter -- GUI runs in a web browser.
