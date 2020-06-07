@@ -1,0 +1,17 @@
+parametric
+    s :: slider[-1,1] = sqrt 2 / 2;
+in
+let
+    // vertices of a tetrahedron
+    vs = [
+        [1,1,1];
+        [-1,-1,1];
+        [1,-1,-1];
+        [-1,1,-1];
+    ];
+in
+difference[sphere,
+    union[
+        for (v in vs) sphere >> move (v*s)
+    ]
+]

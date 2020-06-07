@@ -1,0 +1,18 @@
+let
+    ball_height = 56;
+    top_radius = 20;
+    head_minkow = 3;
+    threw_hole = 11;
+in
+//difference [
+//    sphere (top_radius*2),
+    union [
+        cylinder {d:18, h:top_radius},
+        for (i in 0..360 by 72) (
+            cylinder {d:18, h:top_radius}
+              >> rotate {axis: Y_axis, angle: 60*deg}
+              >> rotate {axis: Z_axis, angle: i*deg}
+        )
+    ]
+//]
+//>> offset head_minkow

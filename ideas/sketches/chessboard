@@ -1,0 +1,21 @@
+let
+  cubes_per_row = 9;
+  a=20;
+  b=10;
+in
+for(y=[0:cubes_per_row])
+{
+    for(x=[0:cubes_per_row])
+    {
+
+    translate([a*x,a*y,0])
+    color([(255)/255,
+    ((x+1)*70)/255 + ((x+1)*70)/255*sin(x),
+    ((x+1)*120)/255*cos(x)
+    ])
+        cube([a,a,b]);
+     
+    }
+}
+
+

@@ -1,0 +1,63 @@
+// Euclidean Tetrahedron
+// source: https://www.shadertoy.com/view/ts3SRs
+/*
+iq, 2019-11-01
+This is my implementation of Tetrahedron, which I did a few years ago by never published because I found ugly, but does have exact euclidean distance:
+
+float dot2( in vec3 v ) { return dot(v,v); }
+
+float sdTetrahedron(vec3 p, float size, float roundness)
+{
+    const float k = sqrt(2.0);
+
+    p *= size;
+
+    p.xz = abs(p.xz);
+
+    float m = 2.0*p.z - k*p.y - 1.0;
+
+    p = (m>0.0) ? p : vec3(p.z,-p.y,p.x);
+
+    float s1 = clamp(p.x,0.0,1.0);
+    float s2 = clamp((p.x-p.y*k-p.z+2.0)/4.0,0.0,1.0);
+
+    m = 2.0*p.z - k*p.y - 1.0;
+
+    float d = sign(m)*sqrt((sign(p.y*k+p.z+1.0)+sign(2.0-3.0*p.x-k*p.y-p.z)<1.0)
+                  ?
+                  min( dot2(vec3(s1,-k*0.5,0)-p),
+                       dot2(vec3(s2, k*0.5-k*s2,1.0-s2)-p) )
+                  :
+                  m*m/6.0 );
+
+    return d / size - roundness;
+}
+ */
+/*
+Dain, 2019-11-01
+Thanks IQ, I made a comparison here in this unlisted shader
+https://www.shadertoy.com/view/3sdXRl
+Biggest difference is the inner part(inside sdBox area basically)
+*/
+make_shape {
+  dist =
+    let
+      k = sqrt 2;
+      dot2 v = dot[v,v];
+    in p->do
+      local [x,y,z,_] = p;
+      [x,z] := abs[x,z];
+      if (2*z - k*y - 1 <= 0)
+        [x,y,z] := [z,-y,x];
+      local s1 = clamp[x,0,1];
+      local s2 = clamp[(x-y*k-z+2)/4,0,1];
+      local m = 2*z - k*y - 1;
+    in
+      sign m * sqrt(
+        if (sign(y*k+z+1)+sign(2-3*x-k*y-z) < 1)
+          min[ dot2([s1, -k*0.5, 0] - p),
+               dot2([s2, k*0.5-k*s2, 1-s2] - p) ]
+        else
+          m*m/6);
+  is_3d = true;
+}

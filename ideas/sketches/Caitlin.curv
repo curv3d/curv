@@ -1,0 +1,19 @@
+let
+    ball_height = 56;
+    top_radius = 20;
+    cyl_height = top_radius + 5;
+    head_minkow = 3;
+    threw_hole = 11;
+in
+smooth 3 .difference [
+    sphere (top_radius*2 + head_minkow),
+    union [
+        cylinder {d:18 - head_minkow, h:cyl_height} >> move [0,0,cyl_height/2],
+        for (i in 0..360 by 72) (
+            cylinder {d:18 - head_minkow, h:cyl_height}
+              >> move [0,0,cyl_height/2]
+              >> rotate {axis: Y_axis, angle: 60*deg}
+              >> rotate {axis: Z_axis, angle: i*deg}
+        )
+    ]
+]
