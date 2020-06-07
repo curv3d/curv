@@ -1,0 +1,32 @@
+Why Design a New Programming Language?
+======================================
+What should my goals be?
+* fun to use.
+* a DSL that solves interesting problems better than any GP language:
+  making geometric shapes and graphics, programming GPUs.
+* can evolve properly.
+* interoperability with code written in other languages.
+
+Syntax:
+* A good route to language popularity is to make a language that isn't new
+  at all. It's just slighly new syntax for deeply familiar concepts.
+  Something that an experienced programmer can learn quickly, because there's
+  nothing really new. Facebook wanted to use O'Caml, so they first invented
+  a Javascript syntax shim: a new language called Reason.
+  I don't know how much I want to buy into this.
+* Googleability of the language syntax?
+* A projectional editor can provide different views of the same code,
+  using different syntaxes. So design for this case?
+
+How about a language with a simple core and a high degree of extensibility?
+Like Lisp, Forth, Smalltalk, etc. This sort of thing is fun to play with,
+which could attract an audience of computer programmers who want to have fun
+with the language. And it could make Curv more evolveable.
+
+Curv isn't interoperable with other languages. If Curv is successful, its
+ideas will be subsumed by more popular platforms. Because interoperability
+with existing code libraries is more important than any advantage you get
+from using a DSL that isn't interoperable.
+
+Maybe Curv could survive as an interchange format for implicit geometry,
+similar to SVG for vector graphics.

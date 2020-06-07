@@ -10,11 +10,63 @@ Simple is not the same as easy.
 Ease of use is discussed in another essay.
 Here, we discuss simplicity and expressive power.
 
+Alan Kay, 2015: Power of Simplicity
+https://www.youtube.com/watch?v=NdSD07U5uBs 10:00
+[Epicycle story: the planets don't move in circles, but circles are simple,
+so over thousands of years, astronomers built an increasingly complex theory
+of planetary movement based on circles (epicycles). Ellipses are more complex
+than circles, but they drastically simplify orbit theory.]
+You get simplicity by finding a slightly more sophisticated building block.
+It's when you go for a simple building block that anyone can understand
+through common sense, that is when you start screwing yourself right and left,
+because it might not be able to ramify through the degrees of freedom and
+scaling that you need. It's this inability to fix the building blocks that is
+one of the biggest problems computing has today.
+[Doghouse story: anybody can build a doghouse, out of virtually any material,
+(cardboard?), but those construction techniques do not scale.]
+Incremental problem solving: start with a simple solution to a small problem,
+then keep adding patches until you have an unmaintainable mess.
+* Don't solve a problem, solve a context. Grand canyon story: you are so deep
+  in your rut, you can't see anything in the outside world that is outside of
+  your rut. It's adding a patch to your existing solution, while remaining
+  inside your rut, vs getting out of the rut. Most problems are bogus, they
+  come out of the current context, and you need to think your way out of the
+  current context.
+* The human body has 100 trillion cells (10 trillion are human). And it works.
+  We can't build software with this many components, our methods don't scale.
+  However, the internet scales. Decentralized/distributed control, loose
+  coupling. Kay's biological metaphor for "cellular" software components.
+  Functionality on the inside, services on the outside, a "cell wall"
+  (encapsulation). More complicated than a data structure.
+The internet has been scaled up by 10 orders of magnitude, has never been taken
+down for maintenance.
+
 Expressive power is tricky. In general, more power means more complexity.
     See: "On The Expressive Power of Programming Languages"
     https://www.youtube.com/watch?v=43XaZEn2aLc
 The most powerful programming language is also the most complex: assembly
 language.
+
+Criteria for adding complexity, based on The Quality Without A Name.
+* Usability - Will the feature make Curv more usable for novices?
+  Is the feature something that developers will enjoy using?
+  Would either group miss it if it was no longer available?
+* Readability - Is the intent of the feature clear and well presented?
+* Configurability - Can the user adapt the feature to his or her needs?
+* Profoundness - Does the feature strike the user as special or unique,
+  but at the same time, insightful and correct?
+
+Considerations for adding complexity: Programmer Assistance.
+The mechanisms for defining data types contribute maybe the bulk of the
+complexity to modern programming languages. The design of Curv was to a large
+extent motivated as a rebellion against the complexity of OOP and the Haskell
+Type system. If we pare these features down to the bare minimum, we get
+something like the K language, which has about 6 primitive types (numbers,
+symbols, characters, lists, dictionaries & functions) and no mechanisms for
+defining abstract data types. In such a language, the system doesn't know
+anything about the application data types (they only exist in the programmer's
+head, and in documentation). The structure added by modelling application data
+types in the language provides benefits to the developer.
 
 Curv should have a complexity budget. If a feature adds both power and
 complexity to the language, then we need to find a balance between various
@@ -64,6 +116,8 @@ Syntax is part of power.
    free to concentrate on more advanced problems and in effect increases
    our mental power.” A. N. Whitehead
  * Kenneth E. Iverson, "Notation as a Tool of Thought".
+ * Katherine Ye, "Notation and Thought"
+   https://github.com/hypotext/notation
 
 A well designed notation makes certain relationships more apparent: it makes
 it easier to reason about the meaning of an expression, and it enables you

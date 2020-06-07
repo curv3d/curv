@@ -1,0 +1,44 @@
+Imperative programming (and shared mutable state) was a reasonable idea in
+the 1950's, 60's and 70's, when programs were small, processors had a single
+core, and internet-related security holes were not a concern. But imperative
+programming doesn't scale. The legacy of imperative and shared-mutable-state
+programming is responsible for our current software crisis. The future of
+coding is pure functional programming and immutable values.
+
+Large programs with shared mutable state can't be fully understood or
+debugged. This problem becomes much worse with multiple cores. The imperative
+programming community's response to multi-core programming was mutable state
+shared between threads and processor cores, guarded by mutexes. This is a
+catastrophically bad programming model. You can't understand or debug the
+code. The solution is to eliminate shared mutable state.
+
+Imperative programming doesn't scale to large numbers of cores--mutual
+exclusion mechanisms steal most of your performance. The solution is to
+eliminate shared mutable state. Machine learning with TensorFlow is an
+important example of massively multi-core programming. What makes it possible
+is that TensorFlow is a pure functional language. Unfortunately it has to
+be embedded in Python, because we don't have a mainstream pure functional
+language yet.
+
+As an aside, I find it tragic that my personal computer has a 1000 cores
+(most in the GPU), and most of these cores must remain idle because my system
+software and apps are written in weak, stone age imperative languages that
+don't provide a simple and efficient way to distribute computation across
+a huge number of cores.
+
+Imperative programming is a catastrophy for software security. In the
+imperative model, any function call can change any state in the entire
+system. This is the root cause of most security flaws. A sort function
+can encrypt all your files, display a ransom message, and phone home to an
+internet malware server. And we are seeing these kinds of exploits in supply
+chain attacks on open source software repositories. Pure functional programming
+puts security first: functions cannot have side effects, and functions have no
+access to data that isn't passed as an argument. The type system can trivially
+guarantee that a sort function will not intentionally spawn a bitcoin miner,
+or accidently corrupt shared mutable state outside of the array that you are
+sorting. A common response to the inherent insecurity of imperative code is
+sandboxing. It's a backwards approach. What if architects built buildings
+out of contact-sensitive explosive materials, then attempted to mitigate the
+resulting safety issues using a system of nested blast barriers. Imperative
+programming is inherently insecure, and pure functional programming is
+the answer.
