@@ -1,0 +1,202 @@
+Keyed Structures
+================
+A Structure (short for data structure) is a list, record, dictionary or set.
+Nested structures can model many important compound data types
+just by composition:
+ * a vector is a list of numbers
+ * a matrix is a list of vectors of the same count
+ * a table is a list of records with the same fields
+
+Lists, records and dictionaries are keyed structures: you index into them using
+a key to extract a component value.
+
+I have devised two competing accounts of how to index into a nested structure:
+
+ 1. Lists are different from records and dictionaries,
+    as part of an "array language" stance:
+    * L[i,j,k] indexes into a nested list, and supports slicing.
+    * R.foo selects a known-at-compile-time field from a record,
+      and is left-vectorized. The left-vectorization lets you slice a
+      nested list of records. Eg, given a table T=[{a:1},{a:2}],
+      then T.a extracts a slice from T, the contents of the "a" column.
+    * S@key indexes into a record or dictionary using a single key value,
+      computed at run time, and is left-vectorized. R@#foo <=> R.foo
+
+ 2. There is a unified syntax for indexing into keyed structures.
+    * S.[i,j,k] slices a nested structure using a path of 3 index values.
+      S.(path) is the more general form, where the number of components in the
+      path (which is a list) is determined at run time.
+    * R.foo <=> R.[#foo] : In this variant, R.foo is not left-vectorized,
+      but you can slice the table T as before using T.[..,#a].
+      Which is fine: slicing a matrix vertically looks exactly the same.
+
+For design #1, I came up with the following special 'range values' for
+slicing, using a special reactive/dynamic variable called `last`:
+ * `..`  <=> 0..last
+ * `A..` <=> A..last
+ * `..B` <=> 0..B
+This also provides a mechanism for indexing list elements relative to the
+end of the list. Where Python uses list[-2], Curv uses list.[last-1].
+(Curv consistently uses index origin 0 for indexing relative to the beginning
+and end of a list.)
+
+For design #2, we need `..` to work as a generic record or dictionary slice.
+For this, `..` simply needs to be a distinct value that isn't a symbol.
+Defining `..` as `0..last` works fine for this.
+
+Generic Structure Operations
+----------------------------
+With design 2, "unified slicing", we introduce the x.(y) indexing operator,
+which operates uniformly across keyed structures. This suggests that there
+should be other operations that operate uniformly across keyed structures.
+
+Lists are the only ordered structures. Records, dictionaries and sets are
+unordered, and none of the following operations imposes an ordering on
+the keys or elements of an unordered structure. That's why there is no 'for'
+loop over the elements of a set.
+
+count S
+    The number of elements in a structure.
+keys S
+    The keys of a structure.
+     * For a list, this returns an ordered range, 0..<count S.
+     * For a record or dict, this returns a set of keys.
+sort S
+    If S is a list, return a sorted list.
+    If S is a set, return a sorted list containing the set elements.
+    Note: sort(keys record) returns a sorted list of symbols. Symbols and
+    characters are ordered types, along with numbers, just like K.
+map F S
+    Return a copy of structure S in which each element x is replaced by F x.
+filter F S
+    Return a copy of structure S from which elements x for which F x is false
+    have been removed.
+
+Records vs Dictionaries
+-----------------------
+A record is nearly equivalent to a dictionary whose keys are symbols.
+What are the differences?
+ * Indexing: a record index can be a list of keys. A dict index is a single key.
+ * The record key #call has a special interpretation. Dict keys are treated
+   uniformly.
+ * When invoked as a function call (S x), a record gives `S.call x`,
+   a dict gives S.[x]. Dicts are Mappings.
+ * Abstract/branded values are records with metadata (a brand; branded vs
+   nonbranded fields). This doesn't fit well with dicts.
+
+Can some of these differences be eliminated? What are dicts used for in Curv?
+What axioms and algebras do I want my primitive types and operations to support?
+
+There is a conflict between "dictionaries", which can be indexed by arbitrary
+values, including lists, and array programming. Instead of dictionaries, I'll
+have multi-dimensional maps indexed by a list of scalar keys. These are like
+generalized sparse arrays, where keys are always scalars.
+
+Curv needs two kinds of values: data types, for describing 3D shapes efficiently
+on a GPU, and API types, for describing high level APIs.
+
+Do dictionaries fit either use case?
+ * Dictionaries are like hash tables, which are a way to describe sparse arrays
+   on a GPU. It would be better to support the Taichi primitives for
+   constructing sparse array types. Instead of dictionaries, sparse arrays.
+ * Are there high level APIs that take dictionaries as arguments, or return
+   them as results?
+ * If whatever replaces dictionaries are only indexed by scalars, then it
+   solves my problem with the slice operator. Instead of a dictionary
+   indexed by a vector, I'll have a multi-dimensional map value that is
+   indexed along multiple axes.
+
+---
+In Curv, a list can be used as:
+ * An ordered sequence of values of uniform type, whose count is only known
+   at run time. Eg, character strings.
+ * A fixed-size sequence of values of different types, ie a tuple.
+The distinction between a string and a tuple is the same as the distinction
+between a dictionary and a record. One data type can represent both.
+
+The only reason to compute record keys at run time is "meta programming".
+But that's not such a big stretch. Here's an example in Curv.
+
+Python has this complex, bloated feature for defining "enum types". For example,
+```
+from enum import Enum, auto
+class Primary(Enum):
+    RED = auto()
+    BLUE = auto()
+    GREEN = auto()
+```
+Here's a simple replacement for this in Curv:
+```
+enum names = {for (i in 0..<count names) names.[i]=>i};
+Primary = enum[#red,#green,#blue];
+```
+We used meta-programming to construct a module named Primary at run time.
+
+Abstract Values & Data Abstraction
+----------------------------------
+The proposals for abstract values and data abstraction seem to conflict
+with unifying records and dictionaries.
+
+Records treat the `call` field specially: it is invoked when the record is
+called like a function. Dictionaries don't behave like this: all keys are
+treated uniformly.
+
+In the Abstract (Branded) Value proposal, each record field is either branded
+or unbranded. Branded fields are printed as '@name = value' when the record
+value is printed, and can only be bound to a record or function.
+
+Updating a branded field is problematic.
+ * Do we restrict the update to function and record values?
+ * Do we make such updates illegal?
+ * Does the update erase the brand?
+
+Updating a field of a branded record is problematic.
+
+A Theory is a kind of record that exports a set of CLOS-like multiple-dispatch
+generic functions, each of which has multiple implementions, which may be
+defined in other packages.
+
+I've considered implementing Traits, which are nominal types for record
+protocols. A record would contain metadata listing what traits it implements.
+It's not an essential feature: Theories are better.
+
+There are two use cases for record values:
+* As pure data: sets of configuration variables, named arguments in function
+  calls. It's a collection of named values that can be independently specified,
+  and any constraints or invariants on the values are enforced later.
+  For function call arguments, we want the syntax {foo: 0, bar: 1},
+  and we want R.foo for field reference. Fields are assignable.
+* As modules: Libraries; ADTs like shapes and blending kernels; Theories.
+  A Module isn't just a set of name/value pairs: it has metadata, additional
+  semantics. Modules are branded, and have branded fields.
+  The magic `call` field permits a module to be called like a function.
+  Fields are *not* assignable: at a low level, this causes field values to be
+  out of sync with the brand, and at a high level, it breaks ADT invariants
+  in an already constructed and verified ADT instance.
+  A module can be converted to a record, but then it loses the special
+  properties that cause it to be recognized as an ADT instance.
+  A module can be rebranded--the shape library does this a lot. Shapes are
+  modules that are recognized by duck typing, and shapes must be distinct
+  from pure-data records.
+
+There are 3 concepts here: dictionaries, records and modules.
+Dictionaries and records could be merged. Modules are distinct, due to the
+metadata and limitations on field update.
+
+(In the K language, each field of a dictionary has an optional property list.)
+
+Modules
+-------
+Records and dictionaries are merged into the same data type.
+{a:1,b:2} and {#a=>1,#b=>2} are the same thing.
+
+Modules are a distinct type. So we'll use a distinct constructor syntax:
+    {|a=1; b=2;|}
+
+Modules can be indexed using M.x syntax, but update is not supported.
+
+Module and function values can be branded (records cannot). A module contains
+a mix of branded and unbranded fields. Only a module or function can be bound
+to a branded field. An unbranded field can also be bound to a module/function
+(like transparent vs opaque bindings in SML modules), so we need to
+syntactically distinguish the two binding types.

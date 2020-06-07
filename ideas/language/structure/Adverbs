@@ -1,0 +1,23 @@
+K adverbs
+
+over        f/x     reduce f x
+scan        f\x
+each        f'x     map f x
+eachleft    x f\:y  lmap f x
+eachright   x f/:y  mapr f x
+eachprior   x f':y
+
+I have encountered several uses for eachleft/eachright in Curv code.
+Are symbolic adverb operators a good idea for Curv?
+    *f x        each (or map)
+    *>f [x,y]   each right
+    <*f [x,y]   each left
+
+0..999 >> `<*mod`[3,5] >> `eq`0 >> or >> where >> sum
+0..999 `<*mod`[3,5] `eq`0 >>or >>where >>sum
+
+What adverbs do other languages define?
+
+Scheme sfri-1 defines many: https://srfi.schemers.org/srfi-1/srfi-1.html
+So does Haskell.
+Clojure.

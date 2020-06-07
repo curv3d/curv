@@ -8,18 +8,21 @@ a function call is: <x>f   -- like 'x >> f' in Curv
 a function is: [x]body     -- like 'x->body' in Curv
 
 The <x> and [x] elements are called 'wagons', and are the unit of equational
-reasoning in this notation.
+reasoning in this notation. Wagon application is right associative.
 
 A call to a function literal is written
     <x>[a]body
 Note that the argument wagon <x> is adjacent to the abstractor wagon [a]:
 data flows left to right from the argument into the abstractor.
 
-It would be interesting to extend these ideas into a full programming language.
-Just forget conventional syntax, focus on left-to-right data flow and
-equational reasoning.
+This function application syntax is not equivalent to the Curv >> or @
+operators, since it is right associative. I could invent a Curv operator
+that behaves this way:
+    x @> f   -- right associative, same precedence as x->body
+But, I'm not sure it is useful for programming.
 
-Perhaps such a design would also work as a nodes+boxes visual dataflow language.
+What happens if you try to extend De Bruijn's function call operator into
+a more complete programming language? What would that look like?
 
-cond THEN x ELSE y
-list EACH [x] body
+a+b+c
+(a b +) c +

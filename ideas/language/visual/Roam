@@ -1,0 +1,47 @@
+What if Curv used a richer format for source files than plain text?
+Maybe something more like a word processor, with support for rich text,
+embedded images, automatic reformatting of source code when you resize
+the window, etc. Not literally MSWord tho. What about hypertext?
+
+Roam Research is a trendy new hypertext system, popular enough that
+multiple open source implementations are underway.
+ * https://nesslabs.com/roam-research-alternatives
+ * Stroll, built on TiddlyWiki. https://giffmex.org/stroll/stroll.html
+     Entire database in two files: HTML and JS. Programmable.
+ * Org-roam: Enhanced EMACS Org-mode. https://github.com/org-roam/org-roam
+     https://www.youtube.com/watch?v=Lg61ocfxk3c
+ * DocuWiki and DocuRoam
+     PHP, no database.
+     https://www.dokuwiki.org/dokuwiki
+     https://github.com/andjar/dokuroam
+ * Athens. Web server based, distributed, full Roam implementation.
+
+What are the benefits of integrating Curv with a hypertext system?
+ * Embed Curv graphics in hypertext, obviously. Interactive Curv documentation.
+ * Use hypertext to structure code. How?
+ * Use Curv as the programming language for a malleable hypertext system.
+
+What are the core elements of Roam? What is the data model?
+  https://nesslabs.com/roam-research
+It's a wiki/outliner hybrid. You have a set of pages, each with a title & body.
+The body is an textual outline (like Workflowy).
+There is markup like $$math$$, [url], ![image-url].
+There are wiki-style links, like [[Page Title]]. Special features:
+ * Automatic display of backlinks. At the bottom, each page has a list of its
+   backlinks. This even works for pages that haven't been given content yet,
+   that exist only by virtue of having links that reference them.
+ * A graph view that shows each page as a node, and its links as arcs.
+ * Page and block(subpage) transclusion.
+ * fuzzy tag search?
+ * tags like #foo, apparently.
+ * global auto update of wikilinks on rename
+ * export as markdown (in one big file ala WorkFlowy)
+ * Sidebar: If you Shift-Click on a tag or title you can open that page in the
+   right-sidebar. You can also left-click on a bullet point to open that in the
+   sidebar as well. The sidebar can be helpful for looking at multiple things
+   at once, rather than jumping between documents
+
+Integrating hypertext with Curv
+-------------------------------
+A wiki is a program. A [[foo]] link is a kind of variable reference.
+A transclusion link means: interpolate the value of this expression.

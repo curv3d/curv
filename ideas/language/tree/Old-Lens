@@ -1,0 +1,340 @@
+
+Syntax: Implicit Lenses
+-----------------------
+Terse indexing by treating symbols, nats and lists as lenses.
+* #foo is a lens: #foo {foo:17} => 17. Same as at(#foo).
+* A nat is a lens: 0 [17,23,31] => 17. Same as at(0).
+* No abbreviation for indexing a dictionary: use at(key).
+* A list of lenses is a lens: [X,Y]vec => swizzle of a vector. Not bkwd compat.
+  Same as swizzle(list).
+* Can't use record values directly as lenses (to match K9 indexing),
+  because they are already functions, so use swizzle(record).
+* slice[lens1,lens2,...] is a lens (generalization of the K indexing operator).
+
+Postfix function call operator is used for idiomatic indexing.
+One candidate for postfix function call is dot: x.f <=> f x.
+Then, R.#foo is record field selection.
+      V.i selects a vector element.
+      V.[X,Y] is vector swizzle.
+Lens composition is function composition.
+If . is pipeline then maybe >> is function composition.
+    colour_list .(i >> sRGB.hue) .#put 0
+
+To weaken this for backward compatibility, a lens is not a function.
+Apply a lens using
+    struct!lens   or   struct@lens
+A list of lenses is a lens, but is not a function.
+A record still cannot be implicitly swizzled, because lenses are records.
+The !/@ operator binds looser than postfix to support S!slice[i,j].
+Or ! is postfix, same as `.`, and we write S!(slice[i,j]).
+There is no ambiguity as with list.0.0 -- we use list!0!0 instead.
+We can use the terser `sRGB` instead of the more verbose `sRGB.from` as
+the sRGB coordinates lens for a colour.
+    colour_list!i!sRGB.hue := 0; // set hue to red
+    colour_list@i@sRGB.hue := 0; // set hue to red
+Lens composition?
+    lcompose[lens1,lens2]
+    lens1 !! lens2
+    Index[ix1,ix2]      -- replace lens with Index as official type name
+    array >> Index[0,1].put 42
+
+If @ is the primary way to apply a lens, then we don't need Symbol, Num
+and List to provide #get and #put fields. Instead, @ applies a special
+lens interpretation to these types. But now,
+ * We need a functional syntax for `.get` calls (convert a lens-like value
+   to a get function). Eg, map(@#foo) and map(@0).
+ * We need a functional syntax to replace `.put` calls:
+   We could use 'update lens item struct' or 'amend lens item struct'.
+   We could use '@lens .put item struct'.
+ * This requires lens composition.
+     colour_list >> @lcompose[@i, @sRGB.hue] .put 0
+     colour_list >> @(!i !! sRGB.hue) .put 0
+   Or this:
+     colour_list@i@sRGB.hue := 0;
+     colour_list >> (@i@sRGB.hue).put 0
+     colour_list >> set (@i@sRGB.hue) 0
+
+Here's a backwards compatible proposal with not too terrible syntax.
+Backwards compatible syntax:
+    record.fieldname        same as: record!#fieldname
+    list[nat1,nat2,nat3]    same as: list!nat1!nat2!nat3
+    list[vector]            same as: list!vector
+New syntax:
+    locative:
+        primary!primary!primary     -- struct!lens!lens
+    lens construction and composition:
+        !primary!primary            -- !lens!lens
+New operations:
+    struct!lens
+    set lens newval struct
+    slice[lens,lens]
+
+The syntax `!lens!lens` has to be an n-ary operator.
+Ack, it conflicts with the not operator.
+
+Another one. 'Index' is the type name (not Lens).
+    record.fieldname    -- same as record!#fieldname
+    list[ix1,ix2,ix3]   -- same as list!slice[ix1,ix2,ix3]
+    struct!ix1!ix2!ix3  -- generalized indexing locative
+                        -- same as struct >> Index[ix1,ix2,ix3].get
+    Index[ix1,ix2,ix3]  -- Index construction and composition
+    slice[ix1,ix2,ix3]  -- slice construction (index cross product)
+    <Index>.get struct
+    <Index>.put itemval struct
+
+Unlike the dot-bracket proposal, this supports the full semantic model.
+It can be extended to dictionaries using at(key) to index a dict.
+There is swizzle(dict). It is extendable to new lens constructors
+and combinators without switching to a different syntax.
+
+Syntax: 'Dot-Bracket' Operator
+------------------------------
+An older proposal that has terser syntax for slices than above.
+
+The dot operator is used for all structure indexing and slicing.
+ * `S.(path)` walks a structure S and extracts a slice. See structure slices.
+ * `S.[i,j,k]` is the same as `S.([i,j,k])`.
+ * `S.foo` is the same as `S.[#foo]`.
+ * It's a locative.
+
+In addition, we may also have these:
+ * D key => D.[key]  -- Mapping proposal
+ * #foo R => R.foo
+
+In `S.(path)`, S is list, record or dict, path is list of index values.
+An index value `i` is interpreted relative to the structure type:
+ * list L: i is a tree of natural numbers, each in the range 0..<count L.
+ * record R: i is a tree of symbols, each a field of R.
+ * dictionary D: i is a key of D.
+
+* Using "slice semantics", a selector produce a single item, or a group of
+  items in a tree. The next selector is applied to each item, producing another
+  singleton or group.
+A[i,j,k]
+Current semantics are the same as K's A[i;j;k], supports jagged arrays.
+Indexing with a path is an operation on trees:
+  i is a tree of natural numbers, each in the range 0..<count A
+  for each n in i, replace it with A!n[j,k].
+  Base case: A[] => A.
+  So this is a recursive operation.
+
+Syntax Stuff
+------------
+
+Using simple indexing, you follow a path from the root of the tree to the
+desired node, and fetch the value stored in this node, or update that node.
+A simple path is a list of simple index values: an integer for a list,
+a symbol for a record, or a key value for a dictionary.
+
+Using slicing, each index value in the path is not just an integer or symbol,
+but it can be a tree of simple index values. Index trees not supported for
+dictionaries. Index trees are made of lists, and the output of an index tree
+is another list-based tree of the same shape. In the future, index trees
+could also contain records as interior nodes, so that multiple results
+are packaged as records rather than lists, but that's not needed for MVP,
+and I don't know how it is interpreted for updates. The minimum requirement
+for an index tree is a flat list of simple index values, needed to support
+vector swizzling in GLSL. We support more general index trees because it's
+not much more code, and it achieves parity with the K indexing operator.
+
+Old Indexing Proposal
+---------------------
+accessing elements:
+  L[i,j,k]
+  R.fieldname
+  D key
+  #foo R => R.foo
+
+The ! operator (abstracting over different structure types):
+  L!i    => L[i]
+  R!#foo => R.foo   // not vectorized yet. R![#a,#b] is a record or list?
+  D!key  => D key   // D!key is a locative: D!key := newval
+Alternate syntax: S@key
+Rationale:
+ * It's generic across list, record and dictionary. Generic programming, lenses?
+ * `S!` converts a structure to a mapping from index to value.
+ * It's the only way to index a record with a runtime symbol value.
+   R."${foo}" is deprecated. R.(foo) could be a replacement?
+
+L[i,j,k] is not equivalent to L!i!j!k unless i,j are numbers.
+In general, L[i,j,k] is an array or tree slice.
+
+Locatives:
+  L[i,j,k] := ...
+  R.fieldname := ...
+  D key := ...
+  S!x := ...            // S is a list, record or dictionary
+
+Compound Locatives
+------------------
+What does the following do?
+    [{a:1},{a:2}] [[0,1]] .a
+* Using "compositional semantics", the locative is processed left to right.
+  Each selector is applied to the left argument, which produces a value,
+  which becomes the left argument for the following selector. So we get
+    [{a:1},{a:2}] .a
+  which is currently an error.
+* Using "slice semantics", a selector produce a single item, or a group of
+  items in a tree. The next selector is applied to each item, producing another
+  singleton or group. So we get
+    [1,2]
+
+The problem with slice semantics is that they are non-compositional.
+
+We can get much the same results as slice semantics while preserving
+compositional semantics if we vectorize the '.' operator. At each step, we
+are discarding the information about what items were selected. However,
+in order for '.' to work, all of those items *must* be records, or an error
+is reported. With a vectorized '.', we descend the tree looking for records,
+and we get the same result.
+
+How does this work for dicts/maps? Since records, dicts and maps are all
+scalars, we just need left-vectorized indexing operators for records, dicts
+and maps, which need to be distinct from the list indexing operator that
+extracts slices. That leads to a different design for locatives:
+    R.name  A left-vectorized record indexing operation.
+    S@key   A left-vectorized indexing operation for maps and records.
+            In the record case, key is a symbol.
+            In the map case, key is a dict key or function argument.
+    L!path  A slicing operation for lists.
+
+So '!' is now the slicing operator.
+
+At this point, I'd like to get rid of the L[i] operator, for uniformity.
+ * It's ad-hoc overloading.
+ * It's inconsistent that 'D x' has a single index value as an argument,
+   but 'L x' has an index list as an argument.
+ * Avoids awkward questions about what 'R x := y' means when R is a record.
+ * It would be nice to get rid of it, because it eliminates any justification
+   for classifying lists as mapping values, which I have not wanted to do,
+   due to the fact that the right argument is a list, not an index value.
+ * Also, note that the new @ operator requires mapping values to be scalar.
+ * L[i] prevents us from vectorizing curried functions.
+   Eg, `map f` takes a function argument (a scalar) and returns another
+   function. This returned function is then applied to a list.
+   If `map` was vectorized on its first argument, then the result would be
+   a list L, and calling L with another list as argument would be an indexing
+   operator. Bad news, bad language design. To fix this,
+    * List indexing syntax changes to L![i].
+    * Function call is left-vectorized. Other array languages like this:
+      Nial and FP/FL. In Nial, a list of functions is called an Atlas.
+      Apparently it's an important idiom for them.
+I could deprecate the syntax, but keep it around for a while.
+
+Structure slices
+----------------
+S![i,j,k] is a general operation for extracting a slice of a compound structure
+comprised of nested lists, records and dicts, using a path that is a list
+of index values. This is a generalization of list slicing.
+
+S![i,j,k] is a locative, you can assign to it.
+
+Slicing does not have compositional semantics, in the sense that
+  S![i,j,k]
+is not generally equivalent to
+  S![i]![j]![k]
+So we don't want slicing to be the only way to index into a structure.
+But it's a powerful operation on bulk data.
+
+Abstracting over access paths
+-----------------------------
+Now we have a rich set of locative forms for indexing into structures.
+    S!slicepath@key.field
+I'd like to be able to abstract over a locative path such as
+    !slicepath@key.field
+In other words, represent this as a value. I originally thought the abstraction
+should be a list of index values, with compositional semantics. But slicing
+complicates this story. Now, it seems that Lens values are the more general way
+to encapsulate an access path.
+
+A Lens is a getter and a putter, bound together in a single data structure.
+In Curv, a Lens is a record with #call, #put and #defined fields.
+    data Lens struct item
+      = Lens { call :: struct -> item            -- getter
+             , put :: item -> struct -> struct   -- setter
+             , defined :: struct -> bool
+             }
+
+Using a Lens, you can update a data structure functionally, without using
+imperative assignment notation.
+
+Using #call as the getter is for convenience.
+If we do this, sRGB is no longer a Lens with a #get field.
+Instead, sRGB.from is the Lens.
+
+Lens constructors:
+ * (at I) S <=> S@I
+ * (at_path IndexList) S    -- compositional semantics; iterated 'at'
+ * (slice Path) S <=> S!Path
+ * sRGB.from, LAB.from
+ * Is `#foo` a Lens constructor? With #call, #put and #defined fields?
+ * composition: lcomp[L1,L2] | Lens[L1,L2] | Lens.compose[L1,L2] | L1 >- L2
+
+I can also use Lenses internally as the compiled representation of compound
+locatives.
+
+Older Ideas
+-----------
+I've considered a function based interface:
+    fetch [i1,i2,i3] S      or S >> fetch path
+    amend path newvalue S   or S >> amend path newvalue
+Note on currying:
+* path must be a separate argument so that fetch and amend can be used
+  to construct lenses (see below).
+* S must be a separate argument so that amend can be part of a structure
+  pipeline.
+
+Two variants:
+ 1. fetch [k1,k2,k3] S  => S!k1!k2!k3
+ 2. A path specifies a slice, generalized from L[i1,i2,i3].
+The slicing version is more useful.
+
+Do fetch and amend support multi-d array slicing?
+Can multi-d array slicing be composed with fetch/amend?
+
+K language amend/dmend applies a function to transform each selected element.
+  amend: @[s; i; f]
+  dmend: .[s; i; f]
+Dot Amend is a more powerful version of At Amend. An At Amend @[a;b;c;d] can
+be simulated by the Dot Amend .[a;,b;c;d] with the second argument enlisted.
+In Curv terms, I think L!i is the @ form and L[i,j] is the . form.
+
+Lenses
+------
+A Lens is a getter and a putter, bound together in a single data structure.
+Like a combination of `fetch path` and `amend path` in Curv.
+    data Lens struct item
+      = Lens { get :: struct -> item
+             , put :: item -> struct -> struct
+             }
+or,
+    lens path = {get: fetch path, put: amend path};
+    l = lens mypath; l.get, l.put
+
+More convenient if we replace #get with #call.
+If we do this, sRGB is no longer a Lens with a #get field.
+Instead, sRGB.from is the Lens.
+
+Eg, `slice path` is the slicing version of fetch/amend.
+    S >> slice[i,j,k]
+    S >> slice[i,j,k].put newval
+
+We need a full set of Lens constructors.
+ * Is `!K` or equivalent a Lens constructor? It doesn't encode a structure
+   type, so the interpretation of K isn't known until the structure is seen.
+ * Is `#foo` a Lens constructor? It has #call and #put fields.
+ * `slice path` is the slicing version of fetch/amend.
+ * composition: lcomp[L1,L2] | Lens[L1,L2] | Lens.compose[L1,L2] | L1 >- L2
+
+Lens Composition.
+    -- | Lens composition
+    (>-) :: Lens a b -> Lens b c -> Lens a c
+    la >- lb = Lens (get lb . get la) $ \part whole ->
+      put la (put lb part (get la whole)) whole
+semantics:
+* Get the original middle part from the original big part
+* Update the middle part with the new little part
+* Update the big part with the new middle part
+
+Generalized Lenses.
+https://www.schoolofhaskell.com/user/tel/lenses-from-scratch

@@ -20,6 +20,8 @@ GPU programming languages
 * Co-dfns: based on Dyalog APL. Compiler is written in Co-dfns, runs on GPU!
 * Julia: layered on CUDA, can execute code on the GPU from the REPL
 * MLIR has a SPIR-V dialect
+* Apache TVM
+  https://tvm.apache.org/2020/05/14/compiling-machine-learning-to-webassembly-and-webgpu
 
 Raph Linus wants a high level (functional) GPU language
 that lets you to control how the problem is mapped onto hardware.

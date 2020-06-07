@@ -1,0 +1,17 @@
+T-Code
+======
+This is a radical redesign of the Curv virtual machine.
+Curv is a term rewrite engine. All code and all data is, at the virtual
+machine level, made out of "terms", aka a hierarchical data structure
+called T-Code.
+ * Data values are made out of T-Code.
+ * Function values are made out of T-Code.
+ * Source code is made out of T-Code. It is a hierarchical data structure,
+   not linear text. The goal is to edit Curv source using a projectional
+   editor. We will continue to support text files as a secondary representation
+   of Curv programs. However, when a *.curv file is read and converted to
+   T-Code by a projectional editor, newlines and indentation are discarded.
+   Newlines and indentation are added back when converting T-Code to text,
+   using an automatic program formatter.
+
+What is T-Code?

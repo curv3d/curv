@@ -1,0 +1,51 @@
+Generalized Indexing Operators (using Index Values)
+---------------------------------------------------
+In a modern OOP language, any "advanced" indexing and updating would be done
+using mutable objects and getter/setter methods or some such. The syntax
+would involve dots:
+    a.b.set(foo)
+    a.b := foo
+
+In Curv, my approach to advanced/extensible data structure indexing is to use
+abstract Index values, based on Haskell Optics (Lens/Prism/Traversable).
+This allows for composable operations on Index values, and for defining new
+Index constructors without modifying the 'class' of the object you want to
+update. Composability and orthogonality.
+
+------
+Instead of mutable objects, there are two choices: update a mutable variable
+using a locative, or transform a data structure value, producing an updated
+copy. The same syntax elements should work in both cases, maybe:
+
+    struct<at>index := newval
+    struct >> set(index) newval
+
+------
+Problem: it's expected that you can nest index qualifiers:
+    struct<at>index1<at>index2
+and the corresponding set expression won't work:
+    struct >> set(index1<at>index2) newval
+unless index values are disjoint from structures.
+
+So instead what we get is that index application and index composition are
+separate operations (which is also true for function call/composition).
+And there is some mental gymnastics to convert between nested application
+and single application of composition.
+
+What kind of notation makes this easier?
+
+foo.bar.baz === foo.(bar•baz)
+            === foo.(bar*.baz)
+
+------
+What is a<at>b? Two options:
+ 1. a.b
+ 2. a!b
+
+x.f <=> f x
+An Index is a function with extra structure, so that index applications are
+locatives.
+
+struct!index
+
+struct!ix1!ix2 <=> struct!(ix1*!ix2)

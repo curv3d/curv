@@ -1,0 +1,63 @@
+Some REPL commands:
+  > include lib.shape
+  > cube{}
+  lib.shape.cube{d:2}
+
+Here we include the experimental shape library, and make a cube.
+The cube value prints as a constructor expression.
+How does this work?
+
+  > lib
+  lib
+  > lib.shape
+  lib.shape
+  > lib.shape.cube
+  lib.shape.cube
+  > lib.shape.cube {d:3}
+  lib.shape.cube{d:3}
+
+Opaque Field
+aka Abstract Field
+aka Constructor Field
+aka Branded Field
+aka ...
+
+Modules can contain two kinds of fields: abstract fields and concrete fields.
+
+Abstract fields are bound to functions or modules.
+
+When you select an abstract field A from a module M using dot notation (M.A)
+then the value of the field is stamped with a new name or identity,
+consisting of the module's identity + the field name.
+
+------------
+Glossary:
+  Branded Value
+    A value imprinted with a Brand, which is metadata describing how the value
+    was constructed. Only modules and functions can be branded.
+  Branded Global Variable
+    Some of the variables in the standard library are branded.
+    All of the standard functions and most of the standard records are branded.
+    Their values are imprinted with a Global Variable Brand,
+    which contains the variable name.
+  Branded Field
+    Each field in a record is either branded or unbranded.
+    When you select a branded field B from a branded record R using R.B,
+    the resulting value is imprinted with a Field Brand, consisting of the
+    brand of R together with the field name B.
+  Constructor Function
+    When a constructor function F is called with an argument A (F A),
+    the resulting value is imprinted with a Call Brand,
+    containing the values F and A.
+
+    An ordinary unbranded function prints as "<function>".
+    An unbranded constructor function prints as "<function@>".
+  `@` operator
+    The `@` operator is the branding operator.
+    * To define a branded field within a record literal, use `@name = value`.
+    * A constructor function is constructed using `f x = @body` for a named
+      function definition, or `x -> @body` for an anonymous function.
+      Constructor functions are normally branded as well, so the actual idiom is
+      to write `@f x = @body` within a scoped record literal.
+  __brand
+    A branded value has a __brand field.

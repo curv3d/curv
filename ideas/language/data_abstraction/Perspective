@@ -1,0 +1,135 @@
+Perspectives: An Optical Approach to Data Abstraction
+=====================================================
+Inspired by the Lens metaphor.
+
+An ADT instance contains the minimum set of fields/data needed to specify
+the value (see Out Of the Tar Pit). For example, a cube is uniquely specified
+by a diameter. Eg, cube{d=10}.
+
+A datum can be viewed through a "Perspective", which interprets the datum in
+order to implement a theory or protocol. For example, there can be a Perspective
+that interprets a cube as a shape, and derives the shape fields from the cube's
+diameter.
+
+A "Perspective" can either be held separately from a datum, or it can be
+applied to a datum to create a new value (called a View?). For example, we can
+apply the above Perspective to a cube to construct a cube-shape.
+
+A View can be deconstructed to recover the original source datum.
+* eg, extract the diameter from a cube-shape.
+* eg, extract the IEEE float representation (a bit array) from a float?
+
+A View combines a Perspective/constructor with an argument, so it is like
+a parametric record.
+
+Shapes will be recognized because they implement the Shape theory.
+Graphical values will be recognized because they implement the Visual theory.
+
+Details
+-------
+How are Perspectives related to (single-sorted) algebras and theories?
+
+Well,
+* There is a Cube algebra, with type=Struct{d:Magnitude}.
+  In SML: a structure.
+* There is a Shape theory.
+  In SML: a signature.
+* There is a Perspective that implements the shape theory on top of a cube.
+  It contains a constructor function that maps a Cube instance onto
+  a Cube-Shape instance implementing the Shape theory.
+
+There's more.
+A Perspective needs to be like a Lens, by providing a two-way mapping
+between the source and View. The source can be updated to produce a
+new View. The source is often a record with multiple fields, which
+suggests there is a Lens for each field.
+
+Example
+-------
+A rectangular imaginary number is represented as {re,im}.
+
+A polar perspective `Polar` maps a RIN onto a polar view {r,theta}.
+
+I imagine that Polar is a Lens. So for example
+    (rin!Polar).r
+is the magnitude of rin, and
+    (rin!Polar).r := 1
+updates it.
+
+I imagine that Polar is an Algebra.
+ * Polar(rin) constructs a Polar View of type Polar.type?
+ * Polar.r(rin) is the magnitude of rin?
+   Strictly speaking, Polar.r is not required, because you can recover it
+   using path[Polar,#r].
+
+How is Polar defined?
+  pick{r: {get w = mag[w.re,w.im],
+           put w nr = ...},
+       theta: L2}
+
+Loosely Related OOP Technologies
+================================
+Mostly of interest for providing terminology I can reuse.
+
+OOP and Perspectives and Subjectivity
+-------------------------------------
+Subject-Oriented Programming (A Critique of Pure Objects)
+http://ivizlab.sfu.ca/arya/Papers/SW/SOP.pdf
+
+This is the original paper, and it is a good critique of OOP.
+Specifically, a critique of the idea of putting all behaviour required to
+interpret an object, inside the object. Different code (belonging to
+different applications, modules or encapsulation domains) may interpret the
+same data in different ways. So you separate the data from the interpretation.
+The claim is that OOP doesn't scale, without this separation.
+
+A "subject" is a domain-specific interpretation of an object.
+
+google: "subjectivity" "object oriented"
+      : "subject oriented programming"
+This seems to have been a thing in the mid-1990's.
+There was a grand pronouncement of a new, more general programming paradigm
+to supercede OOP. No consensus on what it means, and no clean simple model
+and theory to build on. Obviously it fizzled.
+
+
+OOPSLA '95 Workshop on Subjectivity in Object-Oriented Programming
+
+TAPOS special issue on Subjectivity in Object-Oriented Systems, 1996
+
+"A Simple and Unifying Approach to Subjective Objects"
+Smith & Ungar, 1996. The "Us" language, embedded in Self.
+http://www2.iath.virginia.edu/time/readings/new/subjective-objects.pdf
+
+A perspective maps an object onto a view.
+
+DCI: Data, Context, Interaction
+-------------------------------
+Separates the domain model (data) from use cases (context)
+and Roles that objects play (interaction).
+
+"Reflections on Reflection": Jim Coplien talks about coding behavior in terms
+of "roles", which are identifiers which associate contextualized methods with
+an object. Binding a role to a particular object (of any type) effectively
+binds the role-methods to that object, but only as it is accessed via the
+role identifier within a given context.
+
+Data: what the system *is*. Lacks the functionality to support specific use
+cases. Like the model in MVC.
+
+Context: The context is the class (or its instance) whose code includes the
+Roles for a given algorithm, scenario, or use case, as well as the code to
+map these Roles into objects at run time and to enact the use case. Each
+Role is bound to exactly one object during any given use case enactment;
+however, a single object may simultaneously play several Roles. A context is
+instantiated at the beginning of the enactment of an algorithm, scenario,
+or use case. In summary, a context comprises use cases and algorithms in
+which data objects are used through specific Roles.
+
+Interaction: The interaction is "what the system does." The interaction is implemented as Roles which are played by objects at run time. These objects combine the state and methods of a data (domain) object with methods (but no state, as Roles are stateless) from one or more Roles. In good DCI style, a Role addresses another object only in terms of its (methodless) Role. There is a special Role called self which binds to the object playing the current Role. Code within a Role method may invoke a method on self and thereby invoke a method of the data part of the current object.
+
+Role: A Role is a stateless programming construct that corresponds to the
+end user's mental model of some entity in the system. A Role represents a
+collection of responsibilities. An object participating in a use case has
+responsibilities: those that it takes on as a result of playing a particular
+Role.

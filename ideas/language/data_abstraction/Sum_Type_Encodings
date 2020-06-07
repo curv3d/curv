@@ -1,0 +1,102 @@
+https://yairchu.github.io/posts/sum-type-encodings.html
+Okay, this is very Haskell centric, but hopefully I can extract some general
+ideas that make sense outside of Haskell.
+
+1. Direct Encoding
+------------------
+Can't be extended to support new shape types (expression problem).
+However, we can add new operations.
+
+a Shape is one of:
+    {Rect: {width, height}}
+    {Circle: {radius}}
+
+let
+area = match [
+    {Rect: {width, height}} -> width * height;
+    {Circle: {radius}} -> pi * radius^2;
+];
+in
+area {Rect: {width: 3, height: 5}}
+
+2. Church Encoding
+------------------
+Can't be extended to support new shape types (expression problem).
+However, we can add new operations.
+
+In Haskell:
+    {-# LANGUAGE RankNTypes #-}
+
+    data ShapeHandlers r = ShapeHandlers
+        { handleRect :: Float -> Float -> r
+        , handleCircle :: Float -> r
+        }
+
+    type Shape = (forall a. ShapeHandlers a -> a)
+
+    rect :: Float -> Float -> Shape
+    rect w h handlers = handleRect handlers w h
+
+    circle :: Float -> Shape
+    circle r handlers = handleCircle handlers r
+
+    area :: Shape -> Float
+    area shape =
+        shape
+        ShapeHandlers
+        { handleRect = \w h -> w * h
+        , handleCircle = \r -> pi * r * r
+        }
+
+    > area (rect 3 5)
+    15
+
+In Curv:
+    let
+    rect (w,h) handlers = handlers.handleRect (w,h);
+    circle r handlers = handlers.handleCircle r;
+    area shape = shape { handleRect (w,h) = w * h; handleCircle r = pi * r^2 };
+    in
+    area (rect (3,5))
+
+"Suitable for most popular languages."
+Use Abstract Generic Methods in Java/C#.
+Use the visitor pattern in C++.
+
+3. Final Style
+--------------
+A variant of Church Encoding using type classes.
+It's extensible, without breaking modularity. You can define FancyShape,
+which extends Shape with more shape types, as
+    (forall a. (ShapeHandlers a, MoreHandlers a) => a)
+Then you use 'instance MoreHandlers Area' to extend area with new shape
+implementations.
+
+In Haskell:
+    {-# LANGUAGE RankNTypes #-}
+
+    class ShapeHandlers r where
+        rect :: Float -> Float -> r
+        circle :: Float -> r
+
+    type Shape = (forall a. ShapeHandlers a => a)
+
+    newtype Area = Area { area :: Float }
+
+    instance ShapeHandlers Area where
+        rect w h = Area (w * h)
+        circle r = Area (pi * r * r)
+
+???
+Curv doesn't have type classes. The methods of a type class are implicitly
+passed a method dictionary argument, using a kind of dynamic scoping.
+However, in Curv, you can pass method dictionaries explicitly, as records.
+
+4. The OO Pattern
+-----------------
+It's the common way to represent sum types in OOP languages. Each shape type
+is an OOP class. Using 'traits', you can add more operations.
+
+5. Composition of Atoms
+-----------------------
+Supports extensibility & also multiple dispatch.

@@ -1,0 +1,41 @@
+Functor, Applicative, Monad (Haskell)
+=====================================
+http://adit.io/posts/2013-04-17-functors,_applicatives,_and_monads_in_pictures.html
+
+These 3 type classes are the idea of applying a function to a value embedded
+within a context. You get different results, depending on the context.
+
+The context is given by a type constructor, like 'Maybe a' or '[a]'.
+
+Functor
+-------
+Functor provides 'fmap', which is the same as 'map', except generalized to
+work on data types other than lists.
+
+fmap (+3) (Just 2) => Just 5
+fmap (+3) Nothing => Nothing
+
+fmap (+3) [1,2,3] => [4,5,6]
+
+fmap f g => f . g  (function composition)
+
+instance Functor Maybe where
+    fmap func (Just val) = Just (func val)
+    fmap func Nothing = Nothing
+
+<$> is an infix alias for `fmap`
+
+Applicative
+-----------
+Extends Functor, adding <*>, which lets you wrap the function in a context.
+This allows for invoking a curried function with multiple arguments.
+
+  (Just(+3)) <*> (Just 2) => Just 5
+  (*) <$> (Just 5) <*> (Just 3) => Just 15
+
+Monad
+-----
+Functors apply a function to a wrapped value.
+Applicatives apply a wrapped function to a wrapped value.
+Monads apply a function that returns a wrapped value to a wrapped value,
+using >>= (bind).

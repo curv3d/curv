@@ -68,6 +68,8 @@ Alternative Ways to Distinguish Keywords
         if (a) then (b) else (c)
     The same applies to function call arguments, which destroys the look
     of curried function calls: we go from 'f x y' to 'f(x)(y)'.
+    But then, maybe we mimic the ReasonML language and define f(x,y)
+    as sugar for f(x)(y).
 
  2. Mixfix keywords are suffixed with ':', inspired by Smalltalk.
         if: a then: b else: c

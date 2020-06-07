@@ -1,0 +1,77 @@
+Parametric Values
+=================
+A constructor function
+    param => expr
+constructs a "parametric value".
+The `expr` denotes a function or record, and the result is a "parametric
+function" or a "parametric record".
+
+A parametric value remembers its constructor argument,
+which is a high level description of the parametric value.
+The => is a data abstraction operator.
+
+    cube = d => box[d,d,d]
+
+When a parametric value is printed, the ctor argument is printed.
+(This is independent of whether the constructor is anonymous or named.)
+How is it printed, preserving the principle of print equivalence?
+Need to print the ctor argument and the ctor. So, like
+    (param => expr)(ctor_arg)
+Or, if the ctor is branded, then as
+    ctor_name(ctor_arg)
+
+There is an API for retrieving the argument, and constructing a clone of
+a parametric value with a modified argument.
+ 1. We can treat all of the parameter names in `param=>expr` as the
+    API. We provide a mechanism to query and update parameter values by name.
+ 2. Or we can consider the argument to be a single value of arbitrary type.
+    Use a record argument if we want the customization API to have named
+    parameters. Possible syntax:
+       parametric_value @ param
+    where `param` is a builtin lens.
+
+How do parametric values compose under function and record composition?
+
+ * Constructor functions compose.
+ * Under function composition `co[f,g]`, the result preserves the parametric
+   interface of `f`, and discards the parametric interface of `g`.
+    * If `f` is a record, all of the non-call fields are preserved???
+      (It's the equivalent of f.call := co[f.call,g].)
+      Is this a good idea?
+ * Consider record composition `merge[r1,r2]`. We can't update existing fields
+   of a parametric record, unless we propagate those changes back into the
+   constructor argument. We can't add new fields (these fields would not be
+   determined by the constructor argument). Instead, we could:
+    * Report an error.
+    * Upcast a parametric record to an ordinary record, then apply the merge.
+
+Updating the fields of a parametric record is problematic: naively, this
+causes the constructor parameter to become out of sync with the record fields.
+(You are supposed to update the constructor argument instead.)
+
+---
+There are APIs for: retrieving the parameter values, and: constructing
+a clone of a parametric value with modified parameter values. Ideas:
+  * the parameter names are top-level fields in the PV.
+      local mycube = cube {d: 10};
+      mycube.d := 5;
+    About name conflicts: I guess that an error is reported if a parameter
+    name conflicts with a field name in the body of the constructor.
+  * Call the PV like a function with a parameter record.
+      local mycube = cube {d: 10};
+      mycube := mycube{d:5}
+    Problem: not general, functions may be parametric values.
+  * Use PV@{a:1,b:2} to customize a PV??
+ 1. Parametric values are a fundamental data type, they aren't just
+    records. There are high level operations for accessing the parameters
+    (a lens?), and for customizing a PV (also a lens op?).
+      local mycube = cube {d: 10};
+      mycube@param.d := 5;
+ 2. The constructor is an Algebra, with a `call` field that constructs
+    new instances, plus a set of lenses, one for each parameter.
+      local mycube = cube {d: 10};
+      mycube@(cube.d) := 5;
+
+Implementation alternatives:
+ * store the constructor function in the parametric value
+ *

@@ -1,0 +1,7 @@
+Just forget conventional syntax, focus on left-to-right data flow and
+equational reasoning.
+
+Perhaps such a design would also work as a nodes+boxes visual dataflow language.
+
+cond THEN x ELSE y
+list EACH [x] body

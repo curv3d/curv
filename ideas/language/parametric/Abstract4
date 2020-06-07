@@ -102,6 +102,9 @@ Branded Field
     are branded fields. The Blending library `lib.blend` is a record that
     prints as `lib.blend`.
 
+    An unbranded record is printed as a comma-separated list of field
+    descriptors, surrounded by braces. Branded fields are prefixed with `@`.
+
 Constructor Function
     When a constructor function F is called with an argument A (F A),
     the resulting value is imprinted with a Call Brand,

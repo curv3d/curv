@@ -1,6 +1,19 @@
+There is a 'bx' community built around the idea of 'bidirectional
+transformations' and lenses. There have been yearly conferences since 2008.
+Should Curv have a large 'bidirectional' subset?
+    https://en.wikipedia.org/wiki/Bidirectional_transformation
+
 It would be interesting if lenses were functions;
 if every tree transformation function that could be a lens, is a lens;
 if every combinator that can work on lenses, does work on lenses.
 
 That way, we'd avoid duplication: having lens and function versions of
 a bunch of abstractions. And we would have a richer supply of lenses.
+
+For example, `reverse` could be a Lens instead of a function.
+    reverse = pick[last..0]
+
+And this may be useful, if I am using lenses for FRP.
+Suppose I am projecting a table view of a data structure, and I want to
+reverse the order of the items in the view. Just apply the `reverse` lens.
+The projected table continues to be editable.

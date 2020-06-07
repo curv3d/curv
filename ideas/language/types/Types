@@ -33,6 +33,26 @@ Curv functions that are compiled into GPU code.
 Separate from this, Curv has Algebras. An Algebra bundles a type together with
 its constructors and operations, in a record value.
 
+Data Types, not Function Types
+------------------------------
+The primary justification for introducing type values is to describe
+efficient data structure representations for the GPU, and to decouple
+values (as mathematical abstractions) from their machine representation.
+I am specifically not interested in describing function types, because
+that leads to Haskell like type systems and dependent type theory.
+A Type is a schema for describing hierarchical *data*.
+
+In order to avoid getting sucked in to the vortex of function typing,
+I should consider some changes to the current Type design:
+ * No `domain` function for querying the domain type of a function.
+   Builtin functions have types that I don't want to describe in Curv.
+ * Keep using predicate functions for declaring parameter types?
+   Eg, 'x :: is Num' replaces 'x :: is_num'.
+   This would eliminate a source of pressure for extending types to describe
+   any function parameter type.
+   Unfortunately, I still need `x :: Num` to describe the representation
+   of a function parameter or local variable in SubCurv.
+
 Goals for MVP
 -------------
 I plan to implement a simplified subset of the Type values proposal (the MVP),
@@ -81,8 +101,9 @@ contained within `T`'s value set and false otherwise.
    introducing a fundamentally new syntax. It's not compatible with the
    simplified syntax proposal including user defined symbolic infix operators.
  * `domain M? x` reads better than `is (domain M) x`.
+   Is there a better word than `domain`? `is (Argument f) x`
  * `is myset x` doesn't read well if types are being used as sets, and you are
-   testing set membership.
+   testing set membership. Depends on naming convention for set values.
 
 A type restriction `as T x` aborts if `is T x` is false, returns `x` otherwise.
 On error, it should provide detailed information about what part of a
@@ -305,6 +326,47 @@ distinctions between `String` and `repr`, `Char` and `ucode`, `Bool` and `bit`.
    Eg, in Swift, Double(1) => 1.0 and String(0) => "0".
 So I'm still good.
 
+Type Constructor Requirements
+-----------------------------
+Semantics:
+ * Replacements for is_num, is_list, etc.
+ * The `domain` function requires that:
+    * For each pattern, there is a corresponding type constructor.
+    * Each builtin function has a domain.
+Performance:
+ * Compact arrays require representation types for desired storage layouts.
+
+Type Constructors (for semantic requirements)
+---------------------------------------------
+predicates
+  is_bool      Bool
+  is_symbol    Symbol
+  is_num       Num
+  is_string    String
+  is_list      List Any
+  is_record    Record {}
+  is_fun       Function, or Function Any
+  is_callable  Callable
+patterns
+  x            Any
+  x::type      type
+  x::pred      If(pred)
+  [x,y]        Tuple[x,y]
+  {x,y}        Struct{x,y}
+  #foo         Unit #foo
+new patterns
+  pat>>func    Intersection[pat, domain func]
+  ==x          Unit x
+  p1&&p2       Intersection[p1,p2]
+  p1||p2       Union[p1,p2]
+builtins
+  error        Error
+  bit          Tree Bool
+  max          List(Tree Num)
+
+Once we add ordered symbols and ordered characters, `max` will be polymorphic
+over scalar types.
+
 MVP Type Constructors
 ---------------------
 Just enough to replace is_num, is_list etc.
@@ -410,6 +472,12 @@ For backwards compatibility, in x::T, the T argument is either a type or
 a predicate. The fact that the type values don't form a lattice will not be
 a problem initially. The partial evaluator can maintain a richer set of types
 than what we initially expose.
+
+domain
+------
+`domain F` converts a function F's parameter pattern to a Type value.
+This requires an algorithm for converting all patterns into types.
+It places requirements on what type constructors must exist.
 
 Colour
 ------

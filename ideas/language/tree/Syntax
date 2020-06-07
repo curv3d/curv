@@ -1,0 +1,97 @@
+Alternative Syntax Ideas
+========================
+Lens Application
+----------------
+The syntax C!L conflicts with the Effects proposal.
+
+One problem with C!L is I can't decide on the precedence.
+  Lower than postfix: include lib.foo!just[#bar,#baz]
+  Same as postfix: C!(some lens).foo -- in Perspectives notes
+    Although that could be rewritten as C!some lens!#foo if ! is low
+    precedence, I forgot about this when I was working on Perspectives.
+    It suggests a weakness in the notation (hard to remember to switch
+    from a.b to a!#b when 'a' is a '!' expression).
+
+So now I'm considering an alternate syntax:
+    collection.(lens)
+Eg,
+    include lib.foo.(just[#bar,#baz])
+    C.(some lens).foo
+    A.([X,Y,Z])  <=>  A[[X,Y,Z]]
+
+Notes:
+ * A.([X,Y,Z]) is not as nice as A![X,Y,Z] due to double brackets.
+   But I could add an abbreviation: A.(X,Y,Z)
+ * The mandatory parens in R.(symbol) echoes the mandatory parens
+   in the proposed {(symbol):elem}
+
+If I take this idea farther, then
+    collection.[a,b,c]
+can be special syntax for
+    collection.(slice[a,b,c])
+and the 'a[i]' array index syntax could be retired, since it is semantically
+weird anyway.
+
+So now, all syntax for indexing into a data structure uses the '.' operator.
+
+Commas
+------
+Standardize the meaning of ',' and ';'.
+  ',' separates items in a collection.
+  ';' separates definitions and statements in: let clause, do clause,
+      compound statement. With ';', no collection is being formed.
+But this still isn't a uniform syntax.
+The top level of a list comprehension is a statement list, using comma.
+Embedded compound statements have the same semantics, but use semicolon.
+The distinction I wanted to make between ',' and ';' doesn't really exist
+in list and record comprehensions.
+
+This suggests that the scoped record syntax is:
+    {x=1, y=2}
+
+Consider list comprehensions:
+
+    curv> let x=1 in [while (x != 0) (x; x:=x-1)]
+    ERROR: x: not assignable from inside an expression
+    1| let x=1 in [while (x != 0) (x; x:=x-1)]
+                                      ^
+    curv> [local x=1, while (x>=0) (x; x:=x-1)]
+    ERROR: a local definition must be followed by '; <statement>'
+    1| [local x=1, while (x!=0) (x; x:=x-1)]
+        ^^^^^^^^^
+
+    curv> [local x=1; while (x>=0) (x;x:=x-1)]
+    [1,0]
+
+This conflicts with my idea.
+
+TODO:
+ * Support commas in scoped record constructors.
+     {x=1, y=2}
+ * Support commas at the top level of a list or record comprehension,
+   even with local defs.
+     [local x=1, while (x>=0) (x; x:=x-1)]
+
+Record/Dictionary Syntax
+------------------------
+module
+    {x=1, y=2, f x = x+1}           -- note commas
+record
+    {#x: 1, #y: 2, #f: x->x+1}
+dictionary
+    {|key1: elem1, key2: elem2|}
+
+Benefits: simpler; no need for => operator.
+No mixing of ':' and '=>' operators in a record.
+(Consider using => for constructors instead.)
+
+Function calls with named arguments:
+    f{x=1,y=2} -- record has its own scope, can't reference 'x'
+    f{#x:x,#y:y} -- record has no scope, can reference 'x'
+The second form is noisier.
+
+If this is a good idea (not sure yet), then an intermediate step is to
+support the following syntax in a field generator:
+    {#foo:x, (symbol_expr):y}
+The old TODO item of supporting general patterns in a field generator is
+abandoned.

@@ -1,0 +1,82 @@
+How this relates to the Lens feature.
+
+To implement lenses efficiently, we need the ability to define ordinary
+functions that take a large data structure as an argument, efficiently
+updates the structure without copying it, then returns the modified copy
+as a result. (Let's call these "linear functions".) So let's assume that
+feature is available.
+
+A procedure can be modelled as a linear function that takes the "environment"
+as an argument, modifies it and returns a new environment. A procedure is just
+an ordinary function. So it needs to be called in a special way to write
+imperative code.
+
+Also, a Lens can be used to construct a Procedure.
+    put lens new_elem_val
+returns a procedure.
+
+Consider the following contexts for procedure calls:
+ * top level of a REPL command
+ * an action in a do clause
+ * an action in a comprehension
+
+We could put the environment into a mutable variable called `env`, whose
+binding changes based on the context, and use the syntax
+    env := P env
+to call a procedure.
+
+Here's a nicer syntax (these are actions):
+    var!P   --  same as var := P var
+    !P      --  same as env!P
+
+If I provide an operator for controlling the binding for 'env' that gets
+passed into a comprehension, then we have the equivalent of monads and do
+expressions in Haskell.
+
+How do the existing "debug" actions fit into this framework?
+    print
+    warning
+    error
+    assert
+These are intended to be pervasive, available everywhere.
+They modify the shared mutable state of the debugger, which is the only
+example of shared mutable state supported by Curv.
+
+A debug action is a procedure that, functionally, is an identity function,
+but which modifies the debug state as a side effect. They are invoked
+using the ! operator:
+    !print "hello world"
+    !assert(x == 0)
+Because they are identity functions, they can be inserted into a pipeline:
+    whatever >> print "hello world" >> dosomething
+
+The unary ! operator is a replacement for the existing `exec` operator.
+The 'identity function with side effects' semantics are closely aligned to
+the actual C++ implementation. This is brilliant, I should just implement this
+immediately, without waiting for the entire effects system.
+
+Procedures
+----------
+* Make it possible to replace any use of `for` with tail recursion.
+* Make it possible to use `match` in any context where `if` is legal.
+  Eg, in a list comprehension.
+
+A partial solution for `match` might look like this:
+    !a >> match[pat1->proc1, pat2->proc2, ...]
+
+The original roadblock was my perception that we must construct 'procedure'
+closures that capture mutable variables from their environment. Which is
+forbidden by design.
+
+But this new perspective provides a way forward. A procedure takes the local
+environment of in-scope mutable variables as a record argument, mutates
+the record and returns the updated environment.
+
+So a procedure literal is something like 'proc(statement_list)'.
+
+Taking this further, a procedure literal is '[| stmt1; stmt2; ... |]'.
+The while statement becomes a combinator.
+    !WHILE condition DO [| statements |]
+
+Taking this further, statements are functions from an environment to an
+environment, and the ';' operator is function composition.

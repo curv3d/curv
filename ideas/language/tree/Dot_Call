@@ -1,0 +1,69 @@
+This is a radical, non-backward-compatible syntax for generalized indexing.
+ * Lens values are functions.
+ * x.f is a function call, and x.lens is a lens 'get' operation.
+ * a[i] is no longer array indexing. Use a.i instead.
+
+Rationale: Suppose we make !, the generalized index operator, the preferred
+indexing syntax, and deprecate the old syntax.
+    R.foo is deprecated, use R!#foo instead.
+    A[i] is deprecated, use A!i instead.
+    A[i,j,k] is deprecated, use A!slice[i,j,k] instead.
+So now the infix `.` operator is no longer used.
+That's an opportunity! Let's give dot a new meaning.
+
+x.f is alt syntax for f x. '.' is the new pipeline operator.
+
+Precedence: x.f y <=> f x y
+* For the shape library, this means shape.move[1,0,0] <=> move shape [1,0,0]
+* So the left arg is inserted as the first function arg,
+  similar to Python method invocation or Clojure pipeline syntax.
+* It works well for autocomplete of x.? since you look for functions that
+  accept an x as their first argument.
+* A bunch of newer languages are allowing f to be a free function in x.f
+  so this syntax has some traction already.
+
+#foo {foo:1} => 1 -- A symbol is a Lens function that extracts a record field.
+Like Clojure, and maybe some other languages where there are first class
+field selector functions.
+
+R.#foo extracts a field from a record.
+Design principle: subphrases should be subexpressions when possible, so that
+the subphrase can be replaced by another expression with an equivalent value.
+
+0 [2,3,4] => 2 -- A nat is a Lens function that extracts a list element.
+
+L.0 is the first element of a list. PROBLEMS:
+ * A numeral must begin/end with a digit. `0.1`, not `.1`, not `1.`.
+   `1.sin` means `sin 1`
+ * L.0.1 means L . 0 . 1
+   If a numeral is preceded by a '.' then it terminates on the first '.'
+   (Context sensitive tokenization, challenging for syntax colouring agents.)
+
+[f,g] x => [f x,g x] -- list of functions is an Atlas (Nial) or a Construction
+Functional in FP. It is a Lens if the elements are Lenses.
+
+vec.[X,Y] swizzles a vector.
+
+x.slice[f1,f2] is the slice operator.
+
+PROBLEM: The slice function is now 'slice collection lens_list'.
+In the Lens design, 'slice lens_list' is a Lens constructor, which is applied
+as a whole to a collection. We need this design to make the Lens design
+composable, so that compound lens are constructed from simpler lenses.
+ * This implies that '.' should have lower precedence than function call,
+   or that we use x.(slice[f1,f2]) for slicing.
+
+The precedence x.f y <=> f x y means we need '.f y' (prefix dot) to project
+a pipeline component, as an argument to map or whatever.
+
+infixing a curried binary function (f x y):
+    x.f y
+projections of a curried binary function:
+    x.f
+    .f y
+
+infixing an uncurried binary function (f[x,y]):
+    x `f` y
+projections of an uncurried binary function:
+    x `f`
+    `f` y

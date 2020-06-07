@@ -133,12 +133,39 @@ sort S
     If S is a set, return a sorted set.
 map F C
     Return a copy of collection C in which each element x is replaced by F x.
+    Like Haskell's fmap (generalized map from Functor).
 filter F C
     Return a copy of collection C from which elements x for which F x is false
     have been removed.
+elem[E,C]
+    True if E is an element of C. Also: E `elem` C (name is from Haskell).
+    Names from other languages:
+        E in C   -- Python
+        C.has(E) -- Javascript sets
+    Other designs:
+        elem E C
+        has E C -- C >> has E, C@(has E)
 
 There are 3 kinds of iteration: over elements, over keys, over key/element pairs
 (items, aka fields or associations or entries).
     for <pattern> in <collection> do <action> -- over elements
     for <pattern> in keys <collection> do <action> -- over keys
     for <pattern> in items <collection> do <action> -- over items
+
+deprecated operations:
+    fields R -- use keys R
+    defined(R.F) -- use elem[#F,keys R]
+
+Critique of Generic Collection Operations
+-----------------------------------------
+Generalizing 'for' to iterate over the elements of a record will have
+weird consequences.
+ * reduce, and reduction operators derived from it, will reduce over the
+   elements of a record.
+ * Code that attempts to transform a list into another list using `for` inside
+   a list comprehension will now transform a record into a list as well.
+I think this will result in a lot of unexpected behaviour.
+
+What is the program algebra that we want for collections? Ad-hoc overloading
+of operations to make them "more general" can easily go wrong, leading to
+atrocities like Javascript, unless we ground the semantics in an algebra.

@@ -1,0 +1,55 @@
+https://www.schoolofhaskell.com/user/tel/a-little-lens-starter-tutorial
+
+The Lens Laws
+ 1. Get-Put: If you modify something by changing its subpart to exactly what
+    it was before... then nothing happens.
+ 2. Put-Get: If you modify something by inserting a particular subpart and then
+    viewing the result... you'll get back exactly that subpart.
+ 3. Put-Put: If you modify something by inserting a particular subpart a,
+    and then modify it again inserting a different subpart b...
+    it's exactly as if you only did the second step.
+
+Haskell Optics are very powerful (just the sort of thing that I want).
+There is a killer example of using Lens, Traversal and Prism to parse a JSON
+text, find all the "version" records, and within these records, increment the
+major version number. Jq can also do this with far less obfuscation.
+
+Optics are also unnecessarily complex and difficult to use (something I
+can fix using simpler syntax and by simplifying the options).
+
+Function level (tacit) programming is part of the solution, but the trick is
+to make it look as close as possible to data level programming. So far my
+models for this are Jq and FL.
+
+Also, people are talking about Idris's bang-notation.
+
+    The bang-notation takes an expression such as:
+
+    [1, 2, !(foo "bar"), 4]
+
+    And automatically translates it to:
+
+    foo "bar" $ \ A -> [1, 2, A, 4]
+
+    In other words, it replaces the expression by the result of its callback,
+    lifting the original one to the closest binder.
+
+This is for generating monadic code, but a nice syntax for lifting expressions
+might work in other contexts for readable function-level programming.
+---------
+
+An Optic is a first class, composable notion of substructure.
+
+What are the possible relations between an outer type S and an inner type A?
+ * isomorphism. A is just a different view of all of S
+ * Lens: generalized field.
+   If S is a product type, A is a single field of S, or a part of S.
+   'view' S -> A gets the field value,
+   'set' A S -> S updates the field within the structure.
+ * Prism: generalized constructor.
+   If S is a sum type, A is a single constructor of S.
+   Projecting S to A may fail.
+ * Traversal: multiple substructures.
+   S may contain the substructure A multiple times.
+   The projection extracts zero or more occurrences: S->[A].
+   'over': The update maps each occurrence to a new value using f:A->A.

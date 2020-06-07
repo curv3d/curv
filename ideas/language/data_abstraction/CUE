@@ -1,0 +1,54 @@
+The CUE configuration language: cuelang.org
+
+CUE has an alternate approach to defining schemas for data structures,
+(enforcing type constraints, providing default field values, etc).
+It is simpler and more constrained than inheritance with nicer properties.
+
+Types are values.
+
+Values (and thus types) are ordered into a lattice.
+Every value is partially ordered in a single hierarchy.
+For any two values V1 V2, there is a unique value V1&V2 that subsumes all
+instances of both values. This is the greatest lower bound, or meet.
+
+V1 | V2 is the join operator.
+
+I interpret types (like bool) as sets of ordinary values.
+I interpret ordinary values (like true, false) as singleton sets.
+Then V1&V2 is set intersection and V1|V2 is set union.
+
+This means you can unambiguously merge two configurations, independent of order.
+
+Booleans
+--------
+'true' and 'false' are instances of 'bool'
+true&bool == true
+true&false == bottom (or error)
+true|false == bool
+
+Numbers
+-------
+Types, aka constraints: number, int, >=0.5, <10
+Ordinary values: 0, 1, 3.1416
+
+More types: string, null, struct, list
+
+'int | string' is a sum type. So is '1 | 2 | 3'.
+
+Partial ordering of structs follows conventional theory.
+    {a:int,b:int} <: {a:int}
+    {a:1} <: {a:int}
+
+A <: B is pronounced A is an instance of B.
+    A and B are related by the partial ordering, A is closer to Bottom.
+    A is a subset of B.
+A :> B is pronounced A subsumes B.
+    A and B are related by the partial ordering, A is closer to Top.
+    A is a superset of B.
+
+struct S2 <: S1 if S2 has at least all the fields of S1 and if its constraints
+on these fields are at least as strict as S1.
+
+Backwards compatibility: A2 :> A1 means A2 is backwards compatible with A1.
+
+Graph Unification of Typed Feature Structures -- basis of CUE.

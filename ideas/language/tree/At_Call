@@ -1,0 +1,38 @@
+A less radical version of Dot_Call, where:
+ * Lens values are functions.
+ * x@f is a function call, and x@lens is a lens 'get' operation.
+   The infix @ operator has postfix precedence.
+   It is a high precedence variant of the >> operator.
+
+The special interpretation of primitive values as lenses now interprets
+them as lens functions.
+
+  #foo {foo:1} => 1
+    A symbol is a Lens function that extracts a record field, like Clojure.
+  0 [2,3] => 2
+    A nat is a Lens function that extracts a list element.
+  [f,g] x => [f x,g x]
+    A list of functions is an Atlas (Nial) or a Construction
+    Functional in FP. It is a Lens if the elements are Lenses.
+
+The old indexing syntax, based on traditional notation, doesn't go away.
+ * a.b  <=>  a@#b
+ * We no longer have a[i,j] array indexing syntax.
+   We introduce a.[i,j] as a replacement: same as a@(slice[i,j]).
+
+For backward compatibility, we could also say that not all lenses are
+functions. [i,j] is a lens but not a function, and @ is overloaded over
+lenses and functions.
+
+x@f y  <=>  f x y
+  This is yet another way to infix a function.
+  Contrast this with:
+    a >> f b    <=>   f b a
+  and with:
+    a `f` b     <=>   f[a,b]
+
+x@f works well for autocomplete of x@? since you look for functions that
+accept x as their first argument.
+
+A bunch of newer languages are allowing f to be a free function in x.f;
+x@f is the Curv analog of this.
