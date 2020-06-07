@@ -5,11 +5,13 @@ What's missing: functions print as function literals.
 
 TODO:
  * Curv expression pretty-printer. Used initially for printing reactive exprs.
+   See CodeFmt issue.
  * Initial 80% solution:
     * Print builtin functions as just their names, as it works today.
     * Print closures as function literals, ignoring the environment, using the
       expression printer. Ignoring the environment is a stopgap measure.
     * Print piecewise functions as 'match' expressions.
+    * Print composite functions as 'compose' expressions (if Function done).
  * Print the environment of a closure using a `let` clause. A large task.
 
 printing nonlocal bindings
@@ -36,11 +38,12 @@ To print a recursive function, print a let clause containing all of the bindings
 in the function's recursion group. The let body is just the name of the
 recursive function.
 
-To summarize, there are initially four cases:
+To summarize, there are initially these cases:
  * builtin functions (eg `std.sin`)
  * non-recursive closure
  * recursive closure
  * piecewise (a `match` expression)
+ * composition (a `compose` expression, once the new `compose` is implemented)
 
 printing builtin functions
 --------------------------

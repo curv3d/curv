@@ -1,0 +1,41 @@
+Symbols are lexicographically ordered. #a < #b is true.
+
+Rationale:
+ * Symbol ordering defines the iteration ordering of a record,
+   the order of keys returned by `fields`, and the order of items when
+   a record is printed.
+ * Symbols are used in the cases where strings are used in other languages,
+   when you assign meaning to specific symbols, and want to compare symbol
+   values. In those other languages, strings are also ordered lexicographically.
+
+A relational operator < <= > >= now accepts two numbers or two symbols.
+(but not mixed types, that is an error)
+
+max and min now accept either a list of symbols or a list of numbers.
+max[#a,#b] => #b
+max[] and min[] are now errors.
+
+sort[#b,#c,#a] => [#a,#b,#c]
+
+Notes
+-----
+What does max[] return? It no longer makes sense, because:
+ * There is a minimum and maximum number.
+ * There is a minimum and maximum character.
+ * There is a minimum symbol, but no maximum symbol.
+ * But we don't know which of the 3 ordered types for max[] to return.
+Options:
+ * max[] is an error.
+ * As in K, max[]==-inf and max only works on numbers, even though `<` etc
+   work on ordered types. Problem: algebra of programs.
+ * We add more structure to the type system/data model:
+    * A statically type language has unityped lists and a separate tuple type.
+    * APL has typed arrays: the scalar type affects semantics of operations.
+    * In the type proposal, I plan to support optionally typed arrays,
+      in the sense that a value can be restricted to a representation type
+      for efficiency reasons. But the value itself doesn't change. The
+      semantics of the value should not change, only the performance.
+   The cost of this extra complexity is disproportionate to
+   the benefit of supporting max[] and min[] (which is minimal).
+   In mathematics, max and min of real numbers do not have identity elements,
+   so it is okay if they don't have identity elements in Curv either.

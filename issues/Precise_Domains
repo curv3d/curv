@@ -1,0 +1,98 @@
+If I take the function abstraction seriously (the careful treatment of
+function domains by `match` and `compose`), then I should give each
+builtin function a precisely defined domain.
+
+That's a lot of work. Here's what happens for `match`:
+
+    struct Match_Function : public Function
+    {
+        using Function::Function;
+        virtual Value call(Value arg, Frame& f) const override
+        {
+            At_Arg ctx0(*this, f);
+            auto list = arg.to<List>(ctx0);
+            std::vector<Shared<Function>> cases;
+            for (size_t i = 0; i < list->size(); ++i)
+                cases.push_back(list->at(i).to<Function>(At_Index(i,ctx0)));
+            auto mf = make<Piecewise_Function>(cases);
+            mf->name_ = name_;
+            mf->argpos_ = 1;
+            return {mf};
+        }
+        virtual Value try_call(Value arg, Frame& f) const override
+        {
+            auto list = arg.maybe<List>();
+            if (list == nullptr) return {};
+            std::vector<Shared<Function>> cases;
+            for (size_t i = 0; i < list->size(); ++i) {
+                auto f = list->at(i).maybe<Function>();
+                if (f == nullptr) return {};
+                cases.push_back(f);
+            }
+            auto mf = make<Piecewise_Function>(cases);
+            mf->name_ = name_;
+            mf->argpos_ = 1;
+            return {mf};
+        }
+    };
+
+Notice the code duplication.
+
+To eliminate it, `call` and `try_call` are unified into a single `call` method
+    Value call(Value arg, Fail fl, Frame& fm)
+where <libcurv/fail.h> defines:
+    enum class Fail { soft, hard };
+    #define FAIL(fl, result, cx, msg) \
+        if (fl==Fail::soft) return result; else throw(cx,msg)
+and the `to(val,cx)` family of type conversion functions are replaced
+by `as(val,fl,cx)` functions. Most uses of `maybe` functions will also be
+replaced, but I might still need the `maybe` functions for special cases
+where I don't want to fail hard or construct a context.
+
+So now,
+    virtual Value call(Value arg, Fail& fl, Frame& fm) const override
+    {
+        At_Arg ctx0(*this, fm);
+        auto list = arg.as<List>(fl, ctx0);
+        if (list == nullptr) return {};
+        std::vector<Shared<Function>> cases;
+        for (size_t i = 0; i < list->size(); ++i) {
+            auto f = as_function(list->at(i), fl, At_Index(i,ctx0));
+            if (f == nullptr) return {};
+            cases.push_back(f);
+        }
+        auto mf = make<Piecewise_Function>(cases);
+        mf->name_ = name_;
+        mf->argpos_ = 1;
+        return {mf};
+    }
+
+Rationale
+---------
+There are two kinds of error that can abnormally terminate a function call:
+a failure, and a fault.
+ * Failure: the function call arguments are not in the domain of the function,
+   and the function call returns with a special indication that the result
+   is not available. The caller doesn't need a detailed error message explaining
+   the error. In C++, we return a special value like nullptr or the missing
+   Value, which carries no information about the error.
+ * Fault: this is indicative of a logic error at some level. The function call
+   aborts with an informative error message (which is expensive to construct).
+   In C++ we throw an exception.
+This same error taxonomy is implemented by the Curv language, and by libcurv.
+
+Sometimes, the caller is written to check for and handle a failure.
+In other case, the caller expects that no failure should occur, so if a
+failure does unexpectedly occur, then it should be converted into a fault.
+
+Fail::soft means: the caller is checking for a failure.
+Fail::hard means: convert the failure into a fault.
+
+The decision about whether a failure is signaled by throwing an exception
+or returning an error value is made at a high level, encoded as a single
+bit Fail flag. The actual job of converting a failure into a fault (which
+requires constructing an expensive fault value) happens at the low level,
+when the failure is first detected, based on the value of the Fail flag.
+The benefit of this design is that we don't incur the cost of constructing
+a fault value if it isn't needed. Fault values are heavy weight: they
+contain a stack trace, plus a dynamically allocated error message.

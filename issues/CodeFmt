@@ -1,0 +1,25 @@
+Requirements:
+ * A 'curv --fix' program that modifies source code to automatically change
+   deprecated syntax to the replacement syntax. Must preserve comments.
+ * A 'curv --fmt' program (like gofmt and rustfmt) that reformats code
+   to use the standard style.
+ * A libcurv API that prints a synthetic Operation tree as valid executable
+   source. Used to print functions and reactive values. See Printable.
+
+All 3 requirements can be satisfied by an API for formatting Operation trees.
+An Operation tree has undergone analysis, which is a requirement for
+recognizing calls to standard functions (which may be deprecated; calls to
+them must be rewritten). The `curvfmt` or `curv --fmt` program will fix
+deprecated syntax as a side effect of reformatting code to canonical form.
+
+More generally, the Operation tree will become the data structure that
+a projectional editor operates on. It preserves all essential source code
+information, but not newlines and indentation from a text file, because
+the projectional editor does automatic layout based on the window width.
+
+What information do I need to preserve?
+ * comments
+ * parentheses
+
+How to proceed? Implement a pretty-printer for Operation trees, expose
+it as `curv --fmt`, then fix bugs until the output looks the way I want.

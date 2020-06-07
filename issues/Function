@@ -1,15 +1,69 @@
 TODO:
- * `id` is the identity function. It never fails.
+ - `id` is the identity function. It never fails.
    (When 'Lens' is implemented, `id` is extended to be the identity Lens.)
- * `identity` is renamed to `idmatrix`.
- * `error` is a function value when used in an expression context.
+ - `identity` is renamed to `idmatrix`.
+ - `error` is a function value when used in an expression context.
    It always fails.
- * `compose` is reimplemented as a primitive function, so that it satisfies
+ + `compose` is reimplemented as a primitive function, so that it satisfies
    the following requirements.
- * consider if `co` should be an abbreviated form of `compose`.
- * When 'Printable' is implemented, function compositions print
-   as `compose` expressions.
+ + consider if `co` should be an abbreviated form of `compose`.
+ + Function compositions print as `compose` expressions (part of Printable).
+ + Replace 'is_fun' with is_func and is_primitive_func.
+   Previous naming ideas:
+        is_callable and is_function
+        is_mapping  and is_function
+   Note that
+    * is_func is true for either a primitive function, or for a
+      record containing a call field that satisfies is_func.
+    * is_primitive_func x = is_func x && not(is_record x)
+    * is_func is the definition Curv uses for function values in all primitives
+      that operate on functions, such as function call, match and compose.
+    * We want to ensure that a primitive function can be replaced by a record
+      containing a call field, without breaking existing code. This is basically
+      the same thing as adding metadata fields to a function value: adding
+      metadata fields shouldn't break existing clients.
+    * For this reason, is_primitive_func should be almost never used.
+      That's why the name is much longer: to discourage typing it when you
+      don't actually mean to use it.
+      It's only useful if you need a disjoint classification of all values.
+    * The juxtaposition operator is overloaded for function call and array
+      indexing. Lists are not functions, even though L[i] uses the juxtaposition
+      operator.
+    * There is a proposal to introduce Python-like dictionary values
+      that are classified as functions, hence the proposed name is_mapping.
+      But that means changing all the documents to use the word Mapping in
+      place of the word Function, so Mapping Composition instead of Function
+      Composition, etc. I dunno man.
+ + Change the function call mechanism so that only juxtaposition is overloaded
+   to perform array indexing, not >> or <<.
 
+Problem
+-------
+I'm stuck, pending a large refactor of the SC compiler.
+
+I need to implement sc_call_expr or gyroid.curv won't compile.
+This seems to require
+    SC_Value Function::sc_call(SC_Value, SC_Frame&)
+But I don't have that; instead I have
+    SC_Value Function::sc_call_expr(Operation&, Phrase&, SC_Frame&)
+I don't have a method to construct an Operation from an SC_Value.
+
+The sc_call_expr() interface is currently required because a function
+argument might be a tuple. I can't represent a tuple using an SC_Value.
+So instead I check if an Operation is a List_Expr.
+
+I could implement a tuple type for SC_Value.
+ * It could be represented using GLSL 'struct' values.
+   This does imply packing argument tuples into a struct when a function
+   is to be called, something I currently avoid.
+ * I could also represent a tuple as a collection of SC_Values.
+   This is used as is when the tuple is used to provide the argument to
+   a function call. In other contexts, it may be promoted to a struct value.
+   (That's not consistent with the current SC_Value representation.)
+ * What approach is forward compatible with the New_Core design?
+
+Semantics
+---------
 x >> compose[f,g,h] means x>>f>>g>>h
  * The function returned by compose reports a pattern match failure if any
    of the constituent functions reports a pattern match failure.

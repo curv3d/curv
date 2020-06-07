@@ -1,0 +1,26 @@
+Add a new primitive function `not`.
+This is consistent with the existing `and` and `or` functions.
+
+Deprecate the `!` operator.
+ * I want to use that syntax for something else (the imperative API).
+ * Stylistically, I may want to avoid the use of symbolic prefix operators
+   when an ordinary named function would work. Because you can use them
+   directly as function values (eg, argument to `map`).
+   Prefix `-` for negate is the one case I can't avoid, it is too engrained
+   in tradition.
+
+In the documentation, I'll introduce
+    not, and, or, xor
+as the fundamental boolean functions (which are vectorized), then I'll introduce
+    x && y, x || y
+as special 'short circuit' operators (which are not vectorized).
+
+Deprecate `!=` in favour of `/=`, which is an ASCII version of `≠`? Hmm.
+ * Python 3 uses `!=`. Python 2 supported both `!=` and `<>`.
+   This is the case, *even though* Python uses `not` instead of `!`
+   as the not operator. (Python also uses infix `and` and `or`.)
+ * /= is potentially confusing because it means "divide and assign" in most
+   imperative languages.
+ * Pyret apparently does not support a not-equals operator.
+ * Maybe I should treat the != syntax as too engrained in tradition to change.
+   Document a!=b as an abbreviation of not(a==b).

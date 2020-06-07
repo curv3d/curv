@@ -5,22 +5,121 @@ Array slice assignment `a[i,j] := x` works in all cases.
 
 Reactive values are not supported in this work item. Do that later.
 
-Implementation
---------------
+This will now be implemented using the Lens framework.
+
 How to construct a reactive vec2 from a reactive num (unit testing):
   let v=if (time==time) [time,time] else [0,0] in v
+
+SubCurv
+-------
+Impose GLSL restrictions in SubCurv. Assignment to an array element is legal
+if:
+ * all of the indices are integers (compile-time or run-time)
+ * the array is a vector, the index is a constant vector of indices with
+   no duplicates
+
+More complex indexing could be supported, as long as it statically compiles
+into efficient code with no run-time interpretation.
+
+How about: Slicing and composition of scalar and vector indices.
+Run time scalars and compile time vectors with no duplicates.
+
+Interpreter
+-----------
+In theory, the following should work:
+  mat = [[1,2,3],[4,5,6],[7,8,9]];
+  mat[[0,2],[0,2]] => [[1,3],[7,9]] -- the outer corners of mat
+  mat[[0,2],[0,2]][1,1] := 17
+  mat => [[1,2,3],[4,5,6],[7,8,17]]
+
+How is this implemented?
+
+In my original idea for implementing multi-D slice updates, I wrote an algorithm
+that generates a stream of slice locations, updating each as they are generated.
+Here, though, we are composing another index onto a slice. Now we need to do
+random-access indexing into that location stream. Some locations are ignored.
+
+ * In principle, it is possible for the query language (legal index chains)
+   to be richer than the update language.
+ * Start with index values I know how to implement?
+
+Implementation
+--------------
 
 Analyse a postfix phrase as a Locative, regardless of context?
 That will require a lot of refactoring. Not worthwhile.
 As today, only analyse a phrase as a Locative on the left side of ':='.
 
-old:
+Translate an array slice assignment into a Haskell optic expression.
+The contents of the variable are std::moved into the optic call argument.
+The optic logic performs COW and mutation on the array arg. The result
+is std::moved back into the variable. This optic API can later be exposed.
+ * The Locative objects cannot have Haskell types. The locative 'a i' has many
+   possible Haskell types depending on the dynamic type of 'a' and 'i'.
+ * However, it's possible to convert a Locative at run time into an
+   optic tree data structure, then interpret the data structure.
+
+The existing Locative meaning types are just an AST:
   void Assignment_Action::exec(Frame& f, Executor&) const
     { locative_->store(f, *expr_); }
   Locative -- it's an AST with the arrows pointing down toward the leaves
   Local_Locative    // local variable
   Dot_Locative      // x.s
   Indexed_Locative  // x i
+
+Consider a composite locative a[i].b[j]. To interpret this efficiently on
+the left side of an assignment (with copy minimization), we need to:
+ * start at the leaf node 'a',
+ * recurse out to the top level (each stack frame steals the object from
+   its left side and computes its index)
+ * then return back to the leaf (each stack frame receives its new value from
+   the next lens in the composition, updates its stolen object using COW,
+   then returns the updated object to the caller)
+
+We can compile this into a representation that supports this more efficiently.
+  Indexed_Update(list_loc, index, newval)
+  Dot_Update(rec_loc, symbol, newval)
+
+Dot_Update(symbol_, rhs_)
+Dot_Update::update(record_object)
+  do COW on record_object
+  evaluate symbol_
+  newval = rhs_.update(move(field of record_object))
+  move newval to field of record_object
+  return record_object
+
+'a i .b := c' compiles into
+  Update(a,
+    Indexed_Update(i,
+      Dot_Update(#b,
+        New_Value(c))))
+
+Maybe. How does this compare to the `update` operator I was considering?
+Does update nest or distribute over lens composition?
+  Lens.update (Lens.compose[lens1,lens2]) newval struct
+  Lens.update (Lens.compose[i,#b]) c a
+
+Dot_Index(sym)
+Dot_Index::update(record_object, newval)
+  do COW on record_object
+  evaluate symbol
+  newval = rhs.update(move(field of record_object))
+  move newval to field of record_object
+  return record_object
+
+
+-------------------------------------------------
+To interpret a composition 
+At this level, a Locative is a composition of lenses (not a cross product).
+Maybe we can interpret a Locative tree directly.
+  Value Locative::steal() -- Set value to whatever, return old value without
+                             increasing its reference count.
+  void Locative::store(Value) -- Use move semantics.
+So:
+  Local_Locative steal() and store() -- obvious
+  Dot_Locative::steal()
+
+old:
 new:
   Need a path that can be traversed from the leaf out to the top level and
   contains the index values. The old Locative AST is backwards.
