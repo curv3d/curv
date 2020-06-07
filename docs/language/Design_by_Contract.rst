@@ -93,7 +93,7 @@ of the primitive types, otherwise ``#false``::
   of a number. The contract requires the argument to be a number::
 
     incr n =
-      if (!is_num n)
+      if (not(is_num n))
         error "incr: argument is not a number"
       else
         n + 1;
