@@ -54,23 +54,23 @@ and CSG operations are functions that map shapes onto shapes.
 
 Code for the twisted, coloured torus::
 
-  torus (2,1)
-    >> texture (i_radial 1, sRGB.hue)
+  torus [2,1]
+    >> texture [i_radial 1, sRGB.hue]
     >> rotate {angle: tau/4, axis:Y_axis}
     >> twist (tau/3) >> lipschitz 2.2
 
 Code for the model "Shrek's Donut"::
 
   smooth .1 .intersection (
-    torus (tau*4, tau*2),
+    torus [tau*4, tau*2],
     gyroid >> shell .2 >> lipschitz 2 >> bend (tau*12),
-  ) >> colour (sRGB.HSV (1/3, 1, .5))
+  ) >> colour (sRGB.HSV [1/3, 1, .5])
 
 Function Representation
 =======================
 Internally, Curv represents geometric shapes using Function Representation (F-Rep).
 
-In this representation, a shape contains functions that map every point (x,y,z) in 3D space onto the shape's properties, which may include spatial extent, colour, material.
+In this representation, a shape contains functions that map every point [x,y,z] in 3D space onto the shape's properties, which may include spatial extent, colour, material.
 
 F-Rep is the most expressive geometric representation.
 Instead of approximating a shape using many copies of a single geometric primitive (like polygons, spline curves, or pixels),
@@ -85,7 +85,7 @@ Using this API, the entire CSG geometry API is defined using Curv code.
 A ``circle`` primitive can be defined like this::
 
   circle r = make_shape {
-    dist(x,y,z,t) = sqrt(x^2 + y^2) - r,
+    dist[x,y,z,t] = sqrt(x^2 + y^2) - r,
     bbox = [[-r,-r,0], [r,r,0]],  // axis aligned bounding box
     is_2d = true,
   }
@@ -384,7 +384,7 @@ and now we have a proper Euclidean SDF.
 A Curv circle implementation::
 
   circle r = make_shape {
-    dist(x,y,z,t) = sqrt(x^2 - y^2) - r,
+    dist[x,y,z,t] = sqrt(x^2 - y^2) - r,
     ...
   }
 
@@ -403,8 +403,8 @@ to approximate SDFs.
 
 The union of two shapes is the minimum of their distance fields::
 
-  union(s1,s2) = make_shape {
-    dist p = min(s1.dist p, s2.dist p),
+  union[s1,s2] = make_shape {
+    dist p = min[s1.dist p, s2.dist p],
     ...
   }
 
@@ -431,7 +431,7 @@ We begin with an infinite half-plane, parallel to the Y axis,
 which extends along the X axis from -infinity to +r:
 
 +-----------------------+-------------+
-| ``dist(x,y) = x - r`` |  |square1|  |
+| ``dist[x,y] = x - r`` |  |square1|  |
 +-----------------------+-------------+
 
 .. |square1| image:: images/square1.png
@@ -442,7 +442,7 @@ The result is an infinite ribbon that runs along the Y axis,
 bounded on the X axis between -r and +r:
 
 +----------------------------+-------------+
-| ``dist(x,y) = abs(x) - r`` |  |square2|  |
+| ``dist[x,y] = abs(x) - r`` |  |square2|  |
 +----------------------------+-------------+
 
 .. |square2| image:: images/square2.png
@@ -450,7 +450,7 @@ bounded on the X axis between -r and +r:
 Now we will construct a similar ribbon that runs along the X axis:
 
 +-----------------------------+-------------+
-| ``dist2(x,y) = abs(y) - r`` |  |square3|  |
+| ``dist2[x,y] = abs(y) - r`` |  |square3|  |
 +-----------------------------+-------------+
 
 .. |square3| image:: images/square3.png
@@ -458,7 +458,7 @@ Now we will construct a similar ribbon that runs along the X axis:
 Now we intersect these two ribbons, using the ``max`` operator:
 
 +---------------------------------------------+-------------+
-| ``dist(x,y) = max(abs(x) - r, abs(y) - r)`` |  |square4|  |
+| ``dist[x,y] = max[abs(x) - r, abs(y) - r]`` |  |square4|  |
 +---------------------------------------------+-------------+
 
 .. |square4| image:: images/square4.png
@@ -467,12 +467,12 @@ Curv is an array language, in which all arithmetic operations are generalized
 to work on arrays. This is important for GPU compilation, since vectorized operations
 run faster. So we will "vectorize" the above equation::
 
-  dist(x,y) = max(abs(x,y) - r)
+  dist[x,y] = max(abs[x,y] - r)
 
 Here's a ``square`` operator that constructs a square of size ``d``::
 
   square d = make_shape {
-    dist(x,y,z,t) = max(abs(x,y) - d/2),
+    dist[x,y,z,t] = max(abs[x,y] - d/2),
     ...
   }
 
@@ -484,8 +484,8 @@ coordinate system in which it is embedded. The affine transformations are the mo
 
 Translation::
 
-  translate (dx,dy,dz) S = make_shape {
-    dist(x,y,z,t) = S.dist(x-dx,y-dy,z-dz,t),
+  translate [dx,dy,dz] S = make_shape {
+    dist[x,y,z,t] = S.dist[x-dx,y-dy,z-dz,t],
     ...
   }
 
@@ -499,14 +499,14 @@ the resulting distance field will be messed up, and needs to be fixed.
 For isotropic scaling, fixing the distance field is easy::
 
   isoscale k S = make_shape {
-    dist(x,y,z,t) = S.dist(x/k, y/k, z/k, t) * k,
+    dist[x,y,z,t] = S.dist[x/k, y/k, z/k, t] * k,
     ...
   }
 
 For anisotropic scaling, fixing the distance field requires an approximation::
 
-  scale(kx, ky, kz) S = make_shape {
-    dist(x,y,z,t) = S.dist(x/kx, y/ky, z/kz, t) * min(kx, ky, kz),
+  scale[kx, ky, kz] S = make_shape {
+    dist[x,y,z,t] = S.dist[x/kx, y/ky, z/kz, t] * min[kx, ky, kz],
     ...
   }
 
@@ -538,7 +538,7 @@ The most basic ones are:
 
 Here's an example of translational repetition::
 
-  sphere 1 >> repeat_xy (1,1)
+  sphere 1 >> repeat_xy [1,1]
 
 .. image:: images/sphere_repeat.png
 
@@ -548,9 +548,9 @@ to map coordinates in each cell onto the cell that is centered at the origin.
 This has been called "space folding"::
 
   repeat_xy r shape = make_shape {
-    dist(x,y,z,t) : shape.dist(
-                mod(x + r[X], 2*r[X]) - r[X],
-                mod(y + r[Y], 2*r[Y]) - r[Y],
+    dist[x,y,z,t] : shape.dist(
+                mod[x + r[X], 2*r[X]] - r[X],
+                mod[y + r[Y], 2*r[Y]] - r[Y],
                 z, t),
     ...
   }
@@ -633,7 +633,7 @@ Here are two circles, combined using different blending factors:
 
 One application is filleting::
 
-  smooth .3 .union (cube 1, cylinder(.5,2))
+  smooth .3 .union [cube 1, cylinder[.5,2]]
 
 .. image:: images/fillet.png
 

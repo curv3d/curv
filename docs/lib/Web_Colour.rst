@@ -8,6 +8,6 @@ For example,
 
 There is also an `rgb` function that follows the CSS standard.
 It constructs a colour from a triple of RGB intensities, each a number between 0 and 255.
-For example, ``lib.web_colour.magenta`` is the same as ``lib.web_colour.rgb(255,0,255)``.
+For example, ``lib.web_colour.magenta`` is the same as ``lib.web_colour.rgb[255,0,255]``.
 
 For more information about colour values, see `<../shapes/Colour.rst>`_.

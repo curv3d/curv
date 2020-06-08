@@ -41,9 +41,9 @@ take a list of 2 shapes as an argument.
 
 For example, the ``smooth r`` blending kernel comprises:
 
-* ``smooth r .union (shape1, shape2)``
-* ``smooth r .intersection (shape1, shape2)``
-* ``smooth r .difference (shape1, shape2)``
+* ``smooth r .union [shape1, shape2]``
+* ``smooth r .intersection [shape1, shape2]``
+* ``smooth r .difference [shape1, shape2]``
 
 ``smooth r``
   This blend creates a 1/4 circle fillet (if the two shapes meet at
@@ -57,7 +57,7 @@ For example, the ``smooth r`` blending kernel comprises:
 
   |uChamfer| |iChamfer|
 
-``stairs (r, n)``
+``stairs [r, n]``
   Staircase effect. ``r`` is related to the size of the blending band.
   ``n`` is the number of steps:
   the number of stairsteps added to a union,
@@ -70,7 +70,7 @@ For example, the ``smooth r`` blending kernel comprises:
 
   |uStairs| |iStairs|
 
-``columns (r, n)``
+``columns [r, n]``
   Scalloped effect.
   ``r`` is somehow related to the size of the blending band.
   ``n`` is somehow related to the number of columns.
@@ -82,7 +82,7 @@ For example, the ``smooth r`` blending kernel comprises:
 
 Non-Boolean Blends
 ------------------
-``pipe d (s1, s2)``
+``pipe d [s1, s2]``
   Produces a cylindical pipe of diameter ``d``
   that runs along the intersection of shapes ``s1`` and ``s2``.
   
@@ -90,19 +90,19 @@ Non-Boolean Blends
 
   |Pipe|
 
-``engrave r (s1, s2)``
+``engrave r [s1, s2]``
   Shape ``s1`` gets a V-shaped engraving where it intersects shape ``s2``.
   The V-shaped trench has depth ``r`` and width ``2*r``.
 
   |Engrave|
 
-``groove (ra, rb) (s1, s2)``
+``groove [ra, rb] [s1, s2]``
   Shape ``s1`` gets a carpenter-style groove cut out where it intersects shape ``s2``.
   The groove has depth ``ra`` and width ``2*rb``.
 
   |Groove|
 
-``tongue (ra, rb) (s1, s2)``
+``tongue [ra, rb] [s1, s2]``
   Shape ``s1`` gets a carpenter-style tongue attached where it intersects shape ``s2``.
   The tongue has height ``ra`` and width ``2*rb``.
   
