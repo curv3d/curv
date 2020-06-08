@@ -154,7 +154,7 @@ assert(
     is_bool false && is_num 42 && is_string "" && is_list ()
     && is_record{a:1} && is_record{a=1} && is_record(cube 1)
     && not(is_record[])
-    && is_fun(x->x) && is_shape(cube 1)
+    && is_func(x->x) && is_shape(cube 1)
 );
 
 assert(
@@ -340,7 +340,7 @@ in
 
 let s = slider(1,10);
 in (
-    // assert(is_fun s); // TODO: is_fun doesn't work on picker predicates
+    assert(is_func s);
     assert(s 10);
     assert(not(s true));
 );

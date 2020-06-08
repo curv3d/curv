@@ -146,12 +146,20 @@ struct Is_Record_Function : public Function
         return {arg.maybe<Record>() != nullptr};
     }
 };
-struct Is_Fun_Function : public Function
+struct Is_Primitive_Func_Function : public Function
 {
     using Function::Function;
     Value call(Value arg, Frame&) const override
     {
         return {arg.maybe<Function>() != nullptr};
+    }
+};
+struct Is_Func_Function : public Function
+{
+    using Function::Function;
+    Value call(Value arg, Frame& fr) const override
+    {
+        return {maybe_function(arg, At_Arg(*this, fr)) != nullptr};
     }
 };
 
@@ -1335,7 +1343,8 @@ builtin_namespace()
     FUNCTION("is_string", Is_String_Function),
     FUNCTION("is_list", Is_List_Function),
     FUNCTION("is_record", Is_Record_Function),
-    FUNCTION("is_fun", Is_Fun_Function),
+    FUNCTION("is_primitive_func", Is_Primitive_Func_Function),
+    FUNCTION("is_func", Is_Func_Function),
     FUNCTION("bit", Bit_Function),
     FUNCTION("sqrt", Sqrt_Function),
     FUNCTION("log", Log_Function),

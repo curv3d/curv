@@ -59,7 +59,7 @@ Definition Syntax
   
   ::
   
-  (x,y) = normalize p
+  [x,y] = normalize p
   
   evaluates ``normalize p``, which is required to yield a 2-element list.
   The first and second elements of this list are bound to ``x`` and ``y``.
@@ -74,12 +74,12 @@ Definition Syntax
   
   ::
   
-    plus(x,y) = x + y
+    plus[x,y] = x + y
   
   defines a function ``plus`` whose argument is a 2-element list.
   This is an abbreviation of::
   
-    plus = (x,y) -> x + y
+    plus = [x,y] -> x + y
   
   See: `Functions`_.
 

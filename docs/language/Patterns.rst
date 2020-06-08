@@ -23,7 +23,7 @@ can be replaced by any function that returns true or false.
 We can use patterns to decompose lists or records into their component values.
 For example::
 
-   (x,y,z) = some_expression_returning_a_3_list;
+   [x,y,z] = some_expression_returning_a_3_list;
 
 In a function definition like::
 
@@ -37,11 +37,11 @@ Function definitions can use list or record patterns.
 Here is a function whose first argument is a list.
 The list is decomposed into 3 elements using a list pattern::
 
-    f (shape, angle, point) = ...;
+    f [shape, angle, point] = ...;
 
 List and record patterns can be nested, so you can also write::
 
-    f (shape, angle, [x,y,z]) = ...;
+    f [shape, angle, [x,y,z]] = ...;
 
 If a function argument consists of a list of unrelated values of different
 types, it's better to use named arguments than positional arguments.
@@ -77,10 +77,8 @@ Pattern Syntax
   The first element of the list value is matched against *pattern1*, and so on.
   The element patterns are separated or terminated by commas or semicolons.
 
-``(`` *pattern1* ``,`` ... ``)``
-  A list pattern, similar to the ``[`` ... ``]`` case.
-  A parenthesized list pattern is either empty ``()``
-  or it contains at least one comma.
+  List patterns can also be written using parentheses,
+  but that syntax is deprecated.
 
 ``{`` *field_pattern1* ``,`` ... ``}``
   A record pattern contains a list of field patterns::

@@ -18,17 +18,17 @@ maybe_function(Value funv, const Context& cx)
     static Symbol_Ref callkey = make_symbol("call");
     static Symbol_Ref conskey = make_symbol("constructor");
     for (;;) {
-        auto func = funv.maybe<const Function>();
-        if (func)
+        if (auto func = funv.maybe<const Function>())
             return func;
-        auto rec = funv.maybe<const Record>();
-        if (rec->hasfield(callkey)) {
-            funv = rec->getfield(callkey, cx);
-            continue;
-        }
-        if (rec->hasfield(conskey)) {
-            funv = rec->getfield(conskey, cx);
-            continue;
+        if (auto rec = funv.maybe<const Record>()) {
+            if (rec->hasfield(callkey)) {
+                funv = rec->getfield(callkey, cx);
+                continue;
+            }
+            if (rec->hasfield(conskey)) {
+                funv = rec->getfield(conskey, cx);
+                continue;
+            }
         }
         return nullptr;
     }
