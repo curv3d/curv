@@ -133,7 +133,7 @@ with a standard set of fields.
 
 Curv is an *array language*: scalar arithmetic operations are generalized
 to work on vectors, matrices, and higher dimensional arrays. A vector is
-represented as a list of numbers: the syntax is ``(x,y,z)`` or ``[x,y,z]``.
+represented as a list of numbers: the syntax is ``[x,y,z]``.
 A matrix is a list of vectors.
 
 Curv is a *pure functional language*. This means that functions are values,
@@ -146,7 +146,7 @@ to the argument ``x``. There are 3 ways to pass more than one argument
 to a function:
 
 Argument lists:
-  ``f(x,y)`` can be thought of in two ways: as passing a single argument
+  ``f[x,y]`` can be thought of in two ways: as passing a single argument
   (a 2-list) to the function ``f``, or as passing 2 arguments.
 Argument records:
   ``rotate{angle: a, axis: v}`` is a function call where the argument is a
@@ -163,7 +163,7 @@ with data passing from left to right. When combined with curried functions,
 this syntax is used for chaining together geometry operations without
 nested parentheses. For example::
 
-  sphere 1 >> colour red >> move(10,0,0)
+  sphere 1 >> colour red >> move[10,0,0]
 
 A *let block* allows locally scoped definitions to be included in an expression::
 
