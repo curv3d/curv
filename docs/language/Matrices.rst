@@ -1,6 +1,6 @@
 Matrices
 --------
-``identity n``
+``idmatrix n``
   An ``n`` × ``n`` identity matrix.
 
 ``transpose a``
