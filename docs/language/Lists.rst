@@ -4,11 +4,12 @@ A list is a finite, ordered sequence of values.
 For example, ``[1,2,3]`` is a list of 3 numbers.
 
 List Constructors
-  A list constructor is a comma-separated list of expressions or value generators,
-  inside square brackets or parentheses.
-  If parentheses are used, either the list is empty ``()`` or contains
-  at least one comma. The final expression or value generator may be followed
-  by an optional comma.
+  A list constructor is a comma-separated list of expressions or value
+  generators, inside square brackets or parentheses.
+
+      The parenthesis notation is deprecated. if used, either the list is
+      empty ``()`` or contains at least one comma. The final expression or
+      value generator may be followed by an optional comma.
   
   For example::
   
@@ -73,7 +74,7 @@ List Slicing
 ``concat aa``
   This is the list concatenation operator.
   ``aa`` is a list of lists. The component lists are catenated.
-  For example, ``concat([1,2],[3,4])`` is ``[1,2,3,4]``.
+  For example, ``concat[[1,2],[3,4]]`` is ``[1,2,3,4]``.
   ``concat[]`` is ``[]``, because ``[]`` is the
   identity element for the concatenation operation.
 
@@ -88,15 +89,15 @@ List Slicing
   The list of those elements of ``a`` that satisfy the predicate ``p``.
   Equivalent to ``[for (x in a) if (p x) x]``.
 
-``reduce (zero, f) a``
+``reduce [zero, f] a``
   Using binary function ``f``,
   iteratively combine all of the elements of list ``a`` into a single value,
   recursing on the left.
   For a 4 element list ``[a,b,c,d]``, this will compute::
 
-    f(f(f(a,b),c),d)
+    f[f[f[a,b],c],d]
 
   If the list has zero length, the result is ``zero``.
 
-``contains (list, x)``
+``contains [list, x]``
   A predicate, returns ``#true`` if ``x`` is an element of ``list``.

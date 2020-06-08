@@ -56,7 +56,7 @@ Simple Debug Actions
   If it is false, then an assertion failure error message is produced,
   followed by a stack trace, and the program is terminated.
 
-``assert_error(error_message_string, expression)``
+``assert_error[error_message_string, expression]``
   Evaluate the expression argument.
   Assert that the expression evaluation terminates with an error,
   and that the resulting error message is equal to ``error_message_string``.

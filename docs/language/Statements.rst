@@ -71,7 +71,7 @@ Here is a Haskell list comprehension that yields ``[4,16,36,64,100]``
 
 In Curv, this is written using statement syntax::
 
-  [for (x in 1..10) let n = x*x in if (mod(n, 2) == 0) n]
+  [for (x in 1..10) let n = x*x in if (mod[n, 2] == 0) n]
 
 Statements are similarly used in record and string comprehensions.
 

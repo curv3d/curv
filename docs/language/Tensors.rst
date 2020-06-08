@@ -66,7 +66,7 @@ These two rules are applied recursively in the case of nested lists.
 
 N-ary operations like ``max``, which operate on a uniform list of arguments,
 are treated as nested applications of a binary operator.
-For example, ``max[a,b,c,d]`` is treated as ``max(max(max(a,b),c),d)``.
+For example, ``max[a,b,c,d]`` is treated as ``max[max[max[a,b],c],d]``.
 
 Tensorized numeric operations obey almost all of the same algebraic laws
 as their scalar versions. For example, tensorized multiplication is
@@ -83,7 +83,7 @@ For standard matrix multiplication, use ``dot``, the tensor dot product.
 Other Tensor Operations
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-``dot(A,B)``
+``dot[A,B]``
   The tensor dot product ``A⋅B`` is a generalization of vector dot product
   and matrix multiplication.
 
@@ -97,23 +97,23 @@ Other Tensor Operations
 
   If V is a vector and M is a matrix, then:
   
-  * ``dot(V1, V2)`` is the dot product of two vectors.
+  * ``dot[V1, V2]`` is the dot product of two vectors.
     Same as ``sum(V1 * V2)``, or ``V1*V2`` in OpenSCAD.
-  * ``dot(V, M)`` is the product of a vector and a matrix.
+  * ``dot[V, M]`` is the product of a vector and a matrix.
     It's like matrix multiply, treating V as a column vector,
     but the result is a vector.
     Same as ``sum(V * M)``, or ``V*M`` in OpenSCAD.
-  * ``dot(M, V)`` is the product of a vector and a matrix.
+  * ``dot[M, V]`` is the product of a vector and a matrix.
     It's like matrix multiply, treating V as a row vector,
     but the result is a vector.
     Same as ``sum(transpose M * V)``, or ``M*V`` in OpenSCAD.
-  * ``dot(M1, M2)`` is standard matrix multiplication (``M1*M2`` in OpenSCAD).
+  * ``dot[M1, M2]`` is standard matrix multiplication (``M1*M2`` in OpenSCAD).
 
   This operation is equivalent to the ``Dot`` function in Mathematica,
   or to the following Curv definition::
   
-    dot(a,b) =
+    dot[a,b] =
       if (count a > 0 && is_list(a[0]))
-        [for (row in a) dot(row,b)]  // matrix*...
+        [for (row in a) dot[row,b]]  // matrix*...
       else
         sum(a*b)                     // vector*...

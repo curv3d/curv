@@ -8,7 +8,7 @@ The following program declares a shape parameter that is bound
 to a graphical slider widget::
 
     parametric
-        Size :: slider(1,5) = 3;
+        Size :: slider[1,5] = 3;
     in
     cube Size
 
@@ -49,9 +49,9 @@ Here are the currently supported picker expressions:
 * ``colour_picker`` -- An RGB colour value. The widget allows you to edit RGB
   or HSV colour components directly, or use a colour wheel to select colours
   visually.
-* ``slider(low,high)`` -- The parameter is a number in a continuous range
+* ``slider[low,high]`` -- The parameter is a number in a continuous range
   between ``low`` and ``high``. A linear slider widget is used to set the number.
-* ``int_slider(low,high)`` -- The parameter is an integer between ``low`` and
+* ``int_slider[low,high]`` -- The parameter is an integer between ``low`` and
   ``high``. A linear slider widget is used to set the integer.
 * ``scale_picker`` -- The parameter is a *scale factor*: a number > 0
   and < infinity. The widget lets you increase or decrease the value by dragging

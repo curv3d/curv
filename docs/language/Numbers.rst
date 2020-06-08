@@ -44,7 +44,7 @@ The arithmetic operators:
 
 ``frac n``
   The fractional part of *n*.
-  Equivalent to ``n - floor n``, or to ``mod(n,1)``.
+  Equivalent to ``n - floor n``, or to ``mod[n,1]``.
   The function ``y=frac x`` is a sawtooth wave.
 
 ``max list``
@@ -66,13 +66,13 @@ The arithmetic operators:
 ``sort list``
   Sort a list of numbers into ascending order.
 
-``mod(a,m)``
+``mod[a,m]``
   The remainder after dividing ``a`` by ``m``,
   where the result has the same sign as ``m``.
   Equivalent to ``a - m * floor(a/m)``.
   Aborts if ``m==0``.
 
-``rem(a,m)``
+``rem[a,m]``
   The remainder after dividing ``a`` by ``m``,
   where the result has the same sign as ``a``.
   Equivalent to ``a - m * trunc(a/m)``.
@@ -90,17 +90,17 @@ The arithmetic operators:
 ``log n``
   Natural logarithm (to the base *e*) of *n*.
 
-``clamp(n,lo,hi)``
+``clamp[n,lo,hi]``
   Constrain ``n`` to lie between ``lo`` and ``hi``.
-  Equivalent to ``min(max(n,lo),hi)``.
+  Equivalent to ``min[max[n,lo],hi]``.
 
-``lerp(lo,hi,t)``
+``lerp[lo,hi,t]``
   Linear interpolation between ``lo`` and ``hi``
   using parameter ``t`` as a weight: ``t==0`` returns ``lo``
   and ``t==1`` returns ``hi``.
   Equivalent to ``lo*(1-t)+hi*t``.
 
-``smoothstep(lo,hi,x)``
+``smoothstep[lo,hi,x]``
   Return 0 if x <= lo; 1 if x >= hi;
   otherwise smoothly interpolate between 0 and 1 using a Hermite polynomial.
   Result is undefined if lo >= hi.

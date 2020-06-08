@@ -39,7 +39,7 @@ Curv uses `radians`_ (not degrees) to specify angles.
 
 ``cis a``
   Convert a phase angle to a unit 2D vector (see ``phase``).
-  This is ``(cos a, sin a)``.
+  This is ``[cos a, sin a]``.
 
 ``asin x``
   The principal value of the arc sine (inverse sine) of x.
@@ -54,7 +54,7 @@ Curv uses `radians`_ (not degrees) to specify angles.
   The result is an angle in the range [-tau/4, +tau/4].
   The ``phase`` function is generally more useful.
 
-``phase(x,y)``
+``phase[x,y]``
   The phase angle of a 2D vector,
   which is the angle that the vector makes with the positive X axis, measured counter-clockwise.
   This is the principal value of the arc tangent of ``y/x``,

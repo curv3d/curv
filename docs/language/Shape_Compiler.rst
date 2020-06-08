@@ -35,7 +35,7 @@ The following data types are supported:
   We specifically support 1-D and 2-D arrays of number,
   vec2, vec3 and vec4. This support is still experimental.
   Large arrays are compile time constants: their contents cannot depend on
-  the (x,y,z,t) arguments of ``dist`` and ``colour`` functions, and also
+  the [x,y,z,t] arguments of ``dist`` and ``colour`` functions, and also
   cannot depend on shape parameters within a parametric shape, if those
   parameters are bound to a value picker.
 

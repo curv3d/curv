@@ -30,11 +30,11 @@ Here is a larger example, which constructs a lollipop shape::
   len = 4;
 
   in
-  union(candy, stick)
+  union[candy, stick]
 
   where (
   candy = sphere diam >> colour red;
-  stick = cylinder{h: len, d: diam/8} >> move(0,0,-len/2);
+  stick = cylinder{h: len, d: diam/8} >> move[0,0,-len/2];
   )
 
 This illustrates a common coding pattern,
@@ -90,7 +90,7 @@ Here is how the lollipop example could be split into 3 source files:
 
 ``lollipop.curv``::
 
-  union(candy, stick)
+  union[candy, stick]
   where (
   include file "lolli-lib.curv";
   )
@@ -107,7 +107,7 @@ Here is how the lollipop example could be split into 3 source files:
   {
   include file "lolli-parameters.curv";
   candy = sphere diam >> colour red;
-  stick = cylinder{h: len, d: diam/8} >> move(0,0,-len/2);
+  stick = cylinder{h: len, d: diam/8} >> move[0,0,-len/2];
   }
 
 Note that:
