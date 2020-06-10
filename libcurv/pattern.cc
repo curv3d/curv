@@ -79,7 +79,7 @@ struct Id_Pattern : public Pattern
         if (var_->is_mutable_) {
             // This is a mutable variable, so create a new var and initialize
             // it with val. But, arrays are not supported.
-            if (val.type.rank_ > 0) {
+            if (val.type.plex_array_rank() > 0) {
                 throw Exception(At_SC_Phrase(expr.syntax_, caller),
                     "mutable array variables are not supported");
             }

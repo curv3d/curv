@@ -44,6 +44,7 @@ struct SC_Type
         Mat4
     };
 
+private:
     // 4 shorts == 64 bit representation
     Base_Type base_type_;
     // rank 0: The type is just 'base_type_'.
@@ -53,8 +54,12 @@ struct SC_Type
     unsigned short rank_ = 0;
     unsigned short dim1_ = 0;
     unsigned short dim2_ = 0;
+public:
+    friend std::ostream& operator<<(std::ostream& out, SC_Type type);
+    friend SC_Type sc_type_of(Value v);
 
     constexpr SC_Type() : base_type_(Base_Type::Error) {}
+private:
     constexpr SC_Type(Base_Type bt, unsigned dim1 = 0, unsigned dim2 = 0)
     :
         base_type_(bt),
@@ -62,6 +67,7 @@ struct SC_Type
         dim1_(dim1),
         dim2_(dim2)
     {}
+public:
     static constexpr inline SC_Type Error() { return {Base_Type::Error}; }
     static constexpr inline SC_Type Bool(unsigned n = 1)
     {
@@ -73,24 +79,19 @@ struct SC_Type
         assert(n >= 1 && n <= 4);
         return {Base_Type(int(Base_Type::Bool32) + n-1)};
     }
-    static constexpr inline SC_Type Num_Or_Vec(unsigned n = 1)
+    static constexpr inline SC_Type Num(unsigned n = 1)
     {
         assert(n >= 1 && n <= 4);
         return {Base_Type(int(Base_Type::Num) + n-1)};
     }
-    static constexpr inline SC_Type Any_Vec(SC_Type base, unsigned n)
+    static constexpr inline SC_Type Vec(SC_Type base, unsigned n)
     {
+        assert(base.rank_ == 0 &&
+            (base.base_type_ == Base_Type::Bool ||
+             base.base_type_ == Base_Type::Num ||
+             base.base_type_ == Base_Type::Bool32));
         assert(n >= 1 && n <= 4);
         return {Base_Type(int(base.base_type_) + n-1)};
-    }
-    static constexpr inline SC_Type Num(unsigned dim1 = 0, unsigned dim2 = 0)
-    {
-        return {Base_Type::Num, dim1, dim2};
-    }
-    static constexpr inline SC_Type Vec(
-        int n, unsigned dim1 = 0, unsigned dim2 = 0)
-    {
-        return {Base_Type(int(Base_Type::Vec2) + n - 2), dim1, dim2};
     }
     static constexpr inline SC_Type Mat(int n)
     {
@@ -133,7 +134,7 @@ struct SC_Type
             && rank_ == 0;
     }
     // Is a bool, a bool vec, a bool32, or a bool32 vec. Not an array.
-    inline bool is_bool_struc() const
+    inline bool is_bool_plex() const
     {
         return base_type_ >= Base_Type::Bool
             && base_type_ <= Base_Type::Bool4x32
@@ -163,7 +164,7 @@ struct SC_Type
             && rank_ == 0;
     }
     // Is a single number, vector, or matrix. Not an array.
-    inline bool is_num_struc() const
+    inline bool is_num_plex() const
     {
         return base_type_ >= Base_Type::Num
             && base_type_ <= Base_Type::Mat4
@@ -186,7 +187,20 @@ struct SC_Type
             && base_type_ >= Base_Type::Mat2 && base_type_ <= Base_Type::Mat4;
     }
 
-    inline bool is_struc() const { return rank_ == 0; }
+    // these functions view an SC_Type as a multi-D array of plexes
+    inline unsigned plex_array_rank() const { return rank_; }
+    inline SC_Type plex_array_base() const { return SC_Type(base_type_); }
+    inline int plex_array_dim(int i) const {
+        if (i == 0) return dim1_;
+        else if (i == 1) return dim2_;
+        else return 0; }
+
+    // a Plex type is one of the following 3 mutually exclusive cases:
+    inline bool is_scalar_plex() const { return rank_ == 0; }
+    inline bool is_tuple() const { return false; }
+    inline bool is_struct() const { return false; }
+
+    inline bool is_plex() const { return rank_ == 0; }
     inline bool is_list() const { return rank() > 0; }
     inline bool is_scalar_or_vec() const {
         return rank_ == 0 && base_info().rank <= 1 && base_info().dim1 <= 4;

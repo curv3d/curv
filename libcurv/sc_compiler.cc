@@ -231,9 +231,9 @@ sc_put_value(Value val, SC_Type ty, const At_SC_Phrase& cx, std::ostream& out)
         sc_put_list(*list, ty.elem_type(), cx, out);
         out << ")";
     }
-    else if (ty.rank_ > 0) {
+    else if (ty.plex_array_rank() > 0) {
         auto list = val.to<List>(cx);
-        list->assert_size(ty.dim1_, cx);
+        list->assert_size(ty.plex_array_dim(0), cx);
         sc_put_list(*list, ty.elem_type(), cx, out);
     }
     else {
@@ -275,13 +275,12 @@ SC_Value sc_eval_const(SC_Frame& f, Value val, const Phrase& syntax)
     sc_put_value(val, ty, cx, init);
     auto initstr = init.get_string();
     SC_Value result = f.sc_.newvalue(ty);
-    if (ty.rank_ == 0) {
+    if (ty.is_plex()) {
         f.sc_.out()
             << "  " << ty << " " << result << " = "
             << *initstr << ";\n";
     } else {
-        SC_Type ety = ty;
-        ety.rank_ = 0;
+        SC_Type ety = ty.plex_array_base();
         if (f.sc_.target_ == SC_Target::cpp) {
             f.sc_.out() << "  " << ety << " " << result << "[] = {"
                 << *initstr << "};\n";
@@ -397,17 +396,17 @@ bool sc_try_unify(SC_Frame& f, SC_Value& a, SC_Value& b)
     return false;
 }
 
-// Error if a or b is not a struc.
-// Succeed if a and b have the same (struc) type, or they can be converted
+// Error if a or b is not a plex.
+// Succeed if a and b have the same (plex) type, or they can be converted
 // to a common type using broadcasting and elementwise extension.
-void sc_struc_unify(SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
+void sc_plex_unify(SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
 {
-    if (!a.type.is_struc())
+    if (!a.type.is_plex())
         throw Exception(cx,
-            stringify("argument with type ",a.type," is not a Struc"));
-    if (!b.type.is_struc())
+            stringify("argument with type ",a.type," is not a Plex"));
+    if (!b.type.is_plex())
         throw Exception(cx,
-            stringify("argument with type ",b.type," is not a Struc"));
+            stringify("argument with type ",b.type," is not a Plex"));
     if (sc_try_unify(f, a, b))
         return;
     throw Exception(cx, stringify(
@@ -583,7 +582,7 @@ SC_Value sc_eval_index_expr(SC_Value array, Operation& index, SC_Frame& f)
             }
             SC_Value result =
                 f.sc_.newvalue(
-                    SC_Type::Any_Vec(array.type.elem_type(), list->size()));
+                    SC_Type::Vec(array.type.elem_type(), list->size()));
             f.sc_.out() << "  " << result.type << " "<< result<<" = ";
             if (f.sc_.target_ == SC_Target::glsl) {
                 // use GLSL swizzle syntax: v.xyz
@@ -624,10 +623,10 @@ SC_Value sc_eval_index_expr(SC_Value array, Operation& index, SC_Frame& f)
         return result;
     }
     // An array of numbers, indexed with a number.
-    if (array.type.rank_ > 1) {
+    if (array.type.plex_array_rank() > 1) {
         throw Exception(At_SC_Phrase(index.syntax_,f), stringify(
-            "can't index a ", array.type.rank_, "D array of ",
-            SC_Type(array.type.base_type_), " with a single index"));
+            "can't index a ", array.type.plex_array_rank(), "D array of ",
+            array.type.plex_array_base(), " with a single index"));
     }
     auto ix = sc_eval_expr(f, index, SC_Type::Num());
     SC_Value result = f.sc_.newvalue(array.type.elem_type());
@@ -643,23 +642,28 @@ SC_Value sc_eval_index2_expr(
 {
     auto ix1 = sc_eval_expr(f, op_ix1, SC_Type::Num());
     auto ix2 = sc_eval_expr(f, op_ix2, SC_Type::Num());
-    if (array.type.rank_ == 2) {
+    switch (array.type.plex_array_rank()) {
+    case 2:
+      {
         // 2D array of number or vector. Not supported by GLSL 1.5,
         // so we emulate this type using a 1D array.
         // Index value must be [i,j], can't use a single index.
-        SC_Value result = f.sc_.newvalue({array.type.base_type_});
+        SC_Value result = f.sc_.newvalue(array.type.plex_array_base());
         f.sc_.out() << "  " << result.type << " " << result << " = " << array
-                 << "[int(" << ix1 << ")*" << array.type.dim2_
+                 << "[int(" << ix1 << ")*" << array.type.plex_array_dim(1)
                  << "+" << "int(" << ix2 << ")];\n";
         return result;
-    }
-    if (array.type.rank_ == 1 && array.type.base_info().rank == 1) {
-        // 1D array of vector.
-        SC_Value result = f.sc_.newvalue(SC_Type::Num());
-        f.sc_.out() << "  " << result.type << " " << result << " = " << array
-                 << "[int(" << ix1 << ")]"
-                 << "[int(" << ix2 << ")];\n";
-        return result;
+      }
+    case 1:
+        if (array.type.plex_array_base().rank() == 1) {
+            // 1D array of vector.
+            SC_Value result = f.sc_.newvalue(SC_Type::Num());
+            f.sc_.out() << "  " << result.type << " " << result << " = "
+                << array
+                << "[int(" << ix1 << ")]"
+                << "[int(" << ix2 << ")];\n";
+            return result;
+        }
     }
     throw Exception(acx, "2 indexes (a[i,j]) not supported for this array");
 }
@@ -669,14 +673,14 @@ SC_Value sc_eval_index3_expr(
     SC_Value array, Operation& op_ix1, Operation& op_ix2, Operation& op_ix3,
     SC_Frame& f, const Context& acx)
 {
-    if (array.type.rank_ == 2 && array.type.base_info().rank == 1) {
+    if (array.type.plex_array_rank() == 2 && array.type.base_info().rank == 1) {
         // 2D array of vector.
         auto ix1 = sc_eval_expr(f, op_ix1, SC_Type::Num());
         auto ix2 = sc_eval_expr(f, op_ix2, SC_Type::Num());
         auto ix3 = sc_eval_expr(f, op_ix3, SC_Type::Num());
         SC_Value result = f.sc_.newvalue(SC_Type::Num());
         f.sc_.out() << "  " << result.type << " " << result << " = " << array
-                 << "[int(" << ix1 << ")*" << array.type.dim2_
+                 << "[int(" << ix1 << ")*" << array.type.plex_array_dim(1)
                  << "+" << "int(" << ix2 << ")][int(" << ix3 << ")];\n";
         return result;
     }

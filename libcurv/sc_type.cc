@@ -53,10 +53,10 @@ sc_type_of(Value v)
         else {
             auto ty = sc_type_of(ls->front());
             if (ty.is_num_tensor()) {
-                // Try to upgrade to a larger numeric struc.
+                // Try to upgrade to a larger numeric plex.
                 if (ty.is_num()) {
                     if (n >= 2 && n <= 4)
-                        return SC_Type::Vec(n);
+                        return SC_Type::Num(n);
                 }
                 else if (ty.is_num_vec()) {
                     if (n == ty.count())
@@ -71,7 +71,7 @@ sc_type_of(Value v)
                 }
             }
             else if (ty.is_bool_tensor()) {
-                // Try to upgrade to a larger boolean struc.
+                // Try to upgrade to a larger boolean plex.
                 if (ty.is_bool()) {
                     if (n >= 2 && n <= 4)
                         return SC_Type::Bool(n);
@@ -105,7 +105,7 @@ SC_Type::elem_type() const
         if (is_num_vec())
             return Num();
         if (is_mat())
-            return Vec(count());
+            return Num(count());
         if (base_type_ == Base_Type::Bool32)
             return Bool();
         if (base_type_ >= Base_Type::Bool2 && base_type_ <= Base_Type::Bool4)
@@ -129,7 +129,7 @@ SC_Type::List(SC_Type etype, unsigned n)
     switch (etype.rank_) {
     case 0:
         if (etype.is_num()) {
-            if (n >= 2 && n <= 4) return Vec(n);
+            if (n >= 2 && n <= 4) return Num(n);
         } else if (etype.is_num_vec()) {
             if (etype.count() == n) return Mat(n);
         } else if (etype.is_bool()) {

@@ -41,7 +41,7 @@ Picker::Config::Config(Value val, const Context& cx)
         sctype_ = SC_Type::Bool();
     } else if (config_v.first == "colour_picker") {
         type_ = Picker::Type::colour_picker;
-        sctype_ = SC_Type::Vec(3);
+        sctype_ = SC_Type::Num(3);
     } else {
         throw Exception(cx, "not a picker descriptor");
     }

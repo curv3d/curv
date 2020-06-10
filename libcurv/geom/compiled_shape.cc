@@ -20,9 +20,9 @@ Compiled_Shape::Compiled_Shape(Shape_Program& rshape)
 
     At_System cx{rshape.system_};
 
-    cpp_.define_function("dist", SC_Type::Vec(4), SC_Type::Num(),
+    cpp_.define_function("dist", SC_Type::Num(4), SC_Type::Num(),
         rshape.dist_fun_, cx);
-    cpp_.define_function("colour", SC_Type::Vec(4), SC_Type::Vec(3),
+    cpp_.define_function("colour", SC_Type::Num(4), SC_Type::Num(3),
         rshape.colour_fun_, cx);
     cpp_.compile(cx);
     dist_ = (Cpp_Dist_Func) cpp_.get_function("dist");
@@ -36,9 +36,9 @@ export_cpp(Shape_Program& shape, std::ostream& out)
     At_Program cx(shape);
 
     out << Cpp_Program::standard_header;
-    sc.define_function("dist", SC_Type::Vec(4), SC_Type::Num(),
+    sc.define_function("dist", SC_Type::Num(4), SC_Type::Num(),
         shape.dist_fun_, cx);
-    sc.define_function("colour", SC_Type::Vec(4), SC_Type::Vec(3),
+    sc.define_function("colour", SC_Type::Num(4), SC_Type::Num(3),
         shape.colour_fun_, cx);
 }
 

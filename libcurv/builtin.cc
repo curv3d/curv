@@ -169,7 +169,7 @@ struct Bit_Prim : public Unary_Bool_To_Num_Prim
     static Value call(bool b, const Context&) { return {double(b)}; }
     static SC_Value sc_call(SC_Frame& f, SC_Value arg)
     {
-        auto result = f.sc_.newvalue(SC_Type::Num_Or_Vec(arg.type.count()));
+        auto result = f.sc_.newvalue(SC_Type::Num(arg.type.count()));
         f.sc_.out() << "  " << result.type << " " << result << " = "
             << result.type << "(" << arg << ");\n";
         return result;
@@ -478,7 +478,7 @@ struct Bool32_To_Float_Prim : public Unary_Bool32_To_Num_Prim
     static SC_Value sc_call(SC_Frame& f, SC_Value x)
     {
         unsigned count = x.type == SC_Type::Bool32() ? 1 : x.type.count();
-        auto result = f.sc_.newvalue(SC_Type::Num_Or_Vec(count));
+        auto result = f.sc_.newvalue(SC_Type::Num(count));
         f.sc_.out() << "  " << result.type << " " << result
             << " = uintBitsToFloat(" << x << ");\n";
         return result;
@@ -672,7 +672,7 @@ SC_Value Equal_Expr::sc_eval(SC_Frame& f) const
 {
     auto a = sc_eval_op(f, *arg1_);
     auto b = sc_eval_op(f, *arg2_);
-    if (a.type != b.type || a.type.rank_ > 0) {
+    if (a.type != b.type || a.type.plex_array_rank() > 0) {
         throw Exception(At_SC_Phrase(syntax_, f),
             stringify("domain error: ",a.type," == ",b.type));
     }
@@ -684,7 +684,7 @@ SC_Value Not_Equal_Expr::sc_eval(SC_Frame& f) const
 {
     auto a = sc_eval_op(f, *arg1_);
     auto b = sc_eval_op(f, *arg2_);
-    if (a.type != b.type || a.type.rank_ > 0) {
+    if (a.type != b.type || a.type.plex_array_rank() > 0) {
         throw Exception(At_SC_Phrase(syntax_, f),
             stringify("domain error: ",a.type," != ",b.type));
     }

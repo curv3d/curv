@@ -118,8 +118,8 @@ void export_sf1(
     sc.define_function(
         "sf1",
         std::vector<SC_Type>{
-            SC_Type::Vec(3),SC_Type::Vec(3),SC_Type::Vec(3),SC_Type::Vec(3)},
-        SC_Type::Vec(3),
+            SC_Type::Num(3),SC_Type::Num(3),SC_Type::Num(3),SC_Type::Num(3)},
+        SC_Type::Num(3),
         opts.sf1_,
         At_Program(shape));
 }

@@ -27,9 +27,9 @@ void glsl_function_export(const Shape_Program& shape, std::ostream& out)
                 << p.second.identifier_ << ";\n";
         }
     }
-    sc.define_function("dist", SC_Type::Vec(4), SC_Type::Num(),
+    sc.define_function("dist", SC_Type::Num(4), SC_Type::Num(),
         shape.dist_fun_, cx);
-    sc.define_function("colour", SC_Type::Vec(4), SC_Type::Vec(3),
+    sc.define_function("colour", SC_Type::Num(4), SC_Type::Num(3),
         shape.colour_fun_, cx);
 }
 

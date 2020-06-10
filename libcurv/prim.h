@@ -376,8 +376,8 @@ struct Unary_Scalar_Prim
     }
     static void sc_check_arg(SC_Value a, const Context& cx)
     {
-        if (!a.type.is_struc())
-            throw Exception(cx, "argument must be a Struc");
+        if (!a.type.is_plex())
+            throw Exception(cx, "argument must be a Plex");
     }
 };
 
@@ -407,7 +407,7 @@ struct Binary_Scalar_To_Bool_Prim : public Unary_Scalar_Prim
                 "second argument must be a scalar or vec; instead got ",
                 b.type));
         }
-        sc_struc_unify(f, a, b, cx);
+        sc_plex_unify(f, a, b, cx);
     }
     static SC_Type sc_result_type(SC_Type a, SC_Type b)
     {
@@ -440,7 +440,7 @@ struct Unary_Bool_To_Num_Prim
     static SC_Type sc_result_type(SC_Type a)
     {
         if (a.is_bool_or_vec())
-            return SC_Type::Num_Or_Vec(a.count());
+            return SC_Type::Num(a.count());
         else
             return {};
     }
@@ -460,12 +460,12 @@ struct Unary_Bool_Prim
     }
     static void sc_check_arg(SC_Value a, const Context& cx)
     {
-        if (a.type.is_bool_struc()) return;
+        if (a.type.is_bool_plex()) return;
         throw Exception(cx, stringify("expected Bool or Bool32, got ",a.type));
     }
     static SC_Type sc_result_type(SC_Type a)
     {
-        if (a.is_bool_struc())
+        if (a.is_bool_plex())
             return a;
         else
             return {};
@@ -495,7 +495,7 @@ struct Binary_Bool_Prim
     }
     static void sc_check_arg(SC_Value a, const Context& cx)
     {
-        if (a.type.is_bool_struc()) return;
+        if (a.type.is_bool_plex()) return;
         throw Exception(cx, "argument must be Bool or Bool32");
     }
     static void sc_check_args(
@@ -537,7 +537,7 @@ struct Binary_Bool_Prim
     }
     static SC_Type sc_result_type(SC_Type a, SC_Type b)
     {
-        if (a.is_bool_struc() && b.is_bool_struc())
+        if (a.is_bool_plex() && b.is_bool_plex())
             return sc_unify_tensor_types(a,b);
         else
             return {};
@@ -559,12 +559,12 @@ struct Unary_Num_SCMat_Prim
     }
     static void sc_check_arg(SC_Value a, const Context& cx)
     {
-        if (!a.type.is_num_struc())
+        if (!a.type.is_num_plex())
             throw Exception(cx, "argument must be a Num, Vec or Mat");
     }
     static SC_Type sc_result_type(SC_Type a)
     {
-        return a.is_num_struc() ? a : SC_Type{};
+        return a.is_num_plex() ? a : SC_Type{};
     }
 };
 
@@ -610,17 +610,17 @@ struct Binary_Num_SCMat_Prim : public Unary_Num_SCMat_Prim
     static void sc_check_args(
         SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
     {
-        if (!a.type.is_num_struc()) {
+        if (!a.type.is_num_plex()) {
             throw Exception(At_Index(0, cx),
                 stringify("argument expected to be Num, Vec or Mat; got ",
                     a.type));
         }
-        if (!b.type.is_num_struc()) {
+        if (!b.type.is_num_plex()) {
             throw Exception(At_Index(1, cx),
                 stringify("argument expected to be Num, Vec or Mat; got ",
                     a.type));
         }
-        sc_struc_unify(f, a, b, cx);
+        sc_plex_unify(f, a, b, cx);
     }
     static SC_Type sc_result_type(SC_Type a, SC_Type b)
     {
@@ -656,7 +656,7 @@ struct Binary_Num_SCVec_Prim : public Unary_Num_SCVec_Prim
             throw Exception(At_Index(1, cx),
                 stringify("argument expected to be Num or Vec; got ", a.type));
         }
-        sc_struc_unify(f, a, b, cx);
+        sc_plex_unify(f, a, b, cx);
     }
     static SC_Type sc_result_type(SC_Type a, SC_Type b)
     {
@@ -727,13 +727,13 @@ struct Unary_Vec2_To_Num_Prim
         { return unbox_vec2(a, b); }
     static void sc_check_arg(SC_Value a, const Context& cx)
     {
-        if (a.type != SC_Type::Vec(2)) {
+        if (a.type != SC_Type::Num(2)) {
             throw Exception(cx, stringify("expected a Vec2; got ", a.type));
         }
     }
     static SC_Type sc_result_type(SC_Type a)
     {
-        if (a == SC_Type::Vec(2))
+        if (a == SC_Type::Num(2))
             return SC_Type::Num();
         else
             return {};
@@ -766,7 +766,7 @@ struct Unary_Bool32_To_Num_Prim : public Bool32_Prim
     static SC_Type sc_result_type(SC_Type a)
     {
         if (a.is_bool32_or_vec())
-            return SC_Type::Num_Or_Vec(a.count());
+            return SC_Type::Num(a.count());
         else
             return {};
     }
@@ -802,7 +802,7 @@ struct Binary_Bool32_Prim : public Bool32_Prim
         }
         if (a.type != b.type) {
             // Note, it's impossible to unify types of a and b
-            // with the current palette of struc types.
+            // with the current palette of plex types.
             throw Exception(cx,
                 stringify("mismatched argument types ",a.type," and ",b.type));
         }

@@ -319,7 +319,6 @@ SubCurv tests for the following:
 
 internals, maybe:
     SC_Type::Array(base, d1, d2)?
-    rename Vec(n) -> Num_Vec(n) or -> Num_Or_Vec(n)
 
 document the changes to SubCurv.
 
