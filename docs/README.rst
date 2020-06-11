@@ -39,6 +39,32 @@ disappears and the ``curv`` command exits, giving you a new shell prompt.
 [On macOS, you must quit the ``gedit`` text editing application (eg, Command-Q)
 before the ``curv`` command will exit.]
 
+**Live Editing with a Custom Editor (for advanced users)**
+
+If you want to use a custom editor, just open your favourite editor to edit
+your source file ``foo.curv``. Then, from another shell window, type
+``curv -e foo.curv``. The ``curv`` command will run forever, redisplaying
+the shape whenever the source file changes. You must remember to terminate
+the ``curv`` command using ctrl-C when you are done.
+
+If you want to get fancy, then you can configure the behaviour of ``curv -le``
+by setting the ``CURV_EDITOR`` environment variable. This is an advanced
+feature that requires some research. The ``CURV_EDITOR`` command must open a
+graphical editor window. The top level process must run in the foreground.
+It must not exit immediately after opening the window: it must continue running
+until you close the window. This normally requires special command line flags,
+and not all graphical editors support this mode of operation.
+
+==============  ================  ==================
+Desired editor  Operating System  CURV_EDITOR string
+==============  ================  ==================
+vim             Linux             gvim -f
+==============  ================  ==================
+
+Once you figure this out, you can add ``export CURV_EDITOR="gvim -f"``
+(substituting your favourite text editor) to your bash ``.profile`` file in
+your home directory, and then ``curv -le filename`` will just work.
+
 **Interactive CLI mode**::
 
   $ curv
@@ -55,7 +81,9 @@ To convert a shape into an STL file for 3D printing, use::
 
   $ curv -o foo.stl foo.curv
 
-For more details, see `<Mesh_Export.rst>`_.
+Rendering is *much* faster if you use the ``-O jit`` option.
+(But that requires a C++ compiler and the ``glm`` library to be installed.)
+For more details and more options, see `<Mesh_Export.rst>`_.
 
 **Exporting an image (PNG format)**
 
@@ -75,46 +103,6 @@ for the ``-O`` options, and thereby customize the behaviour of Curv
 when viewing or exporting shapes.
 
 For more details, see `<Config.rst>`_.
-
-..
-  **Live Programming Mode (**\ ``curv -l``\ **)**:
-
-  This is a mode where you have a 3 window GUI, similar to live programming
-  in the OpenSCAD GUI. The 3 windows are: the editing window, the graphics window,
-  and the console window (which displays error messages).
-
-  * Open a text editor window, editing ``myshape.curv``.
-  * Open a terminal window and run ``curv -l myshape.curv`` from ``bash``.
-  * Each time you save changes to ``myshape.curv``, the file will be re-evaluated
-    and the new shape will be displayed in a graphics window.
-  * Keep the terminal window visible: if there are errors in your Curv program,
-    they will be displayed here.
-
-  **Live Editing Mode (**\ ``curv -le``\ **)**:
-
-  This is a more convenient way to start up a 3 window GUI.
-  You just type ``curv -le myshape.curv``. A text editor window pops up.
-  A graphics window pops up either immediately, or once ``myshape.curv`` exists
-  and contains a valid Curv program.
-  The original terminal window that you invoked ``curv -le`` from now serves as
-  the console window. When you close the text editor window, the graphics window
-  disappears and the ``curv`` command terminates.
-
-  In order to make this work, you need to set the environment variable ``CURV_EDITOR``
-  to a command that takes a filename argument and opens a text editing window.
-  This command must run in the foreground, and not exit until you close the text editing window.
-  Not all text editors can be run this way. For example,
-
-  * ``export CURV_EDITOR=vim`` will not work, because ``vim`` will run in the terminal
-    window, and will not open a separate text editing window.
-  * ``export CURV_EDITOR=gvim`` will not work, because by default, the ``gvim`` command
-    forks a new process to run the text editor window in, then exits almost immediately.
-  * ``export CURV_EDITOR="gvim -f"`` works. The ``-f`` flag forces ``gvim``
-    to run in the foreground.
-
-  So, you can add ``export CURV_EDITOR="gvim -f"`` (substituting your favourite text editor)
-  to your bash ``.profile`` file in your home directory, and then ``curv -le filename``
-  will just work.
 
 2. The Core Language
 ====================

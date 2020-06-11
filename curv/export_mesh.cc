@@ -165,6 +165,9 @@ void export_mesh(Mesh_Format format, curv::Value value,
         std::cerr
             << "Compiled shape in " << compile_time.count() << "s\n";
         std::cerr.flush();
+    } else {
+        std::cerr <<
+            "You are in SLOW MODE. Use '-O jit' to speed up rendering.\n";
     }
 
     Vec3d size(
