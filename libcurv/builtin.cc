@@ -579,7 +579,7 @@ struct Select_Function : public Legacy_Function
                 sc_try_extend(f, consequent, T);
                 sc_try_extend(f, alternate, T);
             }
-            else if (!consequent.type.is_any_vec()) {
+            else if (!consequent.type.is_vec()) {
                 throw Exception(At_SC_Arg(1,f), stringify(
                     "Must be a scalar or vector to match condition argument."
                     " Instead, type is ", consequent.type));
@@ -634,7 +634,7 @@ struct Equal_Prim : public Binary_Scalar_To_Bool_Prim
     {
         auto result = f.sc_.newvalue(SC_Type::Bool(x.type.count()));
         f.sc_.out() << "  " << result.type << " " << result << " = ";
-        if (x.type.is_any_vec()) {
+        if (x.type.is_vec()) {
             f.sc_.out() << "equal(" << x << "," << y << ")";
         } else {
             f.sc_.out() << x << "==" << y;
@@ -657,7 +657,7 @@ struct Unequal_Prim : public Binary_Scalar_To_Bool_Prim
     {
         auto result = f.sc_.newvalue(SC_Type::Bool(x.type.count()));
         f.sc_.out() << "  " << result.type << " " << result << " = ";
-        if (x.type.is_any_vec()) {
+        if (x.type.is_vec()) {
             f.sc_.out() << "notEqual(" << x << "," << y << ")";
         } else {
             f.sc_.out() << x << "!=" << y;

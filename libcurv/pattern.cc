@@ -279,7 +279,7 @@ struct List_Pattern : public Pattern
     sc_exec(SC_Value val, const Context& valcx, SC_Frame& callee)
     const override
     {
-        if (!val.type.is_any_vec())
+        if (!val.type.is_vec())
             throw Exception(valcx, stringify(
                 "list pattern: argument is not a vector (got type ",
                 val.type,")"));

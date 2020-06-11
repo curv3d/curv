@@ -99,10 +99,12 @@ public:
     }
     static SC_Type List(SC_Type etype, unsigned n);
 
+private:
     inline const SC_Base_Type_Info& base_info() const
     {
         return sc_base_type_info_array[int(base_type_) + 1];
     }
+public:
 
     /*
      * Boolean predicates
@@ -187,7 +189,8 @@ public:
             && base_type_ >= Base_Type::Mat2 && base_type_ <= Base_Type::Mat4;
     }
 
-    // these functions view an SC_Type as a multi-D array of plexes
+    // These functions view an SC_Type as a multi-D array of plexes.
+    // If plex_array_rank()==0 then the type is a plex.
     inline unsigned plex_array_rank() const { return rank_; }
     inline SC_Type plex_array_base() const { return SC_Type(base_type_); }
     inline int plex_array_dim(int i) const {
@@ -205,6 +208,15 @@ public:
     inline bool is_scalar_or_vec() const {
         return rank_ == 0 && base_info().rank <= 1 && base_info().dim1 <= 4;
     }
+    inline bool is_vec() const
+    {
+        return rank_ == 0 && (
+            (base_type_ >= Base_Type::Bool2 && base_type_ <= Base_Type::Bool4)
+            || (base_type_ >= Base_Type::Bool2x32
+                && base_type_ <= Base_Type::Bool4x32)
+            || (base_type_ >= Base_Type::Vec2 && base_type_ <= Base_Type::Vec4)
+        );
+    }
 
     // number of dimensions: 0 means a scalar (Num or Bool or Error)
     inline unsigned rank() const
@@ -220,23 +232,7 @@ public:
     }
     // If this is an array, strip one dimension off of the type.
     SC_Type elem_type() const;
-    inline bool is_any_vec() const
-    {
-        return rank_ == 0 && (
-            (base_type_ >= Base_Type::Bool2 && base_type_ <= Base_Type::Bool4)
-            || (base_type_ >= Base_Type::Bool2x32
-                && base_type_ <= Base_Type::Bool4x32)
-            || (base_type_ >= Base_Type::Vec2 && base_type_ <= Base_Type::Vec4)
-        );
-    }
-    SC_Type scalar_to_vec(unsigned n) const
-    {
-        assert(base_type_ == Base_Type::Bool || base_type_ == Base_Type::Num);
-        assert(n >= 2 && n <= 4);
-        SC_Type rtype = *this;
-        rtype.base_type_ = Base_Type(unsigned(rtype.base_type_) + n - 1);
-        return rtype;
-    }
+
     inline bool operator==(SC_Type rhs) const
     {
         return base_type_ == rhs.base_type_ && rank_ == rhs.rank_

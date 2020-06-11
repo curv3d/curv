@@ -141,7 +141,7 @@ const
             (*f2)[i] = sc_eval_op(f, *(*list)[i]);
     } else {
         auto scarg = sc_eval_op(f, arg);
-        if (!scarg.type.is_any_vec())
+        if (!scarg.type.is_vec())
             throw Exception(At_SC_Phrase(arg.syntax_, f),
                 "function call argument is not a vector");
         if (scarg.type.count() != nargs_)

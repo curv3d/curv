@@ -224,7 +224,7 @@ sc_put_value(Value val, SC_Type ty, const At_SC_Phrase& cx, std::ostream& out)
         unsigned bn = bool32_to_nat(bl, cx);
         out << bn << "u";
     }
-    else if (ty.is_any_vec() || ty.is_mat()) {
+    else if (ty.is_vec() || ty.is_mat()) {
         Shared<const List> list = val.to<const List>(cx);
         list->assert_size(ty.count(), cx);
         out << ty << "(";
@@ -326,7 +326,7 @@ bool sc_try_broadcast(SC_Frame& f, SC_Value& val, SC_Type rtype)
     f.sc_.out() << "  "<<rtype<<" "<<result<<" = "<<rtype<<"(";
     if (rtype.is_bool32()) {
         f.sc_.out() << "-int("<<val<<")";
-    } else if (rtype.is_any_vec()) {
+    } else if (rtype.is_vec()) {
         f.sc_.out() << val;
     } else if (rtype.is_mat()) {
         unsigned n = rtype.count();
@@ -566,7 +566,7 @@ char gl_index_letter(Value k, unsigned vecsize, const Context& cx)
 SC_Value sc_eval_index_expr(SC_Value array, Operation& index, SC_Frame& f)
 {
     Value k;
-    if (array.type.is_any_vec() && sc_try_constify(index, f, k)) {
+    if (array.type.is_vec() && sc_try_constify(index, f, k)) {
         // A vector with a constant index. Swizzling is supported.
         if (auto list = k.maybe<List>()) {
             if (list->size() < 2 || list->size() > 4) {
@@ -673,12 +673,15 @@ SC_Value sc_eval_index3_expr(
     SC_Value array, Operation& op_ix1, Operation& op_ix2, Operation& op_ix3,
     SC_Frame& f, const Context& acx)
 {
-    if (array.type.plex_array_rank() == 2 && array.type.base_info().rank == 1) {
+    if (array.type.plex_array_rank() == 2
+        && array.type.plex_array_base().is_vec())
+    {
         // 2D array of vector.
         auto ix1 = sc_eval_expr(f, op_ix1, SC_Type::Num());
         auto ix2 = sc_eval_expr(f, op_ix2, SC_Type::Num());
         auto ix3 = sc_eval_expr(f, op_ix3, SC_Type::Num());
-        SC_Value result = f.sc_.newvalue(SC_Type::Num());
+        SC_Value result =
+            f.sc_.newvalue(array.type.plex_array_base().elem_type());
         f.sc_.out() << "  " << result.type << " " << result << " = " << array
                  << "[int(" << ix1 << ")*" << array.type.plex_array_dim(1)
                  << "+" << "int(" << ix2 << ")][int(" << ix3 << ")];\n";

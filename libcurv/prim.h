@@ -202,7 +202,7 @@ struct Binary_Array_Op
             // generate a rank 1 array at GPU runtime, for now at least.
             // For a single Vec, this inline expansion of the loop is good.
             auto arg = sc_eval_op(f, argx);
-            if (arg.type.is_any_vec()) {
+            if (arg.type.is_vec()) {
                 auto first = sc_vec_element(f, arg, 0);
                 for (unsigned i = 1; i < arg.type.count(); ++i) {
                     auto second = sc_vec_element(f, arg, i);
