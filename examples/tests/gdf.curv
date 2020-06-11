@@ -4,10 +4,6 @@
 
 // This program is a test case for using arrays within distance functions.
 
-parametric
-    exp :: scale_picker = 1;
-in
-
 let
 GDFVectors = [
     normalize[1, 0, 0],
@@ -65,8 +61,8 @@ Octa r =
         is_3d = true;
     };
 
-xs = xOcta(2,exp) >> lipschitz 5;
+xs = parametric exp :: slider[.5,2] = 1 in xOcta(2,exp) >> lipschitz 5;
 s = Octa 2;
 
 in
-s
+xs

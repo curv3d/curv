@@ -1,25 +1,25 @@
 let
-// f() returns true or false. Execute f() on the GPU, colour the world
-// green if it is true, red if it is false.
-sc_assert(f) = make_shape {
-    dist : everything.dist,
-    colour p :
-        let (x,y,z,t) = p;
-            b = bit(f());
-        in [1-b, b, 0],
-    is_2d : true,
-};
-fact n =
-    let i = 1;
-        r = 1;
-    in do
-        while (i <= n) (
-            r := r * i;
-            i := i + 1;
-        );
-    in r;
-print(fact 5);
-assert(fact 5 == 120);
-
+    // f() returns true or false. Execute f() on the GPU, colour the world
+    // green if it is true, red if it is false.
+    sc_assert(f) = make_shape {
+        dist : everything.dist,
+        colour p :
+            let (x,y,z,t) = p;
+                b = bit(f());
+            in [1-b, b, 0],
+        is_2d : true,
+    };
+    fact n =
+        let i = 1;
+            r = 1;
+        in do
+            while (i <= n) (
+                r := r * i;
+                i := i + 1;
+            );
+        in r;
+in do
+    print(fact 5);
+    assert(fact 5 == 120);
 in
 sc_assert(()->(fact 5 == 120))
