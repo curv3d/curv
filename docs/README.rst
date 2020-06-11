@@ -43,11 +43,11 @@ before the ``curv`` command will exit.]
 
 If you want to use a custom editor, just open your favourite editor to edit
 your source file ``foo.curv``. Then, from another shell window, type
-``curv -e foo.curv``. The ``curv`` command will run forever, redisplaying
+``curv -l foo.curv``. The ``curv`` command will run forever, redisplaying
 the shape whenever the source file changes. You must remember to terminate
 the ``curv`` command using ctrl-C when you are done.
 
-If you want to get fancy, then you can configure the behaviour of ``curv -le``
+For more convenience, you can configure the behaviour of ``curv -le``
 by setting the ``CURV_EDITOR`` environment variable. This is an advanced
 feature that requires some research. The ``CURV_EDITOR`` command must open a
 graphical editor window. The top level process must run in the foreground.
