@@ -56,7 +56,7 @@ Simple Type System
 Pure Functional Language
   Curv is a pure functional language.
   
-  * Functions_ are first class values, meaning that they can bound to variables,
+  * Functions_ are first class values, meaning that they can be bound to variables,
     passed as function arguments and returned as function results.
   * Functions are pure, meaning that the result returned by a function depends
     only on the argument value, and not on shared mutable state, which doesn't
