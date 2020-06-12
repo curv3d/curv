@@ -60,8 +60,12 @@ Speeding up Mesh Export
 Use ``-O jit`` to make mesh export run 30 times faster.
 This compiles the shape into C++ code, then compiles the
 C++ code using the ``c++`` command, which must exist in the ``PATH``.
-(If you have either the GNU g++ or the clang C++ compiler installed,
-then it should work.)
+
+You need the following software installed for this to work.
+If you followed the BUILD instructions, it will already be installed.
+
+ * Either the GNU g++ or the clang C++ compiler.
+ * The ``glm`` library.
 
 Simplifying the Mesh
 --------------------

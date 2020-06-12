@@ -52,13 +52,14 @@ by setting the ``CURV_EDITOR`` environment variable. This is an advanced
 feature that requires some research. The ``CURV_EDITOR`` command must open a
 graphical editor window. The top level process must run in the foreground.
 It must not exit immediately after opening the window: it must continue running
-until you close the window. This normally requires special command line flags,
-and not all graphical editors support this mode of operation.
+until you close the window. This usually requires special command
+line flags, and not all graphical editors support this mode of operation.
 
 ==============  ================  ==================
 Desired editor  Operating System  CURV_EDITOR string
 ==============  ================  ==================
-vim             Linux             gvim -f
+vim             Linux, MacOS      gvim -f
+gedit           Linux, MacOS      gedit --new-window --wait
 ==============  ================  ==================
 
 Once you figure this out, you can add ``export CURV_EDITOR="gvim -f"``
