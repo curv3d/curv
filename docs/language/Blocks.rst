@@ -13,7 +13,7 @@ For example,
       b = 2;
   in a + b
 
-is an expression with two local variables ``a`` and ``b``. The result is ``5``.
+is an expression with two local variables ``a`` and ``b``. The result is ``3``.
 
 If a block body is a statement or a ``do`` expression, then the body may
 contain assignment statements that modify the values of variables during
