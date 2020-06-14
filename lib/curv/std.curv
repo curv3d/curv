@@ -436,16 +436,9 @@ regular_polygon n =
         circumratio : 1 / cos(angle/2),
     };
 
-// convex polygon: vertices are in counterclockwise order.
-convex_polygon = {
-    call = mitred;
-    mitred pts =
-        intersection[
-            for (i in indices pts)
-                half_plane [pts[mod[i+1, count pts]], pts[i]],
-            rect[min pts, max pts] // bounding box
-        ];
-};
+convex_polygon pts =
+    do warning "'convex_polygon' is deprecated. Use 'polygon' instead.";
+    in polygon pts;
 
 // Finite polygon. May be nonconvex. Edges may cross, and the polygon may
 // self intersect. Uses the "crossing number" method to determine which
