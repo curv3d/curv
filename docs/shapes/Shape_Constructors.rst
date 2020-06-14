@@ -65,16 +65,16 @@ Shape Constructors
 
 .. |pentagon| image:: ../images/pentagon.png
 
-``convex_polygon vertices``
-  Construct a convex polygon from a list of vertices in counter-clockwise order.
-  The result is undefined if the vertex list doesn't specify a convex polygon.
-  Cost: linear in ``count(vertices)``.
- 
-  * ``convex_polygon.mitred``: mitred distance field.
-  * ``convex_polygon.exact``: exact distance field (TODO).
-
 ``polygon vertices``
-  TODO. (Use the Nef Polygon construction, by combining a set of half-planes using intersection and complement.)
+  Construct a finite polygon from a list of vertices.
+  It doesn't matter if the vertices
+  are listed in clockwise or counterclockwise order.
+  The polygon may be nonconvex. Edges may cross, and the polygon may
+  self intersect. The "crossing number" method is used to determine which
+  points are inside/outside the polygon.
+  See: http://geomalgorithms.com/a03-_inclusion.html
+  Cost: linear in the number of vertices.
+  Exact distance field.
 
 ``stroke {d: diameter, from: point1, to: point2}``
   A line of thickness ``d`` drawn from ``point1`` to ``point2``,
