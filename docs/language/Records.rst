@@ -28,12 +28,11 @@ in a function call.  For example::
 
     rotate {angle: 45*deg, axis: Z_axis} cube
 
-Record comprehensions permit you to override fields in existing records
-or specify default values. Using the ... operator you can add one or more
-fields to a record. And using if statements and or loops you can conditionally
-add fields.
+Record comprehensions permit you to construct a record value
+dynamically. The set of field names is determined at run time using
+program logic, which can include if statements, local variables and loops.
 
-Modules (scoped record constructors) contain a set of definitions
+Modules (scoped record constructors) contain a static set of definitions
 that form a mutually recursive scope. Definitions can refer to one another,
 and you can define recursive functions. Modules are used to define libraries.
 See ``lib/curv/*.curv`` in the source tree for examples.
