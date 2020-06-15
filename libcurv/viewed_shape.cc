@@ -16,7 +16,7 @@ namespace curv {
 Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Render_Opts& opts)
 {
     // Recognize a parametric shape S,
-    // which contains constructor & argument fields.
+    // which contains call & argument fields.
     // If found:
     // * Extract the parameters.
     //   Each parameter has: name, value, optional picker.
@@ -58,10 +58,10 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Render_Opts& opts)
     //   each picker.
 
     static Symbol_Ref argument_key = make_symbol("argument");
-    static Symbol_Ref constructor_key = make_symbol("constructor");
+    static Symbol_Ref constructor_key = make_symbol("call");
     static Symbol_Ref picker_key = make_symbol("picker");
 
-    // Recognize a parametric shape (it has `argument` and `constructor` fields).
+    // Recognize a parametric shape (it has `argument` and `call` fields).
     At_System cx{shape.system_};
     Shared<Record> sh_argument = nullptr;
     if (shape.record_->hasfield(argument_key)) {

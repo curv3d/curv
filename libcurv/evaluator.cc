@@ -424,7 +424,6 @@ Value
 call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f)
 {
     static Symbol_Ref callkey = make_symbol("call");
-    static Symbol_Ref conskey = make_symbol("constructor");
     Value funv = func;
     for (;;) {
         if (!funv.is_ref())
@@ -449,10 +448,6 @@ call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f)
                 funv = s->getfield(callkey, At_Phrase(*call_phrase, f));
                 continue;
             }
-            if (s->hasfield(conskey)) {
-                funv = s->getfield(conskey, At_Phrase(*call_phrase, f));
-                continue;
-            }
             break;
           }
         case Ref_Value::ty_string:
@@ -472,7 +467,6 @@ tail_call_func(
     Shared<const Phrase> call_phrase, std::unique_ptr<Frame>& f)
 {
     static Symbol_Ref callkey = make_symbol("call");
-    static Symbol_Ref conskey = make_symbol("constructor");
     Value funv = func;
     for (;;) {
         if (!funv.is_ref())
@@ -495,10 +489,6 @@ tail_call_func(
             Record* s = (Record*)&funp;
             if (s->hasfield(callkey)) {
                 funv = s->getfield(callkey, At_Phrase(*call_phrase, *f));
-                continue;
-            }
-            if (s->hasfield(conskey)) {
-                funv = s->getfield(conskey, At_Phrase(*call_phrase, *f));
                 continue;
             }
             break;
@@ -966,8 +956,8 @@ Parametric_Expr::eval(Frame& f) const
     rec->each_field(cx, [&](Symbol_Ref id, Value val) -> void {
         drec->fields_[id] = val;
     });
-    // TODO: The `constructor` function should return another parametric record.
-    drec->fields_[make_symbol("constructor")] = func;
+    // TODO: The `call` function should return another parametric record.
+    drec->fields_[make_symbol("call")] = func;
     drec->fields_[make_symbol("argument")] = {default_arg};
     return {drec};
 }
