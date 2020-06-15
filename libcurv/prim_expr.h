@@ -39,8 +39,12 @@ struct Not_Prim : public Unary_Bool_Prim
     static SC_Value sc_call(SC_Frame& f, SC_Value x) {
         if (x.type.is_bool())
             return sc_unary_call(f, x.type, "!", x);
-        if (x.type.is_bool_or_vec())
-            return sc_unary_call(f, x.type, "not", x);
+        if (x.type.is_bool_or_vec()) {
+            if (f.sc_.target_ == SC_Target::cpp)
+                return sc_unary_call(f, x.type, "not_", x);
+            else
+                return sc_unary_call(f, x.type, "not", x);
+        }
         return sc_unary_call(f, x.type, "~", x);
     }
 };

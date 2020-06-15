@@ -585,7 +585,7 @@ in sc_test {
     "nat_to_bool32": _->
         nat_to_bool32 0 ==
         [f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f,f];
-    "not": _-> not none == all;
+    "not": _-> not none == all && not[f,T]==[T,f];
     "and": _-> not(and[true,false]) && and[] &&
             and[bits 0xFF00FF00, bits 0xFF0000FF] == bits 0xFF000000 &&
             ([bits 0xFF00FF00, bits 0x00FF00FF]
