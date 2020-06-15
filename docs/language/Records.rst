@@ -28,10 +28,10 @@ in a function call.  For example::
 
     rotate {angle: 45*deg, axis: Z_axis} cube
 
-Record comprehensions permit you override fields in
-existing records, or specify default values, using the ``...`` operator.
-You can add a field to a record conditionally, using an ``if`` statement,
-and you can even generate a set of fields using a loop.
+Record comprehensions permit you to override fields in existing records
+or specify default values. Using the ... operator you can add one or more
+fields to a record. And using if statements and or loops you can conditionally
+add fields.
 
 Modules (scoped record constructors) contain a set of definitions
 that form a mutually recursive scope. Definitions can refer to one another,
