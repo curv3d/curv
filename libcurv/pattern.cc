@@ -592,7 +592,7 @@ record_pattern_default_value(const Pattern& pat, Frame& f)
 
 void
 record_pattern_each_parameter(
-    Closure& call, System& sys,
+    const Closure& call, System& sys,
     std::function<void(Symbol_Ref, Value, Value, Shared<const Phrase>)> f)
 {
     auto frame = Frame::make(call.nslots_, sys, nullptr, nullptr, nullptr);

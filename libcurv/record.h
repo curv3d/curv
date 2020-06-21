@@ -135,5 +135,12 @@ struct DRecord : public Record
     }
 };
 
+// Efficiently convert a Value to a mutable DRecord.
+// Abort if the Value is not a record.
+// If the Value is a DRecord with use_count==1, return the DRecord directly.
+// Otherwise, make a copy of the record and return that.
+// You should use std::move to pass the Value argument.
+Shared<DRecord> update_drecord(Value, const Context&);
+
 } // namespace curv
 #endif // header guard

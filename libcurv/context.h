@@ -118,10 +118,11 @@ struct At_Frame : public At_Syntax
 /// Exception Context where we know the Phrase that contains the error.
 struct At_Phrase : public At_Syntax
 {
-    const Phrase& phrase_;
+    Shared<const Phrase> phrase_;
     System& system_;
     Frame* frame_; // file_frame or call_frame
 
+    At_Phrase(Shared<const Phrase> phrase, Frame& call_frame);
     At_Phrase(const Phrase& phrase, Frame& call_frame);
     At_Phrase(const Phrase& phrase, System& sys, Frame* frame);
     At_Phrase(const Phrase& phrase, Scanner& scanner);

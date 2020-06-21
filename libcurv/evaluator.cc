@@ -9,6 +9,7 @@
 #include <libcurv/list.h>
 #include <libcurv/meaning.h>
 #include <libcurv/module.h>
+#include <libcurv/parametric.h>
 #include <libcurv/prim.h>
 #include <libcurv/record.h>
 #include <libcurv/sc_compiler.h>
@@ -937,6 +938,32 @@ Predicate_Assertion_Expr::eval(Frame& f) const
     throw Exception(At_Phrase(*syntax_, f), "predicate assertion failed");
 }
 
+Value Parametric_Ctor::call(Value arg, Frame& fr) const
+{
+    At_Phrase acx(arg_part(fr.call_phrase_), fr);
+    auto arec = arg.to<const Record>(acx);
+    auto drec = make<DRecord>();
+    // Merge defl_ with arec; error if arec contains fields not in defl_;
+    // place result in drec.
+    defl_->each_field(acx, [&](Symbol_Ref id, Value val) -> void {
+        drec->fields_[id] = val;
+    });
+    arec->each_field(acx, [&](Symbol_Ref id, Value val) -> void {
+        auto ep = drec->fields_.find(id);
+        if (ep != drec->fields_.end())
+            ep->second = val;
+        else {
+            throw Exception(acx, stringify("bad argument ",id));
+        }
+    });
+    // call parametric record constructor
+    auto rval = ctor_->call({drec}, fr);
+    auto result = update_drecord(rval, acx);
+    result->fields_[make_symbol("call")] = {ctor_};
+    result->fields_[make_symbol("argument")] = {drec};
+    return {result};
+}
+
 Value
 Parametric_Expr::eval(Frame& f) const
 {
@@ -957,7 +984,8 @@ Parametric_Expr::eval(Frame& f) const
         drec->fields_[id] = val;
     });
     // TODO: The `call` function should return another parametric record.
-    drec->fields_[make_symbol("call")] = func;
+    drec->fields_[make_symbol("call")] =
+        {make<Parametric_Ctor>(closure, default_arg)};
     drec->fields_[make_symbol("argument")] = {default_arg};
     return {drec};
 }

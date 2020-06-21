@@ -145,7 +145,7 @@ struct Binary_Array_Op
                 stringify(i==0?x:y,": domain error"));
         }
         if (auto ap = dynamic_cast<const At_Phrase*>(&cx)) {
-            if (auto bin = dynamic_cast<const Binary_Phrase*>(&ap->phrase_))
+            if (auto bin = cast<const Binary_Phrase>(ap->phrase_))
                 return Exception(cx,
                     stringify(x," ",bin->opname()," ",y,": domain error"));
         }
@@ -156,7 +156,7 @@ struct Binary_Array_Op
         const At_Syntax& cx, Value x, Value y)
     {
         if (auto ap = dynamic_cast<const At_Phrase*>(&cx)) {
-            if (auto bin = dynamic_cast<const Binary_Phrase*>(&ap->phrase_))
+            if (auto bin = cast<const Binary_Phrase>(ap->phrase_))
                 return Exception(cx,
                     stringify(x," ",bin->opname()," ",y,": domain error"));
         }

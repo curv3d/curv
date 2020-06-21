@@ -116,4 +116,15 @@ DRecord::ref_field(Symbol_Ref name, bool need_value, const Context& cx)
         " has no field named ", name));
 }
 
+Shared<DRecord> update_drecord(Value arg, const Context& cx)
+{
+    // TODO: optimize: if arg is a drecord with usecount==1, make no copy
+    auto arec = arg.to<Record>(cx);
+    auto drec = make<DRecord>();
+    arec->each_field(cx, [&](Symbol_Ref id, Value val) -> void {
+        drec->fields_[id] = val;
+    });
+    return drec;
+}
+
 } // namespace curv

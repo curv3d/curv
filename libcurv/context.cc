@@ -84,21 +84,25 @@ At_Token::get_locations(std::list<Location>& locs) const
 System& At_Token::system() const { return system_; }
 Frame* At_Token::frame() const { return file_frame_; }
 
-At_Phrase::At_Phrase(const Phrase& phrase, Frame& call_frame)
+At_Phrase::At_Phrase(Shared<const Phrase> phrase, Frame& call_frame)
 : phrase_(phrase), system_(call_frame.system_), frame_(&call_frame)
 {}
 
+At_Phrase::At_Phrase(const Phrase& phrase, Frame& call_frame)
+: phrase_(share(phrase)), system_(call_frame.system_), frame_(&call_frame)
+{}
+
 At_Phrase::At_Phrase(const Phrase& phrase, System& sys, Frame* frame)
-: phrase_(phrase), system_(sys), frame_(frame)
+: phrase_(share(phrase)), system_(sys), frame_(frame)
 {}
 
 At_Phrase::At_Phrase(const Phrase& phrase, Scanner& scanner)
-: phrase_(phrase), system_(scanner.system_), frame_(scanner.file_frame_)
+: phrase_(share(phrase)), system_(scanner.system_), frame_(scanner.file_frame_)
 {}
 
 At_Phrase::At_Phrase(const Phrase& phrase, Environ& env)
 :
-    phrase_(phrase),
+    phrase_(share(phrase)),
     system_(env.analyser_.system_),
     frame_(env.analyser_.file_frame_)
 {}
@@ -106,12 +110,18 @@ At_Phrase::At_Phrase(const Phrase& phrase, Environ& env)
 void
 At_Phrase::get_locations(std::list<Location>& locs) const
 {
-    locs.push_back(phrase_.location());
+    if (phrase_) locs.push_back(phrase_->location());
     get_frame_locations(frame_, locs);
 }
 System& At_Phrase::system() const { return system_; }
 Frame* At_Phrase::frame() const { return frame_; }
-const Phrase& At_Phrase::syntax() const { return phrase_; }
+const Phrase& At_Phrase::syntax() const
+{
+    if (phrase_ == nullptr)
+        throw Exception{At_Frame(*frame_),
+            "Internal error: At_Phrase::syntax(): phrase_ is null"};
+    return *phrase_;
+}
 
 void
 At_Arg::get_locations(std::list<Location>& locs) const

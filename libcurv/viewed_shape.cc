@@ -8,6 +8,7 @@
 #include <libcurv/exception.h>
 #include <libcurv/frag.h>
 #include <libcurv/json.h>
+#include <libcurv/parametric.h>
 #include <iostream>
 #include <cctype>
 
@@ -58,23 +59,21 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Render_Opts& opts)
     //   each picker.
 
     static Symbol_Ref argument_key = make_symbol("argument");
-    static Symbol_Ref constructor_key = make_symbol("call");
+    static Symbol_Ref call_key = make_symbol("call");
     static Symbol_Ref picker_key = make_symbol("picker");
 
     // Recognize a parametric shape (it has `argument` and `call` fields).
     At_System cx{shape.system_};
     Shared<Record> sh_argument = nullptr;
-    if (shape.record_->hasfield(argument_key)) {
+    if (shape.record_->hasfield(argument_key))
         sh_argument = shape.record_->getfield(argument_key, cx).to<Record>(cx);
-    }
-    Shared<Closure> sh_constructor = nullptr;
-    if (sh_argument && shape.record_->hasfield(constructor_key)) {
-        sh_constructor = shape.record_->getfield(constructor_key, cx).to<Closure>(cx);
-    }
+    Shared<const Parametric_Ctor> sh_constructor = nullptr;
+    auto callfield = shape.record_->find_field(call_key, cx);
+    sh_constructor = callfield.maybe<const Parametric_Ctor>();
     if (sh_argument && sh_constructor) {
         // We have a parametric shape.
         auto cparams = make<DRecord>();
-        record_pattern_each_parameter(*sh_constructor, shape.system_,
+        record_pattern_each_parameter(*sh_constructor->ctor_, shape.system_,
             [&](Symbol_Ref name, Value pred, Value value,
                 Shared<const Phrase> nameph) -> void
             {
