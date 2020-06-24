@@ -47,7 +47,7 @@ struct SC_Type
 
 private:
     /* New Representation */
-    Shared<const Type> type_;
+    Shared<const Type> type_;   // never null
 
     /* Old Representation */
     // 4 shorts == 64 bit representation
@@ -64,7 +64,7 @@ public:
     friend std::ostream& operator<<(std::ostream& out, SC_Type type);
     friend SC_Type sc_type_of(Value v);
 
-    SC_Type() : type_(), base_type_(Base_Type::Error) {}
+    SC_Type() : type_(Type::Error), base_type_(Base_Type::Error) {}
 private:
     SC_Type(Shared<const Type> t, Base_Type bt,
             unsigned dim1 = 0, unsigned dim2 = 0)
@@ -214,7 +214,8 @@ public:
     inline unsigned plex_array_rank() const { return rank_; }
     inline SC_Type plex_array_base() const {
         auto t = type_;
-        while (t && t->plex_type_ == Plex_Type::missing)
+        while (t->subtype_ == Ref_Value::sty_list_type
+               && t->plex_type_ == Plex_Type::missing)
             t = cast<const List_Type>(t)->elem_type_;
         return SC_Type(t, base_type_);
     }
@@ -260,7 +261,7 @@ public:
 
     inline bool operator==(SC_Type rhs) const
     {
-        bool new_eq = Type::equal(type_, rhs.type_);
+        bool new_eq = Type::equal(*type_, *rhs.type_);
         bool old_eq = base_type_ == rhs.base_type_ && rank_ == rhs.rank_
             && dim1_ == rhs.dim1_ && dim2_ == rhs.dim2_;
         assert(old_eq == new_eq);

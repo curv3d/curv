@@ -54,6 +54,7 @@ struct Ref_Value : public Shared_Base
             sty_uniform_variable,
             sty_reactive_expression,
         ty_type,
+            sty_error_type,
             sty_bool_type,
             sty_num_type,
             sty_list_type

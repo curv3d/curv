@@ -6,9 +6,15 @@
 
 namespace curv {
 
+Shared<const Type> Type::Error = make<Error_Type>();
 Shared<const Type> Type::Bool = make<Bool_Type>();
 Shared<const Type> Type::Bool32 = make<List_Type>(32, Type::Bool);
 Shared<const Type> Type::Num = make<Num_Type>();
+
+void Error_Type::print_repr(std::ostream& out) const
+{
+    out << "Error";
+};
 
 void Bool_Type::print_repr(std::ostream& out) const
 {
@@ -53,19 +59,16 @@ Plex_Type List_Type::make_plex_type(unsigned count, Shared<const Type> etype)
     return Plex_Type::missing;
 }
 
-bool Type::equal(Shared<const Type> t1, Shared<const Type> t2)
+bool Type::equal(const Type& t1, const Type& t2)
 {
-    if (t1 && t2) {
-        if (t1->subtype_ != t2->subtype_) return false;
-        if (t1->subtype_ == Ref_Value::sty_list_type) {
-            auto l1 = (List_Type*)(&*t1);
-            auto l2 = (List_Type*)(&*t2);
-            return l1->count_ == l2->count_
-                && equal(l1->elem_type_,l2->elem_type_);
-        }
-        return true;
+    if (t1.subtype_ != t2.subtype_) return false;
+    if (t1.subtype_ == Ref_Value::sty_list_type) {
+        auto l1 = (const List_Type*)(&t1);
+        auto l2 = (const List_Type*)(&t2);
+        return l1->count_ == l2->count_
+            && equal(*l1->elem_type_, *l2->elem_type_);
     }
-    return t1 == t2;
+    return true;
 }
 
 } // namespace curv

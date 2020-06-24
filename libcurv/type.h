@@ -15,7 +15,7 @@ namespace curv {
 // Plex types are the argument and result types of SPIR-V primitive functions.
 enum class Plex_Type : short
 {
-    missing,    // flag value meaning: not a plex type
+    missing,    // flag value: not a plex type
     Bool,
     Bool2,
     Bool3,
@@ -37,10 +37,17 @@ struct Type : public Ref_Value
 {
     Plex_Type plex_type_;
     Type(int st, Plex_Type pt) : Ref_Value(ty_type, st), plex_type_(pt) {}
+    static Shared<const Type> Error;
     static Shared<const Type> Bool;
     static Shared<const Type> Bool32;
     static Shared<const Type> Num;
-    static bool equal(Shared<const Type>, Shared<const Type>);
+    static bool equal(const Type&, const Type&);
+};
+
+struct Error_Type : public Type
+{
+    Error_Type() : Type(sty_error_type, Plex_Type::missing) {}
+    virtual void print_repr(std::ostream&) const override;
 };
 
 struct Bool_Type : public Type

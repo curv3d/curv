@@ -103,7 +103,7 @@ SC_Type
 SC_Type::elem_type() const
 {
     auto t = cast<const List_Type>(type_);
-    Shared<const Type> et = t ? t->elem_type_ : nullptr;
+    Shared<const Type> et = t ? t->elem_type_ : Type::Error;
     switch (rank_) {
     case 0:
         if (is_num_vec())
@@ -117,7 +117,7 @@ SC_Type::elem_type() const
         if (base_type_ >= Base_Type::Bool2x32
             && base_type_ <= Base_Type::Bool4x32)
             return Bool32();
-        return *this;
+        return {};
     case 1:
         return {et, base_type_};
     case 2:
