@@ -41,6 +41,7 @@ If applicable, add screenshots to help explain your problem.
  - GPU driver, if on Linux:
  - Are you running the `curv` command using a remote viewing protocol like VNC or NX?
  - Are you running the `curv` command inside a VM?
+ - Are you using the Ubuntu Linux Snap package?
  - Curv Version: run the command `curv --version` and paste the output here.
 
 **Additional context**
