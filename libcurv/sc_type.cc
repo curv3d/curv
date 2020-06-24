@@ -64,6 +64,7 @@ sc_type_of(Value v)
                 }
                 // Try to construct a general numeric array type.
                 if (ty.rank_ < 2) {
+                    ty.type_ = make<List_Type>(n, ty.type_);
                     ++ty.rank_;
                     ty.dim2_ = ty.dim1_;
                     ty.dim1_ = n;
@@ -84,6 +85,7 @@ sc_type_of(Value v)
                 }
                 // Try to construct a general boolean array type.
                 if (ty.rank_ < 2) {
+                    ty.type_ = make<List_Type>(n, ty.type_);
                     ++ty.rank_;
                     ty.dim2_ = ty.dim1_;
                     ty.dim1_ = n;
@@ -100,6 +102,8 @@ sc_type_of(Value v)
 SC_Type
 SC_Type::elem_type() const
 {
+    auto t = cast<const List_Type>(type_);
+    Shared<const Type> et = t ? t->elem_type_ : nullptr;
     switch (rank_) {
     case 0:
         if (is_num_vec())
@@ -115,9 +119,9 @@ SC_Type::elem_type() const
             return Bool32();
         return *this;
     case 1:
-        return {base_type_};
+        return {et, base_type_};
     case 2:
-        return {base_type_, dim2_};
+        return {et, base_type_, dim2_};
     default:
         die("SC_Type::elem_type() bad rank");
     }
@@ -126,6 +130,7 @@ SC_Type::elem_type() const
 SC_Type
 SC_Type::List(SC_Type etype, unsigned n)
 {
+    auto lt = make<List_Type>(n, etype.type_);
     switch (etype.rank_) {
     case 0:
         if (etype.is_num()) {
@@ -138,9 +143,9 @@ SC_Type::List(SC_Type etype, unsigned n)
         } else if (etype.is_bool32()) {
             if (n >= 2 && n <= 4) return Bool32(n);
         }
-        return SC_Type{etype.base_type_, n};
+        return SC_Type{lt, etype.base_type_, n};
     case 1:
-        return SC_Type{etype.base_type_, n, etype.dim1_};
+        return SC_Type{lt, etype.base_type_, n, etype.dim1_};
     default:
         die("SC_Type::List() bad rank");
     }

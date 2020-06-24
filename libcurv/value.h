@@ -52,7 +52,11 @@ struct Ref_Value : public Shared_Base
         ty_lambda,
         ty_reactive,
             sty_uniform_variable,
-            sty_reactive_expression
+            sty_reactive_expression,
+        ty_type,
+            sty_bool_type,
+            sty_num_type,
+            sty_list_type
     };
     Ref_Value(int type) : Shared_Base(), type_(type), subtype_(type) {}
     Ref_Value(int type, int subtype)
@@ -78,7 +82,7 @@ struct Ref_Value : public Shared_Base
 /// in the 64 bit pattern of a Value. There are 3 special immediate values
 /// which aren't numbers: missing, false and true.
 ///
-/// String, List, Object and Function values are "reference" values:
+/// String, List, Record and Function values are "reference" values:
 /// a Ref_Value* pointer is stored in the low order 48 bits of the Value.
 /// This works on 64 bit Intel and ARM systems because those architectures
 /// use 48 bit virtual addresses, with the upper 16 bits of a 64 bit pointer

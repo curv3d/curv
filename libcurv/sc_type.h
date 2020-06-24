@@ -6,6 +6,7 @@
 #define LIBCURV_SC_TYPE_H
 
 #include <libcurv/value.h>
+#include <libcurv/type.h>
 #include <ostream>
 
 namespace curv {
@@ -45,6 +46,10 @@ struct SC_Type
     };
 
 private:
+    /* New Representation */
+    Shared<const Type> type_;
+
+    /* Old Representation */
     // 4 shorts == 64 bit representation
     Base_Type base_type_;
     // rank 0: The type is just 'base_type_'.
@@ -54,48 +59,63 @@ private:
     unsigned short rank_ = 0;
     unsigned short dim1_ = 0;
     unsigned short dim2_ = 0;
+
 public:
     friend std::ostream& operator<<(std::ostream& out, SC_Type type);
     friend SC_Type sc_type_of(Value v);
 
-    constexpr SC_Type() : base_type_(Base_Type::Error) {}
+    SC_Type() : type_(), base_type_(Base_Type::Error) {}
 private:
-    constexpr SC_Type(Base_Type bt, unsigned dim1 = 0, unsigned dim2 = 0)
+    SC_Type(Shared<const Type> t, Base_Type bt,
+            unsigned dim1 = 0, unsigned dim2 = 0)
     :
+        type_(t),
         base_type_(bt),
         rank_(dim2 ? 2 : dim1 ? 1 : 0),
         dim1_(dim1),
         dim2_(dim2)
     {}
 public:
-    static constexpr inline SC_Type Error() { return {Base_Type::Error}; }
-    static constexpr inline SC_Type Bool(unsigned n = 1)
+    static inline SC_Type Error() { return {}; }
+    static inline SC_Type Bool(unsigned n = 1)
     {
-        assert(n >= 1 && n <= 4);
-        return {Base_Type(int(Base_Type::Bool) + n-1)};
+        if (n == 1)
+            return {Type::Bool, Base_Type::Bool};
+        assert(n >= 2 && n <= 4);
+        return {make<List_Type>(n, Type::Bool),
+                Base_Type(int(Base_Type::Bool) + n-1)};
     }
-    static constexpr inline SC_Type Bool32(unsigned n=1)
+    static inline SC_Type Bool32(unsigned n=1)
     {
-        assert(n >= 1 && n <= 4);
-        return {Base_Type(int(Base_Type::Bool32) + n-1)};
+        if (n == 1)
+            return {Type::Bool32, Base_Type::Bool32};
+        assert(n >= 2 && n <= 4);
+        return {make<List_Type>(n, Type::Bool32),
+                Base_Type(int(Base_Type::Bool32) + n-1)};
     }
-    static constexpr inline SC_Type Num(unsigned n = 1)
+    static inline SC_Type Num(unsigned n = 1)
     {
-        assert(n >= 1 && n <= 4);
-        return {Base_Type(int(Base_Type::Num) + n-1)};
+        if (n == 1)
+            return {Type::Num, Base_Type::Num};
+        assert(n >= 2 && n <= 4);
+        return {make<List_Type>(n, Type::Num),
+                Base_Type(int(Base_Type::Num) + n-1)};
     }
-    static constexpr inline SC_Type Vec(SC_Type base, unsigned n)
+    static inline SC_Type Vec(SC_Type base, unsigned n)
     {
         assert(base.rank_ == 0 &&
             (base.base_type_ == Base_Type::Bool ||
              base.base_type_ == Base_Type::Num ||
              base.base_type_ == Base_Type::Bool32));
         assert(n >= 1 && n <= 4);
-        return {Base_Type(int(base.base_type_) + n-1)};
+        return {make<List_Type>(n, base.type_),
+                Base_Type(int(base.base_type_) + n-1)};
     }
-    static constexpr inline SC_Type Mat(int n)
+    static inline SC_Type Mat(int n)
     {
-        return {Base_Type(int(Base_Type::Mat2) + n - 2)};
+        assert(n >= 2 && n <= 4);
+        return {make<List_Type>(n, make<List_Type>(n, Type::Num)),
+                Base_Type(int(Base_Type::Mat2) + n - 2)};
     }
     static SC_Type List(SC_Type etype, unsigned n);
 
@@ -192,7 +212,12 @@ public:
     // These functions view an SC_Type as a multi-D array of plexes.
     // If plex_array_rank()==0 then the type is a plex.
     inline unsigned plex_array_rank() const { return rank_; }
-    inline SC_Type plex_array_base() const { return SC_Type(base_type_); }
+    inline SC_Type plex_array_base() const {
+        auto t = type_;
+        while (t && t->plex_type_ == Plex_Type::missing)
+            t = cast<const List_Type>(t)->elem_type_;
+        return SC_Type(t, base_type_);
+    }
     inline int plex_array_dim(int i) const {
         if (i == 0) return dim1_;
         else if (i == 1) return dim2_;
@@ -235,8 +260,11 @@ public:
 
     inline bool operator==(SC_Type rhs) const
     {
-        return base_type_ == rhs.base_type_ && rank_ == rhs.rank_
+        bool new_eq = Type::equal(type_, rhs.type_);
+        bool old_eq = base_type_ == rhs.base_type_ && rank_ == rhs.rank_
             && dim1_ == rhs.dim1_ && dim2_ == rhs.dim2_;
+        assert(old_eq == new_eq);
+        return new_eq;
     }
     inline bool operator!=(SC_Type rhs) const
     {
