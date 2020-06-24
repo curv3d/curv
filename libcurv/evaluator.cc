@@ -378,7 +378,7 @@ Value value_at_path(Value val, const Value* path, const Value* endpath,
     }
     else if (auto string = val.maybe<String>()) {
         if (path+1 == endpath) {
-            // TODO: this code only works for ASCII strings.
+            // NOTE: this code only works for ASCII strings.
             if (index.is_num()) {
                 int i = index.to_int(0, int(string->size()-1), state.icx);
                 return {make_string(string->data()+i, 1)};
@@ -395,16 +395,29 @@ Value value_at_path(Value val, const Value* path, const Value* endpath,
         }
     }
     else if (auto rx = val.maybe<Reactive_Value>()) {
-        // TODO: what to do for pathsize > 1? punt for now.
-        if (path+1 == endpath && is_num(index)) {
+        // TODO: only Num indices are supported here.
+        unsigned pathlen = endpath - path;
+        if (pathlen <= rx->sctype_.rank()) {
             auto iph = state.iph();
             auto lph = state.lph();
-            Shared<List_Expr> ix = List_Expr::make({to_expr(index,*iph)}, iph);
-            ix->init();
-            return {make<Reactive_Expression>(
-                rx->sctype_.elem_type(),
-                make<Call_Expr>(state.ph(), to_expr(val,*lph), ix),
-                state.cx)};
+            Shared<List_Expr> ix = List_Expr::make(pathlen, iph);
+            auto rtype = rx->sctype_;
+            for (unsigned i = 0; i < pathlen; ++i) {
+                if (is_num(path[i]))
+                    ix->at(i) = to_expr(path[i], *iph);
+                else {
+                    ix = nullptr; // bad or unsupported index
+                    break;
+                }
+                rtype = rtype.elem_type();
+            }
+            if (ix) {
+                ix->init();
+                return {make<Reactive_Expression>(
+                    rtype,
+                    make<Call_Expr>(state.ph(), to_expr(val,*lph), ix),
+                    state.cx)};
+            }
         }
     }
     throw Exception(state.cx, state.err(val, index, path+1, endpath));
