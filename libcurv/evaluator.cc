@@ -203,7 +203,7 @@ If_Else_Op::eval(Frame& f) const
             return arg3_->eval(f);
     }
     auto re = cond.maybe<Reactive_Value>();
-    if (re && re->sctype_ == SC_Type::Bool()) {
+    if (re && re->sctype_.is_bool()) {
         Value a2 = arg2_->eval(f);
         Value a3 = arg3_->eval(f);
         SC_Type t2 = sc_type_of(a2);
@@ -237,7 +237,7 @@ If_Else_Op::tail_eval(std::unique_ptr<Frame>& f) const
         return;
     }
     auto re = cond.maybe<Reactive_Value>();
-    if (re && re->sctype_ == SC_Type::Bool()) {
+    if (re && re->sctype_.is_bool()) {
         Value a2 = arg2_->eval(*f);
         Value a3 = arg3_->eval(*f);
         SC_Type t2 = sc_type_of(a2);

@@ -125,6 +125,8 @@ private:
         return sc_base_type_info_array[int(base_type_) + 1];
     }
 public:
+    inline bool is_error() const
+      { return type_->subtype_ == Ref_Value::sty_error_type; }
 
     /*
      * Boolean predicates

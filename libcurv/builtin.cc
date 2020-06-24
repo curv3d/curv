@@ -477,7 +477,7 @@ struct Bool32_To_Float_Prim : public Unary_Bool32_To_Num_Prim
     }
     static SC_Value sc_call(SC_Frame& f, SC_Value x)
     {
-        unsigned count = x.type == SC_Type::Bool32() ? 1 : x.type.count();
+        unsigned count = x.type.is_bool32() ? 1 : x.type.count();
         auto result = f.sc_.newvalue(SC_Type::Num(count));
         f.sc_.out() << "  " << result.type << " " << result
             << " = uintBitsToFloat(" << x << ");\n";
@@ -793,7 +793,7 @@ struct Mag_Function : public Legacy_Function
                     continue;
                 }
                 auto r = val.maybe<Reactive_Value>();
-                if (r && r->sctype_ == SC_Type::Num()) {
+                if (r && r->sctype_.is_num()) {
                     rlist->at(i) = r->expr();
                     continue;
                 }

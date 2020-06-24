@@ -16,7 +16,7 @@ bool is_symbol(Value a)
     if (a.is_bool()) return true;
     if (a.maybe<Symbol>() != nullptr) return true;
     auto r = a.maybe<Reactive_Value>();
-    return r && r->sctype_ == SC_Type::Bool();
+    return r && r->sctype_.is_bool();
 }
 
 const char Symbol::name[] = "symbol";

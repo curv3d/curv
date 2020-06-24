@@ -13,7 +13,7 @@ bool is_bool(Value a)
 {
     if (a.is_bool()) return true;
     auto r = a.maybe<Reactive_Value>();
-    return r && r->sctype_ == SC_Type::Bool();
+    return r && r->sctype_.is_bool();
 }
 
 void assert_bool(Value a, const Context& cx)

@@ -104,33 +104,6 @@ struct SC_Compiler
     {
         return SC_Value(valcount_++, type);
     }
-
-    // TODO: maybe add a member function for each operation that we support.
-    // Maybe these can later be virtual functions, so that this interface
-    // becomes generic for SPIR-V and LLVM code generation. Eg,
-    // SC_Value add(SC_Value x, SC_Value y)
-    // {
-    //     assert(x.type == SC_Type::num);
-    //     assert(y.type == SC_Type::num);
-    //     auto result = newvalue(SC_Type::num);
-    //     out << result << "=" << x << "+" << y << ";\n";
-    //     return result;
-    // }
-    //
-    // This API looks handy for code generation for built-in shapes
-    // with built-in dist functions. You can nest these function calls,
-    // it would look Lispy. sc.sqrt(sc.add(sc.square(x), sc.square(y)))
-    //
-    // The caller is responsible for passing arguments (to `add`) of the
-    // correct type. (Otherwise, there is an assertion failure.)
-    // Only the caller has enough context to arrange for expressive exceptions
-    // to report a shape argument of the wrong type, or a failure of static
-    // type checking within a user-defined dist function.
-    //
-    // Maybe SC_Compiler will track context for expressive exceptions?
-    // There is no eval stack at this time, but there is a CSG tree,
-    // so maybe we can have a CSG tree stack trace. There is also a
-    // sc_call stack, once we support nested function calls in dist functions.
 };
 
 SC_Value sc_eval_op(SC_Frame& f, const Operation& op);

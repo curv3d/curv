@@ -211,15 +211,15 @@ sc_put_value(Value val, SC_Type ty, const At_SC_Phrase& cx, std::ostream& out)
     else if (auto uv = val.maybe<Uniform_Variable>()) {
         out << uv->identifier_;
     }
-    else if (ty == SC_Type::Num()) {
+    else if (ty.is_num()) {
         double num = val.to_num(cx);
         out << dfmt(num, dfmt::EXPR);
     }
-    else if (ty == SC_Type::Bool()) {
+    else if (ty.is_bool()) {
         bool b = val.to_bool(cx);
         out << (b ? "true" : "false");
     }
-    else if (ty == SC_Type::Bool32()) {
+    else if (ty.is_bool32()) {
         Shared<const List> bl = val.to<const List>(cx);
         unsigned bn = bool32_to_nat(bl, cx);
         out << bn << "u";
@@ -266,7 +266,7 @@ SC_Value sc_eval_const(SC_Frame& f, Value val, const Phrase& syntax)
     At_SC_Phrase cx(share(syntax), f);
 
     auto ty = sc_type_of(val);
-    if (ty == SC_Type::Error()) {
+    if (ty.is_error()) {
         throw Exception(At_SC_Phrase(share(syntax), f),
             stringify("value ",val," is not supported "));
     }

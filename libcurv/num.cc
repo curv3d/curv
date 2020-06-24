@@ -17,7 +17,7 @@ bool is_num(Value a)
 {
     if (a.is_num()) return true;
     auto r = a.maybe<Reactive_Value>();
-    return r && r->sctype_ == SC_Type::Num();
+    return r && r->sctype_.is_num();
 }
 
 int
