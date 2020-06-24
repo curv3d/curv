@@ -1,0 +1,327 @@
+{
+  is_2d: #false;
+  is_3d: #true;
+  bbox: [[-1.1755705045849463,-1.1755705045849463,-1.1755705045849463],[1.1755705045849463,1.1755705045849463,1.1755705045849463]];
+  shader:
+    "#define AA 4
+    |#define TAA 1
+    |#define FDUR 0.04
+    |const vec3 background_colour = vec3(1,1,1);
+    |const int ray_max_iter = 200;
+    |const float ray_max_depth = 400.0;
+    |#ifdef GLSLVIEWER
+    |uniform vec3 u_eye3d;
+    |uniform vec3 u_centre3d;
+    |uniform vec3 u_up3d;
+    |#endif
+    |float dist(vec4 r0)
+    |{
+    |  /* constants */
+    |  vec3 r2 = vec3(0.0,0.85065080835204,0.5257311121191336);
+    |  vec3 r6 = vec3(0.0,-0.85065080835204,0.5257311121191336);
+    |  vec3 r11 = vec3(0.5257311121191336,0.0,0.85065080835204);
+    |  vec3 r16 = vec3(-0.5257311121191336,0.0,0.85065080835204);
+    |  vec3 r21 = vec3(0.85065080835204,0.5257311121191336,0.0);
+    |  vec3 r26 = vec3(-0.85065080835204,0.5257311121191336,0.0);
+    |  float r30 = 1.0;
+    |  float r38 = 1.05;
+    |  vec3 r48 = vec3(0.25,0.25,0.25);
+    |  float r55 = 0.0;
+    |  /* body */
+    |  vec3 r1 = r0.xyz;
+    |  float r3 = dot(r1,r2);
+    |  float r4 = abs(r3);
+    |  vec3 r5 = r0.xyz;
+    |  float r7 = dot(r5,r6);
+    |  float r8 = abs(r7);
+    |  float r9 = max(r4,r8);
+    |  vec3 r10 = r0.xyz;
+    |  float r12 = dot(r10,r11);
+    |  float r13 = abs(r12);
+    |  float r14 = max(r9,r13);
+    |  vec3 r15 = r0.xyz;
+    |  float r17 = dot(r15,r16);
+    |  float r18 = abs(r17);
+    |  float r19 = max(r14,r18);
+    |  vec3 r20 = r0.xyz;
+    |  float r22 = dot(r20,r21);
+    |  float r23 = abs(r22);
+    |  float r24 = max(r19,r23);
+    |  vec3 r25 = r0.xyz;
+    |  float r27 = dot(r25,r26);
+    |  float r28 = abs(r27);
+    |  float r29 = max(r24,r28);
+    |  float r31 = r29-r30;
+    |  float r32 = r0[0];
+    |  float r33 = r0[1];
+    |  float r34 = r0[2];
+    |  float r35 = r0[3];
+    |  vec3 r36 = vec3(r32,r33,r34);
+    |  float r37 = length(r36);
+    |  float r39 = r37-r38;
+    |  float r40 = -(r39);
+    |  float r41 = max(r31,r40);
+    |  float r42 = r0[0];
+    |  float r43 = r0[1];
+    |  float r44 = r0[2];
+    |  float r45 = r0[3];
+    |  vec3 r46 = vec3(r42,r43,r44);
+    |  vec3 r47 = abs(r46);
+    |  vec3 r49 = r47-r48;
+    |  float r50 = r49[0];
+    |  float r51 = r49[1];
+    |  float r52 = max(r50,r51);
+    |  float r53 = r49[2];
+    |  float r54 = max(r52,r53);
+    |  float r56 = min(r54,r55);
+    |  vec3 r57 = vec3(r55);
+    |  vec3 r58 = max(r49,r57);
+    |  float r59 = length(r58);
+    |  float r60 = r56+r59;
+    |  float r61 = min(r41,r60);
+    |  return r61;
+    |}
+    |vec3 colour(vec4 r0)
+    |{
+    |  /* constants */
+    |  vec3 r2 = vec3(0.0,0.85065080835204,0.5257311121191336);
+    |  vec3 r6 = vec3(0.0,-0.85065080835204,0.5257311121191336);
+    |  vec3 r11 = vec3(0.5257311121191336,0.0,0.85065080835204);
+    |  vec3 r16 = vec3(-0.5257311121191336,0.0,0.85065080835204);
+    |  vec3 r21 = vec3(0.85065080835204,0.5257311121191336,0.0);
+    |  vec3 r26 = vec3(-0.85065080835204,0.5257311121191336,0.0);
+    |  float r30 = 1.0;
+    |  float r38 = 1.05;
+    |  vec3 r48 = vec3(0.25,0.25,0.25);
+    |  float r55 = 0.0;
+    |  vec3 r64 = vec3(1.0,0.0,0.0);
+    |  float r65 = 0.8;
+    |  float r66 = 0.5;
+    |  vec3 r67 = vec3(r65,r65,r66);
+    |  float r68 = 2.2;
+    |  vec3 r69 = vec3(r68);
+    |  vec3 r70 = pow(r67,r69);
+    |  /* body */
+    |  vec3 r1 = r0.xyz;
+    |  float r3 = dot(r1,r2);
+    |  float r4 = abs(r3);
+    |  vec3 r5 = r0.xyz;
+    |  float r7 = dot(r5,r6);
+    |  float r8 = abs(r7);
+    |  float r9 = max(r4,r8);
+    |  vec3 r10 = r0.xyz;
+    |  float r12 = dot(r10,r11);
+    |  float r13 = abs(r12);
+    |  float r14 = max(r9,r13);
+    |  vec3 r15 = r0.xyz;
+    |  float r17 = dot(r15,r16);
+    |  float r18 = abs(r17);
+    |  float r19 = max(r14,r18);
+    |  vec3 r20 = r0.xyz;
+    |  float r22 = dot(r20,r21);
+    |  float r23 = abs(r22);
+    |  float r24 = max(r19,r23);
+    |  vec3 r25 = r0.xyz;
+    |  float r27 = dot(r25,r26);
+    |  float r28 = abs(r27);
+    |  float r29 = max(r24,r28);
+    |  float r31 = r29-r30;
+    |  float r32 = r0[0];
+    |  float r33 = r0[1];
+    |  float r34 = r0[2];
+    |  float r35 = r0[3];
+    |  vec3 r36 = vec3(r32,r33,r34);
+    |  float r37 = length(r36);
+    |  float r39 = r37-r38;
+    |  float r40 = -(r39);
+    |  float r41 = max(r31,r40);
+    |  float r42 = r0[0];
+    |  float r43 = r0[1];
+    |  float r44 = r0[2];
+    |  float r45 = r0[3];
+    |  vec3 r46 = vec3(r42,r43,r44);
+    |  vec3 r47 = abs(r46);
+    |  vec3 r49 = r47-r48;
+    |  float r50 = r49[0];
+    |  float r51 = r49[1];
+    |  float r52 = max(r50,r51);
+    |  float r53 = r49[2];
+    |  float r54 = max(r52,r53);
+    |  float r56 = min(r54,r55);
+    |  vec3 r57 = vec3(r55);
+    |  vec3 r58 = max(r49,r57);
+    |  float r59 = length(r58);
+    |  float r60 = r56+r59;
+    |  bool r61 = r60<=r55;
+    |  bool r62 = r60<=r41;
+    |  bool r63 =(r61 || r62);
+    |  vec3 r71 =(r63 ? r64 : r70);
+    |  return r71;
+    |}
+    |const vec3 bbox_min = vec3(-1.1755705045849463,-1.1755705045849463,-1.1755705045849463);
+    |const vec3 bbox_max = vec3(1.1755705045849463,1.1755705045849463,1.1755705045849463);
+    |// ray marching. ro is ray origin, rd is ray direction (unit vector).
+    |// result is (t,r,g,b), where
+    |//  * t is the distance that we marched,
+    |//  * r,g,b is the colour of the distance field at the point we ended up at.
+    |//    (-1,-1,-1) means no object was hit.
+    |vec4 castRay( in vec3 ro, in vec3 rd, float time )
+    |{
+    |    float tmin = 0.0;
+    |    float tmax = ray_max_depth;
+    |   
+    |    float t = tmin;
+    |    vec3 c = vec3(-1.0,-1.0,-1.0);
+    |    for (int i=0; i<ray_max_iter; i++) {
+    |        float precis = 0.0005*t;
+    |        vec4 p = vec4(ro+rd*t,time);
+    |        float d = dist(p);
+    |        if (d < precis) {
+    |            c = colour(p);
+    |            break;
+    |        }
+    |        t += d;
+    |        if (t > tmax) break;
+    |    }
+    |    return vec4( t, c );
+    |}
+    |vec3 calcNormal( in vec3 pos, float time )
+    |{
+    |    vec2 e = vec2(1.0,-1.0)*0.5773*0.0005;
+    |    return normalize( e.xyy*dist( vec4(pos + e.xyy,time) ) + 
+    |                      e.yyx*dist( vec4(pos + e.yyx,time) ) + 
+    |                      e.yxy*dist( vec4(pos + e.yxy,time) ) + 
+    |                      e.xxx*dist( vec4(pos + e.xxx,time) ) );
+    |}
+    |float calcAO( in vec3 pos, in vec3 nor, float time )
+    |{
+    |    float occ = 0.0;
+    |    float sca = 1.0;
+    |    for( int i=0; i<5; i++ )
+    |    {
+    |        float hr = 0.01 + 0.12*float(i)/4.0;
+    |        vec3 aopos =  nor * hr + pos;
+    |        float dd = dist( vec4(aopos,time) );
+    |        occ += -(dd-hr)*sca;
+    |        sca *= 0.95;
+    |    }
+    |    return clamp( 1.0 - 3.0*occ, 0.0, 1.0 );    
+    |}
+    |// in ro: ray origin
+    |// in rd: ray direction
+    |// out: rgb colour
+    |vec3 render( in vec3 ro, in vec3 rd, float time )
+    |{ 
+    |    //vec3 col = vec3(0.7, 0.9, 1.0) +rd.z*0.8;
+    |    vec3 col = background_colour;
+    |    vec4 res = castRay(ro,rd, time);
+    |    float t = res.x;
+    |    vec3 c = res.yzw;
+    |    if( c.x>=0.0 )
+    |    {
+    |        vec3 pos = ro + t*rd;
+    |        vec3 nor = calcNormal( pos, time );
+    |        vec3 ref = reflect( rd, nor );
+    |        
+    |        // material        
+    |        col = c;
+    |
+    |        // lighting        
+    |        float occ = calcAO( pos, nor, time );
+    |        vec3  lig = normalize( vec3(-0.4, 0.6, 0.7) );
+    |        float amb = clamp( 0.5+0.5*nor.z, 0.0, 1.0 );
+    |        float dif = clamp( dot( nor, lig ), 0.0, 1.0 );
+    |        float bac = clamp( dot( nor, normalize(vec3(-lig.x,lig.y,0.0))), 0.0, 1.0 )*clamp( 1.0-pos.z,0.0,1.0);
+    |        float dom = smoothstep( -0.1, 0.1, ref.z );
+    |        float fre = pow( clamp(1.0+dot(nor,rd),0.0,1.0), 2.0 );
+    |        float spe = pow(clamp( dot( ref, lig ), 0.0, 1.0 ),16.0);
+    |        
+    |        vec3 lin = vec3(0.0);
+    |        lin += 1.30*dif*vec3(1.00,0.80,0.55);
+    |        lin += 2.00*spe*vec3(1.00,0.90,0.70)*dif;
+    |        lin += 0.40*amb*vec3(0.40,0.60,1.00)*occ;
+    |        lin += 0.50*dom*vec3(0.40,0.60,1.00)*occ;
+    |        lin += 0.50*bac*vec3(0.35,0.35,0.35)*occ;
+    |        lin += 0.25*fre*vec3(1.00,1.00,1.00)*occ;
+    |        vec3 iqcol = col*lin;
+    |
+    |        //col = mix( col, vec3(0.8,0.9,1.0), 1.0-exp( -0.0002*t*t*t ) );
+    |        col = mix(col,iqcol, 0.5);
+    |    }
+    |
+    |    return vec3( clamp(col,0.0,1.0) );
+    |}
+    |// Create a matrix to transform coordinates to look towards a given point.
+    |// * `eye` is the position of the camera.
+    |// * `centre` is the position to look towards.
+    |// * `up` is the 'up' direction.
+    |mat3 look_at(vec3 eye, vec3 centre, vec3 up)
+    |{
+    |    vec3 ww = normalize(centre - eye);
+    |    vec3 uu = normalize(cross(ww, up));
+    |    vec3 vv = normalize(cross(uu, ww));
+    |    return mat3(uu, vv, ww);
+    |}
+    |// Generate a ray direction for ray-casting.
+    |// * `camera` is the camera look-at matrix.
+    |// * `pos` is the screen position, normally in the range -1..1
+    |// * `lens` is the lens length of the camera (encodes field-of-view).
+    |//   0 is very wide, and 2 is a good default.
+    |vec3 ray_direction(mat3 camera, vec2 pos, float lens)
+    |{
+    |    return normalize(camera * vec3(pos, lens));
+    |}
+    |void mainImage( out vec4 fragColour, in vec2 fragCoord )
+    |{
+    |    vec3 col = vec3(0.0);
+    |    const vec3 origin = (bbox_min + bbox_max) / 2.0;
+    |    const vec3 radius = (bbox_max - bbox_min) / 2.0;
+    |    float r = max(radius.x, max(radius.y, radius.z)) / 1.3;
+    |#if AA>1
+    |  for (int m=0; m<AA; ++m)
+    |  for (int n=0; n<AA; ++n) {
+    |    vec2 o = vec2(float(m),float(n)) / float(AA) - 0.5;
+    |#else
+    |    const vec2 o = vec2(0.0);
+    |#endif
+    |    vec2 p = -1.0 + 2.0 * (fragCoord+o) / iResolution.xy;
+    |    p.x *= iResolution.x/iResolution.y;
+    |
+    |#ifdef GLSLVIEWER
+    |    vec3 eye = vec3(u_eye3d.x, -u_eye3d.z, u_eye3d.y)*r + origin;
+    |    vec3 centre = vec3(u_centre3d.x, -u_centre3d.z, u_centre3d.y)*r + origin;
+    |    vec3 up = vec3(u_up3d.x, -u_up3d.z, u_up3d.y);
+    |#else
+    |    vec3 eye = vec3(2.6, -4.5, 3.0);
+    |    vec3 centre = vec3(0.0, 0.0, 0.0);
+    |    vec3 up = vec3(-0.25, 0.433, 0.866);
+    |#endif
+    |    mat3 camera = look_at(eye, centre, up);
+    |    vec3 dir = ray_direction(camera, p, 2.5);
+    |
+    |#if TAA>1
+    |  for (int t=0; t<TAA; ++t) {
+    |    float time = iTime + float(t)/float(TAA)*float(FDUR);
+    |#else
+    |    float time = iTime;
+    |#endif
+    |    col += render( eye, dir, time );
+    |
+    |#if TAA>1
+    |  }
+    |#endif
+    |#if AA>1
+    |  }
+    |#endif
+    |#if AA>1 || TAA>1
+    |    col /= float(AA*AA*TAA);
+    |#endif
+    |
+    |    // convert linear RGB to sRGB
+    |    col = pow(col, vec3(0.454545454545454545));
+    |    fragColour = vec4(col,1.0);
+    |}
+    ";
+  parameters: [
+  ];
+}

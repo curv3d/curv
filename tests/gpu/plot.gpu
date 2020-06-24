@@ -1,0 +1,203 @@
+{
+  is_2d: #true;
+  is_3d: #false;
+  bbox: [[-1e9999,-1e9999,-1e9999],[1e9999,1e9999,1e9999]];
+  shader:
+    "#define AA 4
+    |#define TAA 1
+    |#define FDUR 0.04
+    |const vec3 background_colour = vec3(1,1,1);
+    |#ifdef GLSLVIEWER
+    |uniform mat3 u_view2d;
+    |#endif
+    |float dist(vec4 r0)
+    |{
+    |  /* constants */
+    |  float r4 = 10.0;
+    |  vec2 r15 = vec2(0.025,1.0/0.0);
+    |  float r20 = 0.0;
+    |  vec2 r33 = vec2(1.0/0.0,0.025);
+    |  /* body */
+    |  float r1 = r0.y;
+    |  float r2 = r0.x;
+    |  float r3 = sin(r2);
+    |  float r5 = r2*r4;
+    |  float r6 = sin(r5);
+    |  float r7 = r3*r6;
+    |  float r8 = r1-r7;
+    |  float r9 = r0[0];
+    |  float r10 = r0[1];
+    |  float r11 = r0[2];
+    |  float r12 = r0[3];
+    |  vec2 r13 = vec2(r9,r10);
+    |  vec2 r14 = abs(r13);
+    |  vec2 r16 = r14-r15;
+    |  float r17 = r16[0];
+    |  float r18 = r16[1];
+    |  float r19 = max(r17,r18);
+    |  float r21 = min(r19,r20);
+    |  vec2 r22 = vec2(r20);
+    |  vec2 r23 = max(r16,r22);
+    |  float r24 = length(r23);
+    |  float r25 = r21+r24;
+    |  float r26 = min(r8,r25);
+    |  float r27 = r0[0];
+    |  float r28 = r0[1];
+    |  float r29 = r0[2];
+    |  float r30 = r0[3];
+    |  vec2 r31 = vec2(r27,r28);
+    |  vec2 r32 = abs(r31);
+    |  vec2 r34 = r32-r33;
+    |  float r35 = r34[0];
+    |  float r36 = r34[1];
+    |  float r37 = max(r35,r36);
+    |  float r38 = min(r37,r20);
+    |  vec2 r39 = vec2(r20);
+    |  vec2 r40 = max(r34,r39);
+    |  float r41 = length(r40);
+    |  float r42 = r38+r41;
+    |  float r43 = min(r26,r42);
+    |  return r43;
+    |}
+    |vec3 colour(vec4 r0)
+    |{
+    |  /* constants */
+    |  float r4 = 10.0;
+    |  vec2 r15 = vec2(0.025,1.0/0.0);
+    |  float r20 = 0.0;
+    |  vec2 r33 = vec2(1.0/0.0,0.025);
+    |  vec3 r46 = vec3(1.0,0.0,0.0);
+    |  vec3 r72 = vec3(0.0,1.0,0.0);
+    |  float r73 = 0.8;
+    |  float r74 = 0.5;
+    |  vec3 r75 = vec3(r73,r73,r74);
+    |  float r76 = 2.2;
+    |  vec3 r77 = vec3(r76);
+    |  vec3 r78 = pow(r75,r77);
+    |  /* body */
+    |  float r1 = r0.y;
+    |  float r2 = r0.x;
+    |  float r3 = sin(r2);
+    |  float r5 = r2*r4;
+    |  float r6 = sin(r5);
+    |  float r7 = r3*r6;
+    |  float r8 = r1-r7;
+    |  float r9 = r0[0];
+    |  float r10 = r0[1];
+    |  float r11 = r0[2];
+    |  float r12 = r0[3];
+    |  vec2 r13 = vec2(r9,r10);
+    |  vec2 r14 = abs(r13);
+    |  vec2 r16 = r14-r15;
+    |  float r17 = r16[0];
+    |  float r18 = r16[1];
+    |  float r19 = max(r17,r18);
+    |  float r21 = min(r19,r20);
+    |  vec2 r22 = vec2(r20);
+    |  vec2 r23 = max(r16,r22);
+    |  float r24 = length(r23);
+    |  float r25 = r21+r24;
+    |  float r26 = min(r8,r25);
+    |  float r27 = r0[0];
+    |  float r28 = r0[1];
+    |  float r29 = r0[2];
+    |  float r30 = r0[3];
+    |  vec2 r31 = vec2(r27,r28);
+    |  vec2 r32 = abs(r31);
+    |  vec2 r34 = r32-r33;
+    |  float r35 = r34[0];
+    |  float r36 = r34[1];
+    |  float r37 = max(r35,r36);
+    |  float r38 = min(r37,r20);
+    |  vec2 r39 = vec2(r20);
+    |  vec2 r40 = max(r34,r39);
+    |  float r41 = length(r40);
+    |  float r42 = r38+r41;
+    |  bool r43 = r42<=r20;
+    |  bool r44 = r42<=r26;
+    |  bool r45 =(r43 || r44);
+    |  float r47 = r0.y;
+    |  float r48 = r0.x;
+    |  float r49 = sin(r48);
+    |  float r50 = r48*r4;
+    |  float r51 = sin(r50);
+    |  float r52 = r49*r51;
+    |  float r53 = r47-r52;
+    |  float r54 = r0[0];
+    |  float r55 = r0[1];
+    |  float r56 = r0[2];
+    |  float r57 = r0[3];
+    |  vec2 r58 = vec2(r54,r55);
+    |  vec2 r59 = abs(r58);
+    |  vec2 r60 = r59-r15;
+    |  float r61 = r60[0];
+    |  float r62 = r60[1];
+    |  float r63 = max(r61,r62);
+    |  float r64 = min(r63,r20);
+    |  vec2 r65 = vec2(r20);
+    |  vec2 r66 = max(r60,r65);
+    |  float r67 = length(r66);
+    |  float r68 = r64+r67;
+    |  bool r69 = r68<=r20;
+    |  bool r70 = r68<=r53;
+    |  bool r71 =(r69 || r70);
+    |  vec3 r79 =(r71 ? r72 : r78);
+    |  vec3 r80 =(r45 ? r46 : r79);
+    |  return r80;
+    |}
+    |const vec4 bbox = vec4(-10.0,-10.0,+10.0,+10.0);
+    |void mainImage( out vec4 fragColour, in vec2 fragCoord )
+    |{
+    |    vec2 size = bbox.zw - bbox.xy;
+    |    vec2 scale2 = size / iResolution.xy;
+    |    vec2 offset = bbox.xy;
+    |    float scale;
+    |    if (scale2.x > scale2.y) {
+    |        scale = scale2.x;
+    |        offset.y -= (iResolution.y*scale - size.y)/2.0;
+    |    } else {
+    |        scale = scale2.y;
+    |        offset.x -= (iResolution.x*scale - size.x)/2.0;
+    |    }
+    |    vec3 col = vec3(0.0);
+    |#if AA>1
+    |  for (int m=0; m<AA; ++m)
+    |  for (int n=0; n<AA; ++n) {
+    |    vec2 jitter = vec2(float(m),float(n)) / float(AA) - 0.5;
+    |#else
+    |    const vec2 jitter = vec2(0.0);
+    |#endif
+    |    vec2 xy = fragCoord + jitter;
+    |#ifdef GLSLVIEWER
+    |    xy = (u_view2d * vec3(xy,1)).xy;
+    |#endif
+    |#if TAA>1
+    |  for (int t=0; t<TAA; ++t) {
+    |    float time = iTime + float(t)/float(TAA)*float(FDUR);
+    |#else
+    |    float time = iTime;
+    |#endif
+    |    vec4 p = vec4(xy*scale+offset,0,time);
+    |    float d = dist(p);
+    |    if (d > 0.0) {
+    |        col += background_colour;
+    |    } else {
+    |        col += colour(p);
+    |    }
+    |    
+    |#if TAA>1
+    |  }
+    |#endif
+    |#if AA>1
+    |  }
+    |#endif
+    |#if AA>1 || TAA>1
+    |    col /= float(AA*AA*TAA);
+    |#endif
+    |    // convert linear RGB to sRGB
+    |    fragColour = vec4(pow(col, vec3(0.454545454545454545)),1.0);
+    |}
+    ";
+  parameters: [
+  ];
+}

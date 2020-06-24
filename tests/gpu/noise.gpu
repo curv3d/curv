@@ -1,0 +1,149 @@
+{
+  is_2d: #true;
+  is_3d: #true;
+  bbox: [[-1e9999,-1e9999,-1e9999],[1e9999,1e9999,1e9999]];
+  shader:
+    "#define AA 4
+    |#define TAA 1
+    |#define FDUR 0.04
+    |const vec3 background_colour = vec3(1,1,1);
+    |#ifdef GLSLVIEWER
+    |uniform mat3 u_view2d;
+    |#endif
+    |uniform bool rv_animate;
+    |float dist(vec4 r0)
+    |{
+    |  /* constants */
+    |  float r1 = 1.0/0.0;
+    |  float r2 = -(r1);
+    |  /* body */
+    |  return r2;
+    |}
+    |vec3 colour(vec4 r0)
+    |{
+    |  /* constants */
+    |  bool r5 = rv_animate;
+    |  float r13 = 11.0;
+    |  float r16 = 7.0;
+    |  float r20 = 3.0;
+    |  float r23 = 14.0;
+    |  float r27 = 6.0;
+    |  float r30 = 15.0;
+    |  float r33 = 5.0;
+    |  float r36 = 12.0;
+    |  float r39 = 9.0;
+    |  float r47 = 1.0;
+    |  float r50 = 2.2;
+    |  /* body */
+    |  float r1 = r0[0];
+    |  float r2 = r0[1];
+    |  float r3 = r0[2];
+    |  float r4 = r0[3];
+    |  float r6 = float(r5);
+    |  float r7 = r4*r6;
+    |  vec3 r8 = vec3(r1,r2,r7);
+    |  uvec3 r9 = floatBitsToUint(r8);
+    |  uint r10 = r9[0];
+    |  uint r11 = r9[1];
+    |  uint r12 = r9[2];
+    |  uint r14 = r10 >> int(r13);
+    |  uint r15 = r10 + r14;
+    |  r10=r15;
+    |  uint r17 = r10 << int(r16);
+    |  uint r18 = r10^r17;
+    |  r10=r18;
+    |  uint r19 = r10 + r11;
+    |  r10=r19;
+    |  uint r21 = r10 << int(r20);
+    |  uint r22 = r10^r21;
+    |  r10=r22;
+    |  uint r24 = r10 >> int(r23);
+    |  uint r25 = r12^r24;
+    |  uint r26 = r10 + r25;
+    |  r10=r26;
+    |  uint r28 = r10 << int(r27);
+    |  uint r29 = r10^r28;
+    |  r10=r29;
+    |  uint r31 = r10 >> int(r30);
+    |  uint r32 = r10 + r31;
+    |  r10=r32;
+    |  uint r34 = r10 << int(r33);
+    |  uint r35 = r10^r34;
+    |  r10=r35;
+    |  uint r37 = r10 >> int(r36);
+    |  uint r38 = r10 + r37;
+    |  r10=r38;
+    |  uint r40 = r10 << int(r39);
+    |  uint r41 = r10^r40;
+    |  r10=r41;
+    |  uint r42 = 8388607u;
+    |  uint r43 = r10&r42;
+    |;
+    |  uint r44 = 1065353216u;
+    |  uint r45 = r43|r44;
+    |;
+    |  r10=r45;
+    |  float r46 = uintBitsToFloat(r10);
+    |  float r48 = r46-r47;
+    |  vec3 r49 = vec3(r48,r48,r48);
+    |  vec3 r51 = vec3(r50);
+    |  vec3 r52 = pow(r49,r51);
+    |  return r52;
+    |}
+    |const vec4 bbox = vec4(-10.0,-10.0,+10.0,+10.0);
+    |void mainImage( out vec4 fragColour, in vec2 fragCoord )
+    |{
+    |    vec2 size = bbox.zw - bbox.xy;
+    |    vec2 scale2 = size / iResolution.xy;
+    |    vec2 offset = bbox.xy;
+    |    float scale;
+    |    if (scale2.x > scale2.y) {
+    |        scale = scale2.x;
+    |        offset.y -= (iResolution.y*scale - size.y)/2.0;
+    |    } else {
+    |        scale = scale2.y;
+    |        offset.x -= (iResolution.x*scale - size.x)/2.0;
+    |    }
+    |    vec3 col = vec3(0.0);
+    |#if AA>1
+    |  for (int m=0; m<AA; ++m)
+    |  for (int n=0; n<AA; ++n) {
+    |    vec2 jitter = vec2(float(m),float(n)) / float(AA) - 0.5;
+    |#else
+    |    const vec2 jitter = vec2(0.0);
+    |#endif
+    |    vec2 xy = fragCoord + jitter;
+    |#ifdef GLSLVIEWER
+    |    xy = (u_view2d * vec3(xy,1)).xy;
+    |#endif
+    |#if TAA>1
+    |  for (int t=0; t<TAA; ++t) {
+    |    float time = iTime + float(t)/float(TAA)*float(FDUR);
+    |#else
+    |    float time = iTime;
+    |#endif
+    |    vec4 p = vec4(xy*scale+offset,0,time);
+    |    float d = dist(p);
+    |    if (d > 0.0) {
+    |        col += background_colour;
+    |    } else {
+    |        col += colour(p);
+    |    }
+    |    
+    |#if TAA>1
+    |  }
+    |#endif
+    |#if AA>1
+    |  }
+    |#endif
+    |#if AA>1 || TAA>1
+    |    col /= float(AA*AA*TAA);
+    |#endif
+    |    // convert linear RGB to sRGB
+    |    fragColour = vec4(pow(col, vec3(0.454545454545454545)),1.0);
+    |}
+    ";
+  parameters: [
+    {name: "rv_animate", type: "bool", value: true, label: "animate", config: #checkbox};
+  ];
+}

@@ -124,6 +124,14 @@ private:
     {
         return sc_base_type_info_array[int(base_type_) + 1];
     }
+    inline static bool tpred(bool b1, bool b2) {
+        assert(b1 == b2);
+        return b1;
+    }
+    inline static unsigned tunsigned(unsigned n1, unsigned n2) {
+        assert(n1 == n2);
+        return n1;
+    }
 public:
     inline bool is_error() const
       { return type_->subtype_ == Ref_Value::sty_error_type; }
@@ -134,41 +142,69 @@ public:
     // Is a single Bool value. Consistent with Value::is_bool().
     inline bool is_bool() const
     {
-        return base_type_ == Base_Type::Bool
-            && rank_ == 0;
+        return tpred(type_->subtype_ == Ref_Value::sty_bool_type,
+            base_type_ == Base_Type::Bool && rank_ == 0);
     }
     // Is a single Bool or vector of Bool (count 2-4). Not an array.
     inline bool is_bool_or_vec() const
     {
-        return base_type_ >= Base_Type::Bool
+        Plex_Type plex = type_->plex_type_;
+        return tpred(
+            plex >= Plex_Type::Bool
+            && plex <= Plex_Type::Bool4
+        ,
+            base_type_ >= Base_Type::Bool
             && base_type_ <= Base_Type::Bool4
-            && rank_ == 0;
+            && rank_ == 0
+        );
     }
     // Is a single Bool32. Not an array.
     inline bool is_bool32() const
     {
-        return base_type_ == Base_Type::Bool32
-            && rank_ == 0;
+        return tpred(
+            type_->plex_type_ == Plex_Type::Bool32
+        ,
+            base_type_ == Base_Type::Bool32
+            && rank_ == 0
+        );
     }
     // Is a single Bool32 or vector of Bool32. Not an array.
     inline bool is_bool32_or_vec() const
     {
-        return base_type_ >= Base_Type::Bool32
+        auto plex = type_->plex_type_;
+        return tpred(
+            plex >= Plex_Type::Bool32
+            && plex <= Plex_Type::Bool4x32
+        ,
+            base_type_ >= Base_Type::Bool32
             && base_type_ <= Base_Type::Bool4x32
-            && rank_ == 0;
+            && rank_ == 0
+        );
     }
     // Is a bool, a bool vec, a bool32, or a bool32 vec. Not an array.
     inline bool is_bool_plex() const
     {
-        return base_type_ >= Base_Type::Bool
+        auto plex = type_->plex_type_;
+        return tpred(
+            plex >= Plex_Type::Bool
+            && plex <= Plex_Type::Bool4x32
+        ,
+            base_type_ >= Base_Type::Bool
             && base_type_ <= Base_Type::Bool4x32
-            && rank_ == 0;
+            && rank_ == 0
+        );
     }
     // Is a bool, a bool vec, a bool32, a bool32 vec, or array of same.
     inline bool is_bool_tensor() const
     {
-        return base_type_ >= Base_Type::Bool
-            && base_type_ <= Base_Type::Bool4x32;
+        auto plex = type_->plex_array_base()->plex_type_;
+        return tpred(
+            plex >= Plex_Type::Bool
+            && plex <= Plex_Type::Bool4x32
+        ,
+            base_type_ >= Base_Type::Bool
+            && base_type_ <= Base_Type::Bool4x32
+        );
     }
 
     /*
@@ -177,86 +213,156 @@ public:
     // Is a single number. Conforms to Value::is_num().
     inline bool is_num() const
     {
-        return base_type_ == Base_Type::Num
-            && rank_ == 0;
+        return tpred(
+            type_->plex_type_ == Plex_Type::Num
+        ,
+            base_type_ == Base_Type::Num
+            && rank_ == 0
+        );
     }
     // is a single number or vector
     inline bool is_num_or_vec() const
     {
-        return base_type_ >= Base_Type::Num
+        auto plex = type_->plex_type_;
+        return tpred(
+            plex >= Plex_Type::Num
+            && plex <= Plex_Type::Vec4
+        ,
+            base_type_ >= Base_Type::Num
             && base_type_ <= Base_Type::Vec4
-            && rank_ == 0;
+            && rank_ == 0
+        );
     }
     // Is a single number, vector, or matrix. Not an array.
     inline bool is_num_plex() const
     {
-        return base_type_ >= Base_Type::Num
+        auto plex = type_->plex_type_;
+        return tpred(
+            plex >= Plex_Type::Num
+            && plex <= Plex_Type::Mat4
+        ,
+            base_type_ >= Base_Type::Num
             && base_type_ <= Base_Type::Mat4
-            && rank_ == 0;
+            && rank_ == 0
+        );
     }
     // Is a number, a vector, a matrix, or an array of same.
     inline bool is_num_tensor() const
     {
-        return base_type_ >= Base_Type::Num
-            && base_type_ <= Base_Type::Mat4;
+        auto plex = type_->plex_array_base()->plex_type_;
+        return tpred(
+            plex >= Plex_Type::Num
+            && plex <= Plex_Type::Mat4
+        ,
+            base_type_ >= Base_Type::Num
+            && base_type_ <= Base_Type::Mat4
+        );
     }
     inline bool is_num_vec() const
     {
-        return rank_ == 0
-            && base_type_ >= Base_Type::Vec2 && base_type_ <= Base_Type::Vec4;
+        auto plex = type_->plex_type_;
+        return tpred(
+            plex >= Plex_Type::Vec2 && plex <= Plex_Type::Vec4
+        ,
+            rank_ == 0
+            && base_type_ >= Base_Type::Vec2 && base_type_ <= Base_Type::Vec4
+        );
     }
     inline bool is_mat() const
     {
-        return rank_ == 0
-            && base_type_ >= Base_Type::Mat2 && base_type_ <= Base_Type::Mat4;
+        auto plex = type_->plex_type_;
+        return tpred(
+            plex >= Plex_Type::Mat2 && plex <= Plex_Type::Mat4
+        ,
+            rank_ == 0
+            && base_type_ >= Base_Type::Mat2 && base_type_ <= Base_Type::Mat4
+        );
     }
 
     // These functions view an SC_Type as a multi-D array of plexes.
     // If plex_array_rank()==0 then the type is a plex.
-    inline unsigned plex_array_rank() const { return rank_; }
-    inline SC_Type plex_array_base() const {
-        auto t = type_;
-        while (t->subtype_ == Ref_Value::sty_list_type
-               && t->plex_type_ == Plex_Type::missing)
-            t = cast<const List_Type>(t)->elem_type_;
-        return SC_Type(t, base_type_);
+    inline unsigned plex_array_rank() const {
+        return tunsigned(type_->plex_array_rank(), rank_);
     }
-    inline int plex_array_dim(int i) const {
-        if (i == 0) return dim1_;
-        else if (i == 1) return dim2_;
-        else return 0; }
+    inline SC_Type plex_array_base() const {
+        return SC_Type(type_->plex_array_base(), base_type_);
+    }
+    inline unsigned plex_array_dim(unsigned i) const {
+        unsigned n = 0;
+        if (i == 0) n = dim1_;
+        else if (i == 1) n = dim2_;
+        return tunsigned(type_->plex_array_dim(i), n);
+    }
 
     // a Plex type is one of the following 3 mutually exclusive cases:
-    inline bool is_scalar_plex() const { return rank_ == 0; }
+    inline bool is_scalar_plex() const {
+        return tpred(
+            type_->plex_type_ != Plex_Type::missing
+        ,
+            rank_ == 0
+        );
+    }
     inline bool is_tuple() const { return false; }
     inline bool is_struct() const { return false; }
 
-    inline bool is_plex() const { return rank_ == 0; }
-    inline bool is_list() const { return rank() > 0; }
-    inline bool is_scalar_or_vec() const {
-        return rank_ == 0 && base_info().rank <= 1 && base_info().dim1 <= 4;
+    inline bool is_plex() const {
+        return tpred(
+            type_->plex_type_ != Plex_Type::missing
+        ,
+            rank_ == 0
+        );
     }
-    inline bool is_vec() const
-    {
-        return rank_ == 0 && (
+    inline bool is_list() const {
+        return tpred(
+            type_->subtype_ == Ref_Value::sty_list_type
+        ,
+            rank() > 0
+        );
+    }
+    inline bool is_scalar_or_vec() const {
+        auto plex = type_->plex_type_;
+        return tpred(
+            (plex >= Plex_Type::Bool && plex <= Plex_Type::Bool4)
+            || (plex >= Plex_Type::Bool32 && plex <= Plex_Type::Bool4x32)
+            || (plex >= Plex_Type::Num && plex <= Plex_Type::Vec4)
+        ,
+            rank_ == 0 && base_info().rank <= 1 && base_info().dim1 <= 4
+        );
+    }
+    inline bool is_vec() const {
+        auto plex = type_->plex_type_;
+        return tpred(
+            (plex >= Plex_Type::Bool2 && plex <= Plex_Type::Bool4)
+            || (plex >= Plex_Type::Bool2x32 && plex <= Plex_Type::Bool4x32)
+            || (plex >= Plex_Type::Vec2 && plex <= Plex_Type::Vec4)
+        ,
+        rank_ == 0 && (
             (base_type_ >= Base_Type::Bool2 && base_type_ <= Base_Type::Bool4)
             || (base_type_ >= Base_Type::Bool2x32
                 && base_type_ <= Base_Type::Bool4x32)
             || (base_type_ >= Base_Type::Vec2 && base_type_ <= Base_Type::Vec4)
+        )
         );
     }
 
     // number of dimensions: 0 means a scalar (Num or Bool or Error)
-    inline unsigned rank() const
-    {
-        return rank_ + base_info().rank;
+    inline unsigned rank() const {
+        return tunsigned(
+            type_->rank()
+        ,
+            rank_ + base_info().rank
+        );
     }
     // First dimension, if type is a list, or 1 if type is a scalar.
     inline unsigned count() const
     {
-        if (rank_)
-            return dim1_;
-        return base_info().dim1;
+        return tunsigned(
+            type_->subtype_ == Ref_Value::sty_list_type
+            ? ((List_Type*)(&*type_))->count_
+            : 1
+        ,
+            rank_ ? dim1_ : base_info().dim1
+        );
     }
     // If this is an array, strip one dimension off of the type.
     SC_Type elem_type() const;

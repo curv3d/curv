@@ -1,0 +1,301 @@
+{
+  is_2d: #true;
+  is_3d: #false;
+  bbox: [[-1e9999,-1e9999,-0.1],[1e9999,1e9999,0.1]];
+  shader:
+    "#define AA 4
+    |#define TAA 1
+    |#define FDUR 0.04
+    |const vec3 background_colour = vec3(1,1,1);
+    |#ifdef GLSLVIEWER
+    |uniform mat3 u_view2d;
+    |#endif
+    |float dist(vec4 r0)
+    |{
+    |  /* constants */
+    |  vec2 r5 = vec2(1.0,1.0);
+    |  float r8 = 2.0;
+    |  float r34 = 1.0;
+    |  float r37 = 0.1;
+    |  vec3 r40 = vec3(1.0,1.0,0.0);
+    |  /* body */
+    |  float r1 = r0[0];
+    |  float r2 = r0[1];
+    |  float r3 = r0[2];
+    |  float r4 = r0[3];
+    |  float r6 = r5.x;
+    |  float r7 = r1+r6;
+    |  float r9 = r5.x;
+    |  float r10 = r8*r9;
+    |  float r11 = r7/r10;
+    |  float r12 = floor(r11);
+    |  float r13 = r10*r12;
+    |  float r14 = r7-r13;
+    |  float r15 = r5.x;
+    |  float r16 = r14-r15;
+    |  float r17 = r5.y;
+    |  float r18 = r2+r17;
+    |  float r19 = r5.y;
+    |  float r20 = r8*r19;
+    |  float r21 = r18/r20;
+    |  float r22 = floor(r21);
+    |  float r23 = r20*r22;
+    |  float r24 = r18-r23;
+    |  float r25 = r5.y;
+    |  float r26 = r24-r25;
+    |  vec4 r27 = vec4(r16,r26,r3,r4);
+    |  float r28 = r27[0];
+    |  float r29 = r27[1];
+    |  float r30 = r27[2];
+    |  float r31 = r27[3];
+    |  vec2 r32 = vec2(r28,r29);
+    |  float r33 = length(r32);
+    |  float r35 = r33-r34;
+    |  float r36 = abs(r35);
+    |  float r38 = r36-r37;
+    |  float r39 = r0.x;
+    |  float r41 = r40.x;
+    |  float r42 = r39-r41;
+    |  float r43 = r0.y;
+    |  float r44 = r40.y;
+    |  float r45 = r43-r44;
+    |  float r46 = r0.z;
+    |  float r47 = r40.z;
+    |  float r48 = r46-r47;
+    |  float r49 = r0.w;
+    |  float r50 = r5.x;
+    |  float r51 = r42+r50;
+    |  float r52 = r5.x;
+    |  float r53 = r8*r52;
+    |  float r54 = r51/r53;
+    |  float r55 = floor(r54);
+    |  float r56 = r53*r55;
+    |  float r57 = r51-r56;
+    |  float r58 = r5.x;
+    |  float r59 = r57-r58;
+    |  float r60 = r5.y;
+    |  float r61 = r45+r60;
+    |  float r62 = r5.y;
+    |  float r63 = r8*r62;
+    |  float r64 = r61/r63;
+    |  float r65 = floor(r64);
+    |  float r66 = r63*r65;
+    |  float r67 = r61-r66;
+    |  float r68 = r5.y;
+    |  float r69 = r67-r68;
+    |  vec4 r70 = vec4(r59,r69,r48,r49);
+    |  float r71 = r70[0];
+    |  float r72 = r70[1];
+    |  float r73 = r70[2];
+    |  float r74 = r70[3];
+    |  vec2 r75 = vec2(r71,r72);
+    |  float r76 = length(r75);
+    |  float r77 = r76-r34;
+    |  float r78 = abs(r77);
+    |  float r79 = r78-r37;
+    |  float r80 = min(r38,r79);
+    |  return r80;
+    |}
+    |vec3 colour(vec4 r0)
+    |{
+    |  /* constants */
+    |  vec2 r5 = vec2(1.0,1.0);
+    |  float r8 = 2.0;
+    |  float r34 = 1.0;
+    |  float r37 = 0.1;
+    |  vec3 r40 = vec3(1.0,1.0,0.0);
+    |  float r80 = 0.0;
+    |  vec3 r115 = vec3(0.0,0.0,0.0);
+    |  /* body */
+    |  float r1 = r0[0];
+    |  float r2 = r0[1];
+    |  float r3 = r0[2];
+    |  float r4 = r0[3];
+    |  float r6 = r5.x;
+    |  float r7 = r1+r6;
+    |  float r9 = r5.x;
+    |  float r10 = r8*r9;
+    |  float r11 = r7/r10;
+    |  float r12 = floor(r11);
+    |  float r13 = r10*r12;
+    |  float r14 = r7-r13;
+    |  float r15 = r5.x;
+    |  float r16 = r14-r15;
+    |  float r17 = r5.y;
+    |  float r18 = r2+r17;
+    |  float r19 = r5.y;
+    |  float r20 = r8*r19;
+    |  float r21 = r18/r20;
+    |  float r22 = floor(r21);
+    |  float r23 = r20*r22;
+    |  float r24 = r18-r23;
+    |  float r25 = r5.y;
+    |  float r26 = r24-r25;
+    |  vec4 r27 = vec4(r16,r26,r3,r4);
+    |  float r28 = r27[0];
+    |  float r29 = r27[1];
+    |  float r30 = r27[2];
+    |  float r31 = r27[3];
+    |  vec2 r32 = vec2(r28,r29);
+    |  float r33 = length(r32);
+    |  float r35 = r33-r34;
+    |  float r36 = abs(r35);
+    |  float r38 = r36-r37;
+    |  float r39 = r0.x;
+    |  float r41 = r40.x;
+    |  float r42 = r39-r41;
+    |  float r43 = r0.y;
+    |  float r44 = r40.y;
+    |  float r45 = r43-r44;
+    |  float r46 = r0.z;
+    |  float r47 = r40.z;
+    |  float r48 = r46-r47;
+    |  float r49 = r0.w;
+    |  float r50 = r5.x;
+    |  float r51 = r42+r50;
+    |  float r52 = r5.x;
+    |  float r53 = r8*r52;
+    |  float r54 = r51/r53;
+    |  float r55 = floor(r54);
+    |  float r56 = r53*r55;
+    |  float r57 = r51-r56;
+    |  float r58 = r5.x;
+    |  float r59 = r57-r58;
+    |  float r60 = r5.y;
+    |  float r61 = r45+r60;
+    |  float r62 = r5.y;
+    |  float r63 = r8*r62;
+    |  float r64 = r61/r63;
+    |  float r65 = floor(r64);
+    |  float r66 = r63*r65;
+    |  float r67 = r61-r66;
+    |  float r68 = r5.y;
+    |  float r69 = r67-r68;
+    |  vec4 r70 = vec4(r59,r69,r48,r49);
+    |  float r71 = r70[0];
+    |  float r72 = r70[1];
+    |  float r73 = r70[2];
+    |  float r74 = r70[3];
+    |  vec2 r75 = vec2(r71,r72);
+    |  float r76 = length(r75);
+    |  float r77 = r76-r34;
+    |  float r78 = abs(r77);
+    |  float r79 = r78-r37;
+    |  bool r81 = r79<=r80;
+    |  bool r82 = r79<=r38;
+    |  bool r83 =(r81 || r82);
+    |  float r84 = r0.x;
+    |  float r85 = r40.x;
+    |  float r86 = r84-r85;
+    |  float r87 = r0.y;
+    |  float r88 = r40.y;
+    |  float r89 = r87-r88;
+    |  float r90 = r0.z;
+    |  float r91 = r40.z;
+    |  float r92 = r90-r91;
+    |  float r93 = r0.w;
+    |  float r94 = r5.x;
+    |  float r95 = r86+r94;
+    |  float r96 = r5.x;
+    |  float r97 = r8*r96;
+    |  float r98 = r95/r97;
+    |  float r99 = floor(r98);
+    |  float r100 = r97*r99;
+    |  float r101 = r95-r100;
+    |  float r102 = r5.x;
+    |  float r103 = r101-r102;
+    |  float r104 = r5.y;
+    |  float r105 = r89+r104;
+    |  float r106 = r5.y;
+    |  float r107 = r8*r106;
+    |  float r108 = r105/r107;
+    |  float r109 = floor(r108);
+    |  float r110 = r107*r109;
+    |  float r111 = r105-r110;
+    |  float r112 = r5.y;
+    |  float r113 = r111-r112;
+    |  vec4 r114 = vec4(r103,r113,r92,r93);
+    |  float r116 = r0[0];
+    |  float r117 = r0[1];
+    |  float r118 = r0[2];
+    |  float r119 = r0[3];
+    |  float r120 = r5.x;
+    |  float r121 = r116+r120;
+    |  float r122 = r5.x;
+    |  float r123 = r8*r122;
+    |  float r124 = r121/r123;
+    |  float r125 = floor(r124);
+    |  float r126 = r123*r125;
+    |  float r127 = r121-r126;
+    |  float r128 = r5.x;
+    |  float r129 = r127-r128;
+    |  float r130 = r5.y;
+    |  float r131 = r117+r130;
+    |  float r132 = r5.y;
+    |  float r133 = r8*r132;
+    |  float r134 = r131/r133;
+    |  float r135 = floor(r134);
+    |  float r136 = r133*r135;
+    |  float r137 = r131-r136;
+    |  float r138 = r5.y;
+    |  float r139 = r137-r138;
+    |  vec4 r140 = vec4(r129,r139,r118,r119);
+    |  vec3 r141 =(r83 ? r115 : r115);
+    |  return r141;
+    |}
+    |const vec4 bbox = vec4(-10.0,-10.0,+10.0,+10.0);
+    |void mainImage( out vec4 fragColour, in vec2 fragCoord )
+    |{
+    |    vec2 size = bbox.zw - bbox.xy;
+    |    vec2 scale2 = size / iResolution.xy;
+    |    vec2 offset = bbox.xy;
+    |    float scale;
+    |    if (scale2.x > scale2.y) {
+    |        scale = scale2.x;
+    |        offset.y -= (iResolution.y*scale - size.y)/2.0;
+    |    } else {
+    |        scale = scale2.y;
+    |        offset.x -= (iResolution.x*scale - size.x)/2.0;
+    |    }
+    |    vec3 col = vec3(0.0);
+    |#if AA>1
+    |  for (int m=0; m<AA; ++m)
+    |  for (int n=0; n<AA; ++n) {
+    |    vec2 jitter = vec2(float(m),float(n)) / float(AA) - 0.5;
+    |#else
+    |    const vec2 jitter = vec2(0.0);
+    |#endif
+    |    vec2 xy = fragCoord + jitter;
+    |#ifdef GLSLVIEWER
+    |    xy = (u_view2d * vec3(xy,1)).xy;
+    |#endif
+    |#if TAA>1
+    |  for (int t=0; t<TAA; ++t) {
+    |    float time = iTime + float(t)/float(TAA)*float(FDUR);
+    |#else
+    |    float time = iTime;
+    |#endif
+    |    vec4 p = vec4(xy*scale+offset,0,time);
+    |    float d = dist(p);
+    |    if (d > 0.0) {
+    |        col += background_colour;
+    |    } else {
+    |        col += colour(p);
+    |    }
+    |    
+    |#if TAA>1
+    |  }
+    |#endif
+    |#if AA>1
+    |  }
+    |#endif
+    |#if AA>1 || TAA>1
+    |    col /= float(AA*AA*TAA);
+    |#endif
+    |    // convert linear RGB to sRGB
+    |    fragColour = vec4(pow(col, vec3(0.454545454545454545)),1.0);
+    |}
+    ";
+  parameters: [
+  ];
+}

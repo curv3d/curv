@@ -1,0 +1,218 @@
+{
+  is_2d: #true;
+  is_3d: #false;
+  bbox: [[-5.792279653395691,-5.792279653395691,0],[5.792279653395691,5.792279653395691,0]];
+  shader:
+    "#define AA 4
+    |#define TAA 1
+    |#define FDUR 0.04
+    |const vec3 background_colour = vec3(1,1,1);
+    |#ifdef GLSLVIEWER
+    |uniform mat3 u_view2d;
+    |#endif
+    |float dist(vec4 r0)
+    |{
+    |  /* constants */
+    |  float r5 = 0.17453292519943295;
+    |  float r35 = 5.0;
+    |  vec2 r43 = vec2(4.5,4.5);
+    |  float r48 = 0.0;
+    |  /* body */
+    |  float r1 = r0[0];
+    |  float r2 = r0[1];
+    |  float r3 = r0[2];
+    |  float r4 = r0[3];
+    |  float r6 = -(r5);
+    |  vec2 r7 = vec2(r1,r2);
+    |  float r8 = cos(r6);
+    |  float r9 = sin(r6);
+    |  vec2 r10 = vec2(r8,r9);
+    |  float r11 = r7.x;
+    |  float r12 = r10.x;
+    |  float r13 = r11*r12;
+    |  float r14 = r7.y;
+    |  float r15 = r10.y;
+    |  float r16 = r14*r15;
+    |  float r17 = r13-r16;
+    |  float r18 = r7.y;
+    |  float r19 = r10.x;
+    |  float r20 = r18*r19;
+    |  float r21 = r7.x;
+    |  float r22 = r10.y;
+    |  float r23 = r21*r22;
+    |  float r24 = r20+r23;
+    |  vec2 r25 = vec2(r17,r24);
+    |  float r26 = r25.x;
+    |  float r27 = r25.y;
+    |  vec4 r28 = vec4(r26,r27,r3,r4);
+    |  float r29 = r28[0];
+    |  float r30 = r28[1];
+    |  float r31 = r28[2];
+    |  float r32 = r28[3];
+    |  vec2 r33 = vec2(r29,r30);
+    |  float r34 = length(r33);
+    |  float r36 = r34-r35;
+    |  float r37 = r28[0];
+    |  float r38 = r28[1];
+    |  float r39 = r28[2];
+    |  float r40 = r28[3];
+    |  vec2 r41 = vec2(r37,r38);
+    |  vec2 r42 = abs(r41);
+    |  vec2 r44 = r42-r43;
+    |  float r45 = r44[0];
+    |  float r46 = r44[1];
+    |  float r47 = max(r45,r46);
+    |  float r49 = min(r47,r48);
+    |  vec2 r50 = vec2(r48);
+    |  vec2 r51 = max(r44,r50);
+    |  float r52 = length(r51);
+    |  float r53 = r49+r52;
+    |  float r54 = min(r36,r53);
+    |  float r55 = r28[0];
+    |  float r56 = r28[1];
+    |  float r57 = r28[2];
+    |  float r58 = r28[3];
+    |  vec2 r59 = vec2(r55,r56);
+    |  float r60 = length(r59);
+    |  float r61 = r60-r35;
+    |  float r62 = r28[0];
+    |  float r63 = r28[1];
+    |  float r64 = r28[2];
+    |  float r65 = r28[3];
+    |  vec2 r66 = vec2(r62,r63);
+    |  vec2 r67 = abs(r66);
+    |  vec2 r68 = r67-r43;
+    |  float r69 = r68[0];
+    |  float r70 = r68[1];
+    |  float r71 = max(r69,r70);
+    |  float r72 = min(r71,r48);
+    |  vec2 r73 = vec2(r48);
+    |  vec2 r74 = max(r68,r73);
+    |  float r75 = length(r74);
+    |  float r76 = r72+r75;
+    |  float r77 = max(r61,r76);
+    |  float r78 = -(r77);
+    |  float r79 = max(r54,r78);
+    |  return r79;
+    |}
+    |vec3 colour(vec4 r0)
+    |{
+    |  /* constants */
+    |  float r5 = 0.17453292519943295;
+    |  float r35 = 5.0;
+    |  vec2 r43 = vec2(4.5,4.5);
+    |  float r48 = 0.0;
+    |  vec3 r57 = vec3(0.0,1.0,0.0);
+    |  vec3 r58 = vec3(1.0,0.0,0.0);
+    |  /* body */
+    |  float r1 = r0[0];
+    |  float r2 = r0[1];
+    |  float r3 = r0[2];
+    |  float r4 = r0[3];
+    |  float r6 = -(r5);
+    |  vec2 r7 = vec2(r1,r2);
+    |  float r8 = cos(r6);
+    |  float r9 = sin(r6);
+    |  vec2 r10 = vec2(r8,r9);
+    |  float r11 = r7.x;
+    |  float r12 = r10.x;
+    |  float r13 = r11*r12;
+    |  float r14 = r7.y;
+    |  float r15 = r10.y;
+    |  float r16 = r14*r15;
+    |  float r17 = r13-r16;
+    |  float r18 = r7.y;
+    |  float r19 = r10.x;
+    |  float r20 = r18*r19;
+    |  float r21 = r7.x;
+    |  float r22 = r10.y;
+    |  float r23 = r21*r22;
+    |  float r24 = r20+r23;
+    |  vec2 r25 = vec2(r17,r24);
+    |  float r26 = r25.x;
+    |  float r27 = r25.y;
+    |  vec4 r28 = vec4(r26,r27,r3,r4);
+    |  float r29 = r28[0];
+    |  float r30 = r28[1];
+    |  float r31 = r28[2];
+    |  float r32 = r28[3];
+    |  vec2 r33 = vec2(r29,r30);
+    |  float r34 = length(r33);
+    |  float r36 = r34-r35;
+    |  float r37 = r28[0];
+    |  float r38 = r28[1];
+    |  float r39 = r28[2];
+    |  float r40 = r28[3];
+    |  vec2 r41 = vec2(r37,r38);
+    |  vec2 r42 = abs(r41);
+    |  vec2 r44 = r42-r43;
+    |  float r45 = r44[0];
+    |  float r46 = r44[1];
+    |  float r47 = max(r45,r46);
+    |  float r49 = min(r47,r48);
+    |  vec2 r50 = vec2(r48);
+    |  vec2 r51 = max(r44,r50);
+    |  float r52 = length(r51);
+    |  float r53 = r49+r52;
+    |  bool r54 = r53<=r48;
+    |  bool r55 = r53<=r36;
+    |  bool r56 =(r54 || r55);
+    |  vec3 r59 =(r56 ? r57 : r58);
+    |  return r59;
+    |}
+    |const vec4 bbox = vec4(-5.79228,-5.79228,5.79228,5.79228);
+    |void mainImage( out vec4 fragColour, in vec2 fragCoord )
+    |{
+    |    vec2 size = bbox.zw - bbox.xy;
+    |    vec2 scale2 = size / iResolution.xy;
+    |    vec2 offset = bbox.xy;
+    |    float scale;
+    |    if (scale2.x > scale2.y) {
+    |        scale = scale2.x;
+    |        offset.y -= (iResolution.y*scale - size.y)/2.0;
+    |    } else {
+    |        scale = scale2.y;
+    |        offset.x -= (iResolution.x*scale - size.x)/2.0;
+    |    }
+    |    vec3 col = vec3(0.0);
+    |#if AA>1
+    |  for (int m=0; m<AA; ++m)
+    |  for (int n=0; n<AA; ++n) {
+    |    vec2 jitter = vec2(float(m),float(n)) / float(AA) - 0.5;
+    |#else
+    |    const vec2 jitter = vec2(0.0);
+    |#endif
+    |    vec2 xy = fragCoord + jitter;
+    |#ifdef GLSLVIEWER
+    |    xy = (u_view2d * vec3(xy,1)).xy;
+    |#endif
+    |#if TAA>1
+    |  for (int t=0; t<TAA; ++t) {
+    |    float time = iTime + float(t)/float(TAA)*float(FDUR);
+    |#else
+    |    float time = iTime;
+    |#endif
+    |    vec4 p = vec4(xy*scale+offset,0,time);
+    |    float d = dist(p);
+    |    if (d > 0.0) {
+    |        col += background_colour;
+    |    } else {
+    |        col += colour(p);
+    |    }
+    |    
+    |#if TAA>1
+    |  }
+    |#endif
+    |#if AA>1
+    |  }
+    |#endif
+    |#if AA>1 || TAA>1
+    |    col /= float(AA*AA*TAA);
+    |#endif
+    |    // convert linear RGB to sRGB
+    |    fragColour = vec4(pow(col, vec3(0.454545454545454545)),1.0);
+    |}
+    ";
+  parameters: [
+  ];
+}

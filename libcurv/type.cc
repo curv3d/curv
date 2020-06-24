@@ -3,6 +3,7 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/type.h>
+#include <vector>
 
 namespace curv {
 
@@ -69,6 +70,58 @@ bool Type::equal(const Type& t1, const Type& t2)
             && equal(*l1->elem_type_, *l2->elem_type_);
     }
     return true;
+}
+
+unsigned Type::rank() const
+{
+    auto t = this;
+    unsigned rank = 0;
+    while (t->subtype_ == Ref_Value::sty_list_type)
+    {
+        t = &*((const List_Type*)(t))->elem_type_;
+        ++rank;
+    }
+    return rank;
+}
+
+Shared<const Type> Type::plex_array_base() const
+{
+    auto t = this;
+    while (t->subtype_ == Ref_Value::sty_list_type
+           && t->plex_type_ == Plex_Type::missing)
+    {
+        t = &*((const List_Type*)(t))->elem_type_;
+    }
+    return share(*t);
+}
+
+unsigned Type::plex_array_rank() const
+{
+    auto t = this;
+    unsigned rank = 0;
+    while (t->subtype_ == Ref_Value::sty_list_type
+           && t->plex_type_ == Plex_Type::missing)
+    {
+        t = &*((const List_Type*)(t))->elem_type_;
+        ++rank;
+    }
+    return rank;
+}
+
+unsigned Type::plex_array_dim(unsigned i) const
+{
+    // This is expensive, but this function will go away once I am finished
+    // refactoring the code that uses SC_Type.
+    std::vector<unsigned> dims;
+    auto t = this;
+    while (t->subtype_ == Ref_Value::sty_list_type
+           && t->plex_type_ == Plex_Type::missing)
+    {
+        auto li = (const List_Type*)(t);
+        dims.push_back(li->count_);
+        t = &*li->elem_type_;
+    }
+    return dims.at(i);
 }
 
 } // namespace curv

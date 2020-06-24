@@ -41,7 +41,13 @@ struct Type : public Ref_Value
     static Shared<const Type> Bool;
     static Shared<const Type> Bool32;
     static Shared<const Type> Num;
+
     static bool equal(const Type&, const Type&);
+    unsigned rank() const;
+
+    Shared<const Type> plex_array_base() const;
+    unsigned plex_array_rank() const;
+    unsigned plex_array_dim(unsigned) const;
 };
 
 struct Error_Type : public Type

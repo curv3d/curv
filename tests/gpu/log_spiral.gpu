@@ -1,0 +1,128 @@
+{
+  is_2d: #true;
+  is_3d: #false;
+  bbox: [[-1e9999,-1e9999,-1e9999],[1e9999,1e9999,1e9999]];
+  shader:
+    "#define AA 4
+    |#define TAA 1
+    |#define FDUR 0.04
+    |const vec3 background_colour = vec3(1,1,1);
+    |#ifdef GLSLVIEWER
+    |uniform mat3 u_view2d;
+    |#endif
+    |float dist(vec4 r0)
+    |{
+    |  /* constants */
+    |  float r9 = 0.0;
+    |  float r11 = 1.0;
+    |  float r14 = 0.2;
+    |  float r17 = 6.283185307179586;
+    |  float r19 = 2.718281828459045;
+    |  float r40 = 1.24;
+    |  /* body */
+    |  float r1 = r0[0];
+    |  float r2 = r0[1];
+    |  float r3 = r0[2];
+    |  float r4 = r0[3];
+    |  vec2 r5 = vec2(r1,r2);
+    |  float r6 = length(r5);
+    |  vec2 r7 = vec2(r1,r2);
+    |  float r8 = atan(r7.y,r7.x);
+    |  bool r10 =(r6 == r9);
+    |  float r12 = r6/r11;
+    |  float r13 = log(r12);
+    |  float r15 = r13/r14;
+    |  float r16 = r15-r8;
+    |  float r18 = r16/r17;
+    |  float r20 = ceil(r18);
+    |  float r21 = r17*r20;
+    |  float r22 = r8+r21;
+    |  float r23 = r14*r22;
+    |  float r24 = pow(r19,r23);
+    |  float r25 = r11*r24;
+    |  float r26 = floor(r18);
+    |  float r27 = r17*r26;
+    |  float r28 = r8+r27;
+    |  float r29 = r14*r28;
+    |  float r30 = pow(r19,r29);
+    |  float r31 = r11*r30;
+    |  float r32 = r25-r6;
+    |  float r33 = abs(r32);
+    |  float r34 = r6-r31;
+    |  float r35 = abs(r34);
+    |  float r36 = min(r33,r35);
+    |  float r37 = abs(r14);
+    |  float r38 = r6*r37;
+    |  float r39 = r36-r38;
+    |  float r41 = r39/r40;
+    |  float r42 =(r10 ? r9 : r41);
+    |  return r42;
+    |}
+    |vec3 colour(vec4 r0)
+    |{
+    |  /* constants */
+    |  float r1 = 0.8;
+    |  float r2 = 0.5;
+    |  vec3 r3 = vec3(r1,r1,r2);
+    |  float r4 = 2.2;
+    |  vec3 r5 = vec3(r4);
+    |  vec3 r6 = pow(r3,r5);
+    |  /* body */
+    |  return r6;
+    |}
+    |const vec4 bbox = vec4(-10.0,-10.0,+10.0,+10.0);
+    |void mainImage( out vec4 fragColour, in vec2 fragCoord )
+    |{
+    |    vec2 size = bbox.zw - bbox.xy;
+    |    vec2 scale2 = size / iResolution.xy;
+    |    vec2 offset = bbox.xy;
+    |    float scale;
+    |    if (scale2.x > scale2.y) {
+    |        scale = scale2.x;
+    |        offset.y -= (iResolution.y*scale - size.y)/2.0;
+    |    } else {
+    |        scale = scale2.y;
+    |        offset.x -= (iResolution.x*scale - size.x)/2.0;
+    |    }
+    |    vec3 col = vec3(0.0);
+    |#if AA>1
+    |  for (int m=0; m<AA; ++m)
+    |  for (int n=0; n<AA; ++n) {
+    |    vec2 jitter = vec2(float(m),float(n)) / float(AA) - 0.5;
+    |#else
+    |    const vec2 jitter = vec2(0.0);
+    |#endif
+    |    vec2 xy = fragCoord + jitter;
+    |#ifdef GLSLVIEWER
+    |    xy = (u_view2d * vec3(xy,1)).xy;
+    |#endif
+    |#if TAA>1
+    |  for (int t=0; t<TAA; ++t) {
+    |    float time = iTime + float(t)/float(TAA)*float(FDUR);
+    |#else
+    |    float time = iTime;
+    |#endif
+    |    vec4 p = vec4(xy*scale+offset,0,time);
+    |    float d = dist(p);
+    |    if (d > 0.0) {
+    |        col += background_colour;
+    |    } else {
+    |        col += colour(p);
+    |    }
+    |    
+    |#if TAA>1
+    |  }
+    |#endif
+    |#if AA>1
+    |  }
+    |#endif
+    |#if AA>1 || TAA>1
+    |    col /= float(AA*AA*TAA);
+    |#endif
+    |    // convert linear RGB to sRGB
+    |    fragColour = vec4(pow(col, vec3(0.454545454545454545)),1.0);
+    |}
+    ";
+  parameters: [
+  ];
+}
