@@ -14,67 +14,33 @@ namespace curv {
 // SC data types
 struct SC_Type
 {
-    static constexpr unsigned MAX_LIST = 65535; // max size of an array dimension
     static constexpr unsigned MAX_MAT_COUNT = 4; // max first dim of a matrix
-    enum class Base_Type : short
-    {
-        Error = -1,
-        Bool,
-        Bool2,
-        Bool3,
-        Bool4,
-        Bool32,
-        Bool2x32,
-        Bool3x32,
-        Bool4x32,
-        Num,
-        Vec2,
-        Vec3,
-        Vec4,
-        Mat2,
-        Mat3,
-        Mat4
-    };
 
 private:
     Shared<const Type> type_;   // never null
+    SC_Type(Shared<const Type> t) : type_(t) {}
 public:
     SC_Type() : type_(Type::Error) {}
-private:
-    SC_Type(Shared<const Type> t) : type_(t) {}
-    SC_Type(Shared<const Type> t, Base_Type bt,
-            unsigned dim1 = 0, unsigned dim2 = 0)
-    :
-        type_(t)
-    {}
-public:
     static inline SC_Type Error() { return {}; }
-    static inline SC_Type Bool(unsigned n = 1)
-    {
+    static inline SC_Type Bool(unsigned n = 1) {
         if (n == 1)
-            return {Type::Bool, Base_Type::Bool};
+            return {Type::Bool};
         assert(n >= 2 && n <= 4);
-        return {make<List_Type>(n, Type::Bool),
-                Base_Type(int(Base_Type::Bool) + n-1)};
+        return {make<List_Type>(n, Type::Bool)};
     }
-    static inline SC_Type Bool32(unsigned n=1)
-    {
+    static inline SC_Type Bool32(unsigned n=1) {
         if (n == 1)
-            return {Type::Bool32, Base_Type::Bool32};
+            return {Type::Bool32};
         assert(n >= 2 && n <= 4);
-        return {make<List_Type>(n, Type::Bool32),
-                Base_Type(int(Base_Type::Bool32) + n-1)};
+        return {make<List_Type>(n, Type::Bool32)};
     }
-    static inline SC_Type Num(unsigned n = 1)
-    {
+    static inline SC_Type Num(unsigned n = 1) {
         if (n == 1)
-            return {Type::Num, Base_Type::Num};
+            return {Type::Num};
         assert(n >= 2 && n <= 4);
-        return {make<List_Type>(n, Type::Num),
-                Base_Type(int(Base_Type::Num) + n-1)};
+        return {make<List_Type>(n, Type::Num)};
     }
-    static inline SC_Type Vec(SC_Type base, unsigned n)
-    {
+    static inline SC_Type Vec(SC_Type base, unsigned n) {
       #if !defined(NDEBUG)
         auto plex = base.type_->plex_type_;
       #endif
@@ -84,11 +50,9 @@ public:
         assert(n >= 1 && n <= 4);
         return {make<List_Type>(n, base.type_)};
     }
-    static inline SC_Type Mat(int n)
-    {
+    static inline SC_Type Mat(int n) {
         assert(n >= 2 && n <= 4);
-        return {make<List_Type>(n, make<List_Type>(n, Type::Num)),
-                Base_Type(int(Base_Type::Mat2) + n - 2)};
+        return {make<List_Type>(n, make<List_Type>(n, Type::Num))};
     }
     static SC_Type List(SC_Type etype, unsigned n);
 
