@@ -3,7 +3,7 @@
   is_3d: #false;
   bbox: [[-4.113243059555561,-4.118033988749895,0],[4.243146332839619,5,0]];
   shader:
-    "#define AA 4
+    "#define AA 1
     |#define TAA 1
     |#define FDUR 0.04
     |const vec3 background_colour = vec3(1,1,1);
