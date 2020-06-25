@@ -12,6 +12,25 @@ Shared<const Type> Type::Bool = make<Bool_Type>();
 Shared<const Type> Type::Bool32 = make<List_Type>(32, Type::Bool);
 Shared<const Type> Type::Num = make<Num_Type>();
 
+const char* glsl_plex_type_name[] = {
+    "Error",
+    "bool",
+    "bvec2",
+    "bvec3",
+    "bvec4",
+    "uint",
+    "uvec2",
+    "uvec3",
+    "uvec4",
+    "float",
+    "vec2",
+    "vec3",
+    "vec4",
+    "mat2",
+    "mat3",
+    "mat4",
+};
+
 void Error_Type::print_repr(std::ostream& out) const
 {
     out << "Error";

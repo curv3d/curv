@@ -31,11 +31,16 @@ const SC_Base_Type_Info sc_base_type_info_array[] =
 
 std::ostream& operator<<(std::ostream& out, SC_Type type)
 {
-    out << type.base_info().name;
-    if (type.rank_ == 1)
-        out << "[" << type.dim1_ << "]";
-    else if (type.rank_ == 2)
-        out << "[" << type.dim1_ << "*" << type.dim2_ << "]";
+    out << type.plex_array_base().glsl_name();
+    switch (type.plex_array_rank()) {
+    case 1:
+        out << "[" << type.plex_array_dim(0) << "]";
+        break;
+    case 2:
+        out << "[" << type.plex_array_dim(0)
+                   << "*" << type.plex_array_dim(1) << "]";
+        break;
+    }
     return out;
 }
 

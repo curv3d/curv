@@ -33,6 +33,8 @@ enum class Plex_Type : short
     Mat4
 };
 
+extern const char* glsl_plex_type_name[];
+
 struct Type : public Ref_Value
 {
     Plex_Type plex_type_;

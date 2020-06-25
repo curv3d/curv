@@ -61,7 +61,6 @@ private:
     unsigned short dim2_ = 0;
 
 public:
-    friend std::ostream& operator<<(std::ostream& out, SC_Type type);
     friend SC_Type sc_type_of(Value v);
 
     SC_Type() : type_(Type::Error), base_type_(Base_Type::Error) {}
@@ -292,6 +291,9 @@ public:
         if (i == 0) n = dim1_;
         else if (i == 1) n = dim2_;
         return tunsigned(type_->plex_array_dim(i), n);
+    }
+    inline const char* glsl_name() const {
+        return glsl_plex_type_name[unsigned(type_->plex_type_)];
     }
 
     // a Plex type is one of the following 3 mutually exclusive cases:
