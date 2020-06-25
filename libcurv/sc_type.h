@@ -37,33 +37,15 @@ struct SC_Type
     };
 
 private:
-    /* New Representation */
     Shared<const Type> type_;   // never null
-
-    /* Old Representation */
-    // 4 shorts == 64 bit representation
-    Base_Type base_type_;
-    // rank 0: The type is just 'base_type_'.
-    // rank 1: The type is array of base_type_.
-    // rank 2: A 2D array of base_type, represented in GLSL as a 1D array,
-    //         since we target GLSL 1.5, which doesn't support multi-D arrays.
-    unsigned short rank_ = 0;
-    unsigned short dim1_ = 0;
-    unsigned short dim2_ = 0;
-
 public:
-    friend SC_Type sc_type_of(Value v);
-
-    SC_Type() : type_(Type::Error), base_type_(Base_Type::Error) {}
+    SC_Type() : type_(Type::Error) {}
 private:
+    SC_Type(Shared<const Type> t) : type_(t) {}
     SC_Type(Shared<const Type> t, Base_Type bt,
             unsigned dim1 = 0, unsigned dim2 = 0)
     :
-        type_(t),
-        base_type_(bt),
-        rank_(dim2 ? 2 : dim1 ? 1 : 0),
-        dim1_(dim1),
-        dim2_(dim2)
+        type_(t)
     {}
 public:
     static inline SC_Type Error() { return {}; }
@@ -93,13 +75,14 @@ public:
     }
     static inline SC_Type Vec(SC_Type base, unsigned n)
     {
-        assert(base.rank_ == 0 &&
-            (base.base_type_ == Base_Type::Bool ||
-             base.base_type_ == Base_Type::Num ||
-             base.base_type_ == Base_Type::Bool32));
+      #if !defined(NDEBUG)
+        auto plex = base.type_->plex_type_;
+      #endif
+        assert(plex == Plex_Type::Bool ||
+               plex == Plex_Type::Num ||
+               plex == Plex_Type::Bool32);
         assert(n >= 1 && n <= 4);
-        return {make<List_Type>(n, base.type_),
-                Base_Type(int(base.base_type_) + n-1)};
+        return {make<List_Type>(n, base.type_)};
     }
     static inline SC_Type Mat(int n)
     {
@@ -183,7 +166,7 @@ public:
         return type_->plex_array_rank();
     }
     inline SC_Type plex_array_base() const {
-        return SC_Type(type_->plex_array_base(), base_type_);
+        return SC_Type(type_->plex_array_base());
     }
     inline unsigned plex_array_dim(unsigned i) const {
         return type_->plex_array_dim(i);

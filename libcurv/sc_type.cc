@@ -33,50 +33,9 @@ sc_type_of(Value v)
         return SC_Type::Bool();
     else if (auto ls = v.maybe<List>()) {
         auto n = ls->size();
-        if (n == 0 || n > SC_Type::MAX_LIST)
-            ;
-        else {
-            auto ty = sc_type_of(ls->front());
-            if (ty.is_num_tensor()) {
-                // Try to upgrade to a larger numeric plex.
-                if (ty.is_num()) {
-                    if (n >= 2 && n <= 4)
-                        return SC_Type::Num(n);
-                }
-                else if (ty.is_num_vec()) {
-                    if (n == ty.count())
-                        return SC_Type::Mat(n);
-                }
-                // Try to construct a general numeric array type.
-                if (ty.rank_ < 2) {
-                    ty.type_ = make<List_Type>(n, ty.type_);
-                    ++ty.rank_;
-                    ty.dim2_ = ty.dim1_;
-                    ty.dim1_ = n;
-                    return ty;
-                }
-            }
-            else if (ty.is_bool_tensor()) {
-                // Try to upgrade to a larger boolean plex.
-                if (ty.is_bool()) {
-                    if (n >= 2 && n <= 4)
-                        return SC_Type::Bool(n);
-                    if (n == 32)
-                        return SC_Type::Bool32();
-                }
-                else if (ty.is_bool32()) {
-                    if (n >= 2 && n <= 4)
-                        return SC_Type::Bool32(n);
-                }
-                // Try to construct a general boolean array type.
-                if (ty.rank_ < 2) {
-                    ty.type_ = make<List_Type>(n, ty.type_);
-                    ++ty.rank_;
-                    ty.dim2_ = ty.dim1_;
-                    ty.dim1_ = n;
-                    return ty;
-                }
-            }
+        if (n > 0) {
+            auto t = sc_type_of(ls->front());
+            if (t) return SC_Type::List(t, n);
         }
     }
     else if (auto re = v.maybe<Reactive_Value>())
@@ -88,52 +47,13 @@ SC_Type
 SC_Type::elem_type() const
 {
     auto t = cast<const List_Type>(type_);
-    Shared<const Type> et = t ? t->elem_type_ : Type::Error;
-    switch (rank_) {
-    case 0:
-        if (is_num_vec())
-            return Num();
-        if (is_mat())
-            return Num(count());
-        if (base_type_ == Base_Type::Bool32)
-            return Bool();
-        if (base_type_ >= Base_Type::Bool2 && base_type_ <= Base_Type::Bool4)
-            return Bool();
-        if (base_type_ >= Base_Type::Bool2x32
-            && base_type_ <= Base_Type::Bool4x32)
-            return Bool32();
-        return {};
-    case 1:
-        return {et, base_type_};
-    case 2:
-        return {et, base_type_, dim2_};
-    default:
-        die("SC_Type::elem_type() bad rank");
-    }
+    return {t ? t->elem_type_ : Type::Error};
 }
 
 SC_Type
 SC_Type::List(SC_Type etype, unsigned n)
 {
-    auto lt = make<List_Type>(n, etype.type_);
-    switch (etype.rank_) {
-    case 0:
-        if (etype.is_num()) {
-            if (n >= 2 && n <= 4) return Num(n);
-        } else if (etype.is_num_vec()) {
-            if (etype.count() == n) return Mat(n);
-        } else if (etype.is_bool()) {
-            if (n == 32) return Bool32();
-            if (n >= 2 && n <= 4) return Bool(n);
-        } else if (etype.is_bool32()) {
-            if (n >= 2 && n <= 4) return Bool32(n);
-        }
-        return SC_Type{lt, etype.base_type_, n};
-    case 1:
-        return SC_Type{lt, etype.base_type_, n, etype.dim1_};
-    default:
-        die("SC_Type::List() bad rank");
-    }
+    return {make<List_Type>(n, etype.type_)};
 }
 
 SC_Type sc_unified_list_type(SC_Type a, SC_Type b, unsigned n)
