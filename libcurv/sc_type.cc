@@ -9,26 +9,6 @@
 
 namespace curv {
 
-const SC_Base_Type_Info sc_base_type_info_array[] =
-{
-    {"Error", 0, 1, 1},
-    {"bool",  0, 1, 1},
-    {"bvec2", 1, 2, 1},
-    {"bvec3", 1, 3, 1},
-    {"bvec4", 1, 4, 1},
-    {"uint",  1, 32, 1},
-    {"uvec2", 2, 2, 32},
-    {"uvec3", 2, 3, 32},
-    {"uvec4", 2, 4, 32},
-    {"float", 0, 1, 1},
-    {"vec2",  1, 2, 1},
-    {"vec3",  1, 3, 1},
-    {"vec4",  1, 4, 1},
-    {"mat2",  2, 2, 2},
-    {"mat3",  2, 3, 3},
-    {"mat4",  2, 4, 4},
-};
-
 std::ostream& operator<<(std::ostream& out, SC_Type type)
 {
     out << type.plex_array_base().glsl_name();
