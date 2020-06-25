@@ -101,6 +101,7 @@ const char help_suffix[] =
 "   $CURV_LIBDIR : Standard library directory, overrides PREFIX/lib/curv\n"
 "   -n : Don't include standard library.\n"
 "   -i file : Include specified library; may be repeated.\n"
+"   -N : don't read user config file.\n"
 ;
 
 int
@@ -110,6 +111,7 @@ main(int argc, char** argv)
 
     // Parse arguments for general case.
     const char* usestdlib = argv0;
+    bool useconfig = true;
     fs::path opath;
     using ExPtr = decltype(exporters)::const_iterator;
     ExPtr exporter = exporters.end();
@@ -124,6 +126,7 @@ main(int argc, char** argv)
 
     constexpr int HELP = 1000;
     constexpr int VERSION = 1001;
+    static const char opts[] = ":o:O:lnNi:xev";
     static struct option longopts[] = {
         {"help",    no_argument, nullptr, HELP },
         {"version", no_argument, nullptr, VERSION },
@@ -131,7 +134,7 @@ main(int argc, char** argv)
     };
 
     int opt;
-    while ((opt = getopt_long(argc, argv, ":o:O:lni:xev", longopts, NULL)) != -1)
+    while ((opt = getopt_long(argc, argv, opts, longopts, NULL)) != -1)
     {
         switch (opt) {
         case HELP:
@@ -181,6 +184,9 @@ main(int argc, char** argv)
             break;
         case 'i':
             libs.push_back(optarg);
+            break;
+        case 'N':
+            useconfig = false;
             break;
         case 'x':
             expr = true;
@@ -278,8 +284,11 @@ main(int argc, char** argv)
     atexit(curv::geom::remove_all_tempfiles);
 
     try {
-        auto config = get_config(sys, curv::make_symbol(
-            exporter == exporters.end() ? "viewer" : "export"));
+        Config config;
+        if (useconfig) {
+            config = get_config(sys, curv::make_symbol(
+                exporter == exporters.end() ? "viewer" : "export"));
+        }
         Export_Params oparams(std::move(options), config, sys);
         if (exporter != exporters.end())
             oparams.format_ = exporter->first;
