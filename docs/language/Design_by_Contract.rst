@@ -175,7 +175,9 @@ any names. The syntax is ``test``\ *statement*. For example::
 
 The primary use case for test definitions is to represent unit
 tests in modules. (But you can put test definitions in any
-context where a definition is legal.) For example::
+context where a definition is legal. And you can use test definitions
+to embed debug code, such as print statements, in a definition list.)
+For example::
 
   {
     incr x = x + 1;
