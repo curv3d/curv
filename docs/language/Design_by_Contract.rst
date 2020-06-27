@@ -113,6 +113,12 @@ of the primitive types, otherwise ``#false``::
       do assert(is_num n)
       in n + 1;
 
+``assert_error[error_message_string, expression]``
+  Evaluate the expression argument.
+  Assert that the expression evaluation terminates with an error,
+  and that the resulting error message is equal to ``error_message_string``.
+  Used for unit testing.
+
 *value* :: *predicate*
   This expression is called a "predicate assertion".
   The left operand of ``::`` is an expression that evaluates to an arbitrary
