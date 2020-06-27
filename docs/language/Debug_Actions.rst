@@ -2,9 +2,15 @@ Debug Actions
 -------------
 Curv programs are debugged by inserting ``print`` statements and other debug actions.
 
-Debug actions are statements, not expressions, but you can attach them
-to an expression using a ``do`` expression.
+Debug actions are statements, but you can embed statements anywhere in a Curv program.
+You can attach statements to an expression using a ``do`` expression (see below).
+You can embed statements in a set of definitions using a ``test`` definition
+(see `<Design_by_Contract.rst>`_).
+Debug actions can be embedded in list comprehensions, record comprehensions and
+string comprehensions (since a comprehension contains a statement sequence).
 
+``do`` Expressions
+~~~~~~~~~~~~~~~~~~
 ``do actions in expression``
   Execute the ``actions``, then evaluate the ``expression`` and return its result.
 
@@ -20,14 +26,11 @@ to the debug console.
 The *actions* in a ``do`` clause can be a simple debug action, as listed below,
 or it can be an imperative style program written using debug actions,
 compound statements, ``if`` statements, ``for`` statements, ``while`` statements,
-``let`` statements (to introduce local variables) and assignment statements.
+``local`` statements (to define local variables) and assignment statements.
 See: `<Statements.rst>`_.
 
 For example, inside a ``do`` clause, you can write a sequence of actions separated by ``;``,
 and they will be executed in sequence.
-
-Debug actions can also be used as elements of list comprehensions, record comprehensions
-and string comprehensions.
 
 Simple Debug Actions
 ~~~~~~~~~~~~~~~~~~~~
