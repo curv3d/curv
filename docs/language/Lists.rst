@@ -57,7 +57,7 @@ Range constructors
       if (n < 0) 0 else n + 1
     
     As a result of using this algorithm, the number of list elements will be
-    as expected (under the stated assumption), but the final list element might
+    correct (under the stated assumption), but the final list element might
     be larger or smaller than expected, due to floating point inaccuracy.
     Here's an example: ``0.1 .. 0.3 by 0.2`` returns ``[0.1, 0.30000000000000004]``.
 
