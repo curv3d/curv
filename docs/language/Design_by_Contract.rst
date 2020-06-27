@@ -6,7 +6,12 @@ a precisely defined "contract" for input and output behaviour.
 The contract is verified at runtime, and code "fails hard" if the contract
 is violated.
 
-The goal is to make Curv programs easy to understand and easy to debug
+Curv makes it easy for functions to
+specify and enforce a contract on their input and output.
+And you can embed unit tests within a module, which test the functions
+defined by the module to ensure they honour their contract.
+
+The ultimate goal is to make Curv programs easy to understand and easy to debug
 when something goes wrong.
 
 Contracts for Functions
@@ -149,3 +154,29 @@ of the primitive types, otherwise ``#false``::
     incr (n :: is_num) =
         ensure is_num <<
         n + 1;
+
+Adding Unit Tests to Modules
+----------------------------
+A module is a set of definitions surrounded by braces::
+
+  { incr x = x + 1; }
+
+A *test definition* is a special kind of definition that
+contains executable code (a statement), but it doesn't bind
+any names. The syntax is ``test``\ *statement*. For example::
+
+  test assert (incr 3 == 4);
+
+The primary use case for test definitions is to represent unit
+tests in modules. (But you can put test definitions in any
+context where a definition is legal.) For example::
+
+  {
+    incr x = x + 1;
+    test (
+      assert (incr 3 == 4);
+      assert (incr (-1) == 0);
+    );
+  }
+
+When the module literal is evaluated, the tests will be run.
