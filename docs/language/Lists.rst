@@ -7,7 +7,7 @@ List Constructors
   A list constructor is a comma-separated list of expressions or value
   generators, inside square brackets or parentheses.
 
-      The parenthesis notation is deprecated. if used, either the list is
+      The parenthesis notation is deprecated. If used, either the list is
       empty ``()`` or contains at least one comma. The final expression or
       value generator may be followed by an optional comma.
   
@@ -47,6 +47,18 @@ Range constructors
     Similar to ``i..j``, except that the step value is ``k`` instead of ``1``.
     The step value may be positive or negative, and need not be an integer.
     For example, ``1..0 by -0.25`` is ``[1, 0.75, 0.5, 0.25, 0]``.
+    
+    We assume that ``j-i`` is intended to be an integer multiple of ``k``.
+    It might not be an exact multiple, due to floating point inaccuracy,
+    so the number of list elements is computed using rounding, like this::
+    
+      let n = round((last - first)/step) in
+      if (n < 0) 0 else n + 1
+    
+    As a result of using this algorithm, the number of list elements will be
+    as expected (under the stated assumption), but the final list element might
+    be slighter larger or smaller than expected, due to floating point inaccuracy.
+    Here's an example: ``0.1 .. 0.3 by 0.2`` returns ``[0.1,0.30000000000000004]``.
 
   ``i ..< j``
     Same as ``i..j`` except that the final element in the sequence is omitted.
