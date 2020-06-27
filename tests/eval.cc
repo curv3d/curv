@@ -499,5 +499,8 @@ TEST(curv, eval)
         "A recursive definition like 'x = 1' is not legal here.\n"
         "Try 'x := 1' if you want an assignment statement.\n"
         "Try 'local x = 1' if you want a local definition.");
+
+    SUCCESS("{test print a; a = 1}", "{a:1}");
+    EXPECT_EQ(sconsole.str(), "1\n");
   }
 }

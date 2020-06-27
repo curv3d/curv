@@ -197,6 +197,13 @@ struct Include_Phrase : public Unary_Phrase
     virtual bool is_definition() const override;
     virtual Shared<Definition> as_definition(Environ&) const override;
 };
+struct Test_Phrase : public Unary_Phrase
+{
+    using Unary_Phrase::Unary_Phrase;
+    virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
+    virtual bool is_definition() const override;
+    virtual Shared<Definition> as_definition(Environ&) const override;
+};
 
 struct Dot_Phrase : public Binary_Phrase
 {

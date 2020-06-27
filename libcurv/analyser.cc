@@ -360,6 +360,22 @@ Include_Phrase::is_definition() const
     return true;
 }
 
+Shared<Meaning>
+Test_Phrase::analyse(Environ& env, unsigned) const
+{
+    throw Exception(At_Token(op_, *this, env), "syntax error");
+}
+Shared<Definition>
+Test_Phrase::as_definition(Environ& env) const
+{
+    return make<Test_Definition>(share(*this), arg_);
+}
+bool
+Test_Phrase::is_definition() const
+{
+    return true;
+}
+
 Shared<Lambda_Expr>
 analyse_lambda(
     Environ& env,

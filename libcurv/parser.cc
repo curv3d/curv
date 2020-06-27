@@ -258,6 +258,8 @@ parse_ritem(Scanner& scanner)
         return make<Unary_Phrase>(tok, parse_ritem(scanner));
     case Token::k_include:
         return make<Include_Phrase>(tok, parse_ritem(scanner));
+    case Token::k_test:
+        return make<Test_Phrase>(tok, parse_ritem(scanner));
     case Token::k_local:
         return make<Local_Phrase>(tok, parse_ritem(scanner));
     case Token::k_if:

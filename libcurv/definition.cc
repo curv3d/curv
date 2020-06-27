@@ -92,6 +92,23 @@ Include_Definition::make_setter(slot_t module_slot)
 }
 
 void
+Test_Definition::add_to_scope(Recursive_Scope& scope)
+{
+    unsigned unitnum = scope.add_unit(share(*this));
+    (void) unitnum;
+}
+void
+Test_Definition::analyse(Environ& env)
+{
+    setter_ = analyse_op(*arg_, env);
+}
+Shared<Operation>
+Test_Definition::make_setter(slot_t module_slot)
+{
+    return setter_;
+}
+
+void
 Compound_Definition_Base::add_to_scope(Recursive_Scope& scope)
 {
     for (auto &e : *this) {

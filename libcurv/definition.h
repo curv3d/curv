@@ -92,12 +92,31 @@ struct Data_Definition : public Unitary_Definition
     virtual void analyse(Environ&) override;
     virtual Shared<Operation> make_setter(slot_t module_slot) override;
 };
+
 struct Include_Definition : public Unitary_Definition
 {
     Shared<Phrase> arg_;
     Shared<Include_Setter> setter_; // initialized by add_to_scope()
 
     Include_Definition(
+        Shared<const Phrase> syntax,
+        Shared<Phrase> arg)
+    :
+        Unitary_Definition(syntax),
+        arg_(std::move(arg))
+    {}
+
+    virtual void add_to_scope(Recursive_Scope&) override;
+    virtual void analyse(Environ&) override;
+    virtual Shared<Operation> make_setter(slot_t module_slot) override;
+};
+
+struct Test_Definition : public Unitary_Definition
+{
+    Shared<Phrase> arg_;
+    Shared<Operation> setter_; // initialized by analyse()
+
+    Test_Definition(
         Shared<const Phrase> syntax,
         Shared<Phrase> arg)
     :
