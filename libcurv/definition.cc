@@ -111,11 +111,8 @@ Test_Definition::make_setter(slot_t module_slot)
 void
 Compound_Definition_Base::add_to_scope(Recursive_Scope& scope)
 {
-    for (auto &e : *this) {
-        if (e.definition_ == nullptr)
-            scope.add_action(e.phrase_);
-        else
-            e.definition_->add_to_scope(scope);
+    for (auto &def : *this) {
+        def->add_to_scope(scope);
     }
 }
 

@@ -711,5 +711,12 @@ in (
 );
 */
 
+assert_error [
+    "statements cannot be mixed with definitions",
+    {a=1; print 2} ];
+assert_error [
+    "definitions cannot be mixed with statements",
+    {print 2; a=1} ];
+
 // script return value:
 in null

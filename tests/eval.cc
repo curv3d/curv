@@ -489,7 +489,7 @@ TEST(curv, eval)
         "1| 1,2\n"
         "    ^ ");
 
-    SUCCESS("let a=2; f x={print(g 2); g y=a*x*b*y; b=3} in f(5).g(7)", "210");
+    SUCCESS("let a=2; f x={test print(g 2); g y=a*x*b*y; b=3} in f(5).g(7)", "210");
     EXPECT_EQ(sconsole.str(),
         "60\n");
 

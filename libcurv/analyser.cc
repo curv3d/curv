@@ -940,18 +940,33 @@ Semicolon_Phrase::as_definition(Environ& env) const
 {
     Shared<Compound_Definition> compound =
         Compound_Definition::make(args_.size(), share(*this));
-    bool isdef = false;
+    size_t j = 0;
+    bool contains_statement = false;
     for (size_t i = 0; i < args_.size(); ++i) {
         auto phrase = args_[i].expr_;
-        compound->at(i).phrase_ = phrase;
-        auto def = args_[i].expr_->as_definition(env);
-        if (def)
-            isdef = true;
-        compound->at(i).definition_ = def;
+        if (isa<Empty_Phrase>(phrase)) continue;
+        auto def = phrase->as_definition(env);
+        if (def) {
+            if (contains_statement) {
+                // definition following statement
+                throw Exception(At_Phrase(*phrase, env),
+                    "definitions cannot be mixed with statements");
+            }
+            compound->at(j) = def;
+            ++j;
+        } else if (j > 0) {
+            // statement following definition
+            throw Exception(At_Phrase(*phrase, env),
+                "statements cannot be mixed with definitions");
+        } else {
+            // first phrase is a statement
+            contains_statement = true;
+        }
     }
-    if (isdef)
+    if (j > 0) {
+        compound->resize(j);
         return compound;
-    else
+    } else
         return nullptr;
 }
 

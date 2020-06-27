@@ -133,18 +133,13 @@ struct Test_Definition : public Unitary_Definition
 // is an action or definition, and there is at least one definition.
 struct Compound_Definition_Base : public Definition
 {
-    struct Element
-    {
-        Shared<const Phrase> phrase_;
-        Shared<Definition> definition_;
-    };
-
     Compound_Definition_Base(Shared<const Phrase> syntax)
     : Definition(std::move(syntax)) {}
 
     virtual void add_to_scope(Recursive_Scope&) override;
 
-    TAIL_ARRAY_MEMBERS(Element)
+    TAIL_ARRAY_MEMBERS(Shared<Definition>)
+    void resize(size_t n) { size_ = n; }
 };
 using Compound_Definition = Tail_Array<Compound_Definition_Base>;
 
