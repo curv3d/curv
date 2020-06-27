@@ -1,0 +1,17 @@
+ * Book of Shaders is a model for interactive documentation. To replicate it,
+   I either need to run the Curv engine in a web browser, or I need a desktop
+   client that runs Curv and also displays documentation. Or both?
+    * Which is more difficult?
+    * Which is more accessible?
+    * Which is ultimately more powerful?
+    * It would be cool to have a single UI that is an editor and viewer
+      for interactive documentation and also a Curv IDE.
+    * How do I implement this UI?
+       * Maybe it requires a web browser, and the desktop UI is ultimately
+         Electron based.
+       * Maybe this UI uses Curv to render all UI elements. To run in a web
+         browser, the UI program is compiled into WASM instead of native code.
+       * What is the shortest path to using Curv to render 2D graphics
+         efficiently for rendering interactive, mostly 2D rich text documents,
+         with bits of embedded 3D?
+          * I

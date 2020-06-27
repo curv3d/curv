@@ -1,0 +1,299 @@
+Comma vs Semicolon
+==================
+I don't provide a clear model of the difference between comma vs semicolon.
+The documentation is unclear about when one vs the other is even legal.
+If a Curv coding style prescribes when to use one vs the other, what would
+it prescribe? (The rules should be context free, so they can be automated
+by a curvfmt program.)
+
+The classic Curv semantics for the ; operator are messed up in the unreleased
+master branch, because 'let' no longer accepts an arbitrary definition
+as its first argument. This is because I rebelled against the original
+design of allowing statements and recursive definitions to be combined
+in a compound recursive definition, using the ; operator. I didn't want
+statements in the head of a 'let': I didn't want to document that: I wanted
+a more clear distinction between 'let' and 'do'.
+
+Now I must decide how semicolon should work, taking into account:
+ * need for embedded debug/assert statements in a module
+ * the fact that semicolon is currently an operator, and that you can type
+   'stmt;stmt' or 'defn;defn' at top level in the REPL.
+
+TODO:
+ * Theory 0: add 'test' keyword and 'test' definitions.
+   Remove mixed stmt/defn definitions.
+   Restore support for generalized definitions to head of let.
+ * Theory 2: deprecate (a,b,c) list syntax.
+   Add {a=1,b=2}
+       let a=1,b=2 in phrase
+   Comma operator can form compound definitions.
+
+0. Embedded Tests
+-----------------
+In old Curv, you just embed statements in a compound definition,
+mixed with the definitions. But I didn't like the syntax. I felt it was
+confusing.
+
+How does this work in Rust? Like this:
+    fn sqrt(number: f64) -> Result<f64, String> {
+        if number >= 0.0 {
+            Ok(number.powf(0.5))
+        } else {
+            Err("negative floats don't have square roots".to_owned())
+        }
+    }
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn test_sqrt() -> Result<(), String> {
+            let x = 4.0;
+            assert_eq!(sqrt(x)?.powf(2.0), x);
+            Ok(())
+        }
+    }
+The tests are ignored until you run 'cargo test'.
+
+In Rust, you just embed a test in a list of definitions, just like you
+could do in Curv. The tests are specially marked. Maybe that's all I need.
+
+The phrase 'test <stmt>' is a definition that creates zero bindings, but
+executes the <stmt> as a side effect. Translating the Rust code:
+    sqrt n = if (n >= 0) n^0.5 else error("sqrt of negative number"),
+    test (assert(sqrt 4 == 2)),
+
+The 'test' operator makes it more explicit what code is doing, which
+is good for human factors.
+
+Semantically, the ';' operator no longer combines definitions with statements,
+thus its specification is simpler. There is no guaranteed relative order of
+evaluation of a set of test definitions within a compound recursive
+definition (which is part of what makes ';' simpler).
+
+Nested Definitions?
+-------------------
+In classic Curv, any phrase with a semantic meaning can be parenthesized.
+Therefore a definition can be parenthesized, and a compound definition
+(constructed with the semicolon operator) can be parenthesized.
+And that means you can write nested definitions, where
+    (a=1;(b=2;(c=3));d=4)
+is equivalent to
+    a=1;b=2;c=3;d=4
+
+Although this seems useless, I'll note that imperative languages have always
+supported nested statements and nested compound statements, all the way back
+to Algol. And it works for exactly the same reasons (it just falls out from
+a simple set of rules). There's a bit more practical justification: you can
+use the nesting to delimit nested lexical scopes, which is not applicable
+to Curv nested definitions.
+
+Because it seems useless, I've disabled this feature in `let` (in the main
+branch, not released yet). But it still works in other contexts where
+recursive definitions are legal (modules, top level definitions). I thought
+getting rid of nested definitions would simplify the language.
+
+Now I'd like to suggest some reasons for preserving the "feature":
+ * In some cases you may need to parenthesize a definition, for grouping:
+   because ; or , has the lowest precedence. This happens with the trailing
+   argument to 'where' (which is being deprecated), and it arises in the
+   MixFix proposal. Either I maintain the general rule that definitions can
+   be parenthesized, or I introduce parens as special required syntax in
+   specific ad-hoc situations (like the trailing argument to 'where').
+   I would prefer a design where parens are only used for grouping, and
+   never for anything else.
+ * If a module contains a huge set of definitions, then you want to
+   organize it into sections -- or even a general hierarchy, with tree nodes
+   that can be opened/closed using a folding editor -- even though the
+   actual module namespace is not nested. Nested definitions provide the
+   syntax for exactly this.
+ * Once I introduce structured comments, a comment attached to a nested
+   parenthesized compound definition documents the set of definitions
+   within the parens, which syntactically distinguishes it from a comment
+   that applies to a specific simple definition.
+ 
+Theory 1: semicolon operator (just use semicolon)
+-------------------------------------------------
+The ; operator joins statements into a compound statement.
+    [ statement ]           // list comprehension
+    { statement }           // record comprehension
+    do statement in expr    // do expression
+    ( statement )           // grouping
+
+The ; operator is overloaded to join recursive definitions into a
+compound definition.
+    { definition }              // module
+    let definition in phrase    // let phrase
+
+As in Theory 0, you can't mix statements and definitions.
+
+In the REPL, you can type 'stmt;stmt' as a compound statement,
+or you can type 'defn;defn' as a compound recursive definition,
+with no surrounding parens and no surrounding operation to interpret
+the meaning of the ';'.
+
+The , is superfluous. It is not an operator: it is ad-hoc syntax that
+works as a synonym for ; in some contexts but not others.
+You can't write 'a,b,c' at the top level in the REPL: it is a syntax error.
+
+For simplicity, just use semicolon.
+
+The problem is that it looks weird, compared to conventional languages.
+   [a; b; c]  vs [a, b, c] in many top languages, and in JSON.
+   {a: 1; b: 2} vs {a: 1, b: 2} in Javascript, {"a":1, "b":2} in Python, etc.
+   'let a=1; b=2 in ...' is okay.
+   'do stmt1; stmt2 in ...' is okay. (Many imperative languages use semicolon.)
+
+Theory 2: comma and semicolon operators
+---------------------------------------
+We introduce a principled semantic distinction between , and ;
+
+Since ; is overloaded, why not use different operators for those two cases?
+  ; is imperative sequencing: it joins statements into a compound statement.
+    It is non-commutative (but associative).
+  , joins recursive definitions into a compound definition.
+    It is both commutative and associative.
+
+do a; b; c in expr
+[a; b; c]
+{a: 1; b: 2}
+{a=1, b=2}
+let a=1, b=2 in phrase
+
+In the REPL, comma and semicolon are both standalone operators
+for constructing compound recursive definitions and compound statements
+respectively.
+
+This is simple, logical, consistent.
+
+It doesn't give me that "mainstream-looking syntax" that I wanted.
+Perhaps there is a conflict between rigorous orthogonality and formal 
+simplicity, on one hand, and "frame-based" language design, where each
+feature signals what "frame" (cognitive linguistics) it is a part of.
+
+This breaks the ability to put parens around a compound recursive definition.
+We need to remove the (a,b,c) list syntax.
+
+Theory 3: ,/; mean unspecified/sequential order of evaluation
+-------------------------------------------------------------
+This is an extension of Theory 2, with more meanings for comma, and more
+conventional syntax. Comma now means "unspecified evaluation order".
+
+do a; b; c in expr   -- statements must be executed in order
+[a,b,c]              -- subexpressions are independent, any eval order works
+[a;b;c]              -- statements must execute in sequential order
+{a:1,b:2}            -- field defs are independent and disjoint, any eval order
+{f1;f2;f3}           -- sequential record comprehension, override semantics
+{a=1,b=2}            -- order independent definitions
+let a=1, b=2 in ph   -- order independent definitions
+
+In this theory,
+ * Comma is not commutative in all contexts. Instead, the order
+   of evaluation of the arguments is not fixed to be sequential.
+ * Semicolon is the imperative sequencing operator.
+   Side effects in earlier statements affect the output of later statements.
+ * A new feature is added. {a:1,b:2,a:3} aborts due to a duplicate definition.
+   This contrasts with the override semantics of {a:1;b:2;a:3}.
+
+Do we still have a comma operator? In what contexts is a parenthesized
+comma list meaningful?
+
+This is a better match to conventional notation.
+
+It is more complicated.
+The semicolon operator is unchanged from theory 2.
+But comma has a different meaning in list, record and definition contexts.
+ * In an unconstrained context, 'a,b,c' is a compound recursive definition.
+   Eg, a=1,b=2 is a REPL command, just like Theory 2.
+
+This leads to a better partition of the language into dialects, and
+a better partition of the documentation.
+In the documentation, the comma forms will be part of the high level,
+functional subset, while the semicolon forms will be documented only
+in Debug Actions and Imperative. [a;b] and {a;b} are list and record
+comprehensions, documented in Imperative. In List and Record, I document
+[a,b] and {a,b}. For lists, the subphrases are expr and ...expr.
+For records, the subphrases are id:expr and ...expr.
+
+In pattern matching, only comma patterns make sense for lists and records,
+not semicolon patterns. A list or record pattern element matches a single
+element of the argument, or it is a ... pattern.
+
+In the evaluator, [a,b,c] evaluates each element as an expression, not as
+a statement (unless the ... operator is used). This fixes polybug.
+(Actually, the bug is moved to the code that handles list comprehensions.)
+
+Old Theory: comma separates data structure elements
+---------------------------------------------------
+Allow ',' to be used, instead of ';',
+in any context where we are separating items in a collection.
+ * Allow commas in scoped record constructors.
+     {x=1, y=2}
+ * Allow commas at the top level of a list or record comprehension,
+   even with local defs.
+     [local x=1, while (x>=0) (x; x:=x-1)]
+
+Theory: semicolon is imperative sequencing; comma separates independent elements
+--------------------------------------------------------------------------------
+Or: semicolon separates statements, comma separates expressions.
+
+There are a number of contexts in Curv where I want to know, statically,
+how many elements are in a list constructor, just by counting expressions.
+
+  One such context is issuing error messages. If a list constructor is given
+  as an argument, and one of the element subexpressions yields a bad value,
+  I'd like to underline just the bad subexpression.
+
+  Another context is SubCurv. A list of N expressions compiles into an array
+  or tuple of size N, but a list of statements requires more work (and isn't
+  actually supported right now).
+
+  A list of statements containing assignment statements is particularly
+  tricky, since the environment of each expression is determined dynamically
+  by the side effects of the previous expression. In this case, it seems
+  quite appropriate to use semicolons for sequencing, as distinct from
+  commas, which imply the elements of the list literal are independent
+  and can be evaluated in any order.
+
+So comma means order independent (or parallel) evaluation, while semicolon
+means sequential evaluation.
+
+I've considered the idea that the only elements in a comma-separated
+list constructor are expressions and '...' phrases. (Many popular languages
+have this syntax: Python, Javascript, etc.) Whereas a list comprehension,
+employing imperative programming constructs like local variable definitions,
+assignments, conditional statements and loops, must use semicolons.
+ * But, creating this distinction and then allowing ... phrases in a
+   comma-separated list constructor has always felt weird, since I classify
+   those as statements, and semantically they are value generators (producing
+   a sequence of values whose count is only known at run time).
+ * But, I can say that ... phrases do not introduce order dependency,
+   so don't conflict with the meaning of comma as order independent.
+ * Other languages support the equivalent of ... in list constructors,
+   without supporting conditionals and for loops (which can also be
+   order independent if they don't contain assignments).
+
+So this implies:
+ * comma in a set of recursive definitions (let, module)
+      let a=1, b=2 in ...
+      {a=1, b=2}
+ * comma in an unscoped record literal like {a:1, b:2}
+   and in a list literal like [1,2],
+   and including the `...` operator: [a,b,...c]
+ * semicolon in a compound statement (stmt1; stmt2)
+   and in a list comprehension that contains local/:=/if/for/while
+   and in a record comprehension that contains local/:=/if/for/while
+     {a:1; if (need_b) b:2}
+
+If I am segmenting the language into functional and imperative, then
+I could say that semicolon is restricted to the imperative sublanguage.
+
+The goal is to make Curv easier to document and understand.
+Does this advance that goal?
+ * We split Curv into high/low or basic/advanced dialects.
+   Put the imperative sublanguage into "advanced", together with comprehensions.
+   The basic dialect will just have simple list and record syntax [a,b,c],
+   {a:1,b:2}, {a=1,b=2}.
+
+Perhaps the semicolon operator is tied to the semantics of statement
+abstraction? (Not worked out yet).

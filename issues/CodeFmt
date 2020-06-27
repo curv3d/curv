@@ -17,9 +17,14 @@ a projectional editor operates on. It preserves all essential source code
 information, but not newlines and indentation from a text file, because
 the projectional editor does automatic layout based on the window width.
 
-What information do I need to preserve?
+At present, operation trees are an IR and executable format that do not
+preserve all the structure of source code. Here are some things:
  * comments
  * parentheses
+ * The order of definitions, statements and commentary in a module literal.
+
+Do I want to put this structure into an Operation tree? Or should my IR and Exe
+trees be separate from my Annotated Source Tree? What is best practice for this?
 
 How to proceed? Implement a pretty-printer for Operation trees, expose
 it as `curv --fmt`, then fix bugs until the output looks the way I want.

@@ -7,7 +7,14 @@ Initial support for:
   record@symbol
   collection@lens_list
 
-`id` is the identity lens (see also: 'Function' issue).
+Are functions also lenses?
+ * For now, no. Lists are lenses, but the juxta operator interprets
+   a left-hand list argument in a way that conflicts with lens application.
+   The algebraic laws are screwed up.
+ * If a[i] array index syntax is deprecated and then removed (replaced
+   by a.[i]), then lists can become functions in a way compatible with
+   lenses, and *then* I can do this.
+ * If yes, then 'id' becomes the identity lens.
 
 Full proposal (future design):
   list index    a[i]      a@i
@@ -21,6 +28,18 @@ and the @ operator. The "convention form" syntax has the added property that
 sparse multi-D arrays, implemented using dictionaries of index tuples, have
 the same indexing syntax as dense multi-D arrays: a[i,j] in both cases.
 This allows for some generic programming.
+
+Alt. proposal:
+* I want to get rid of the a[i,j] syntax. I've deprecated f(i,j) function
+  call syntax, I now write f[i,j], and overloading the juxtaposition
+  operator with two different meanings is now a problem.
+* a@(slice[i,j]) is verbose.
+  Use a.[i,j] as sugar. For now, 'a' is a list, not a general value.
+  This syntax is for array indexing, not for general lens application.
+* How will sparse arrays work? Implemented on top of dictionaries?
+  I want uniform syntax for indexing dense and spare arrays.
+  Okay, fine, invent a lens type with those semantics,
+  then use a.[i,j] as sugar for that lens.
 
 The syntax `record."foo"` is deprecated.
 

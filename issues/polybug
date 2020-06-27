@@ -1,0 +1,60 @@
+regular_polygon fails with a reactive argument
+----------------------------------------------
+curv> poly = parametric n :: int_slider(3,12) = 5 in regular_polygon n
+curv> poly
+2D shape 2.35114×2.23607
+ERROR: ((<param n>-(2*floor((<param n>/2))))==0) is not a boolean
+at file "/home/doug/res/src/curv2/lib/curv/std.curv":
+1358|               if (mod(reps,2)==0) inradius else circumradius,
+                        ^^^^^^^^^^^^^^
+at file "/home/doug/res/src/curv2/lib/curv/std.curv":
+430|         mitred d = half_plane{d: d/2, normal: [0,-1]}
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+431|                    >> repeat_radial n;
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+at:
+1| poly = parametric n :: int_slider(3,12) = 5 in regular_polygon n
+                                                  ^^^^^^^^^^^^^^^^^
+
+The problem is here (std.curv, first stack frame):
+bbox = [
+            [ -max_x,
+              -inradius,
+              shape.bbox[MIN,Z] ],
+            [ max_x,
+              if (mod(reps,2)==0) inradius else circumradius,
+              shape.bbox[MAX,Z] ]
+        ];
+
+The if phrase is being executed using If_Else_Op::exec(), and this method
+does not support a reactive boolean condition. It is calling Value::to_bool()
+on the condition, which aborts in the reactive case.
+
+Possible fixes:
+ * When evaluating the parametric record constructor in
+   Viewed_Shape::Viewed_Shape, I don't care about the value of bbox.
+   So be lazy about evaluating it?
+ * Maybe I have lazy reactive lists, containing lazy element generator
+   statements. That's gotta be the general solution.
+ * Note, there's an opportunity to make partial evaluation more precise.
+   At compile time, we can determine that the if phrase is an expression,
+   and not a more general statement that generates 0 or more values.
+   Then we can evaluate the if phrase as an expression, which in this particular
+   case, will not trigger the bug involving a reactive boolean expression.
+   This only fixes this specific case (makes regular_polygon work with a
+   reactive parameter). It doesn't fix the general problem.
+ * If_Else_Op::eval() evaluates both branches of the if. Then it stores both
+   values in a reactive if expression -- and it aborts on a type mismatch.
+ * If_Else_Op::eval() analyzes both branches *as statements* and assigns
+   an SC Statement Type to each. The types must match (both generate same #
+   of elements). It outputs a reactive statement possessing that SC_Type.
+
+If I introduce lazy, reactive lists, then how are they treated by SubCurv?
+ * They are okay if the list is ignored by the SC compiler (eg, regular_polygon)
+ * They are okay if we can deduce the number of list elements at SC compile
+   time. Then we can generate code. This requires more compile time analysis.
+ * They are not okay if the number of list elements is dynamic.
+   I mean, I want to support this case as well. I would like to create
+   an interactive animation of 'polygon' where the number of vertices varies
+   during the animation. But the current framework won't support this in the
+   short or medium term.

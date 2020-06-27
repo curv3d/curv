@@ -1,0 +1,10 @@
+parametric records
+==================
+* Parametric records are printed in accordance with the Printable proposal.
+  The constructor and constructor argument are printed (not the fields).
+  Use `...PR` to print the fields in the REPL.
+* Fields cannot be updated using `PR.field := val` or `update #field val PR`.
+  This reports an error, because the field is now out of sync with the
+  constructor, and the record would be printed incorrectly.
+* `PR@param`: `param` is a builtin lens for fetching and updating the
+  constructor argument.

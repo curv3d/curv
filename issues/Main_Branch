@@ -1,0 +1,58 @@
+Rename the 'master' branch to 'main'.
+
+On hold until Github announces a standard and supported procedure for doing
+this, without breaking existing clones, and without breaking existing
+github.com/curv3d/curv/blob/master/... URLs.
+
+Tasks:
+ * Do this in the github repo. Choices:
+    * The master branch no longer exists. Only main exists.
+      Old github URLs pointing at the master branch will break.
+      Effect on clones?
+    * The master branch continues to exist, but is no longer updated.
+      Effect on clones?
+ * How do you update a clone? What happens if you don't follow the update
+   instructions, and you have local changes, or you pull recent changes,
+   or you submit a pull request? I particularly don't want to do anything
+   that could cause data loss.
+ * Change URLs that reference the master branch, in files within the repo,
+   in issues, and in the mailing list. [Need ability to edit mailing list
+   history. Not sure if Google Groups gives me this.]
+ * Provide instructions to anyone with a local clone of the curv repo
+   on how to fix the clone.
+ * Maybe wait for Github to announce an official and supported procedure.
+   It would be cool if they could support 'main' and 'master' as synonyms
+   for the exact same branch (something not supported by git), so that
+   URL references and existing clones do not break.
+ * Maybe find existing open source projects that have done this and
+   documented their procedure.
+
+instructions:
+https://www.hanselman.com/blog/EasilyRenameYourGitDefaultBranchFromMasterToMain.aspx
+ $ git branch -m master main
+ $ git push -u origin main
+ On github, switch default branch from 'master' to 'main'.
+
+In my local repo, I have renamed master to main. There is no more master branch.
+But, the github repo will have two branches called master and main.
+My local and cloud repos are not in sync.
+ * Theoretically, in github, I can switch the default to main, then delete
+   the master branch. That should be okay.
+
+Github shows a warning that changing the default branch will mess up
+existing clones. I don't want that.
+
+(Existing pull requests could be screwed up, but I'll do this when no
+pull requests exist on github.)
+
+https://gist.github.com/lttlrck/9628955
+git branch -m old_branch new_branch         # Rename branch locally
+git push origin :old_branch                 # Delete the old branch
+git push --set-upstream origin new_branch   # Push new branch, set local branch
+                                            # to track the new remote
+
+Comments:
+ * Remember to pull before! Or you may lose every commit not yet on your local branch
+ * In plain git there's no difference between renaming and deleting then
+   creating a new branch. It's only with pull-requests that you start to have
+   problems, so Github would need to build the feature themselves.

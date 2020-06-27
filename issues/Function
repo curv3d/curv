@@ -1,6 +1,7 @@
 TODO:
  - `id` is the identity function. It never fails.
-   (When 'Lens' is implemented, `id` is extended to be the identity Lens.)
+   (`id` may be extended to be the identity Lens, but not this release.
+    See Lens: need to remove a[i] array indexing first.)
  - `identity` is renamed to `idmatrix`.
  - `error` is a function value when used in an expression context.
    It always fails.
@@ -8,7 +9,7 @@ TODO:
    the following requirements.
  + consider if `co` should be an abbreviated form of `compose`.
  + Function compositions print as `compose` expressions (part of Printable).
- + Replace 'is_fun' with is_func and is_primitive_func.
+ - Replace 'is_fun' with is_func and is_primitive_func.
    Previous naming ideas:
         is_callable and is_function
         is_mapping  and is_function
@@ -36,6 +37,7 @@ TODO:
       Composition, etc. I dunno man.
  + Change the function call mechanism so that only juxtaposition is overloaded
    to perform array indexing, not >> or <<.
+   But see Lens: I also want to deprecate this syntax.
 
 Problem
 -------
@@ -48,9 +50,9 @@ But I don't have that; instead I have
     SC_Value Function::sc_call_expr(Operation&, Phrase&, SC_Frame&)
 I don't have a method to construct an Operation from an SC_Value.
 
-The sc_call_expr() interface is currently required because a function
-argument might be a tuple. I can't represent a tuple using an SC_Value.
-So instead I check if an Operation is a List_Expr.
+The sc_call_expr() interface is currently required because:
+ * A function argument might be a tuple. I can't represent a tuple using
+   an SC_Value. So instead I check if an Operation is a List_Expr.
 
 I could implement a tuple type for SC_Value.
  * It could be represented using GLSL 'struct' values.

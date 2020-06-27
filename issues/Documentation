@@ -1,0 +1,22 @@
+My feedback from Wink is that the documentation needs to be improved.
+ 
+ * There is an overview that explains all of the basic concepts, for people
+   with a little mainstream imperative programming experience, but no
+   functional programming experience.
+
+ * Not just a reference manual, do a better job of explaining important
+   concepts and ways of thinking, especially in areas where Curv is different
+   from mainstream languages.
+
+   Task based documentation, more than just a reference manual.
+    * Libraries
+
+ * All examples should be "executable code". If I show REPL sessions,
+   that may satisfy the requirement.
+
+     I'd like syntax colouring for REPL sessions. Colour the prompt,
+     the input, and the output, differently. Likely impossible for the
+     default *.rst viewer in the github code browser. But if I put the
+     documentation on the Curv web site I can provide a better presentation.
+
+ * Later: Book of Shaders is a model for interactive documentation: BookOfCurv

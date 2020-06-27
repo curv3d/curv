@@ -1,0 +1,35 @@
+The `equal` function needs some work. Issues:
+ * Does Curv produce mathematically correct results for reactive arguments
+   (regardless of performance)? Consider nums, vecs, bool32s, broadcasting.
+ * Are these results (see above) vectorized when possible?
+ * SubCurv should support bool32 and bool32_vec arguments.
+ * Consider if `are_equal` is a better name than `equal`.
+
+In SubCurv, it should be expanded to support any argument [a,b]
+where equal[a,b] gives a bool_plex result.
+
+Here's the beginnings of a new Prim class satisfying this:
+
+// Encapsulates the argument/result types of `equal` and `unequal`.
+// In Curv, the primitive maps [nonlist,nonlist] -> Bool.
+// In SubCurv, it's restricted to only Plex arguments that give a Plex result.
+// So, no mat or tuple arguments.
+//   [num, num] -> bool
+//   [num vec, num vec] -> bool vec
+//   [bool plex, bool plex] -> bool plex
+//   [struct, struct] -> bool
+struct Vectorized_Equality_Prim
+
+Of special note, this works on bool32 and bool32 vec arguments, producing
+a result of the same type. In this context, unequal is equivalent to xor.
+
+In Curv, I think the code may be wrong for handling reactive values.
+`equal` uses a combination of Binary_Array_Op and Value::equal.
+Suppose that <T> is a reactive value of type T.
+Then what happens for these combinations:
+    num, <num>    => <bool>
+    num, <vec3>   => <bool3>
+    vec3, <num>   => <bool3>
+    vec3, <vec3>  => <bool3>
+I'm specifying results as <bool3> rather than [<bool>,<bool>,<bool>]
+so that vector operations are used in SubCurv where possible.

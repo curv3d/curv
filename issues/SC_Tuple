@@ -1,0 +1,127 @@
+TODO:
+ - SC_Type: clean up API to make it more regular.
+ - SC_Type: make it fully abstract (all data members private)
+ - Reimplement SC_Type using Type values (Num,Bool,List)
+ * SC_Compiler denotes a GLSL or C++ program that is under construction.
+   It accumulates code (top level definitions) which are output all at once.
+   Type definitions (such as Tuple types) must be output before functions.
+ * Change the representation of arrays to a struct containing a '_' member.
+   struct array_232 { float _[42]; }; This allows arrays to be nested, passed
+   as first class values, returned as first class results, in GLSL and in C++.
+ * Eliminate the restriction on the number of dimensions of an array in SubCurv.
+ * Add a Tuple type to SC_Type.
+   List values and List_Exprs are given this type by the SC compiler.
+ * Function call arguments may be Tuples.
+ * Add a Struct type to SC_Type.
+ * Replace Function::sc_call_expr() with
+     SC_Value Function::sc_call(SC_Value, SC_Frame&)
+   There is no longer a need to convert List_Expr ops directly into
+   function call parameter lists.
+
+Required by: native `compose` function.
+
+I don't currently have primitive functions supported by SubCurv that take
+record, rather than tuple, arguments (named rather than positional arguments).
+But if I did, they would need sc_call_expr() in order to work around the
+absence of an SC Record type. I should therefore add an SC Struct type as
+well, or at least make it trivial to add one later.
+
+WGSL numeric types
+------------------
+scalar: bool, i32, u32, f32
+vector: vecN<T>: N in 2..4, T is scalar
+matrix: matNxM: N, M in 2..4, base type is f32
+
+As a group, call these the SVM types (scalar, vector, matrix).
+
+struc and plex
+--------------
+replacing "struc" with "plex".
+A plex is:
+    a Bool, Num, Bool32
+    a vec[2-4] of Bool, Num, Bool32
+    a mat[2-4] of Num
+    a tuple
+    a struct
+A type is either a plex or an array of plex.
+In GLSL/WGSL, a plex is not represented by an array type,
+while an array of plex is represented by an array type.
+Query functions:
+    plex_rank(): 0 if a plex, >0 if an array of plex
+    plex_base()
+A bool_plex is: Bool, Bool32, or vec[2-4] of same.
+A num_plex is: Num, vec[2-4] of Num, or mat[2-4] of Num.
+
+We have: is_struc(). Is this the same thing as is_plex()?
+Let's see.
+ * Unary_Scalar_Prim (really a part of equal/unequal) uses is_struc()
+   to validate arguments to equal(). Which can only return a bool-plex,
+   since I don't support returning array values in SC right now.
+   So valid arguments would be a scalar_plex or a struct (not a tuple).
+ * Used to validate arguments to sc_struc_unify().
+   Which is called to unify
+     two num_plex types
+     two arguments to 'equal'
+   which in both cases are plexes.
+
+add: is_scalar_plex
+     is_tuple
+     is_struct
+
+SC_Type representation
+----------------------
+The simplest representation of an SC_Type is:
+    Num | Bool | List N T | Tuple [T1,T2,...] | Struct {sym1:T1,...}
+
+This is a subset of the type values in the Types proposal, so I will
+represent these as Type : public Ref_Value.
+
+I'll need a mapping from these types to GLSL types.
+Eg, List 32 Bool => "uint", etc.
+A "GLNum" is a GLSL scalar, vec or mat type: these are the types that
+support numeric operations.
+I can represent all of the GLNum types in 8 bits.
+A curv::Type contains a glnum_ field which is either missing, or it means
+the Type is also a GLNum.
+
+I need a map from a Value to a principle type.
+However, the value sets of List and Tuple overlap.
+* Tuples can only be indexed with compile time values, while Lists can be
+  indexed with run time values, so List should be preferred over Tuple in case
+  of ambiguity. Eg, [1,2] has principle type List 2 Num.
+* What is the principle type of []?
+    List 0 T, for all types T
+    Tuple[]
+  The type of [] is special in that it cannot be indexed at all, either
+  dynamically or statically. I think Tuple[] is a good choice.
+
+Even though List 2 Num and Tuple[Num,Num] have the same value set, they are
+different types because they have different APIs in SubCurv. Therefore they
+print differently and compare unequal as type values.
+
+SC_Value representation
+-----------------------
+
+
+
+--------------------------------------------------------------
+Composite_Function needs to implement sc_call_expr or gyroid.curv won't compile.
+This seems to require
+    SC_Value Function::sc_call(SC_Value, SC_Frame&)
+But I don't have that; instead I have
+    SC_Value Function::sc_call_expr(Operation&, Phrase&, SC_Frame&)
+I don't have a method to construct an Operation from an SC_Value.
+
+The sc_call_expr() interface is currently required because a function
+argument might be a tuple. I can't represent a tuple using an SC_Value.
+So instead I check if an Operation is a List_Expr.
+
+I could implement a tuple type for SC_Value.
+ * It could be represented using GLSL 'struct' values.
+   This does imply packing argument tuples into a struct when a function
+   is to be called, something I currently avoid.
+ * I could also represent a tuple as a collection of SC_Values.
+   This is used as is when the tuple is used to provide the argument to
+   a function call. In other contexts, it may be promoted to a struct value.
+   (That's not consistent with the current SC_Value representation.)
+ * What approach is forward compatible with the New_Core design?
