@@ -42,9 +42,10 @@ Range constructors
   ``i .. j``
     Returns the ascending list of numbers: ``i``, ``i+1``, ``i+2``, ... up to ``j`` inclusive.
     For example, ``1..10`` is ``[1,2,3,4,5,6,7,8,9,10]``.
+    Same as ``i .. j by 1``.
 
   ``i .. j by k``
-    Similar to ``i..j``, except that the step value is ``k`` instead of ``1``.
+    Same as ``i..j``, except that the step value is ``k`` instead of ``1``.
     The step value may be positive or negative, and need not be an integer.
     For example, ``1..0 by -0.25`` is ``[1, 0.75, 0.5, 0.25, 0]``.
     
@@ -57,8 +58,8 @@ Range constructors
     
     As a result of using this algorithm, the number of list elements will be
     as expected (under the stated assumption), but the final list element might
-    be slighter larger or smaller than expected, due to floating point inaccuracy.
-    Here's an example: ``0.1 .. 0.3 by 0.2`` returns ``[0.1,0.30000000000000004]``.
+    be larger or smaller than expected, due to floating point inaccuracy.
+    Here's an example: ``0.1 .. 0.3 by 0.2`` returns ``[0.1, 0.30000000000000004]``.
 
   ``i ..< j``
     Same as ``i..j`` except that the final element in the sequence is omitted.
@@ -76,6 +77,20 @@ List Slicing
     Returns ``[a[indices[0]], a[indices[1]], ...]``,
     where ``indices`` is a list of integers.
     For example, ``a[0..<3]`` returns a list of the first 3 elements of ``a``.
+
+Array Indexing
+  ``a[i,j,k,...]``
+   Index into a multidimensional array, which is represented by nested lists.
+   If the indices ``i``, ``j``, ``k``, ... are all integers,
+   then this is equivalent to ``a[i][j][k]...``.
+   See `Tensors`_ for more information about multidimensional arrays.
+
+.. _`Tensors`: Tensors.rst
+    
+*Syntax note:* The Curv juxtaposition operator (``a b``) is overloaded.
+If ``a`` is a function, then this is a function call with argument ``b``.
+If ``a`` is a list, then this is list or array indexing,
+and ``b`` is a list of indices.
 
 ``count a``
   The number of elements in list ``a``.
