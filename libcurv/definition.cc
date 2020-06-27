@@ -169,14 +169,6 @@ Recursive_Scope::analyse(Definition& def)
 void
 Recursive_Scope::analyse()
 {
-    for (auto a : action_phrases_) {
-        if (isa<const Local_Phrase>(a)) {
-            throw Exception(At_Phrase(*a, *this),
-                "local definitions can't be mixed with recursive definitions");
-        }
-        auto op = analyse_op(*a, *this);
-        executable_.actions_.push_back(op);
-    }
     for (auto& unit : units_) {
         if (unit.state_ == Unit::k_not_analysed)
             analyse_unit(unit, nullptr);
@@ -371,11 +363,6 @@ Recursive_Scope::Function_Environ::single_lookup(const Identifier& id)
         return make<Symbolic_Ref>(share(id));
     }
     return m;
-}
-void
-Recursive_Scope::add_action(Shared<const Phrase> phrase)
-{
-    action_phrases_.push_back(phrase);
 }
 unsigned
 Recursive_Scope::add_unit(Shared<Unitary_Definition> def)

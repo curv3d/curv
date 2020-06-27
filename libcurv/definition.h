@@ -212,7 +212,6 @@ struct Recursive_Scope : public Scope
     Shared<const Phrase> syntax_;
     bool target_is_module_;
     Scope_Executable executable_ = {};
-    std::vector<Shared<const Phrase>> action_phrases_ = {};
     std::vector<Unit> units_ = {};
     int scc_count_ = 0;
     std::vector<Unit*> scc_stack_ = {};
@@ -239,7 +238,6 @@ struct Recursive_Scope : public Scope
 
     // Recursive_Scope (add_to_scope protocol)
     void analyse(Definition&);
-    void add_action(Shared<const Phrase>);
     unsigned add_unit(Shared<Unitary_Definition>);
 
     void analyse();
