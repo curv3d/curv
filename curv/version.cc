@@ -105,7 +105,7 @@ print_os(std::ostream& out)
 #ifdef _WIN32
     // TODO Get version on Windows, see also
     // https://docs.microsoft.com/en-US/windows/win32/sysinfo/targeting-your-application-at-windows-8-1
-    out << "Windows\n";
+    out << "Kernel: Windows\n";
 #else
     struct utsname os;
     uname(&os);
