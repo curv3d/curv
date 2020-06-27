@@ -1,0 +1,52 @@
+Implement the 'test' operator from ideas/language/syntax/Comma.
+- 'test' is a reserved word
+- 'test <action>' is a recursive definition that binds no names but executes
+  <action> as a side effect.
+- Remove support for '<action>;<defn>' and '<defn>;<action>'
+  from the semicolon operator.
+
+Rationale:
+----------
+In old Curv, you just embed statements in a compound definition,
+mixed with the definitions. But I didn't like the syntax. I felt it was
+confusing.
+
+How does this work in Rust? Like this:
+    fn sqrt(number: f64) -> Result<f64, String> {
+        if number >= 0.0 {
+            Ok(number.powf(0.5))
+        } else {
+            Err("negative floats don't have square roots".to_owned())
+        }
+    }
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn test_sqrt() -> Result<(), String> {
+            let x = 4.0;
+            assert_eq!(sqrt(x)?.powf(2.0), x);
+            Ok(())
+        }
+    }
+The tests are ignored until you run 'cargo test'.
+
+In Rust, you just embed a test in a list of definitions, just like you
+could do in Curv. The tests are specially marked. Maybe that's all I need.
+
+The phrase 'test <stmt>' is a definition that creates zero bindings, but
+executes the <stmt> as a side effect. Translating the Rust code:
+    sqrt n = if (n >= 0) n^0.5 else error("sqrt of negative number"),
+    test (assert(sqrt 4 == 2)),
+
+The 'test' operator makes it more explicit what code is doing, which
+is good for human factors.
+
+Semantically, the ';' operator no longer combines definitions with statements,
+thus its specification is simpler. There is no guaranteed relative order of
+evaluation of a set of test definitions within a compound recursive
+definition (which is part of what makes ';' simpler).
+
+And... the Definition protocol was simplified. Recursive_Scope::add_action()
+and Recursive_Scope::action_phrases_ were removed.
