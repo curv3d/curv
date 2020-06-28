@@ -9,6 +9,19 @@ The REPL should support:
 * inline graphics.
 * Advanced UI. Consider Jupyter, <userland.org>, Acme, ...
 
+Completeness properties -- see [[gui/Reification]]:
+* Anything you can do in the Viewer or in a future Curv GUI, which changes
+  the state of the UI, has a corresponding REPL command.
+* There is a command history, which can be made persistent, and which is
+  representable as REPL commands.
+* Starting from a clean state, replaying the command log will exactly reproduce
+  the state of the UI.
+* There is a universal undo which acts on the command log.
+  Undo can be invoked from the REPL.
+* GUI state (eg, parameter values, camera state) can be copied, and pasted,
+  and represented as text. Just as the Curv language itself reifies graphics
+  as code, the reified UI reifies everything that's visual in the UI.
+
 The REPL should be integrated with the live-edit editing window
 and with the viewer window.
 

@@ -1,0 +1,64 @@
+Curv3D organization and community
+
+The FreeBSD code of conduct is pretty good (2nd iteration):
+https://www.freebsd.org/internal/code-of-conduct.html
+
+mailing list/forum software
+---------------------------
+Goal is to support both a mailing list and a web forum interface, with both
+treated as first class citizens.
+ * The email interface needs to be good: readable subject lines,
+   readable message bodies, containing the subject and text of the message
+   with minimal boilerplate. Forum threads become email threads in your
+   mail reader. Replying to a post creates a thread on the forum.
+ * The forum UI needs to be good, at least as good as as a threaded mail
+   reader.
+ * Good admin interface, good spam filtering. First new post from a unique
+   email address is quarantined until that address is approved for posting.
+
+The data model for the forum is:
+ * One or more lists/channels/rooms, initially just the one, but with room
+   for expansion later.
+ * Within a channel, there are posts, with subject lines and bodies.
+   Embedded images are allowed. Replying to a post creates a thread.
+   You can subscribe to a channel via email.
+
+I currently use Google Groups. Problem: not open source, and it's google.
+The fact that it's google limits the set of people willing to sign up.
+Otherwise it is fine.
+
+Alternative software:
+Someone's list: https://producingoss.com/en/message-forums.html
+Not suitable:
+ * sympa.org: no web forum, just readonly web archive
+ * dadamailproject.com: no web forum
+People are confused about:
+ * Discourse. Forum UI is very complex, featureful, configurable, popular.
+   https://meta.discourse.org/t/discourse-vs-email-mailing-lists/54298
+     "With properly configured incoming mail, Discourse can be used just like
+     a mailing list. If you’ll be interacting with Discourse exclusively by
+     email, consider enabling Mailing list mode in your personal preferences,
+     provided it’s enabled on your forum." (Not actually true.)
+   And you can import from Google Groups.
+   And there is a mobile client.
+   And check out https://blenderartists.org/
+ --
+   But: Tried mailing list mode once, and found it unusable.
+   Even Jeff Atwood says: mailing list mode forces an email on every single
+   post, forever. It’s “nightmare difficulty”, or “the nuclear option”.
+   https://meta.discourse.org/t/apply-mailing-list-mode-per-category/47772/16
+   This thread explains why Discourse is not suitable for migrating from a
+   mailman instance. It's not designed to support mailing lists.
+Possibly suitable:
+ * Mailman 3.
+   eg, https://lists.mailman3.org/archives/list/mailman-users@mailman3.org/
+   Installing on Ubuntu 20.04 requires following a mailing list post,
+   manually fixing bugs in Python code.
+ * groupserver.org
+   Supposedly like google groups. Is there image support?
+ * groups.io is not open source, but is free for open source projects and
+   has github integration and markdown support. It is marketed as an upgrade
+   from mailman and google groups.
+ * dfeed : https://github.com/CyberShadow/DFeed
+   Forum UI initially looks pretty good, and seems there is no compromise
+   on mailing list support.

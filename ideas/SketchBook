@@ -1,0 +1,39 @@
+The SketchBook user interface is loosely inspired by an artist's sketch book.
+Look at sketch books created by visual thinkers: quite inspiring.
+
+A SketchBook is a kind of document containing:
+ * definitions
+ * expressions, which are in the scope of the definitions
+ * values (graphical and textual representations)
+   interactive and animated
+ * rich text
+organized on a 2 dimensional canvas.
+
+You can use a SketchBook to visually represent:
+ * Intermediate results (eg from a pipeline) and the final result
+   of a shape program
+ * An array of shapes generated from the same code, with differing
+   parameter values.
+ * Multiple shape programs written using a common set of definitions.
+ * Literate programs.
+ * Documentation containing interactive animations of various concepts,
+   explorable explanations.
+
+People who identify as visual thinkers, and have opinions about visual
+programming:
+ * Scott Kim, Viewpoint
+    * Visibility. In most systems, what you see on the screen is only an
+      abstraction of the actual state that the visuals represent. Some critical
+      information is invisible. So you keep a mental model of the actual state
+      in your head, and the visuals are just a reminder. By contrast,
+      Scott Kim's criterion of 'Visibility' is that what you see
+      is isomorphic to the actual state you are interacting with.
+       * Kim's Viewpoint document editor takes this idea to its logical
+         conclusion.
+ * https://www.lifehack.org/275993/7-things-only-visual-thinkers-will-understand
+   Visual thinkers find it easier to process node-and-wire diagrams
+   than blocks of text.
+
+Systems that have some of these characteristics:
+ * xiki.org, github.com/trogdoro/xiki
+ * Glamorous Toolkit
