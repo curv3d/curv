@@ -36,11 +36,11 @@ its constructors and operations, in a record value.
 Data Types, not Function Types
 ------------------------------
 The primary justification for introducing type values is to describe
-efficient data structure representations for the GPU, and to decouple
-values (as mathematical abstractions) from their machine representation.
-I am specifically not interested in describing function types, because
-that leads to Haskell like type systems and dependent type theory.
-A Type is a schema for describing hierarchical *data*.
+efficient data structure representations for the GPU, and to decouple values
+(as mathematical abstractions) from their machine representation. I am not
+interested in supporting powerful and expressive function types, because
+that leads to massive complexity (Haskell like type systems and dependent
+type theory). A Type is a schema for describing hierarchical *data*.
 
 In order to avoid getting sucked in to the vortex of function typing,
 I should consider some changes to the current Type design:
@@ -558,6 +558,12 @@ What extra structure is needed? A Prime type that contains prime integers
 is a subset of Num. Perhaps we represent it using a predicate function,
 plus upper and lower bounds within the type lattice. The upper bound is Num.
 When would we have a useful lower bound on a type?
+
+Type Equality and Type Equivalence
+----------------------------------
+Types are values. So they support the == operator?
+When are two types equal/equivalent?
+  Are Tuple[Num] and List 1 Num equivalent? They have the same value set.
 
 Older Ideas
 ===========

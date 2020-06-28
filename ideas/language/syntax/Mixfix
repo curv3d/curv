@@ -17,8 +17,13 @@ There is no dangling else ambiguity.
 Extensibility. New mixfix operators can be defined without adding new reserved
 words and breaking backwards compatibility. User defined mixfix operators.
 
-Current Proposal
-----------------
+Bonus points: eliminate the by, include, and local reserved words.
+    a..b by c
+    include expr
+    local defn
+
+UPPERfix notation
+-----------------
 We use a new syntax where mixfix keywords are lexically distinct from
 identifiers. There are several ways to achieve this. In this proposal,
 a mixfix keyword consists of two or more uppercase ASCII characters,
@@ -61,6 +66,76 @@ Comments:
  * Can introduce this new syntax mostly without breaking backward compatibility.
    I will rename sRGB.HSV to srgb.hsv. The old reserved words are deprecated.
 
+Backfix notation
+----------------
+if a then: b else: c   <=>   'if then:else:'[a,b,c]
+
+backfix ::= postfix | mixfix
+mixfix ::=
+    id primary id: backfix
+  | id primary id: primary id: backfix
+  | id primary id: primary id: primary id: backfix
+  | ...
+
+colour [x,y,_,_] =
+    do (
+        local z = [x,y];
+        local color = [0,0,0];
+        local done = false;
+        for i in: (0 ..< 100) while: (not done) do: (
+            z := csqr(z) + [x,y];
+            if (dot[z,z] > 4) then: (
+                local cr = (i-1)-log(log(dot[z,z])/log 2)/log 2;
+                color := [0.95+.012*cr, 1, .2+.4*(1+sin(.3*cr))];
+                done := true;
+            );
+        );
+    )
+    in: srgb.hsv color;
+
+Notes:
+ * Inspired by the Swift trailing block argument syntax.
+ * Doesn't conflict with any important syntax. {a:1,b:2} still works.
+   'f x: expr' syntax needs to be removed: use 'f: x->expr' instead.
+   Lexically, treat 'id:' as a keyword token. Less lookahead needed in parser.
+   Maybe, use {symbolexpr : expr} vs {id: expr} to support symbol expressions
+   in field generators. Although using whitespace to distinguish {foo: x}
+   from {foo : x} is weird. Still, Haskell has Foo.bar vs foo.bar vs foo . bar
+ * Does not eliminate 'include' and 'local' keywords.
+    * Since 'include' and 'local' introduce definitions, they must
+      be keywords (not metafunctions) in the current parser. So the issue is
+      whether this definition syntax can be made to look like function calls.
+    * I could change 'include' to use function call syntax, it would look fine.
+      Eg, include(file "foo.curv") or include(lib.web_colours).
+    * Funcall syntax for 'local' would be clumsy.
+        local (z = [x,y]);
+ * Does not eliminate 'by' keyword.
+   Hypothetically, I could use the syntax 'a .. b by: c'.
+   If 'by:' is not a reserved token, this doesn't conflict with backfix.
+   This could be generalized to 'x <infix> b <key1:> c <key2:> d'
+   as an extension to user defined infix operators.
+
+Enso.org uses a variant of this: `if a _then b _else c`,
+which they call "split snake case". I like the desugaring:
+    if a _then b _else c   <=>   if_then_else [a, b, c]
+
+I think 'foo:' is more readable than '_foo' in code.
+    colour [x,y,_,_] =
+        do (
+            local z = [x,y];
+            local color = [0,0,0];
+            local done = false;
+            for i _in (0 ..< 100) _while (not done) _do (
+                z := csqr(z) + [x,y];
+                if (dot[z,z] > 4) _then (
+                    local cr = (i-1)-log(log(dot[z,z])/log 2)/log 2;
+                    color := [0.95+.012*cr, 1, .2+.4*(1+sin(.3*cr))];
+                    done := true;
+                );
+            );
+        )
+        _in srgb.hsv color;
+
 Alternative Ways to Distinguish Keywords
 ----------------------------------------
  1. Mixfix non-final arguments are primary expressions, which must be
@@ -79,8 +154,20 @@ Alternative Ways to Distinguish Keywords
     Can't add new mixfix syntax without breaking changes.
     Complicates the surface grammar. Keywords aren't visually distinct,
     so we use syntax colouring to make them distinct.  if a then b else c
+ 
+ 4. Swift-inspired. A mixfix invocation is:
+      id primary id2: primary2 id3: primary3
+    Note that the initial keyword is distinguished from non-initial keywords.
+    We do not give up 'f x' calls. Seems not to interfere with record literals.
 
- 4. Ugly: %if x %then y %else z
+ 5. Close to Smalltalk. Includes 'arg0 id1: arg1 id2: arg2' syntax, except
+    chainable. Also, look at Objective Smalltalk, which is C + OOP with
+    something close to pure smalltalk syntax.
+      postfix ::= primary | postfix primary
+      infix ::= postfix | infix op postfix
+      mixfix ::= ...
+
+ 5. Ugly: %if x %then y %else z
 
 Previous Ideas
 --------------

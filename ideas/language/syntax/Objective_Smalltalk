@@ -1,0 +1,15 @@
+Objective Smalltalk Syntax
+--------------------------
+Interesting because it is C + the Objective C runtime using Smalltalk syntax.
+http://objective.st
+
+Objective Smalltalk uses slightly modified Smalltalk syntax.
+{...} instead of [...] for blocks.
+Type annotations using <typename>.
+[No real documentation is available.]
+
+Higher Order Methods is a coding technique analogous to Currying
+for writing terse point-free code and bulk operations using Smalltalk syntax
+and message sends. It's actually cool. Eg, n factorial:
+   (1 to: n) reduce * 1
+http://www.metaobject.com/papers/Higher_Order_Messaging_OOPSLA_2005.pdf

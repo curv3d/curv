@@ -1,0 +1,29 @@
+In "The Future of Programming", Bret Victor describes the fertile period during
+the 1960's and early 1970's when most of the computing paradigms we now use
+were invented: functional programming, object oriented programming, GUIs,
+hypertext, etc. During this time, we didn't know what computing was, so
+we were free to invent new paradigms out of whole cloth. But this innovation
+has slowed to a trickle. It's hard to explore new ideas now because we are so
+locked in to the old ones. We are mentally locked in, and we rely on a huge
+stack of legacy code that locks us in to the old ways of doing things.
+
+Curv is a research project for exploring new ideas in computing:
+new ways to design a programming language, new ways to do graphics.
+
+Peter Henderson, "Functional geometry".
+In Symp. on Lisp and Functional Programming,
+pages 1-9, Pittsburgh, PA, August 1982. ACM.
+https://apps.dtic.mil/sti/pdfs/ADA276877.pdf
+
+This describes a very simple and powerful abstraction for creating graphics
+using pure functional programming and function composition. Graphical objects
+are represented as functions. This is the essence of Curv.
+
+"Translucent Procedures, Abstraction without Opacity"
+Guillermo J. Rozas, MIT AI tech report 1427, 1993.
+
+Rozas describes a difficulty of Henderson's represention of shapes as functions:
+you can't decompose compound shapes into their elements, in order to support
+certain operations. Rozas introduces "translucent procedures" to solve this.
+Curv's idea of "parametric values" can be seen retrospectively as a refinement
+of Rozas's work, although it's actually parallel evolution.

@@ -9,5 +9,26 @@ A bit like APL for JSON.
 
 Supports efficient bulk operations on heterogenous data.
 A GPU accelerated implementation is in the works.
-The old version is Python.
-The new version has a C++ core with no Python dependencies.
+The old version is in Python.
+The new version, Awkward 1.0, has a C++ core with no Python dependencies.
+It has a simpler, more uniform API and a more efficient implementation.
+
+Abstract:
+  Awkward Array is a library for nested, variable-sized data, including
+  arbitrary-length lists, records, mixed types, and missing data, using
+  NumPy-like idioms.
+
+  Arrays are dynamically typed, but operations on them are compiled and fast.
+  Their behavior coincides with NumPy when array dimensions are regular
+  and generalizes when they're not.
+
+See: Ragged Tensors in TensorFlow.
+
+What are the semantics of the bulk data operations?
+ * Anything interesting not found in J or K?
+ * Which array operations generalize to work on records?
+     'num' and 'sum' don't work on top level records,
+     but they do work on tables (lists of records).
+
+How to invoke awkward 1.0 from Python:
+  pip install awkward1

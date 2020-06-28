@@ -34,6 +34,17 @@ weird anyway.
 
 So now, all syntax for indexing into a data structure uses the '.' operator.
 
+Lens Application: a.[i,j] and a@i
+---------------------------------
+I've implemented a@i syntax for general Lens application.
+It's awkward in one case: a@(slice[i,j]).
+I could introduce sugar: a.[i,j] is sugar for a@(slice[i,j]).
+Note that there are no "mandatory parens" in this syntax.
+
+I'd like to retire the a[i] syntax: ad-hoc overloading of the juxtaposition
+operator is bad, and I've deprecated the f(i,j) syntax, and f[i,j] looks
+like an array index.
+
 Commas
 ------
 Standardize the meaning of ',' and ';'.

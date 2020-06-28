@@ -4,12 +4,13 @@
 Variable binding patterns:
   * `pat :: type` is a type assertion pattern,
     which fails if `is type arg` is false, otherwise matches pat.
-  * `pat :: If predicate` is a unary predicate assertion pattern:
-    `If` converts a predicate to a type. Upgrade path from Curv 0.4.
   * `pat >> func` is a cast pattern. Pipe the argument into `func`.
     Fail if `func arg` fails. Otherwise match `func arg` against pat.
   * `pat when cond` matches pat, then evaluates cond with pat's bindings,
-    and fails if cond is false.
+    and fails if cond is false. Alt. syntax: `pat if cond` (like Python).
+  * `pat :: If predicate` is a unary predicate assertion pattern:
+    `If` converts a predicate to a type. Upgrade path from Curv 0.4.
+    Alt. syntax: `x :: If pred` becomes `x if pred x`.
   Variable names line up on the left.
 Equality patterns:
   * `== expr` binds no variables, matches when arg==expr.
@@ -19,6 +20,7 @@ Boolean patterns:
     * Idiom: 'id && pat' is like 'id@pat' in Haskell.
   * 'pat1 || pat2' -- or pattern. The value matches either pat1 or pat2.
     * pat1 and pat2 define identical sets of bound variables.
+      Process left to right, stop on first match (like || logical operator).
     * Eg, [x,y] || [x,y,==0]
           #foo || #bar
           ==0 || ==1

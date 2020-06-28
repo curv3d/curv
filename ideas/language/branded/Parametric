@@ -6,13 +6,14 @@ constructs a "parametric value".
 The `expr` denotes a function or record, and the result is a "parametric
 function" or a "parametric record".
 
-A parametric value remembers its constructor argument,
-which is a high level description of the parametric value.
-The => is a data abstraction operator.
+A parametric value remembers how it was constructed.
+It remembers its constructor and constructor argument,
+which are a high level description of the parametric value.
+=> is a data abstraction operator.
 
     cube = d => box[d,d,d]
 
-When a parametric value is printed, the ctor argument is printed.
+When a parametric value is printed, the ctor function and argument are printed.
 (This is independent of whether the constructor is anonymous or named.)
 How is it printed, preserving the principle of print equivalence?
 Need to print the ctor argument and the ctor. So, like
@@ -21,17 +22,56 @@ Or, if the ctor is branded, then as
     ctor_name(ctor_arg)
 
 There is an API for retrieving the argument, and constructing a clone of
-a parametric value with a modified argument.
- 1. We can treat all of the parameter names in `param=>expr` as the
-    API. We provide a mechanism to query and update parameter values by name.
- 2. Or we can consider the argument to be a single value of arbitrary type.
-    Use a record argument if we want the customization API to have named
-    parameters. Possible syntax:
-       parametric_value @ param
-    where `param` is a builtin lens.
+a parametric value with a modified argument. This clone is another parametric
+value with the same constructor. Ideas:
+ * There is a field `param` containing the parameter value.
+   However, it is a magical field, because `PV.param := x` reruns the
+   constructor with argument `x`. The corresponding lens is `#param`???
+   This may not compose well with the lens framework? We need #param to be a
+   special symbol containing magic behaviour for observing parametric values.
+ * There is a builtin lens `param`. `PV@param := x` reruns the constructor
+   with argument `x`. Much better.
+ * For convenience, there is a clone operation,
+     clone = update param
+   so that `clone x PV` or `PV >> clone x`
+ * For convenience, a parametric record (constructed using 'parametric')
+   can be updated using function call. The record has a 'call' field
+   bound to the constructor. This syntax doesn't work for parametric functions.
+
+When pv@param is updated with a new parameter value x, we need to normalize x
+before storing it in the new parametric value. Normalize means: fill in
+default values of missing record fields.
+ * In the current code base, I restrict the parameter pattern of a parametric
+   record to a simple record pattern with default field values, and normalize
+   w.r.t. that. It seems I need a more generalized 'normalize argument'
+   operation for arbitrary patterns.
+ * Do all of the existing patterns support normalization?
+ * What about the proposed extensions to the pattern language?
+ * The proposed design is a new operator => for making constructors.
+   It can reject any pattern that doesn't support normalization?
+   If there are any? (If, instead, we had an operation that mapped a function
+   value onto a constructor, then normalization would be more complicated,
+   because we would need to deal with piecewise and composite functions.)
+
+Updating the fields of a parametric record is problematic: naively, this
+causes the constructor parameter to become out of sync with the record fields.
+Which means that it is printed incorrectly.
+(You are supposed to update the constructor argument instead.)
+Choices:
+ + It is an error to update a field in a parametric record. You can only update
+   the constructor argument (which runs the constructor to create a new
+   instance). Yes.
+ - Updating a field creates a plain record, which is no longer parametric. No.
+ * You could define lenses for updating fields in a parametric record, by
+   updating the constructor argument. The problem is that there can be many
+   different constructors creating records that expose the same interface.
+   If you only know the interface, how do you select the correct lens?
+    - OOP style: the parametric record mechanism stores the lenses in the
+      record. This raises a number of issues: new syntax for declaring these
+      lenses, and how does this compose with generic record operations. No.
+    + Algebraic style: Use the Theory/Algebra mechanism. Yes.
 
 How do parametric values compose under function and record composition?
-
  * Constructor functions compose.
  * Under function composition `co[f,g]`, the result preserves the parametric
    interface of `f`, and discards the parametric interface of `g`.
@@ -44,10 +84,6 @@ How do parametric values compose under function and record composition?
    determined by the constructor argument). Instead, we could:
     * Report an error.
     * Upcast a parametric record to an ordinary record, then apply the merge.
-
-Updating the fields of a parametric record is problematic: naively, this
-causes the constructor parameter to become out of sync with the record fields.
-(You are supposed to update the constructor argument instead.)
 
 ---
 There are APIs for: retrieving the parameter values, and: constructing
