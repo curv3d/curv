@@ -90,11 +90,18 @@ Definition Syntax
   
   See: `Functions`_.
 
-``include`` *record_value*
-  Add all of the fields in *record_value* to the current scope.
-  *record_value* is an expression that is evaluated at compile time,
+``include`` *record*
+  Add all of the fields in *record* to the current scope.
+  *record* is an expression that is evaluated at compile time,
   and may reference only built-in operations.
+
+``test`` *statement*
+  Execute the statement for its side effects.
+  Do not define any variables.
+  A test definition is normally used for embedding unit tests in a module.
+  See `Design by Contract`_.
 
 .. _`Functions`: Functions.rst
 .. _`Patterns`: Patterns.rst
 .. _`Statements`: Statements.rst
+.. _`Design by Contract`: Design_by_Contract.rst
