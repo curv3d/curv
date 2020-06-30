@@ -1,6 +1,7 @@
 #include <cstdlib>
 
 #include <gtest/gtest.h>
+#undef FAIL
 
 #include <libcurv/analyser.h>
 #include <libcurv/program.h>
@@ -450,7 +451,8 @@ TEST(curv, eval)
         "     ^");
     FAILMSG("(a=0)+1",
         "Not an expression.\n"
-        "Maybe try an equality expression (==) instead of a definition (=).");
+        "The syntax 'a = b' is a definition, not an expression.\n"
+        "Try 'a == b' to test for equality.");
 
     // max, min
     SUCCESS("max()", "-inf");
@@ -496,9 +498,10 @@ TEST(curv, eval)
     FAILMSG("let var a:=2 in a",
         "syntax error");
     FAILMSG("do a=2 in a",
-        "A recursive definition like 'x = 1' is not legal here.\n"
-        "Try 'x := 1' if you want an assignment statement.\n"
-        "Try 'local x = 1' if you want a local definition.");
+        "Not a statement.\n"
+        "The syntax 'a = b' is a recursive definition, not a statement.\n"
+        "Try 'a := b' to reassign an existing local variable.\n"
+        "Try 'local a = b' to define a new local variable.");
 
     SUCCESS("{test print a; a = 1}", "{a:1}");
     EXPECT_EQ(sconsole.str(), "1\n");

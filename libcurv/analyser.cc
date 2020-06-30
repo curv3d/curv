@@ -67,9 +67,9 @@ Operation::to_operation(System&, Frame*)
 }
 
 Shared<Definition>
-Phrase::as_definition(Environ&) const
+Phrase::as_definition(Environ& env, Fail fl) const
 {
-    return nullptr;
+    FAIL(fl, nullptr, At_Phrase(*this, env), "Not a definition.");
 }
 bool
 Phrase::is_definition() const
@@ -350,7 +350,7 @@ Include_Phrase::analyse(Environ& env, unsigned) const
     throw Exception(At_Token(op_, *this, env), "syntax error");
 }
 Shared<Definition>
-Include_Phrase::as_definition(Environ& env) const
+Include_Phrase::as_definition(Environ& env, Fail) const
 {
     return make<Include_Definition>(share(*this), arg_);
 }
@@ -366,7 +366,7 @@ Test_Phrase::analyse(Environ& env, unsigned) const
     throw Exception(At_Token(op_, *this, env), "syntax error");
 }
 Shared<Definition>
-Test_Phrase::as_definition(Environ& env) const
+Test_Phrase::as_definition(Environ& env, Fail) const
 {
     return make<Test_Definition>(share(*this), arg_);
 }
@@ -457,40 +457,39 @@ Shared<Operation>
 analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
 {
     if (auto local = cast<const Local_Phrase>(stmt)) {
-        if (auto defn = local->arg_->as_definition(scope)) {
-            // Ideally, we would use the Definition protocol, especially if we
-            // want to support compound definitions like `local (x=1;y=2)`.
-            // What currently follows is a lot of code duplication.
-            if (auto data_def = cast<const Data_Definition>(defn)) {
-                auto expr =
-                    analyse_op(*data_def->definiens_phrase_, scope, edepth);
-                auto pat = make_pattern(*data_def->definiendum_, scope, 0);
-                pat->analyse(scope);
-                return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
-            }
-            if (auto func_def = cast<const Function_Definition>(defn)) {
-                auto expr =
-                    analyse_op(*func_def->lambda_phrase_, scope, edepth);
-                auto pat = make_pattern(*func_def->name_, scope, 0);
-                pat->analyse(scope);
-                return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
-            }
-            if (auto incl_def = cast<const Include_Definition>(defn)) {
-                // Evaluate the `include` argument in the builtin environment.
-                auto val = std_eval(*incl_def->arg_, scope);
-                At_Phrase cx(*incl_def->arg_, scope);
-                auto record = val.to<Record>(cx);
+        auto defn = local->arg_->as_definition(scope, Fail::hard);
+        // Ideally, we would use the Definition protocol, especially if we
+        // want to support compound definitions like `local (x=1;y=2)`.
+        // What currently follows is a lot of code duplication.
+        if (auto data_def = cast<const Data_Definition>(defn)) {
+            auto expr =
+                analyse_op(*data_def->definiens_phrase_, scope, edepth);
+            auto pat = make_pattern(*data_def->definiendum_, scope, 0);
+            pat->analyse(scope);
+            return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
+        }
+        if (auto func_def = cast<const Function_Definition>(defn)) {
+            auto expr =
+                analyse_op(*func_def->lambda_phrase_, scope, edepth);
+            auto pat = make_pattern(*func_def->name_, scope, 0);
+            pat->analyse(scope);
+            return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
+        }
+        if (auto incl_def = cast<const Include_Definition>(defn)) {
+            // Evaluate the `include` argument in the builtin environment.
+            auto val = std_eval(*incl_def->arg_, scope);
+            At_Phrase cx(*incl_def->arg_, scope);
+            auto record = val.to<Record>(cx);
 
-                // construct an Include_Setter from the record argument.
-                Shared<Include_Setter> setter =
-                    Include_Setter::make(record->size(), stmt);
-                size_t i = 0;
-                record->each_field(cx, [&](Symbol_Ref name, Value value)->void {
-                    auto b = scope.add_binding(name, *stmt, 0);
-                    (*setter)[i++] = {b.first, value};
-                });
-                return setter;
-            }
+            // construct an Include_Setter from the record argument.
+            Shared<Include_Setter> setter =
+                Include_Setter::make(record->size(), stmt);
+            size_t i = 0;
+            record->each_field(cx, [&](Symbol_Ref name, Value value)->void {
+                auto b = scope.add_binding(name, *stmt, 0);
+                (*setter)[i++] = {b.first, value};
+            });
+            return setter;
         }
         throw Exception(At_Phrase(*stmt, scope),
             "syntax error in local definition");
@@ -504,12 +503,6 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
         auto expr = analyse_op(*vardef->right_, scope, edepth);
         pat->analyse(scope);
         return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
-    }
-    if (auto recdef = cast<const Recursive_Definition_Phrase>(stmt)) {
-        throw Exception(At_Phrase(*recdef, scope),
-            "A recursive definition like 'x = 1' is not legal here.\n"
-            "Try 'x := 1' if you want an assignment statement.\n"
-            "Try 'local x = 1' if you want a local definition.");
     }
     if (auto incl = cast<const Include_Phrase>(stmt)) {
         throw Exception(At_Phrase(*stmt, scope),
@@ -605,11 +598,7 @@ analyse_block(
     }
 
     // Now use the Definition Protocol to analyse the phrase.
-    Shared<Definition> adef = bindings->as_definition(env);
-    if (adef == nullptr) {
-        throw Exception(At_Phrase(*bindings, env),
-            "Internal Error: no definitions found");
-    }
+    Shared<Definition> adef = bindings->as_definition(env, Fail::hard);
     Recursive_Scope rscope(env, false, adef->syntax_);
     rscope.analyse(*adef);
     auto body = analyse_op(*bodysrc, rscope, edepth+1);
@@ -695,19 +684,16 @@ Where_Phrase::analyse(Environ& env, unsigned edepth) const
     auto let = cast<const Let_Phrase>(bodysrc);
     if (let && let->let_.kind_ == Token::k_let)
     {
-        Shared<Definition> adef1 = let->bindings_->as_definition(env);
-        Shared<Definition> adef2 = bindings->as_definition(env);
-        if (adef1 && adef2)
-        {
-            Recursive_Scope rscope(env, false, syntax);
-            adef1->add_to_scope(rscope);
-            adef2->add_to_scope(rscope);
-            rscope.analyse();
-            auto body = analyse_op(*let->body_, rscope, edepth+1);
-            env.frame_maxslots_ = rscope.frame_maxslots_;
-            return make<Block_Op>(syntax,
-                std::move(rscope.executable_), std::move(body));
-        }
+        auto adef1 = let->bindings_->as_definition(env, Fail::hard);
+        auto adef2 = bindings->as_definition(env, Fail::hard);
+        Recursive_Scope rscope(env, false, syntax);
+        adef1->add_to_scope(rscope);
+        adef2->add_to_scope(rscope);
+        rscope.analyse();
+        auto body = analyse_op(*let->body_, rscope, edepth+1);
+        env.frame_maxslots_ = rscope.frame_maxslots_;
+        return make<Block_Op>(syntax,
+            std::move(rscope.executable_), std::move(body));
     }
     if (auto p = cast<const Paren_Phrase>(bindings))
         bindings = p->body_;
@@ -822,27 +808,21 @@ Shared<Meaning> Dot_Phrase::analyse(Environ& env, unsigned) const
 }
 
 // A recursive definition is not an operation.
-// But it's easier to report the error at runtime than at analysis time:
-// we have more context (we know if we are being evaluated as an expression
-// or executed as a statement) so we can give a better error message.
 Shared<Meaning>
-Recursive_Definition_Phrase::analyse(Environ& env, unsigned) const
+Recursive_Definition_Phrase::analyse(Environ& env, unsigned edepth) const
 {
-    return make<Recursive_Definition_Op>(share(*this));
-}
-Value
-Recursive_Definition_Op::eval(Frame& f) const
-{
-    throw Exception(At_Phrase(*syntax_, f),
-        "Not an expression.\n"
-        "Maybe try an equality expression (==) instead of a definition (=).");
-}
-void
-Recursive_Definition_Op::exec(Frame& f, Executor&) const
-{
-    throw Exception(At_Phrase(*syntax_, f),
-        "Not a statement.\n"
-        "Maybe try an assignment statement (:=) instead of a definition (=).");
+    if (edepth == 0)
+        throw Exception(At_Phrase(*this, env),
+            "Not an expression.\n"
+            "The syntax 'a = b' is a definition, not an expression.\n"
+            "Try 'a == b' to test for equality.");
+    else {
+        throw Exception(At_Phrase(*this, env),
+            "Not a statement.\n"
+            "The syntax 'a = b' is a recursive definition, not a statement.\n"
+            "Try 'a := b' to reassign an existing local variable.\n"
+            "Try 'local a = b' to define a new local variable.");
+    }
 }
 
 Shared<Meaning>
@@ -914,7 +894,7 @@ as_definition_iter(
         share(left), std::move(right));
 }
 Shared<Definition>
-Recursive_Definition_Phrase::as_definition(Environ& env) const
+Recursive_Definition_Phrase::as_definition(Environ& env, Fail) const
 {
     return as_definition_iter(env, share(*this), *left_, right_);
 }
@@ -936,7 +916,7 @@ Semicolon_Phrase::analyse(Environ& env, unsigned edepth) const
 }
 
 Shared<Definition>
-Semicolon_Phrase::as_definition(Environ& env) const
+Semicolon_Phrase::as_definition(Environ& env, Fail fl) const
 {
     Shared<Compound_Definition> compound =
         Compound_Definition::make(args_.size(), share(*this));
@@ -945,7 +925,7 @@ Semicolon_Phrase::as_definition(Environ& env) const
     for (size_t i = 0; i < args_.size(); ++i) {
         auto phrase = args_[i].expr_;
         if (isa<Empty_Phrase>(phrase)) continue;
-        auto def = phrase->as_definition(env);
+        auto def = phrase->as_definition(env, fl);
         if (def) {
             if (contains_statement) {
                 // definition following statement
@@ -963,11 +943,12 @@ Semicolon_Phrase::as_definition(Environ& env) const
             contains_statement = true;
         }
     }
-    if (j > 0) {
+    if (contains_statement)
+        return nullptr;
+    else {
         compound->resize(j);
         return compound;
-    } else
-        return nullptr;
+    }
 }
 
 Shared<Meaning>
@@ -1018,9 +999,9 @@ Paren_Phrase::analyse(Environ& env, unsigned edepth) const
     }
 }
 Shared<Definition>
-Paren_Phrase::as_definition(Environ& env) const
+Paren_Phrase::as_definition(Environ& env, Fail fl) const
 {
-    return body_->as_definition(env);
+    return body_->as_definition(env, fl);
 }
 
 Shared<Meaning>
@@ -1064,15 +1045,15 @@ Program_Phrase::analyse(Environ& env, unsigned edepth) const
     return body_->analyse(env, edepth);
 }
 Shared<Definition>
-Program_Phrase::as_definition(Environ& env) const
+Program_Phrase::as_definition(Environ& env, Fail fl) const
 {
-    return body_->as_definition(env);
+    return body_->as_definition(env, fl);
 }
 
 Shared<Meaning>
 Brace_Phrase::analyse(Environ& env, unsigned edepth) const
 {
-    Shared<Definition> adef = body_->as_definition(env);
+    Shared<Definition> adef = body_->as_definition(env, Fail::soft);
     if (adef == nullptr) {
         // record comprehension
         Scope scope(env);

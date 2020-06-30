@@ -29,7 +29,7 @@ void
 Program::compile(Environ& env)
 {
     phrase_ = parse_program(scanner_);
-    if (auto def = phrase_->as_definition(env)) {
+    if (auto def = phrase_->as_definition(env, Fail::soft)) {
         module_ = analyse_module(*def, env);
     } else {
         meaning_ = phrase_->analyse(env, edepth_);

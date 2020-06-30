@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#undef FAIL
 #include <libcurv/source.h>
 #include <libcurv/scanner.h>
 #include <libcurv/parser.h>

@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <memory>
+#include <libcurv/fail.h>
 #include <libcurv/shared.h>
 #include <libcurv/location.h>
 #include <libcurv/symbol.h>
@@ -37,7 +38,7 @@ struct Phrase : public Shared_Base
 {
     virtual ~Phrase() {}
     virtual Location location() const = 0;
-    virtual Shared<Definition> as_definition(Environ&) const;
+    virtual Shared<Definition> as_definition(Environ&, Fail) const;
     virtual bool is_definition() const;
     virtual Shared<Meaning> analyse(Environ&, unsigned edepth) const = 0;
 };
@@ -195,14 +196,14 @@ struct Include_Phrase : public Unary_Phrase
     using Unary_Phrase::Unary_Phrase;
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
     virtual bool is_definition() const override;
-    virtual Shared<Definition> as_definition(Environ&) const override;
+    virtual Shared<Definition> as_definition(Environ&, Fail) const override;
 };
 struct Test_Phrase : public Unary_Phrase
 {
     using Unary_Phrase::Unary_Phrase;
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
     virtual bool is_definition() const override;
-    virtual Shared<Definition> as_definition(Environ&) const override;
+    virtual Shared<Definition> as_definition(Environ&, Fail) const override;
 };
 
 struct Dot_Phrase : public Binary_Phrase
@@ -246,7 +247,7 @@ struct Recursive_Definition_Phrase : public Phrase
     {
         return left_->location().ending_at(right_->location().token());
     }
-    virtual Shared<Definition> as_definition(Environ&) const override;
+    virtual Shared<Definition> as_definition(Environ&, Fail) const override;
     virtual bool is_definition() const override;
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
 };
@@ -345,7 +346,7 @@ struct Semicolon_Phrase : public Separator_Phrase
 {
     using Separator_Phrase::Separator_Phrase;
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
-    virtual Shared<Definition> as_definition(Environ&) const override;
+    virtual Shared<Definition> as_definition(Environ&, Fail) const override;
 };
 
 /// common implementation for `(...)`, `[...]` and `{...}` phrases.
@@ -369,7 +370,7 @@ struct Paren_Phrase : public Delimited_Phrase
 {
     using Delimited_Phrase::Delimited_Phrase;
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
-    virtual Shared<Definition> as_definition(Environ&) const override;
+    virtual Shared<Definition> as_definition(Environ&, Fail) const override;
 };
 
 struct Bracket_Phrase : public Delimited_Phrase
@@ -399,7 +400,7 @@ struct Program_Phrase : public Phrase
     }
 
     virtual Shared<Meaning> analyse(Environ&, unsigned) const override;
-    virtual Shared<Definition> as_definition(Environ&) const override;
+    virtual Shared<Definition> as_definition(Environ&, Fail) const override;
 };
 
 // This is the base class for phrases that may evaluate to a function call.

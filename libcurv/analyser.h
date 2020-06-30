@@ -105,6 +105,11 @@ public:
 //   outside that phrase. If you could do so, then the order of evaluation
 //   would be exposed. For example, the + operator is commutative, so A+B is
 //   equivalent to B+A, so we don't support assignment inside a plus phrase.
+//
+// The code is further tuned to ensure that:
+//   edepth == 0 if we are analysing an expression.
+//   edepth != 0 if we are analysing a statement.
+// This is used to produce error messages specialized to the analysis context.
 Shared<Operation> analyse_op(const Phrase& ph, Environ& env, unsigned edepth=0);
 
 // Evaluate the phrase as a constant expression in the builtin environment.
