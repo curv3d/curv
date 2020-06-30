@@ -88,7 +88,9 @@ public:
     virtual Shared<Meaning> single_lookup(const Identifier&);
 };
 
-// Analyse a Phrase, throw an error if it is not an Operation.
+// Interp is the second argument of Phrase::analyse().
+// It means "interpretation": how to interpret the phrase, relative to the
+// environment.
 //
 // 'edepth' is the number of nested environments surrounding the phrase
 // in which an lvar (a local variable on the left side of a := statement)
@@ -105,12 +107,26 @@ public:
 //   outside that phrase. If you could do so, then the order of evaluation
 //   would be exposed. For example, the + operator is commutative, so A+B is
 //   equivalent to B+A, so we don't support assignment inside a plus phrase.
-//
-// The code is further tuned to ensure that:
-//   edepth == 0 if we are analysing an expression.
-//   edepth != 0 if we are analysing a statement.
-// This is used to produce error messages specialized to the analysis context.
-Shared<Operation> analyse_op(const Phrase& ph, Environ& env, unsigned edepth=0);
+struct Interp
+{
+private:
+    unsigned edepth_ = 0;
+    bool is_expr_ = true;
+    Interp(unsigned d, bool ie) : edepth_(d), is_expr_(ie) {}
+public:
+    static Interp expr() { return {0, true}; }
+    static Interp stmt(unsigned d) { return {d, false}; }
+    int edepth() const { return edepth_; }
+    bool is_expr() const { return is_expr_; }
+    bool is_stmt() const { return !is_expr_; }
+    Interp deepen() const { return {edepth_+1, is_expr_}; }
+    Interp to_expr() const { return {edepth_, true}; }
+    Interp to_stmt() const { return {edepth_, false}; }
+};
+
+// Analyse a Phrase, throw an error if it is not an Operation.
+Shared<Operation> analyse_op(const Phrase& ph, Environ& env,
+    Interp terp=Interp::expr());
 
 // Evaluate the phrase as a constant expression in the builtin environment.
 Value std_eval(const Phrase& ph, Environ& env);

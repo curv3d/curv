@@ -351,7 +351,7 @@ void repl(System* sys, const Render_Opts* render)
         try {
             auto source = make<String_Source>("", line);
             Program prog{std::move(source), *sys};
-            prog.edepth_ = 1;
+            prog.terp_ = Interp::stmt(1);
             File_Analyser ana(*sys, nullptr);
             REPL_Environ env(names, ana);
             prog.compile(env);

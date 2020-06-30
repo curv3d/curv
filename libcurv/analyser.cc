@@ -30,9 +30,9 @@ void File_Analyser::deprecate(bool File_Analyser::* flag,
 }
 
 Shared<Operation>
-analyse_op(const Phrase& ph, Environ& env, unsigned edepth)
+analyse_op(const Phrase& ph, Environ& env, Interp terp)
 {
-    return ph.analyse(env, edepth)
+    return ph.analyse(env, terp)
         ->to_operation(env.analyser_.system_, env.analyser_.file_frame_);
 }
 
@@ -189,13 +189,18 @@ Builtin_Environ::single_lookup(const Identifier& id)
 }
 
 Shared<Meaning>
-Empty_Phrase::analyse(Environ& env, unsigned) const
+Empty_Phrase::analyse(Environ& env, Interp) const
 {
     return make<Null_Action>(share(*this));
 }
+Shared<Definition>
+Empty_Phrase::as_definition(Environ& env, Fail) const
+{
+    return Compound_Definition::make(0, share(*this));
+}
 
 Shared<Meaning>
-Identifier::analyse(Environ& env, unsigned) const
+Identifier::analyse(Environ& env, Interp) const
 {
     return env.lookup(*this);
 }
@@ -242,19 +247,19 @@ Numeral::eval() const
 }
 
 Shared<Meaning>
-Numeral::analyse(Environ& env, unsigned) const
+Numeral::analyse(Environ& env, Interp) const
 {
     return make<Constant>(share(*this), eval());
 }
 
 Shared<Segment>
-String_Segment_Phrase::analyse(Environ& env, unsigned) const
+String_Segment_Phrase::analyse(Environ& env, Interp) const
 {
     return make<Literal_Segment>(share(*this),
         make_string(location().range()));
 }
 Shared<Segment>
-Char_Escape_Phrase::analyse(Environ& env, unsigned) const
+Char_Escape_Phrase::analyse(Environ& env, Interp) const
 {
     char c;
     if (location().token().kind_ == Token::k_string_newline)
@@ -274,27 +279,27 @@ Char_Escape_Phrase::analyse(Environ& env, unsigned) const
     return make<Literal_Segment>(share(*this), make_string(&c, 1));
 }
 Shared<Segment>
-Ident_Segment_Phrase::analyse(Environ& env, unsigned) const
+Ident_Segment_Phrase::analyse(Environ& env, Interp) const
 {
     return make<Ident_Segment>(share(*this), analyse_op(*expr_, env));
 }
 Shared<Segment>
-Paren_Segment_Phrase::analyse(Environ& env, unsigned) const
+Paren_Segment_Phrase::analyse(Environ& env, Interp) const
 {
     return make<Paren_Segment>(share(*this), analyse_op(*expr_, env));
 }
 Shared<Segment>
-Bracket_Segment_Phrase::analyse(Environ& env, unsigned) const
+Bracket_Segment_Phrase::analyse(Environ& env, Interp) const
 {
     return make<Bracket_Segment>(share(*this), analyse_op(*expr_, env));
 }
 Shared<Segment>
-Brace_Segment_Phrase::analyse(Environ& env, unsigned) const
+Brace_Segment_Phrase::analyse(Environ& env, Interp) const
 {
     return make<Brace_Segment>(share(*this), analyse_op(*expr_, env));
 }
 Shared<Meaning>
-String_Phrase_Base::analyse(Environ& env, unsigned) const
+String_Phrase_Base::analyse(Environ& env, Interp) const
 {
     return analyse_string(env);
 }
@@ -303,12 +308,12 @@ String_Phrase_Base::analyse_string(Environ& env) const
 {
     std::vector<Shared<Segment>> ops;
     for (Shared<const Segment_Phrase> seg : *this)
-        ops.push_back(seg->analyse(env, 0));
+        ops.push_back(seg->analyse(env, Interp::expr()));
     return String_Expr::make_elements(ops, this);
 }
 
 Shared<Meaning>
-Unary_Phrase::analyse(Environ& env, unsigned) const
+Unary_Phrase::analyse(Environ& env, Interp) const
 {
     switch (op_.kind_) {
     case Token::k_not:
@@ -338,14 +343,22 @@ Unary_Phrase::analyse(Environ& env, unsigned) const
 }
 
 Shared<Meaning>
-Local_Phrase::analyse(Environ& env, unsigned) const
+Local_Phrase::analyse(Environ& env, Interp) const
 {
     throw Exception(At_Phrase(*this, env),
         "a local definition must be followed by '; <statement>'");
 }
+Shared<Definition>
+Local_Phrase::as_definition(Environ& env, Fail fl) const
+{
+    FAIL(fl, nullptr, At_Phrase(*this, env),
+        "Not a recursive definition.\n"
+        "The syntax 'local <definition>' is a statement.\n"
+        "To convert this to a recursive definition, omit the word 'local'.");
+}
 
 Shared<Meaning>
-Include_Phrase::analyse(Environ& env, unsigned) const
+Include_Phrase::analyse(Environ& env, Interp) const
 {
     throw Exception(At_Token(op_, *this, env), "syntax error");
 }
@@ -361,7 +374,7 @@ Include_Phrase::is_definition() const
 }
 
 Shared<Meaning>
-Test_Phrase::analyse(Environ& env, unsigned) const
+Test_Phrase::analyse(Environ& env, Interp) const
 {
     throw Exception(At_Token(op_, *this, env), "syntax error");
 }
@@ -388,7 +401,7 @@ analyse_lambda(
 
     auto pattern = make_pattern(*left, scope, 0);
     pattern->analyse(scope);
-    auto expr = analyse_op(*right, scope, 0);
+    auto expr = analyse_op(*right, scope, Interp::expr());
     auto nonlocals = make<Enum_Module_Expr>(src,
         std::move(scope.nonlocal_dictionary_),
         std::move(scope.nonlocal_exprs_));
@@ -398,7 +411,7 @@ analyse_lambda(
 }
 
 Shared<Meaning>
-Lambda_Phrase::analyse(Environ& env, unsigned) const
+Lambda_Phrase::analyse(Environ& env, Interp) const
 {
     return analyse_lambda(env, share(*this), shared_nonlocals_, left_, right_);
 }
@@ -454,7 +467,7 @@ each_item(Phrase& phrase, std::function<void(Phrase&)> func)
 // Analyse one item in a compound statement, or in the head of a `do` expr,
 // which could be either a statement or a local definition.
 Shared<Operation>
-analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
+analyse_stmt(Shared<const Phrase> stmt, Scope& scope, Interp terp)
 {
     if (auto local = cast<const Local_Phrase>(stmt)) {
         auto defn = local->arg_->as_definition(scope, Fail::hard);
@@ -463,14 +476,14 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
         // What currently follows is a lot of code duplication.
         if (auto data_def = cast<const Data_Definition>(defn)) {
             auto expr =
-                analyse_op(*data_def->definiens_phrase_, scope, edepth);
+                analyse_op(*data_def->definiens_phrase_, scope, terp);
             auto pat = make_pattern(*data_def->definiendum_, scope, 0);
             pat->analyse(scope);
             return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
         }
         if (auto func_def = cast<const Function_Definition>(defn)) {
             auto expr =
-                analyse_op(*func_def->lambda_phrase_, scope, edepth);
+                analyse_op(*func_def->lambda_phrase_, scope, terp);
             auto pat = make_pattern(*func_def->name_, scope, 0);
             pat->analyse(scope);
             return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
@@ -500,7 +513,7 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
             "'var pattern := expr' is deprecated.\n"
             "Use 'local pattern = expr' instead.");
         auto pat = make_pattern(*vardef->left_, scope, 0);
-        auto expr = analyse_op(*vardef->right_, scope, edepth);
+        auto expr = analyse_op(*vardef->right_, scope, terp);
         pat->analyse(scope);
         return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
     }
@@ -510,7 +523,7 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, unsigned edepth)
             "In this context, only local definitions are permitted.\n"
             "Try 'local include filename' instead.");
     }
-    return analyse_op(*stmt, scope, edepth);
+    return analyse_op(*stmt, scope, terp);
 }
 
 Shared<Meaning>
@@ -519,9 +532,10 @@ analyse_do(
     Shared<const Phrase> syntax,
     Shared<Phrase> bindings,
     Shared<const Phrase> bodysrc,
-    unsigned edepth)
+    Interp terp)
 {
     Scope scope(env);
+    terp = terp.deepen();
     
     Shared<Compound_Op> actions;
     if (isa<const Empty_Phrase>(bindings))
@@ -535,31 +549,17 @@ analyse_do(
         actions = Compound_Op::make(semis->args_.size(), bindings);
         for (size_t i = 0; i < semis->args_.size(); ++i) {
             actions->at(i) =
-                analyse_stmt(semis->args_[i].expr_, scope, edepth+1);
+                analyse_stmt(semis->args_[i].expr_, scope, terp.to_stmt());
         }
     }
     else {
         actions = Compound_Op::make(1, bindings);
-        actions->at(0) = analyse_stmt(bindings, scope, edepth+1);
+        actions->at(0) = analyse_stmt(bindings, scope, terp.to_stmt());
     }
 
-    auto body = analyse_op(*bodysrc, scope, edepth+1);
+    auto body = analyse_op(*bodysrc, scope, terp);
     env.frame_maxslots_ = scope.frame_maxslots_;
     return make<Do_Expr>(syntax, actions, body);
-}
-
-void
-require_recursive_definition(Shared<const Phrase> syntax, Environ& env)
-{
-    if (isa<const Local_Phrase>(syntax)) {
-        throw Exception(At_Phrase(*syntax, env),
-            "Local definitions can't be used in this context.\n"
-            "Try removing the 'local' keyword.");
-    }
-    if (isa<const Var_Definition_Phrase>(syntax)) {
-        throw Exception(At_Phrase(*syntax, env), "syntax error");
-    }
-    throw Exception(At_Phrase(*syntax, env), "expected a definition");
 }
 
 // Analyse a let or where phrase.
@@ -569,46 +569,20 @@ analyse_block(
     Shared<const Phrase> syntax,
     Shared<Phrase> bindings,
     Shared<const Phrase> bodysrc,
-    unsigned edepth)
+    Interp terp)
 {
-    // Enforce that the bindings are a list of zero or more recursive
-    // definitions, and report a meaningful error otherwise.
-    // The Definition Protocol doesn't enforce these restrictions.
-    if (isa<const Empty_Phrase>(bindings)) {
-        // If you comment out all the definitions in a let clause,
-        // you do not get a syntax error.
-        return analyse_op(*bodysrc, env, edepth);
-    }
-    else if (auto commas = cast<const Comma_Phrase>(bindings)) {
-        throw Exception(
-            At_Token(commas->args_.front().separator_, *bindings, env),
-            "syntax error");
-    }
-    else if (auto semis = cast<const Semicolon_Phrase>(bindings)) {
-        for (auto item : semis->args_) {
-            if (isa<const Empty_Phrase>(item.expr_))
-                ;
-            else if (!item.expr_->is_definition())
-                require_recursive_definition(item.expr_, env);
-        }
-    }
-    else {
-        if (!bindings->is_definition())
-            require_recursive_definition(bindings, env);
-    }
-
-    // Now use the Definition Protocol to analyse the phrase.
     Shared<Definition> adef = bindings->as_definition(env, Fail::hard);
     Recursive_Scope rscope(env, false, adef->syntax_);
+    terp = terp.deepen();
     rscope.analyse(*adef);
-    auto body = analyse_op(*bodysrc, rscope, edepth+1);
+    auto body = analyse_op(*bodysrc, rscope, terp);
     env.frame_maxslots_ = rscope.frame_maxslots_;
     return make<Block_Op>(syntax,
         std::move(rscope.executable_), std::move(body));
 }
 
 Shared<Meaning>
-Let_Phrase::analyse(Environ& env, unsigned edepth) const
+Let_Phrase::analyse(Environ& env, Interp terp) const
 {
     if (let_.kind_ == Token::k_parametric) {
         auto ctor = analyse_lambda(env, share(*this), false,
@@ -617,67 +591,20 @@ Let_Phrase::analyse(Environ& env, unsigned edepth) const
         return make<Parametric_Expr>(share(*this), ctor);
     }
     if (let_.kind_ == Token::k_do) {
-        return analyse_do(env, share(*this), bindings_, body_, edepth);
+        return analyse_do(env, share(*this), bindings_, body_, terp);
     }
     if (let_.kind_ == Token::k_let) {
-        return analyse_block(env, share(*this), bindings_, body_, edepth);
+        return analyse_block(env, share(*this), bindings_, body_, terp);
     }
     die("Let_Phrase::analyse: bad kind_");
 }
 
 Shared<Meaning>
-Where_Phrase::analyse(Environ& env, unsigned edepth) const
+Where_Phrase::analyse(Environ& env, Interp terp) const
 {
     Shared<const Phrase> syntax = share(*this);
     Shared<Phrase> bindings = right_;
     Shared<const Phrase> bodysrc = left_;
-
-#if 0 // this logic is in the parser
-    // parametric {params} body where bindings
-    // is reparsed as
-    // parametric {params} (body where bindings)
-    // Rationale:
-    // 1. 'parametric {params}' can be prefixed to any <list> phrase,
-    //    without adding parentheses, and it will work.
-    // 2. Recursion between the params and the where bindings is not allowed,
-    //    so the params and the bindings cannot share a scope.
-    // 3. The params must be visible in the where bindings. There's not a
-    //    compelling use case for where bindings to be visible in the params,
-    //    and it has to be either one or the other (see #2).
-    auto para = cast<const Parametric_Phrase>(bodysrc);
-    if (para) {
-        auto newparse = make<Parametric_Phrase>(
-            para->keyword_,
-            para->param_,
-            make<Where_Phrase>(
-                para->body_,
-                op_,
-                bindings));
-        return newparse->analyse(env);
-    }
-
-    // a = b where bindings
-    // is reparsed as
-    // a = (b where bindings)
-    // Rational: a <where> clause can be affixed to any <list> phrase,
-    // without adding parentheses, and it will work.
-    //
-    // TODO: I would like to permit a definition to be used as the body of
-    // a `where` or `let`, so that subexpressions in the left side of the
-    // definition are within scope. That's a lot of work to implement. Once
-    // done, this code will go away.
-    auto def = cast<const Recursive_Definition_Phrase>(bodysrc);
-    if (def) {
-        auto newparse = make<Recursive_Definition_Phrase>(
-            def->left_,
-            def->op_,
-            make<Where_Phrase>(
-                def->right_,
-                op_,
-                bindings));
-        return newparse->analyse(env);
-    }
-#endif
 
     // Given 'let bindings1 in body where bindings2',
     // body is analysed in a scope that combines bindings1 and bindings2.
@@ -690,18 +617,19 @@ Where_Phrase::analyse(Environ& env, unsigned edepth) const
         adef1->add_to_scope(rscope);
         adef2->add_to_scope(rscope);
         rscope.analyse();
-        auto body = analyse_op(*let->body_, rscope, edepth+1);
+        terp = terp.deepen();
+        auto body = analyse_op(*let->body_, rscope, terp);
         env.frame_maxslots_ = rscope.frame_maxslots_;
         return make<Block_Op>(syntax,
             std::move(rscope.executable_), std::move(body));
     }
     if (auto p = cast<const Paren_Phrase>(bindings))
         bindings = p->body_;
-    return analyse_block(env, syntax, bindings, bodysrc, edepth);
+    return analyse_block(env, syntax, bindings, bodysrc, terp);
 }
 
 Shared<Meaning>
-Binary_Phrase::analyse(Environ& env, unsigned) const
+Binary_Phrase::analyse(Environ& env, Interp) const
 {
     switch (op_.kind_) {
     case Token::k_or:
@@ -780,7 +708,7 @@ Binary_Phrase::analyse(Environ& env, unsigned) const
     }
 }
 
-Shared<Meaning> Apply_Lens_Phrase::analyse(Environ& env, unsigned) const
+Shared<Meaning> Apply_Lens_Phrase::analyse(Environ& env, Interp) const
 {
     return make<Apply_Lens_Expr>(
         share(*this),
@@ -788,7 +716,7 @@ Shared<Meaning> Apply_Lens_Phrase::analyse(Environ& env, unsigned) const
         analyse_op(*function_, env));
 }
 
-Shared<Meaning> Dot_Phrase::analyse(Environ& env, unsigned) const
+Shared<Meaning> Dot_Phrase::analyse(Environ& env, Interp) const
 {
     if (auto id = cast<const Identifier>(right_)) {
         return make<Dot_Expr>(
@@ -809,14 +737,14 @@ Shared<Meaning> Dot_Phrase::analyse(Environ& env, unsigned) const
 
 // A recursive definition is not an operation.
 Shared<Meaning>
-Recursive_Definition_Phrase::analyse(Environ& env, unsigned edepth) const
+Recursive_Definition_Phrase::analyse(Environ& env, Interp terp) const
 {
-    if (edepth == 0)
+    if (terp.is_expr()) {
         throw Exception(At_Phrase(*this, env),
             "Not an expression.\n"
             "The syntax 'a = b' is a definition, not an expression.\n"
             "Try 'a == b' to test for equality.");
-    else {
+    } else {
         throw Exception(At_Phrase(*this, env),
             "Not a statement.\n"
             "The syntax 'a = b' is a recursive definition, not a statement.\n"
@@ -826,20 +754,28 @@ Recursive_Definition_Phrase::analyse(Environ& env, unsigned edepth) const
 }
 
 Shared<Meaning>
-Var_Definition_Phrase::analyse(Environ& env, unsigned) const
+Var_Definition_Phrase::analyse(Environ& env, Interp) const
 {
     throw Exception(At_Phrase(*this, env), "not an expression or statement");
 }
+Shared<Definition>
+Var_Definition_Phrase::as_definition(Environ& env, Fail fl) const
+{
+    FAIL(fl, nullptr, At_Phrase(*this, env),
+        "Not a recursive definition.\n"
+        "The deprecated syntax 'var a := b' is a statement.\n"
+        "Try 'a = b' instead.");
+}
 
 Shared<Locative>
-analyse_locative(const Phrase& ph, Environ& env, unsigned edepth)
+analyse_locative(const Phrase& ph, Environ& env, Interp terp)
 {
     if (auto id = dynamic_cast<const Identifier*>(&ph))
-        return env.lookup_lvar(*id, edepth);
+        return env.lookup_lvar(*id, terp.edepth());
     if (auto dot = dynamic_cast<const Dot_Phrase*>(&ph)) {
-        auto base = analyse_locative(*dot->left_, env, edepth);
+        auto base = analyse_locative(*dot->left_, env, terp);
         // TODO: copypasta from Dot_Phrase::analyse
-        // But, edepth is handled differently.
+        // But, terp is handled differently.
         if (auto id = cast<const Identifier>(dot->right_)) {
             return base->get_field(
                 env,
@@ -857,7 +793,7 @@ analyse_locative(const Phrase& ph, Environ& env, unsigned edepth)
             "invalid expression after '.'");
     }
     if (auto call = dynamic_cast<const Call_Phrase*>(&ph)) {
-        auto base = analyse_locative(*call->function_, env, edepth);
+        auto base = analyse_locative(*call->function_, env, terp);
         auto index = analyse_op(*call->arg_, env);
         return base->get_element(env, share(ph), index);
     }
@@ -865,9 +801,9 @@ analyse_locative(const Phrase& ph, Environ& env, unsigned edepth)
 }
 
 Shared<Meaning>
-Assignment_Phrase::analyse(Environ& env, unsigned edepth) const
+Assignment_Phrase::analyse(Environ& env, Interp terp) const
 {
-    auto lvar = analyse_locative(*left_, env, edepth);
+    auto lvar = analyse_locative(*left_, env, terp);
     auto expr = analyse_op(*right_, env);
     return make<Assignment_Action>(share(*this), lvar, expr);
 }
@@ -905,12 +841,13 @@ Recursive_Definition_Phrase::is_definition() const
 }
 
 Shared<Meaning>
-Semicolon_Phrase::analyse(Environ& env, unsigned edepth) const
+Semicolon_Phrase::analyse(Environ& env, Interp terp) const
 {
     Scope scope(env);
+    terp = terp.deepen();
     Shared<Compound_Op> compound = Compound_Op::make(args_.size(), share(*this));
     for (size_t i = 0; i < args_.size(); ++i)
-        compound->at(i) = analyse_stmt(args_[i].expr_, scope, edepth+1);
+        compound->at(i) = analyse_stmt(args_[i].expr_, scope, terp.to_stmt());
     env.frame_maxslots_ = scope.frame_maxslots_;
     return compound;
 }
@@ -952,7 +889,7 @@ Semicolon_Phrase::as_definition(Environ& env, Fail fl) const
 }
 
 Shared<Meaning>
-Comma_Phrase::analyse(Environ& env, unsigned) const
+Comma_Phrase::analyse(Environ& env, Interp) const
 {
     throw Exception(At_Token(args_[0].separator_, *this, env), "syntax error");
 }
@@ -970,7 +907,7 @@ List_Expr_Base::init()
 }
 
 Shared<Meaning>
-Paren_Phrase::analyse(Environ& env, unsigned edepth) const
+Paren_Phrase::analyse(Environ& env, Interp terp) const
 {
     if (cast<const Empty_Phrase>(body_)) {
       #if 0 // TODO: enable once I have 'curv --fix' to automatically fix source
@@ -995,7 +932,7 @@ Paren_Phrase::analyse(Environ& env, unsigned edepth) const
     } else {
         // One of the few places we directly call Phrase::analyse().
         // The result can be an operation or a metafunction.
-        return body_->analyse(env, edepth);
+        return body_->analyse(env, terp);
     }
 }
 Shared<Definition>
@@ -1005,7 +942,7 @@ Paren_Phrase::as_definition(Environ& env, Fail fl) const
 }
 
 Shared<Meaning>
-Bracket_Phrase::analyse(Environ& env, unsigned) const
+Bracket_Phrase::analyse(Environ& env, Interp) const
 {
     if (cast<const Empty_Phrase>(body_))
         return List_Expr::make(0, share(*this));
@@ -1025,9 +962,9 @@ Bracket_Phrase::analyse(Environ& env, unsigned) const
 }
 
 Shared<Meaning>
-Call_Phrase::analyse(Environ& env, unsigned) const
+Call_Phrase::analyse(Environ& env, Interp) const
 {
-    return function_->analyse(env, 0)->call(*this, env);
+    return function_->analyse(env, Interp::expr())->call(*this, env);
 }
 
 Shared<Meaning>
@@ -1040,9 +977,9 @@ Operation::call(const Call_Phrase& src, Environ& env)
 }
 
 Shared<Meaning>
-Program_Phrase::analyse(Environ& env, unsigned edepth) const
+Program_Phrase::analyse(Environ& env, Interp terp) const
 {
-    return body_->analyse(env, edepth);
+    return body_->analyse(env, terp);
 }
 Shared<Definition>
 Program_Phrase::as_definition(Environ& env, Fail fl) const
@@ -1051,15 +988,16 @@ Program_Phrase::as_definition(Environ& env, Fail fl) const
 }
 
 Shared<Meaning>
-Brace_Phrase::analyse(Environ& env, unsigned edepth) const
+Brace_Phrase::analyse(Environ& env, Interp terp) const
 {
     Shared<Definition> adef = body_->as_definition(env, Fail::soft);
     if (adef == nullptr) {
         // record comprehension
         Scope scope(env);
+        terp = terp.deepen();
         auto record = make<Record_Expr>(share(*this));
         each_item(*body_, [&](Phrase& item)->void {
-            auto stmt = analyse_stmt(share(item), scope, edepth+1);
+            auto stmt = analyse_stmt(share(item), scope, terp.to_stmt());
             record->fields_.push_back(stmt);
         });
         env.frame_maxslots_ = scope.frame_maxslots_;
@@ -1069,56 +1007,57 @@ Brace_Phrase::analyse(Environ& env, unsigned edepth) const
 }
 
 Shared<Meaning>
-If_Phrase::analyse(Environ& env, unsigned edepth) const
+If_Phrase::analyse(Environ& env, Interp terp) const
 {
     if (else_expr_ == nullptr) {
         return make<If_Op>(
             share(*this),
             analyse_op(*condition_, env),
-            analyse_op(*then_expr_, env, edepth));
+            analyse_op(*then_expr_, env, terp));
     } else {
         return make<If_Else_Op>(
             share(*this),
             analyse_op(*condition_, env),
-            analyse_op(*then_expr_, env, edepth),
-            analyse_op(*else_expr_, env, edepth));
+            analyse_op(*then_expr_, env, terp),
+            analyse_op(*else_expr_, env, terp));
     }
 }
 
 Shared<Meaning>
-For_Phrase::analyse(Environ& env, unsigned edepth) const
+For_Phrase::analyse(Environ& env, Interp terp) const
 {
     Scope scope(env);
+    terp = terp.deepen();
 
     auto pat = make_pattern(*pattern_, scope, 0);
     pat->analyse(scope);
     auto list = analyse_op(*listexpr_, env);
     Shared<Operation> cond;
     if (condition_)
-        cond = analyse_op(*condition_, scope, edepth+1);
-    auto body = analyse_op(*body_, scope, edepth+1);
+        cond = analyse_op(*condition_, scope, terp.to_expr());
+    auto body = analyse_op(*body_, scope, terp.to_stmt());
 
     env.frame_maxslots_ = scope.frame_maxslots_;
     return make<For_Op>(share(*this), pat, list, cond, body);
 }
 
 Shared<Meaning>
-While_Phrase::analyse(Environ& env, unsigned edepth) const
+While_Phrase::analyse(Environ& env, Interp terp) const
 {
     auto cond = analyse_op(*args_, env);
-    auto body = analyse_op(*body_, env, edepth);
+    auto body = analyse_op(*body_, env, terp.to_stmt());
     return make<While_Op>(share(*this), cond, body);
 }
 
 Shared<Meaning>
-Parametric_Phrase::analyse(Environ& env, unsigned) const
+Parametric_Phrase::analyse(Environ& env, Interp) const
 {
     auto ctor = analyse_lambda(env, share(*this), false, param_, body_);
     return make<Parametric_Expr>(share(*this), ctor);
 }
 
 Shared<Meaning>
-Range_Phrase::analyse(Environ& env, unsigned) const
+Range_Phrase::analyse(Environ& env, Interp) const
 {
     return make<Range_Expr>(
         share(*this),
@@ -1129,7 +1068,7 @@ Range_Phrase::analyse(Environ& env, unsigned) const
 }
 
 Shared<Meaning>
-Predicate_Assertion_Phrase::analyse(Environ& env, unsigned) const
+Predicate_Assertion_Phrase::analyse(Environ& env, Interp) const
 {
     return make<Predicate_Assertion_Expr>(
         share(*this),

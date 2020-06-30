@@ -496,7 +496,9 @@ TEST(curv, eval)
         "60\n");
 
     FAILMSG("let var a:=2 in a",
-        "syntax error");
+        "Not a recursive definition.\n"
+        "The deprecated syntax 'var a := b' is a statement.\n"
+        "Try 'a = b' instead.");
     FAILMSG("do a=2 in a",
         "Not a statement.\n"
         "The syntax 'a = b' is a recursive definition, not a statement.\n"

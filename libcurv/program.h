@@ -5,6 +5,7 @@
 #ifndef LIBCURV_PROGRAM_H
 #define LIBCURV_PROGRAM_H
 
+#include <libcurv/analyser.h>
 #include <libcurv/builtin.h>
 #include <libcurv/filesystem.h>
 #include <libcurv/frame.h>
@@ -33,7 +34,7 @@ struct Program
     Shared<Meaning> meaning_ = nullptr;
     Shared<Module_Expr> module_ = nullptr;
     std::unique_ptr<Frame> frame_ = nullptr;
-    unsigned edepth_ = 0;
+    Interp terp_ = Interp::expr();
 
     Program(
         Shared<const Source> source,

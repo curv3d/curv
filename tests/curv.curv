@@ -520,8 +520,9 @@ assert([local a=1; a; a+1] == [1,2]);
 assert_error("a local definition must be followed by '; <statement>'",
     local x = 1);
 assert_error(
-    "Local definitions can't be used in this context.
-    |Try removing the 'local' keyword.",
+    "Not a recursive definition.
+    |The syntax 'local <definition>' is a statement.
+    |To convert this to a recursive definition, omit the word 'local'.",
     let local x = 1; y = 2 in y);
 
 // list assignment
@@ -717,6 +718,16 @@ assert_error [
 assert_error [
     "definitions cannot be mixed with statements",
     {print 2; a=1} ];
+assert_error [
+    "Not an expression.
+    |The syntax 'a = b' is a definition, not an expression.
+    |Try 'a == b' to test for equality.",
+    let in a=1 ];
+assert_error [
+    "Not an expression.
+    |The syntax 'a = b' is a definition, not an expression.
+    |Try 'a == b' to test for equality.",
+    let x=1 in a=1 ];
 
 // script return value:
 in null

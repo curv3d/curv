@@ -32,7 +32,7 @@ Program::compile(Environ& env)
     if (auto def = phrase_->as_definition(env, Fail::soft)) {
         module_ = analyse_module(*def, env);
     } else {
-        meaning_ = phrase_->analyse(env, edepth_);
+        meaning_ = phrase_->analyse(env, terp_);
     }
     frame_ = {Frame::make(env.frame_maxslots_,
         scanner_.system_, scanner_.file_frame_, nullptr, nullptr)};
