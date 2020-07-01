@@ -40,7 +40,6 @@ struct Phrase : public Shared_Base
     virtual ~Phrase() {}
     virtual Location location() const = 0;
     virtual Shared<Definition> as_definition(Environ&, Fail) const;
-    virtual bool is_definition() const;
     virtual Shared<Meaning> analyse(Environ&, Interp terp) const = 0;
 };
 
@@ -197,14 +196,12 @@ struct Include_Phrase : public Unary_Phrase
 {
     using Unary_Phrase::Unary_Phrase;
     virtual Shared<Meaning> analyse(Environ&, Interp) const override;
-    virtual bool is_definition() const override;
     virtual Shared<Definition> as_definition(Environ&, Fail) const override;
 };
 struct Test_Phrase : public Unary_Phrase
 {
     using Unary_Phrase::Unary_Phrase;
     virtual Shared<Meaning> analyse(Environ&, Interp) const override;
-    virtual bool is_definition() const override;
     virtual Shared<Definition> as_definition(Environ&, Fail) const override;
 };
 
@@ -250,7 +247,6 @@ struct Recursive_Definition_Phrase : public Phrase
         return left_->location().ending_at(right_->location().token());
     }
     virtual Shared<Definition> as_definition(Environ&, Fail) const override;
-    virtual bool is_definition() const override;
     virtual Shared<Meaning> analyse(Environ&, Interp) const override;
 };
 // This is 'var x := y'. DEPRECATED. Use 'local x = y' instead.

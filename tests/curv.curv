@@ -522,7 +522,7 @@ assert_error("a local definition must be followed by '; <statement>'",
 assert_error(
     "Not a recursive definition.
     |The syntax 'local <definition>' is a statement.
-    |To convert this to a recursive definition, omit the word 'local'.",
+    |Omit the word 'local' to convert to a definition.",
     let local x = 1; y = 2 in y);
 
 // list assignment

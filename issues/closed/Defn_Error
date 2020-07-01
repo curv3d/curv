@@ -1,0 +1,97 @@
+Helpful error messages when a definition is misused
+
+TODO:
+ * implement the error messages below
+ * fix analyse_stmt()
+
+Issue helpful error messages when a definition is used in the wrong context
+(statement or expression context). Explain what syntax should be used instead.
+
+a=b
+  expression context:
+    Not an expression.
+    The syntax 'a = b' is a definition, not an expression.
+    Try 'a == b' to test for equality.
+  statement context:
+    Not a statement.
+    The syntax 'a = b' is a recursive definition, not a statement.
+    Try 'a := b' to reassign an existing local variable.
+    Try 'local a = b' to define a new local variable.
+include R
+  expression context:
+    Not an expression.
+    The syntax 'include <record>' is a definition, not an expression.
+    To convert this to an expression, omit the word 'include'.
+  statement context:
+    Not a statement.
+    The syntax 'include <record>' is a recursive definition, not a statement.
+    Try 'local include <record>' to define local variables from the record fields.
+test <statement>
+  expression context:
+    Not an expression.
+  statement context:
+    Not a statement.
+    The syntax 'test <statement>' is a recursive definition, not a statement.
+    To convert this to a statement, omit the word 'test'.
+    //Or you can write 'local test <statement>', it has the same effect.
+    //(doesn't work right now: see [[Local]]
+
+The error messages are issued by Phrase::analyse() functions for each definition
+phrase class.
+
+How does Phrase::analyse(env, edepth) determine the phrase type context?
+
+    Expression context: a + b
+    Statement context: do a; b in ...
+    Expression or statement: let ... in a
+
+    edepth==0 for a pure expression context.
+    edepth!=0 for pure statement, or statement+expression context.
+
+So using edepth for context classification is not perfect, but I'd need to
+do a lot of refactoring to make it better (at analysis time). This is good
+enough to improve the error messages.
+
+I can provide more accurate messages if the Phrase::analyse function converts
+each definition phrase to an Operation that throws specific messages
+for eval() and exec(). Recursive_Definition_Phrase::analyse already does this,
+at the cost of defining struct Recursive_Definition_Op.
+
+Or, I could hack Let_Phrase::analyse, when analysing the body, pass
+    edepth ? edepth+1 : 0
+And that fixes the accuracy problem. Also look at Do_Phrase.
+
+But that doesn't work. An example where it fails:
+    let
+        r = list[0];
+    in do
+        for (i in 1..<count list)
+            r := f[r, list[i]];
+    in r;
+We have a let expression, whose body is a do expression, which needs edepth=1
+in order to compile. (Because let-bound variables are assignable.)
+I would need to change the language so that only variables declared 'local'
+in a statement context are assignable.
+
+So instead, replace 'unsigned edepth' with an ADT with the following interface:
+  constructors:
+    A::expr() -- analyse an expression with edepth=0
+    A::stmt(edepth)
+  queries:
+    bool is_expr() const
+    bool is_stmt() const
+    unsigned depth() const
+  transformations:
+    deeper()
+    to_expr()
+    to_stmt()
+Name of the ADT:
+        context, interpretation
+    AState
+    AInfo
+    AConfig
+    AConf
+    AReq
+    ACon
+
+    analyse(Environ env, Interp terp)

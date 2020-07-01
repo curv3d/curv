@@ -71,11 +71,6 @@ Phrase::as_definition(Environ& env, Fail fl) const
 {
     FAIL(fl, nullptr, At_Phrase(*this, env), "Not a definition.");
 }
-bool
-Phrase::is_definition() const
-{
-    return false;
-}
 
 // Scope object for analysing a Lambda body. Contains both parameters and
 // nonlocals. We don't classify function parameters as 'local variables' that
@@ -354,39 +349,47 @@ Local_Phrase::as_definition(Environ& env, Fail fl) const
     FAIL(fl, nullptr, At_Phrase(*this, env),
         "Not a recursive definition.\n"
         "The syntax 'local <definition>' is a statement.\n"
-        "To convert this to a recursive definition, omit the word 'local'.");
+        "Omit the word 'local' to convert to a definition.");
 }
 
 Shared<Meaning>
-Include_Phrase::analyse(Environ& env, Interp) const
+Include_Phrase::analyse(Environ& env, Interp terp) const
 {
-    throw Exception(At_Token(op_, *this, env), "syntax error");
+    if (terp.is_expr()) {
+        throw Exception(At_Phrase(*this, env),
+          "Not an expression.\n"
+          "The syntax 'include <record>' is a definition, not an expression.\n"
+          "Omit the word 'include' to convert this to an expression.");
+    } else {
+        throw Exception(At_Phrase(*this, env),
+          "Not a statement.\n"
+          "The syntax 'include <record>' is a definition, not an statement.\n"
+          "Try 'local include <record>' instead.");
+    }
 }
 Shared<Definition>
 Include_Phrase::as_definition(Environ& env, Fail) const
 {
     return make<Include_Definition>(share(*this), arg_);
 }
-bool
-Include_Phrase::is_definition() const
-{
-    return true;
-}
 
 Shared<Meaning>
-Test_Phrase::analyse(Environ& env, Interp) const
+Test_Phrase::analyse(Environ& env, Interp terp) const
 {
-    throw Exception(At_Token(op_, *this, env), "syntax error");
+    if (terp.is_expr()) {
+        throw Exception(At_Phrase(*this, env),
+          "Not an expression.");
+    } else {
+        throw Exception(At_Phrase(*this, env),
+          "Not a statement.\n"
+          "The syntax 'test <statement>' is a definition, not an statement.\n"
+          "Omit the word 'test' to convert to a statement.");
+    }
 }
 Shared<Definition>
 Test_Phrase::as_definition(Environ& env, Fail) const
 {
     return make<Test_Definition>(share(*this), arg_);
-}
-bool
-Test_Phrase::is_definition() const
-{
-    return true;
 }
 
 Shared<Lambda_Expr>
@@ -833,11 +836,6 @@ Shared<Definition>
 Recursive_Definition_Phrase::as_definition(Environ& env, Fail) const
 {
     return as_definition_iter(env, share(*this), *left_, right_);
-}
-bool
-Recursive_Definition_Phrase::is_definition() const
-{
-    return true;
 }
 
 Shared<Meaning>
