@@ -7,7 +7,8 @@ Variable binding patterns:
   * `pat >> func` is a cast pattern. Pipe the argument into `func`.
     Fail if `func arg` fails. Otherwise match `func arg` against pat.
   * `pat when cond` matches pat, then evaluates cond with pat's bindings,
-    and fails if cond is false. Alt. syntax: `pat if cond` (like Python).
+    and fails if cond is false. Alt. syntax: `pat if cond` (like Python, Rust)
+    O'Caml uses 'when'.
   * `pat :: If predicate` is a unary predicate assertion pattern:
     `If` converts a predicate to a type. Upgrade path from Curv 0.4.
     Alt. syntax: `x :: If pred` becomes `x if pred x`.
@@ -25,6 +26,20 @@ Boolean patterns:
           #foo || #bar
           ==0 || ==1
     * Rust, F# use 'pat1|pat2' -- looks nice in switch.
+    * Consider using backtracking when an || pattern is constrained by a
+      guard, predicate, type or cast. (If the constraint fails, try the
+      next alternative.)
+
+There is an interaction between || patterns and guards ('if' patterns).
+   https://ncik-roberts.github.io/posts/pep622.html
+The question concerns this code:
+   (pat1 || pat2) if cond
+If pat1 succeeds and cond fails, does the entire match fail, or do we backtrack
+and try pat2? The article claims that backtracking produces more intuitive
+behaviour. It also points out that:
+ * O'Caml doesn't use backtracking. However, it issues a compile time warning
+   if backtracking would produce different results.
+ * Rust uses backtracking in an experimental impl of or-patterns.
 
 ## Brainstorming
 Sublist patterns: [a, ...b] or [a, ...b, c]

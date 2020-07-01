@@ -1,5 +1,8 @@
 Canonical Syntax
 ----------------
+Update: See [[Comma]] for the current thinking. The text below is for a
+previous version of Curv.
+
 Sebastien expressed concern that Curv syntax provides too many ways
 of expressing the same things (in ways that other languages don't).
 

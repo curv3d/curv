@@ -17,10 +17,19 @@ There is no dangling else ambiguity.
 Extensibility. New mixfix operators can be defined without adding new reserved
 words and breaking backwards compatibility. User defined mixfix operators.
 
-Bonus points: eliminate the by, include, and local reserved words.
+Bonus points: eliminate the by, include, local, and test reserved words.
     a..b by c
     include expr
     local defn
+    test expr
+
+Note: the current analyser requires `include`, `local` and `test` to be reserved
+words, because they introduce definitions, and we can't look up bindings in an
+environment during the phase where we recognize definitions. So the real issue
+is whether we can make these definitions have the surface syntax of function
+calls. Since 'include' and 'test' take an expression argument, I don't mind if
+they are invoked as 'include(expr)' and 'test(expr)'. However, I think that
+local definitions look bad if they use the syntax 'local(defn)'.
 
 UPPERfix notation
 -----------------
@@ -101,8 +110,8 @@ Notes:
    Maybe, use {symbolexpr : expr} vs {id: expr} to support symbol expressions
    in field generators. Although using whitespace to distinguish {foo: x}
    from {foo : x} is weird. Still, Haskell has Foo.bar vs foo.bar vs foo . bar
- * Does not eliminate 'include' and 'local' keywords.
-    * Since 'include' and 'local' introduce definitions, they must
+ * Does not eliminate 'include', 'local' and 'test' keywords.
+    * Since include/local/test introduce definitions, they must
       be keywords (not metafunctions) in the current parser. So the issue is
       whether this definition syntax can be made to look like function calls.
     * I could change 'include' to use function call syntax, it would look fine.
@@ -136,6 +145,17 @@ I think 'foo:' is more readable than '_foo' in code.
         )
         _in srgb.hsv color;
 
+Curried Backfix notation
+------------------------
+if a then: b else: c   <=>   if a {then: b, else: c}
+cylinder d: 1 h: 10    <=>   cylinder {d: 1, h: 10}
+
+backfix ::= postfix
+  | postfix id: backfix
+  | postfix id: primary id: backfix
+  | postfix id: primary id: primary id: backfix
+  | ...
+
 Alternative Ways to Distinguish Keywords
 ----------------------------------------
  1. Mixfix non-final arguments are primary expressions, which must be
@@ -167,7 +187,7 @@ Alternative Ways to Distinguish Keywords
       infix ::= postfix | infix op postfix
       mixfix ::= ...
 
- 5. Ugly: %if x %then y %else z
+ 6. Ugly: %if x %then y %else z
 
 Previous Ideas
 --------------

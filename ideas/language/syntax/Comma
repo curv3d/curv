@@ -19,17 +19,14 @@ Now I must decide how semicolon should work, taking into account:
  * the fact that semicolon is currently an operator, and that you can type
    'stmt;stmt' or 'defn;defn' at top level in the REPL.
 
-TODO:
- * Theory 0: add 'test' keyword and 'test' definitions.
-   Remove mixed stmt/defn definitions.
-   Restore support for generalized definitions to head of let.
- * Theory 2: deprecate (a,b,c) list syntax.
-   Add {a=1,b=2}
-       let a=1,b=2 in phrase
-   Comma operator can form compound definitions.
+STATUS:
+All of the suggested syntax extensions are implemented.
+Theories 1, 2 and 3 may be used as coding styles, but we don't enforce one
+style and prohibit the other two. I still don't know which style to promote
+as the standard.
 
-0. Embedded Tests
------------------
+0. Embedded Tests (Done)
+------------------------
 In old Curv, you just embed statements in a compound definition,
 mixed with the definitions. But I didn't like the syntax. I felt it was
 confusing.
@@ -144,6 +141,22 @@ The problem is that it looks weird, compared to conventional languages.
    'let a=1; b=2 in ...' is okay.
    'do stmt1; stmt2 in ...' is okay. (Many imperative languages use semicolon.)
 
+Theory 1a: comma and semicolon are interchangeable
+--------------------------------------------------
+At least it's an easy rule to remember.
+
+The deprecated syntax (a,b,c) for constructing a list must be removed.
+(a,b,c) is no longer an expression: it is either a compound definition
+or a compound statement.
+    max(x,y)
+       ^^^^^
+    ERROR: Not an expression.
+    The syntax '(a,b,c)' is not an expression.
+    Try using the expression '[a,b,c]' to construct a list.
+
+This doesn't provide any guidance on coding style. When does `curvfmt`
+use commas and when does it use semicolons?
+
 Theory 2: comma and semicolon operators
 ---------------------------------------
 We introduce a principled semantic distinction between , and ;
@@ -172,7 +185,16 @@ simplicity, on one hand, and "frame-based" language design, where each
 feature signals what "frame" (cognitive linguistics) it is a part of.
 
 This breaks the ability to put parens around a compound recursive definition.
-We need to remove the (a,b,c) list syntax.
+Maybe we need to remove the (a,b,c) list syntax first?
+Actually, no, with #0 implemented, we can interpret (def1,def2) as a compound
+definition and still treat (expr1,expr) as a list.
+
+A generalized 'local' definition would allow
+    local (a=1, b=2);
+for simultaneous or parallel definition (like 'let' in Scheme),
+and that *is* mainstream syntax (as opposed to 'local (a=1; b=2)').
+Possible use case:
+    local (x=y, y=x);
 
 Theory 3: ,/; mean unspecified/sequential order of evaluation
 -------------------------------------------------------------
