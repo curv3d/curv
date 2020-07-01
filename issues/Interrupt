@@ -1,0 +1,10 @@
+^C interrupts a running program in the REPL.
+
+Proposed implementation:
+
+  There is a 'bool interrupt' field in System.
+
+  Before calling a function, and on each iteration of a for or while loop,
+  we check system.interrupt and throw an interrupt exception if it is true.
+
+  The exception carries a stack trace.

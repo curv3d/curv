@@ -1,0 +1,7 @@
+Create a separate sdf-to-poly repo.
+It contains a C++ library for sampling an SDF function
+and generating 2D and 3D polygonal/polyhedral file formats.
+Multiple conversion algorithms and multiple file formats are supported.
+
+Libfive is one of the supported algorithms.
+I want 2D SVG output for doing craft projects.

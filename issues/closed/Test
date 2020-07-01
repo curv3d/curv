@@ -50,3 +50,17 @@ definition (which is part of what makes ';' simpler).
 
 And... the Definition protocol was simplified. Recursive_Scope::add_action()
 and Recursive_Scope::action_phrases_ were removed.
+
+With this syntax change, it becomes possible to use comma, instead of semicolon,
+as the separator for recursive definitions, in a module literal, or in the head
+of a 'let'. The rationale for this is in ideas/language/syntax/Comma.
+One reason the semicolon made more sense before was because it suggested the
+total ordering of the statements in a mixture of recursive definitions and
+statements.
+
+In the previous design, the statements in a definition list were restricted to
+'debug actions' because allowing local variables and assignments was considered
+too confusing for users. (The scope of the local variables would have been
+restricted to the definition list.) But now that source of confusion has been
+removed, and you can use the full imperative language inside a test definition.
+Local variables inside a test definition are restricted to that scope.
