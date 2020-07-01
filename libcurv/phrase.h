@@ -334,6 +334,7 @@ struct Separator_Phrase : public Phrase
             ? last.expr_->location().token()
             : last.separator_);
     }
+    virtual Shared<Definition> as_definition(Environ&, Fail) const override;
 };
 
 /// `a,b,c` -- One or more items, separated by commas, with optional trailing
@@ -350,7 +351,6 @@ struct Semicolon_Phrase : public Separator_Phrase
 {
     using Separator_Phrase::Separator_Phrase;
     virtual Shared<Meaning> analyse(Environ&, Interp) const override;
-    virtual Shared<Definition> as_definition(Environ&, Fail) const override;
 };
 
 /// common implementation for `(...)`, `[...]` and `{...}` phrases.

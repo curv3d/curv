@@ -853,7 +853,7 @@ Semicolon_Phrase::analyse(Environ& env, Interp terp) const
 }
 
 Shared<Definition>
-Semicolon_Phrase::as_definition(Environ& env, Fail fl) const
+Separator_Phrase::as_definition(Environ& env, Fail fl) const
 {
     Shared<Compound_Definition> compound =
         Compound_Definition::make(args_.size(), share(*this));

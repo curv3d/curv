@@ -1,0 +1,10 @@
+Permit comma to be used in the following contexts:
+    let def1, def2 in ...
+    {def1, def2, ...}
+
+The implementation is:
+ * In the above contexts, we call 'phrase->as_definition()'.
+   Comma_Phrase::as_definition()
+   does the same thing as Semicolon_Phrase::as_definition().
+
+Rationale: [[ideas/language/syntax/Comma]]
