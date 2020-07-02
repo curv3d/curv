@@ -12,8 +12,10 @@ namespace curv {
 struct Pattern;
 struct Recursive_Scope;
 
-// All Definitions are 'recursive' definitions. Sequential definitions
-// begin with the 'local' keyword and aren't part of the Definition protocol.
+// Syntactically,
+//    '<definition>' is a recursive definition
+//    'local <definition>' is a sequential definition
+// In both cases, a <definition> phrase is represented by a Definition object.
 struct Definition : public Shared_Base
 {
     Shared<const Phrase> syntax_;
@@ -24,7 +26,9 @@ struct Definition : public Shared_Base
         syntax_(std::move(syntax))
     {}
 
-    virtual void add_to_scope(Recursive_Scope&) = 0;
+    virtual void analyse_sequential(Environ&) = 0;
+    virtual Shared<Operation> add_to_sequential_scope(Scope&) = 0;
+    virtual void add_to_recursive_scope(Recursive_Scope&) = 0;
 };
 
 // A unitary definition is one that occupies a single node in the dependency
@@ -38,7 +42,7 @@ struct Unitary_Definition : public Definition
         Definition(syntax)
     {}
 
-    virtual void analyse(Environ&) = 0;
+    virtual void analyse_recursive(Environ&) = 0;
     virtual Shared<Operation> make_setter(slot_t module_slot) = 0;
 };
 
@@ -50,8 +54,9 @@ struct Function_Definition : public Unitary_Definition
 {
     Shared<const Identifier> name_;
     Shared<Lambda_Phrase> lambda_phrase_;
-    slot_t slot_; // initialized by add_to_scope()
+    slot_t slot_; // initialized by add_to_recursive_scope()
     Shared<Lambda> lambda_; // initialized by analyse()
+    Shared<Operation> lambda_expr_; // initialized by analyse_sequential()
 
     Function_Definition(
         Shared<const Phrase> syntax,
@@ -63,8 +68,10 @@ struct Function_Definition : public Unitary_Definition
         lambda_phrase_(std::move(lambda_phrase))
     {}
 
-    virtual void add_to_scope(Recursive_Scope&) override;
-    virtual void analyse(Environ&) override;
+    virtual void analyse_sequential(Environ&) override;
+    virtual Shared<Operation> add_to_sequential_scope(Scope&) override;
+    virtual void add_to_recursive_scope(Recursive_Scope&) override;
+    virtual void analyse_recursive(Environ&) override;
     virtual Shared<Operation> make_setter(slot_t module_slot) override;
 };
 
@@ -73,30 +80,31 @@ struct Function_Definition : public Unitary_Definition
 // to bind multiple names.
 struct Data_Definition : public Unitary_Definition
 {
-    Shared<const Phrase> definiendum_;
+    Shared<Pattern> pattern_;
     Shared<Phrase> definiens_phrase_;
-    Shared<Pattern> pattern_; // initialized by add_to_scope()
     Shared<Operation> definiens_expr_; // initialized by analyse()
 
     Data_Definition(
         Shared<const Phrase> syntax,
-        Shared<const Phrase> definiendum,
+        Shared<Pattern> pattern,
         Shared<Phrase> definiens)
     :
         Unitary_Definition(syntax),
-        definiendum_(std::move(definiendum)),
+        pattern_(pattern),
         definiens_phrase_(std::move(definiens))
     {}
 
-    virtual void add_to_scope(Recursive_Scope&) override;
-    virtual void analyse(Environ&) override;
+    virtual void analyse_sequential(Environ&) override;
+    virtual Shared<Operation> add_to_sequential_scope(Scope&) override;
+    virtual void add_to_recursive_scope(Recursive_Scope&) override;
+    virtual void analyse_recursive(Environ&) override;
     virtual Shared<Operation> make_setter(slot_t module_slot) override;
 };
 
 struct Include_Definition : public Unitary_Definition
 {
     Shared<Phrase> arg_;
-    Shared<Include_Setter> setter_; // initialized by add_to_scope()
+    Shared<Include_Setter> setter_; // initialized by add_to_recursive_scope()
 
     Include_Definition(
         Shared<const Phrase> syntax,
@@ -106,8 +114,11 @@ struct Include_Definition : public Unitary_Definition
         arg_(std::move(arg))
     {}
 
-    virtual void add_to_scope(Recursive_Scope&) override;
-    virtual void analyse(Environ&) override;
+    virtual void analyse_sequential(Environ&) override;
+    Shared<Include_Setter> add_to_scope(Scope& scope);
+    virtual Shared<Operation> add_to_sequential_scope(Scope&) override;
+    virtual void add_to_recursive_scope(Recursive_Scope&) override;
+    virtual void analyse_recursive(Environ&) override;
     virtual Shared<Operation> make_setter(slot_t module_slot) override;
 };
 
@@ -124,8 +135,10 @@ struct Test_Definition : public Unitary_Definition
         arg_(std::move(arg))
     {}
 
-    virtual void add_to_scope(Recursive_Scope&) override;
-    virtual void analyse(Environ&) override;
+    virtual void analyse_sequential(Environ&) override;
+    virtual Shared<Operation> add_to_sequential_scope(Scope&) override;
+    virtual void add_to_recursive_scope(Recursive_Scope&) override;
+    virtual void analyse_recursive(Environ&) override;
     virtual Shared<Operation> make_setter(slot_t module_slot) override;
 };
 
@@ -136,7 +149,9 @@ struct Compound_Definition_Base : public Definition
     Compound_Definition_Base(Shared<const Phrase> syntax)
     : Definition(std::move(syntax)) {}
 
-    virtual void add_to_scope(Recursive_Scope&) override;
+    virtual void analyse_sequential(Environ&) override;
+    virtual Shared<Operation> add_to_sequential_scope(Scope&) override;
+    virtual void add_to_recursive_scope(Recursive_Scope&) override;
 
     TAIL_ARRAY_MEMBERS(Shared<Definition>)
     void resize(size_t n) { size_ = n; }
@@ -169,8 +184,12 @@ struct Scope : public Environ
         frame_maxslots_ = parent.frame_maxslots_;
     }
 
+    // Environ protocol
     virtual Shared<Meaning> single_lookup(const Identifier&) override;
     virtual Shared<Locative> single_lvar_lookup(const Identifier&) override;
+
+    // Scope protocol. Default implementation is for a sequential scope.
+    virtual unsigned add_unit(Shared<Unitary_Definition>) { return 0; }
     virtual std::pair<slot_t,Shared<const Scoped_Variable>> add_binding(
         Symbol_Ref, const Phrase&, unsigned unit);
 };
@@ -236,9 +255,9 @@ struct Recursive_Scope : public Scope
     virtual std::pair<slot_t,Shared<const Scoped_Variable>> add_binding(
         Symbol_Ref, const Phrase&, unsigned unit) override;
 
-    // Recursive_Scope (add_to_scope protocol)
+    // Recursive_Scope (add_to_recursive_scope protocol)
     void analyse(Definition&);
-    unsigned add_unit(Shared<Unitary_Definition>);
+    virtual unsigned add_unit(Shared<Unitary_Definition>) override;
 
     void analyse();
 private:

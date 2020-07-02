@@ -1,0 +1,27 @@
+Generalized Local Definitions
+
+Any definition can be used as an argument to 'local'.
+Syntax like
+    local test assert(f x)
+    local (x=y, y=x)
+works.
+
+What I did: generalized the Definition protocol to support sequential
+definitions. This modularized the code better (analyse_stmt was previously
+a mess).
+
+Previously, make_pattern() had the side effect of adding each binding to the
+scope. This was okay for recursive definitions, but not for sequential
+definitions, where you need to analyse the pattern before adding it to the
+scope. So I simplified make_pattern() and moved some of its code into
+pattern->add_to_scope(). I think that this fixed some subtle bugs in existing
+code for sequential scopes, as a side effect.
+
+Possible future work:
+  * Simplify the Definition protocol.
+    Unify add_to_sequential_scope with add_to_recursive_scope.
+    To process 'local defn' within 'scope' (a sequential scope), use:
+        defn->analyse_sequential(scope);
+        defn->add_to_scope(scope);
+        op = defn->make_setter(slot_t(-1));
+  * Document the Definition protocol.

@@ -383,7 +383,8 @@ Test_Phrase::analyse(Environ& env, Interp terp) const
         throw Exception(At_Phrase(*this, env),
           "Not a statement.\n"
           "The syntax 'test <statement>' is a definition, not an statement.\n"
-          "Omit the word 'test' to convert to a statement.");
+          "Try 'local test <statement>' instead.\n"
+          "Or omit the word 'test' to convert to a statement.");
     }
 }
 Shared<Definition>
@@ -402,8 +403,9 @@ analyse_lambda(
 {
     Lambda_Scope scope(env, shared_nonlocals);
 
-    auto pattern = make_pattern(*left, scope, 0);
+    auto pattern = make_pattern(*left, scope);
     pattern->analyse(scope);
+    pattern->add_to_scope(scope, 0);
     auto expr = analyse_op(*right, scope, Interp::expr());
     auto nonlocals = make<Enum_Module_Expr>(src,
         std::move(scope.nonlocal_dictionary_),
@@ -474,57 +476,19 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, Interp terp)
 {
     if (auto local = cast<const Local_Phrase>(stmt)) {
         auto defn = local->arg_->as_definition(scope, Fail::hard);
-        // Ideally, we would use the Definition protocol, especially if we
-        // want to support compound definitions like `local (x=1;y=2)`.
-        // What currently follows is a lot of code duplication.
-        if (auto data_def = cast<const Data_Definition>(defn)) {
-            auto expr =
-                analyse_op(*data_def->definiens_phrase_, scope, terp);
-            auto pat = make_pattern(*data_def->definiendum_, scope, 0);
-            pat->analyse(scope);
-            return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
-        }
-        if (auto func_def = cast<const Function_Definition>(defn)) {
-            auto expr =
-                analyse_op(*func_def->lambda_phrase_, scope, terp);
-            auto pat = make_pattern(*func_def->name_, scope, 0);
-            pat->analyse(scope);
-            return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
-        }
-        if (auto incl_def = cast<const Include_Definition>(defn)) {
-            // Evaluate the `include` argument in the builtin environment.
-            auto val = std_eval(*incl_def->arg_, scope);
-            At_Phrase cx(*incl_def->arg_, scope);
-            auto record = val.to<Record>(cx);
-
-            // construct an Include_Setter from the record argument.
-            Shared<Include_Setter> setter =
-                Include_Setter::make(record->size(), stmt);
-            size_t i = 0;
-            record->each_field(cx, [&](Symbol_Ref name, Value value)->void {
-                auto b = scope.add_binding(name, *stmt, 0);
-                (*setter)[i++] = {b.first, value};
-            });
-            return setter;
-        }
-        throw Exception(At_Phrase(*stmt, scope),
-            "syntax error in local definition");
+        defn->analyse_sequential(scope);
+        return defn->add_to_sequential_scope(scope);
     }
     if (auto vardef = cast<const Var_Definition_Phrase>(stmt)) {
         scope.analyser_.deprecate(&File_Analyser::var_deprecated_,
             At_Phrase(*vardef, scope),
             "'var pattern := expr' is deprecated.\n"
             "Use 'local pattern = expr' instead.");
-        auto pat = make_pattern(*vardef->left_, scope, 0);
-        auto expr = analyse_op(*vardef->right_, scope, terp);
+        auto pat = make_pattern(*vardef->left_, scope);
         pat->analyse(scope);
+        auto expr = analyse_op(*vardef->right_, scope, terp);
+        pat->add_to_scope(scope, 0);
         return make<Data_Setter>(stmt, slot_t(-1), pat, expr);
-    }
-    if (auto incl = cast<const Include_Phrase>(stmt)) {
-        throw Exception(At_Phrase(*stmt, scope),
-            "'include filename' is a recursive definition.\n"
-            "In this context, only local definitions are permitted.\n"
-            "Try 'local include filename' instead.");
     }
     return analyse_op(*stmt, scope, terp);
 }
@@ -617,8 +581,8 @@ Where_Phrase::analyse(Environ& env, Interp terp) const
         auto adef1 = let->bindings_->as_definition(env, Fail::hard);
         auto adef2 = bindings->as_definition(env, Fail::hard);
         Recursive_Scope rscope(env, false, syntax);
-        adef1->add_to_scope(rscope);
-        adef2->add_to_scope(rscope);
+        adef1->add_to_recursive_scope(rscope);
+        adef2->add_to_recursive_scope(rscope);
         rscope.analyse();
         terp = terp.deepen();
         auto body = analyse_op(*let->body_, rscope, terp);
@@ -823,14 +787,14 @@ as_definition_iter(
                 share(*id), std::move(lambda));
         else
             return make<Data_Definition>(std::move(syntax),
-                share(*id), std::move(right));
+                make_pattern(*id,env), std::move(right));
     }
     if (auto call = dynamic_cast<const Call_Phrase*>(&left))
         if (call->op_.kind_ == Token::k_missing)
             return as_definition_iter(env, std::move(syntax), *call->function_,
                 make<Lambda_Phrase>(call->arg_, Token(), right));
     return make<Data_Definition>(std::move(syntax),
-        share(left), std::move(right));
+        make_pattern(left,env), std::move(right));
 }
 Shared<Definition>
 Recursive_Definition_Phrase::as_definition(Environ& env, Fail) const
@@ -1027,9 +991,10 @@ For_Phrase::analyse(Environ& env, Interp terp) const
     Scope scope(env);
     terp = terp.deepen();
 
-    auto pat = make_pattern(*pattern_, scope, 0);
-    pat->analyse(scope);
+    auto pat = make_pattern(*pattern_, env);
+    pat->analyse(env);
     auto list = analyse_op(*listexpr_, env);
+    pat->add_to_scope(scope, 0);
     Shared<Operation> cond;
     if (condition_)
         cond = analyse_op(*condition_, scope, terp.to_expr());

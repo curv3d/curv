@@ -517,6 +517,7 @@ assert([local a=1; a; a+1] == [1,2]);
     local include {a:1};
     assert(a == 1);
 );
+assert( ([x,y]->do local (y=x,x=y) in [x,y]) [1,2] == [2,1] );
 assert_error("a local definition must be followed by '; <statement>'",
     local x = 1);
 assert_error(
@@ -524,6 +525,9 @@ assert_error(
     |The syntax 'local <definition>' is a statement.
     |Omit the word 'local' to convert to a definition.",
     let local x = 1; y = 2 in y);
+assert_error(
+    "a: not assignable from inside an expression",
+    do local a=1; local test a := 2 in a);
 
 // list assignment
 (

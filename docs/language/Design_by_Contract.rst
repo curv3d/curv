@@ -188,3 +188,12 @@ For example::
   }
 
 When the module literal is evaluated, the tests will be run.
+
+The ``test`` keyword guarantees that the test is self contained: it cannot
+modify state seen by other tests or seen by other parts of the program.
+This means that you can delete a test without affecting the program's semantics.
+Within a recursive definition context (like a module or a ``let`` phrase),
+the relative ordering of test definitions doesn't matter.
+Within a statement list (eg, inside a ``do``),
+``local test <stmt>`` guarantees that ``<stmt>`` cannot
+modify local variables from the surrounding scope.

@@ -29,6 +29,7 @@ struct Pattern : public Shared_Base
         syntax_(std::move(s))
     {}
 
+    virtual void add_to_scope(Scope&, unsigned unitno) = 0;
     virtual void analyse(Environ&) = 0;
     virtual void exec(Value* slots, Value, const Context&, Frame&) const = 0;
     virtual bool try_exec(Value* slots, Value, const Context&, Frame&) const = 0;
@@ -36,7 +37,7 @@ struct Pattern : public Shared_Base
     virtual void sc_exec(Operation& expr, SC_Frame& caller, SC_Frame& callee) const;
 };
 
-Shared<Pattern> make_pattern(const Phrase&, Scope&, unsigned unitno);
+Shared<Pattern> make_pattern(const Phrase&, Environ&);
 
 Shared<Record> record_pattern_default_value(const Pattern&, Frame&);
 

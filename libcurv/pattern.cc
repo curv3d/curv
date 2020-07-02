@@ -21,6 +21,9 @@ struct Skip_Pattern : public Pattern
     virtual void analyse(Environ&) override
     {
     }
+    virtual void add_to_scope(Scope&, unsigned unitno) override
+    {
+    }
     virtual void exec(Value*, Value, const Context&, Frame&)
     const override
     {
@@ -45,16 +48,17 @@ struct Id_Pattern : public Pattern
     slot_t slot_;
     Shared<const Scoped_Variable> var_;
 
-    Id_Pattern(
-        Shared<const Phrase> ph,
-        slot_t n,
-        Shared<const Scoped_Variable> v)
-    :
-        Pattern(ph), slot_(n), var_(v)
-    {}
+    Id_Pattern(Shared<const Phrase> ph) : Pattern(ph) {}
 
     virtual void analyse(Environ&) override
     {
+    }
+    virtual void add_to_scope(Scope& scope, unsigned unitno) override
+    {
+        auto id = cast<const Identifier>(syntax_);
+        auto b = scope.add_binding(id->symbol_, *syntax_, unitno);
+        slot_ = b.first;
+        var_ = b.second;
     }
     virtual void exec(Value* slots, Value value, const Context&, Frame&)
     const override
@@ -106,6 +110,9 @@ struct Const_Pattern : public Pattern
     {}
 
     virtual void analyse(Environ& env) override
+    {
+    }
+    virtual void add_to_scope(Scope& scope, unsigned unitno) override
     {
     }
     virtual void exec(Value* slots, Value value, const Context& cx, Frame& f)
@@ -192,6 +199,10 @@ struct Predicate_Pattern : public Pattern
         predicate_expr_ = analyse_op(*predicate_phrase_, env);
         pattern_->analyse(env);
     }
+    virtual void add_to_scope(Scope& scope, unsigned unitno) override
+    {
+        pattern_->add_to_scope(scope, unitno);
+    }
     virtual void exec(Value* slots, Value value, const Context& cx, Frame& f)
     const override
     {
@@ -221,6 +232,11 @@ struct List_Pattern : public Pattern
     {
         for (auto& p : items_)
             p->analyse(env);
+    }
+    virtual void add_to_scope(Scope& scope, unsigned unitno) override
+    {
+        for (auto& p : items_)
+            p->add_to_scope(scope, unitno);
     }
     virtual void exec(Value* slots, Value arg, const Context& argcx, Frame& f)
     const override
@@ -321,6 +337,11 @@ struct Record_Pattern : public Pattern
             if (p.second.dsrc_)
                 p.second.dexpr_ = analyse_op(*p.second.dsrc_, env);
         }
+    }
+    virtual void add_to_scope(Scope& scope, unsigned unitno) override
+    {
+        for (auto& p : fields_)
+            p.second.pat_->add_to_scope(scope, unitno);
     }
     virtual void exec(Value* slots, Value value, const Context& valcx, Frame& f)
     const override
@@ -423,16 +444,16 @@ struct Record_Pattern : public Pattern
 };
 
 Symbol_Ref
-symbolize(const Phrase& ph, Scope& scope)
+symbolize(const Phrase& ph, Environ& env)
 {
     if (auto id = dynamic_cast<const Identifier*>(&ph))
         return id->symbol_;
     if (auto strph = dynamic_cast<const String_Phrase*>(&ph)) {
-        auto val = std_eval(*strph, scope);
-        auto str = value_to_string(val, At_Phrase(ph, scope));
+        auto val = std_eval(*strph, env);
+        auto str = value_to_string(val, At_Phrase(ph, env));
         return make_symbol(str->data(), str->size());
     }
-    throw Exception(At_Phrase(ph, scope),
+    throw Exception(At_Phrase(ph, env),
         "not an identifier or string literal");
 }
 
@@ -469,7 +490,7 @@ identifier_pattern(const Phrase& ph)
 }
 
 Shared<Pattern>
-make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
+make_pattern(const Phrase& ph, Environ& env)
 {
     auto num = dynamic_cast<const Numeral*>(&ph);
     if (num && num->loc_.token().kind_ == Token::k_symbol) {
@@ -479,25 +500,24 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
         if (id->symbol_ == "_" && !id->quoted())
             return make<Skip_Pattern>(share(ph));
         else {
-            auto b = scope.add_binding(id->symbol_, ph, unitno);
-            return make<Id_Pattern>(share(ph), b.first, b.second);
+            return make<Id_Pattern>(share(ph));
         }
     }
     if (auto call = dynamic_cast<const Call_Phrase*>(&ph)) {
         if (call->op_.kind_ == Token::k_missing) {
-            throw Exception(At_Phrase(ph, scope),
+            throw Exception(At_Phrase(ph, env),
                 "'<predicate> <pattern>' is no longer legal syntax.\n"
                 "Use '<pattern> :: <predicate>' instead.");
         }
         if (call->op_.kind_ == Token::k_colon_colon) {
             return make<Predicate_Pattern>(share(*call),
-                make_pattern(*call->arg_, scope, unitno));
+                make_pattern(*call->arg_, env));
         }
     }
     if (auto brackets = dynamic_cast<const Bracket_Phrase*>(&ph)) {
         std::vector<Shared<Pattern>> items;
         each_item(*brackets->body_, [&](Phrase& item)->void {
-            items.push_back(make_pattern(item, scope, unitno));
+            items.push_back(make_pattern(item, env));
         });
         return make<List_Pattern>(share(ph), items);
     }
@@ -507,9 +527,9 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
             return make<List_Pattern>(share(ph), items);
         if (dynamic_cast<const Comma_Phrase*>(&*parens->body_) == nullptr
          && dynamic_cast<const Semicolon_Phrase*>(&*parens->body_) == nullptr)
-            return make_pattern(*parens->body_, scope, unitno);
+            return make_pattern(*parens->body_, env);
         each_item(*parens->body_, [&](Phrase& item)->void {
-            items.push_back(make_pattern(item, scope, unitno));
+            items.push_back(make_pattern(item, env));
         });
         return make<List_Pattern>(share(ph), items);
     }
@@ -519,24 +539,24 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
             if (dynamic_cast<const Empty_Phrase*>(&item))
                 return;
             if (auto id = identifier_pattern(item)) {
-                auto pat = make_pattern(item, scope, unitno);
+                auto pat = make_pattern(item, env);
                 fields[id->symbol_] = {share(item), pat, nullptr, id};
                 return;
             }
             if (auto bin = dynamic_cast<const Binary_Phrase*>(&item)) {
                 if (bin->op_.kind_ == Token::k_colon) {
-                    Symbol_Ref name = symbolize(*bin->left_, scope);
+                    Symbol_Ref name = symbolize(*bin->left_, env);
                     Shared<Pattern> pat;
                     Shared<Phrase> dfl_src = nullptr;
                     if (auto def = dynamic_cast
                         <const Recursive_Definition_Phrase*>(&*bin->right_))
                     {
-                        pat = make_pattern(*def->left_, scope, unitno);
+                        pat = make_pattern(*def->left_, env);
                         dfl_src = def->right_;
                     } else if (isa<Empty_Phrase>(bin->right_)) {
                         pat = make<Const_Pattern>(bin->right_, Value{true});
                     } else {
-                        pat = make_pattern(*bin->right_, scope, unitno);
+                        pat = make_pattern(*bin->right_, env);
                     }
                     fields[name] = {share(item), pat, dfl_src, bin->left_};
                     return;
@@ -547,17 +567,17 @@ make_pattern(const Phrase& ph, Scope& scope, unsigned unitno)
             {
                 auto id = identifier_pattern(*def->left_);
                 if (id == nullptr)
-                    throw Exception(At_Phrase(*def->left_, scope),
+                    throw Exception(At_Phrase(*def->left_, env),
                         "not an identifier pattern");
-                auto pat = make_pattern(*def->left_, scope, unitno);
+                auto pat = make_pattern(*def->left_, env);
                 fields[id->symbol_] = {share(item), pat, def->right_, id};
                 return;
             }
-            throw Exception(At_Phrase(item, scope), "not a field pattern");
+            throw Exception(At_Phrase(item, env), "not a field pattern");
         });
         return make<Record_Pattern>(share(ph), std::move(fields));
     }
-    throw Exception(At_Phrase(ph, scope), "not a pattern");
+    throw Exception(At_Phrase(ph, env), "not a pattern");
 }
 
 void

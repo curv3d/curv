@@ -15,27 +15,58 @@
 namespace curv
 {
 
-void
-Data_Definition::add_to_scope(Recursive_Scope& scope)
+Shared<Operation>
+Data_Definition::add_to_sequential_scope(Scope& scope)
 {
-    unsigned unitnum = scope.add_unit(share(*this));
-    pattern_ = make_pattern(*definiendum_, scope, unitnum);
+    pattern_->add_to_scope(scope, 0);
+    return make<Data_Setter>(syntax_, slot_t(-1), pattern_, definiens_expr_);
 }
 void
-Function_Definition::add_to_scope(Recursive_Scope& scope)
+Data_Definition::add_to_recursive_scope(Recursive_Scope& scope)
+{
+    unsigned unitnum = scope.add_unit(share(*this));
+    pattern_->add_to_scope(scope, unitnum);
+}
+void
+Data_Definition::analyse_sequential(Environ& env)
+{
+    pattern_->analyse(env);
+    definiens_expr_ = analyse_op(*definiens_phrase_, env);
+}
+void
+Data_Definition::analyse_recursive(Environ& env)
+{
+    pattern_->analyse(env);
+    definiens_expr_ = analyse_op(*definiens_phrase_, env);
+}
+Shared<Operation>
+Data_Definition::make_setter(slot_t module_slot)
+{
+    return make<Data_Setter>(
+        syntax_, module_slot, pattern_, definiens_expr_);
+}
+
+void
+Function_Definition::analyse_sequential(Environ& env)
+{
+    lambda_expr_ = analyse_op(*lambda_phrase_, env);
+}
+Shared<Operation>
+Function_Definition::add_to_sequential_scope(Scope& scope)
+{
+    auto pat = make_pattern(*name_, scope);
+    pat->add_to_scope(scope, 0);
+    return make<Data_Setter>(syntax_, slot_t(-1), pat, lambda_expr_);
+}
+void
+Function_Definition::add_to_recursive_scope(Recursive_Scope& scope)
 {
     unsigned unitnum = scope.add_unit(share(*this));
     auto b = scope.add_binding(name_->symbol_, *syntax_, unitnum);
     slot_ = b.first;
 }
 void
-Data_Definition::analyse(Environ& env)
-{
-    pattern_->analyse(env);
-    definiens_expr_ = analyse_op(*definiens_phrase_, env);
-}
-void
-Function_Definition::analyse(Environ& env)
+Function_Definition::analyse_recursive(Environ& env)
 {
     lambda_phrase_->shared_nonlocals_ = true;
     auto expr = analyse_op(*lambda_phrase_, env);
@@ -52,19 +83,17 @@ Function_Definition::analyse(Environ& env)
     lambda_->name_ = name_->symbol_;
 }
 Shared<Operation>
-Data_Definition::make_setter(slot_t module_slot)
-{
-    return make<Data_Setter>(
-        syntax_, module_slot, pattern_, definiens_expr_);
-}
-Shared<Operation>
 Function_Definition::make_setter(slot_t module_slot)
 {
     die("Function_Definition::make_setter: must not be called");
 }
 
 void
-Include_Definition::add_to_scope(Recursive_Scope& scope)
+Include_Definition::analyse_sequential(Environ& env)
+{
+}
+Shared<Include_Setter>
+Include_Definition::add_to_scope(Scope& scope)
 {
     // Evaluate the argument to `include` in the builtin environment.
     auto val = std_eval(*arg_, scope);
@@ -73,15 +102,27 @@ Include_Definition::add_to_scope(Recursive_Scope& scope)
 
     // construct an Include_Setter from the record argument.
     unsigned unit = scope.add_unit(share(*this));
-    setter_ = {Include_Setter::make(record->size(), syntax_)};
+    Shared<Include_Setter> setter =
+        {Include_Setter::make(record->size(), syntax_)};
     size_t i = 0;
     record->each_field(cx, [&](Symbol_Ref name, Value value)->void {
         auto b = scope.add_binding(name, *syntax_, unit);
-        (*setter_)[i++] = {b.first, value};
+        (*setter)[i++] = {b.first, value};
     });
+    return setter;
+}
+Shared<Operation>
+Include_Definition::add_to_sequential_scope(Scope& scope)
+{
+    return add_to_scope(scope);
 }
 void
-Include_Definition::analyse(Environ&)
+Include_Definition::add_to_recursive_scope(Recursive_Scope& scope)
+{
+    setter_ = add_to_scope(scope);
+}
+void
+Include_Definition::analyse_recursive(Environ&)
 {
 }
 Shared<Operation>
@@ -92,15 +133,29 @@ Include_Definition::make_setter(slot_t module_slot)
 }
 
 void
-Test_Definition::add_to_scope(Recursive_Scope& scope)
+Test_Definition::analyse_sequential(Environ& env)
+{
+    // Within 'local test <stmt>', the <stmt> argument 'arg_'
+    // cannot mutate free variables. That is what 'Interp::stmt()' ensures
+    // (it has an edepth of 0). Rationale: a local test can be deleted
+    // without affecting program semantics.
+    setter_ = analyse_op(*arg_, env, Interp::stmt());
+}
+Shared<Operation>
+Test_Definition::add_to_sequential_scope(Scope& scope)
+{
+    return setter_;
+}
+void
+Test_Definition::add_to_recursive_scope(Recursive_Scope& scope)
 {
     unsigned unitnum = scope.add_unit(share(*this));
     (void) unitnum;
 }
 void
-Test_Definition::analyse(Environ& env)
+Test_Definition::analyse_recursive(Environ& env)
 {
-    setter_ = analyse_op(*arg_, env);
+    setter_ = analyse_op(*arg_, env, Interp::stmt());
 }
 Shared<Operation>
 Test_Definition::make_setter(slot_t module_slot)
@@ -109,10 +164,26 @@ Test_Definition::make_setter(slot_t module_slot)
 }
 
 void
-Compound_Definition_Base::add_to_scope(Recursive_Scope& scope)
+Compound_Definition_Base::analyse_sequential(Environ& env)
 {
     for (auto &def : *this) {
-        def->add_to_scope(scope);
+        def->analyse_sequential(env);
+    }
+}
+Shared<Operation>
+Compound_Definition_Base::add_to_sequential_scope(Scope& scope)
+{
+    // This function is called to analyse 'local (a=1, b=2)'.
+    auto setter = Compound_Op::make(size_, syntax_);
+    for (unsigned i = 0; i < size_; ++i)
+        setter->at(i) = at(i)->add_to_sequential_scope(scope);
+    return setter;
+}
+void
+Compound_Definition_Base::add_to_recursive_scope(Recursive_Scope& scope)
+{
+    for (auto &def : *this) {
+        def->add_to_recursive_scope(scope);
     }
 }
 
@@ -163,7 +234,7 @@ Recursive_Scope::add_binding(
 void
 Recursive_Scope::analyse(Definition& def)
 {
-    def.add_to_scope(*this);
+    def.add_to_recursive_scope(*this);
     analyse();
 }
 void
@@ -203,10 +274,10 @@ Recursive_Scope::analyse_unit(Unit& unit, const Identifier* id)
         analysis_stack_.push_back(&unit);
         if (unit.is_function()) {
             Function_Environ fenv(*this, unit);
-            unit.def_->analyse(fenv);
+            unit.def_->analyse_recursive(fenv);
             frame_maxslots_ = std::max(frame_maxslots_, fenv.frame_maxslots_);
         } else {
-            unit.def_->analyse(*this);
+            unit.def_->analyse_recursive(*this);
         }
         analysis_stack_.pop_back();
 

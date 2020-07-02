@@ -115,7 +115,7 @@ private:
     Interp(unsigned d, bool ie) : edepth_(d), is_expr_(ie) {}
 public:
     static Interp expr() { return {0, true}; }
-    static Interp stmt(unsigned d) { return {d, false}; }
+    static Interp stmt(unsigned d = 0) { return {d, false}; }
     int edepth() const { return edepth_; }
     bool is_expr() const { return is_expr_; }
     bool is_stmt() const { return !is_expr_; }
