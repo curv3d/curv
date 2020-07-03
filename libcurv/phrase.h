@@ -269,7 +269,7 @@ struct Var_Definition_Phrase : public Phrase
         return right_->location().starting_at(var_);
     }
     virtual Shared<Meaning> analyse(Environ&, Interp) const override;
-    virtual Shared<Definition> as_definition(Environ&, Fail) const;
+    virtual Shared<Definition> as_definition(Environ&, Fail) const override;
 };
 struct Assignment_Phrase : public Phrase
 {

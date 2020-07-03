@@ -174,7 +174,7 @@ Shared<Operation>
 Compound_Definition_Base::add_to_sequential_scope(Scope& scope)
 {
     // This function is called to analyse 'local (a=1, b=2)'.
-    auto setter = Compound_Op::make(size_, syntax_);
+    Shared<Compound_Op> setter = Compound_Op::make(size_, syntax_);
     for (unsigned i = 0; i < size_; ++i)
         setter->at(i) = at(i)->add_to_sequential_scope(scope);
     return setter;
