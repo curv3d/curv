@@ -2,6 +2,171 @@ Generalized Recursive Functions
 ===============================
 Recursive references are legal in any lambda expression.
 
+Recursive references must be contained within lambda expressions,
+or an error is reported. Eg, we report an error on `x = x + 1`.
+
+Recursive references are not supported in definitions like `pat = expr`
+where `pat` is not an identifier pattern.
+
+In a definition like
+    x = expr
+where expr contains lambda expressions with recursive references, the functions
+computed from those lambda expressions must not be called during the initial
+evaluation of the definiens 'expr', before the result of 'expr' is bound to x.
+That will produce an error.
+
+Implementation Alternatives:
+ * tracing garbage collector
+ * reclaiming cyclic structures using reference counting <-- this one
+ * thunks
+
+Implementation: Tracing Garbage Collector
+-----------------------------------------
+* Use a tracing garbage collector (instead of ref counting).
+* Frame slots containing recursive variables are represented by thunks.
+  The thunk is evaluated on first reference, then the slot is updated with
+  the result. If there is a recursive loop during thunk evaluation, throw
+  an error.
+* This is very expressive. Any recursive definition that makes logical sense
+  will work, and with low implementation complexity (other than the GC).
+  There are cases where recursive references are outside of lambda expressions,
+  but no divergence is possible, and these cases will work.
+* Nothing special needs to be done about lambda expressions, or closures,
+  or multi-variable patterns. Closures containing recursive references will
+  turn into cyclic structures after thunk evaluation, but it doesn't matter.
+* Maybe a special opcode is used for recursive references, to implement the
+  thunk logic. Thus zero overhead for non-recursive references.
+
+** One big loss: copy-on-write for efficient data structure update.
+This requires more complex and less efficient solutions. Unless there is a
+hybrid solution where the only cyclic loops involve closure values, and data
+structures still have accurate refcounts.
+
+Does this technique allow unprintable cyclic data structures?
+I don't want that. Hmm...
+    a = [1, a]
+If we eagerly evaluate the 'a' reference when evaluating [1,a], then we get a
+thunk loop and report an error. So that's okay.
+
+What is the tradeoff between the complexity of a tracing garbage collector,
+vs the complexity of the code for making cyclic structures collectable via
+reference counting?
+
+One possible downside of a tracing garbage collector is: what happens when I
+embed Curv in another programming language (eg, C++, Rust, Python, Lisp)?
+If Curv is intended to be like SVG only more powerful, then other languages need
+the ability to open *.curv files and interface with Curv modules.
+ * There may be a problem with Curv allocating large blocks of memory reserved
+   to its own use, with most of the memory being unused, in conflict with the
+   running application in which Curv is embedded, which also wants to allocate
+   memory. (Lua does this, and is considered highly embeddable. Maybe not a big
+   issue due to today's large memory sizes?)
+ * Writing native code or host language functions that are called from the
+   Curv interpreter could be tricky if Curv has a tracing collector. How does
+   Curv's collector get GC roots for objects referenced by native functions?
+   The answer is: I can provide exactly the same C++ API (make<T>, Shared<T>)
+   that I currently use for creating and holding reference counted objects.
+
+Implementation: Reclaiming Cyclic Structures using Reference Counting
+---------------------------------------------------------------------
+Suppose that a closure has 2 nonlocal dictionaries. Both are refcounted objects.
+ * One contains only nonrecursive references. This dictionary is private
+   to a specific closure object.
+ * One contains only recursive references. This dictionary is shared by all
+   the closures in the recursion group.
+
+And suppose we use the same thunk evaluation solution as for tracing GC.
+
+We will build a cyclic graph, where all of the cycles pass through a
+a root object, which is the recursion group dictionary. The root contains
+one reference for each recursive definition in a mutual recursion group:
+these are the 'trunks'. Each trunk may point directly at a recursive closure,
+which contains a reference back to the root, or it may point at a tree structure
+whose leaves include recursive closures (that point back to the root) as well
+as nonrecursive values. The intermediate nodes of this tree are Lists, Records,
+Piecewise_Functions, Composite_Functions, Closures.
+
+At present, Curv is limited: every root must be a recursive closure.
+We are looking for a more general solution.
+
+After the root object is constructed, but before the trunk values have been
+copied to Frame slots (for a 'let') or Module slots (for a module), all of
+the reference counts in the graph are in their 'ground state'. The refcounts
+are all > 0, but nothing external to the graph points to any of the nodes.
+In the future, when the graph returns to its ground state after all external
+references are dropped, the graph has become garbage and we want to collect it.
+
+We built this graph using the evaluator. We don't know its structure ahead of
+time using compile time analysis. Except that, we do have a distinguished
+object, the root, through which all the cycles flow, and whose structure is
+known at compile time.
+
+Is there some way to hack this object to make it collectible via reference
+counting? The obvious problem right now is that the condition we want to check
+for is not local to a single object (the refcount is zero) but global to the
+graph (all the refcounts that are part of a cycle are in the ground state).
+
+ 0. Brute force.
+     * Starting at the root, we traverse the entire graph. If we reach the
+       root again, then we got there via a cycle. So then we back up, and
+       mark every node in the cycle. Now every node that was part of a cycle
+       is marked. The 'mark' consists of: the reference count ground state,
+       and a pointer to the root.
+     * When we decrement an object's reference count, we check if it is marked.
+       If it isn't marked, we free the object on count zero.
+       If it is marked, we go to the root then traverse the entire graph,
+       checking each refcount to test if each node's refcount is in the ground
+       state. If all refcounts are in ground state, then we free the graph.
+ 
+ 1. Optimized(1) brute force.
+    Instead of checking that each node's refcount is ground state, we instead
+    store the sum of all the ground state refcounts in the root, and do one
+    comparison.
+     * The root contains the sum of all cyclic node ref counts when they are
+       in ground state.
+     * It also contains the sum of all cyclic node ref counts in current state.
+     * When incrementing the refcount of a cyclic node, we also increment
+       the sumcount in the root.
+     * When decrementing the refcount of a cyclic node, we also decrement
+       the sumcount in the root. When the sumcount == the ground sum count,
+       then we free the graph.
+
+ 2. Optimized(2) brute force.
+    Instead of containing a refcount, an object contains a Liveness value,
+    which is a discriminated union of two cases: a refcount, and a pointer
+    to a root. There are two operations on Liveness: claim and release.
+     * init: For a non-cyclic object, initialize the Liveness to a refcount
+       with count 0. For a cyclic object, initialize the Liveness to a root
+       pointer. The root has a graph_refcount which is initialized to 0.
+     * claim: If it's a refcount, increment the refcount.
+       If it's a root pointer, increment the graph_refcount of the root object.
+     * release: If it's a refcount, decrement the refcount. Free the object
+       on count zero. If it's a root pointer, decrement the graph_refcount
+       of the root. Free the graph on count zero.
+    A Liveness value is a pointer-sized value (32 or 64 bits), with the low
+    order bit used to distinguish the two cases: 0->root pointer, 1->refcount.
+    The refcount is incremented/decremented by adding/subtracting 2, and we
+    free the object when the refcount reaches 1.
+    The root object is (obviously) not an independently refcounted object.
+
+This is the idea I'm going forward with.
+
+Implementation: Thunks
+======================
+The basic intuition, as I recall, is that recursive definitions are
+represented by the same thunks we create for the Tracing Garbage Collector
+implementation. In that implementation, we evaluate the thunk on first reference
+and replace it by the result value, which creates a cycle. In this
+implementation, we keep evaluating the thunk each time we need the value,
+so that we don't create a cyclic graph.
+
+The remainder of this paper are the notes I wrote while developing the idea.
+The notes are somewhat disorganized.
+
+--------------------------------------------------------------------------
+Every definition 'x = expr' that contains lambdas containing recursive
+references has an associated thunk.
+
 TODO
 ----
 * Every data definition has a thunk. Nonlocal refs in the definiens
