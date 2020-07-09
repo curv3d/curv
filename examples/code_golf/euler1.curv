@@ -1,0 +1,29 @@
+1..999 >> filter(n->n `mod` [3,5] `equal` 0 >> or) >> sum
+
+// Project Euler #1 (https://projecteuler.net/problem=1)
+// 
+// If we list all the natural numbers below 10 that are multiples of 3 or 5,
+// we get 3, 5, 6 and 9. The sum of these multiples is 23.
+// 
+// Find the sum of all the multiples of 3 or 5 below 1000.
+// Answer is: 233168
+// 
+// An imperative solution:
+//     do  local total = 0;
+//         for (n in 1..999)
+//             if ((n `mod` 3) == 0 || (n `mod` 5) == 0)
+//                 total := total + n;
+//     in total
+// 
+// This can be transformed into a 2-element pipeline using a list comprehension:
+//     [for (n in 1..999) if ((n `mod` 3) == 0 || (n `mod` 5) == 0) n] >> sum
+// 
+// Break it down to a 3-element pipeline using 'filter':
+//     1..999 >> filter(n->(n `mod` 3) == 0 || (n `mod` 5) == 0) >> sum
+// 
+// Note there is code duplication: the expression pattern n `mod` _ == 0
+// appears twice. What if the input was a list of prime factors, instead of
+// hard coding the two prime factors 3 and 5?
+// 
+// Then we could write:
+//     1..999 >> filter(n->n `mod` [3,5] `equal` 0 >> or) >> sum

@@ -1,0 +1,5 @@
+(s->"$s$(s)")"(s->$=$.s$.(s)$=)"
+
+// A "Quine" is a program that prints itself.
+// Since Curv is a pure functional language, I decided that a Quine in Curv
+// is an expression returning a string of the program's source code.
