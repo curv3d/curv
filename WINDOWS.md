@@ -87,11 +87,14 @@ After using the build instructions, there is a Curv executable
 in `release/curv.exe` under the `curv` directory.
 Here are some commands to try:
 
-    - Graphics card detection: `./release/curv.exe --version`
+  * Graphics card detection: `./release/curv.exe --version`
 
-        This should mention your graphics card, if not, you only get software rendering without hardware acceleration.
-    - Simple rendering: `./release/curv.exe ./examples/kaboom.curv`
-    - Livemode with editor: `CURV_EDITOR=notepad ./release/curv.exe -le ./examples/liquid_paint.curv`
-    - Fast 3D rendering with C++ compiler: `./release/curv.exe ./examples/mesh_only/klein.curv -o mesh.obj -O jit`
+    This should mention your graphics card, if not, you only get software rendering without hardware acceleration.
 
-        This command assumes a C++ compiler available as `c++` on PATH. If you run it in the same MSYS environment as set up above, you already have `c++` available.
+  * Simple rendering: `./release/curv.exe ./examples/kaboom.curv`
+
+  * Livemode with editor: `CURV_EDITOR=notepad ./release/curv.exe -le ./examples/liquid_paint.curv`
+
+  * Fast 3D rendering with C++ compiler: `./release/curv.exe ./examples/mesh_only/klein.curv -o mesh.obj -O jit`
+
+    This command assumes a C++ compiler available as `c++` on PATH. If you run it in the same MSYS environment as set up above, you already have `c++` available.
