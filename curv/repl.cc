@@ -71,10 +71,10 @@ struct REPL_Namespace
         local_{}
     {}
 
-    std::vector<std::string> completions(std::string prefix)
+    std::vector<replxx::Replxx::Completion> completions(std::string prefix)
     {
         // TODO: match local variables as well
-        std::vector<std::string> result;
+        std::vector<replxx::Replxx::Completion> result;
         for (auto const& n : global_) {
             if (n.first.size() < prefix.size())
                 continue;
@@ -145,16 +145,9 @@ struct REPL_Environ : public Environ
     }
 };
 
-replxx::Replxx::completions_t get_completions(std::string const& context, int index, void* user_data)
+void color_input(std::string const& context, replxx::Replxx::colors_t& colors,
+    System* sys)
 {
-    auto* names = static_cast<REPL_Namespace*>(user_data);
-    return names->completions(context.substr(index));
-}
-
-void color_input(std::string const& context, replxx::Replxx::colors_t& colors, void* user_data)
-{
-  auto* sys = static_cast<System*>(user_data);
-
   auto source = make<String_Source>("", context);
 
   try {
@@ -332,8 +325,17 @@ void repl(System* sys, const Render_Opts* render)
     REPL_Namespace names{*sys};
 
     replxx::Replxx rx;
-    rx.set_completion_callback(get_completions, static_cast<void*>(&names));
-    rx.set_highlighter_callback(color_input, static_cast<void*>(sys));
+    rx.set_completion_callback(
+        [&](std::string const& input, int& contextLen)
+        -> replxx::Replxx::completions_t
+        {
+            return names.completions(input.substr(contextLen));
+        });
+    rx.set_highlighter_callback(
+        [&](std::string const& input, replxx::Replxx::colors_t& colors) -> void
+        {
+            color_input(input, colors, sys);
+        });
 
     REPL_Executor executor{names, *render};
 
