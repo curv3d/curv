@@ -56,6 +56,7 @@ target_include_directories(replxx
    PUBLIC extern/replxx/include
    PRIVATE extern/replxx/src)
 set_property(TARGET replxx PROPERTY CXX_STANDARD 14)
+target_compile_definitions(replxx PRIVATE REPLXX_STATIC=1)
 
 # double-conversion library
 file(GLOB DoubleConversionSrc "extern/double-conversion/double-conversion/*.cc")
@@ -131,6 +132,7 @@ target_link_libraries(libcurv_geom PUBLIC imgui)
 
 file(GLOB Src "curv/*.c" "curv/*.cc")
 add_executable(curv ${Src})
+target_compile_definitions(curv PRIVATE REPLXX_STATIC=1)
 
 set(link_libraries_common_to_all_OS libcurv_geom libcurv imgui glfw glad ${LibOpenGL} replxx double-conversion Boost::iostreams Boost::filesystem Boost::system ${LibOpenVDB} Half tbb pthread)
 
