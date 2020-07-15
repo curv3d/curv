@@ -99,7 +99,9 @@ launch_editor(const char* editor, const char* filename)
     if (!createProcessSuccess)
     {
         DWORD error = GetLastError();
-        throw curv::Exception_Base(curv::stringify("Could not launch editor: ", curv::win_strerror(error)));
+        throw curv::Exception_Base(curv::stringify(
+	    "Could not launch editor (", editor_commandline, "): ",
+	    curv::win_strerror(error)));
     }
 
     // Close this handle right away as we only need proc_info.hProcess in poll_editor()

@@ -195,7 +195,7 @@ main(int argc, char** argv)
             break;
         case 'e':
             editor = getenv("CURV_EDITOR");
-            if (editor == nullptr)
+            if (editor == nullptr || *editor == '\0')
             {
 #ifdef _WIN32
                 editor = "notepad";
