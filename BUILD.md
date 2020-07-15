@@ -17,7 +17,7 @@ You can use gcc 5.4 (or later), or clang 3.4 (or later).
 
 ## Windows 10 using MSYS (recommended on Windows)
 
-Refer to [`BUILD-ON-MSYS.md`](./BUILD-ON-MSYS.md).
+Refer to [`WINDOWS.md`](./WINDOWS.md).
 
 ## Windows 10 using WSL (inferior to MSYS!)
 
