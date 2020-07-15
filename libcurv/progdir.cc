@@ -19,7 +19,7 @@ progdir(const char *argv0)
 {
     fs::path cmd(argv0);
 #ifdef _WIN32
-    cmd += ".exe";
+    if (!cmd.has_extension()) cmd += ".exe";
 #endif
 
     if (cmd.has_parent_path()) {
