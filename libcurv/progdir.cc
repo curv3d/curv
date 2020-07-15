@@ -13,12 +13,14 @@ namespace curv {
  * containing the program executable.
  * The storage for the result string is dynamically allocated.
  * argv0 is argv[0] of the argv passed to main().
- * ,,, Unix specific, right now.
  */
 fs::path
 progdir(const char *argv0)
 {
     fs::path cmd(argv0);
+#ifdef _WIN32
+    cmd += ".exe";
+#endif
 
     if (cmd.has_parent_path()) {
         return fs::canonical(cmd).parent_path();
@@ -34,12 +36,17 @@ progdir(const char *argv0)
 
     const char* p = PATH;
     const char* pend = PATH + strlen(PATH);
+#ifdef _WIN32
+    const char delim = ';';
+#else
+    const char delim = ':';
+#endif
     while (p < pend) {
-        const char* q = strchr(p, ':');
+        const char* q = strchr(p, delim);
         if (q == nullptr)
             q = pend;
         fs::path file(p, q);
-        file /= argv0;
+        file /= cmd;
         if (fs::exists(fs::status(file))) {
             return fs::canonical(file).parent_path();
         }
