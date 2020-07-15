@@ -128,6 +128,6 @@ Here are some commands to try:
   * Export 3D model to an OBJ file (polygon mesh) for 3D printing.
     ```
     curv -o klein.obj -O jit C:\msys64\home\User\curv\examples\mesh_only\klein.curv
-
+    ```
     Note, this command uses the MSYS2 C++ compiler that you installed
     as part of the build instructions.
