@@ -374,7 +374,9 @@ void repl(System* sys, const Render_Opts* render)
 void interactive_mode(
     System& sys, const viewer::Viewer_Config& opts)
 {
+#ifndef _WIN32
     sys.use_colour_ = true;
+#endif
     const Render_Opts *render = &opts;
     std::thread repl_thread(repl, &sys, render);
     view_server.run(opts);

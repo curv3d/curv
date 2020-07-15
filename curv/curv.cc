@@ -40,7 +40,9 @@ make_system(const char* argv0, std::list<const char*>& libs, std::ostream& out,
 {
     static curv::System_Impl sys(out);
     sys.verbose_ = verbose;
+#ifndef _WIN32
     if (isatty(2)) sys.use_colour_ = true;
+#endif
     try {
         curv::geom::add_builtins(sys);
         curv::geom::add_importers(sys);
