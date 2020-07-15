@@ -7,14 +7,12 @@ environment. Then, using the MSYS2 interactive command line shell, Curv is
 installed as an MSYS2 application. The MSYS2 installation will reside
 in C:/msys64, which includes the entire Curv installation.
 
-Once everything is installed, you run Curv by first running the MSYS2
-shell from the Start menu:
-```
-    Start -> MSYS2 64bit -> MSYS2 MinGW 64bit
-```
-(There are 3 choices under "MSYS2 64bit", only one is correct.)
-Now you can type the "curv" command in the terminal window, and follow
-the usage instructions for Linux in the regular documentation.
+Once everything is installed, you can type the "curv" command
+in a standard terminal window, either the Command Prompt or the PowerShell.
+Follow the usage instructions for Linux in the regular documentation.
+
+If you uninstall MSYS2 using the System Settings app,
+then you will remove both MSYS2 and Curv.
 
 ## Building and Installing Curv
 
@@ -80,21 +78,56 @@ the usage instructions for Linux in the regular documentation.
     cd curv
     make
     ```
+    This creates `release/curv.exe`.
+    The full pathname of this executable is:
+    `C:\msys64\home\User\curv\release\curv.exe`.
 
-## Testing Curv
+12. Add Curv to your PATH variable:
+    * In the "Start search" box in the Windows 10 task bar,
+      type "env" and hit ENTER.
+    * Select "Edit environment variables for your account".
+    * In the control panel window that pops up, click on "Path"
+      then click the "Edit..." button.
+    * In the "Edit environment variable" window that pops up,
+      add two additional directories using the "New" button:
+      * `C:\msys64\mingw64\bin`
+      * `C:\msys64\home\User\curv\release`
 
-After using the build instructions, there is a Curv executable
-in `release/curv.exe` under the `curv` directory.
+## Running Curv
+If you try to invoke Curv from an MSYS2 terminal window,
+it will _mostly_ work, but the interactive REPL (which you get by typing
+the "curv" command with no arguments) will not work correctly.
+This is caused by a bug in the MSYS2 terminal emulator.
+
+Therefore, it is recommended that you run Curv from a standard Windows
+terminal window, either the Command Prompt, or the PowerShell.
+
 Here are some commands to try:
 
-  * Graphics card detection: `./release/curv.exe --version`
+  * Print version information:
+    ```
+    curv --version
+    ```
+    This version information should be included in any bug report.
+    The command works even when a lot of other things are broken.
+    It will also describe your graphics card, which is critical information
+    if the graphics are broken or slow.
 
-    This should mention your graphics card, if not, you only get software rendering without hardware acceleration.
+  * Render some 3D graphics:
+    ```
+    cd C:\msys64\home\User\curv\examples
+    curv kaboom.curv
+    ```
 
-  * Simple rendering: `./release/curv.exe ./examples/kaboom.curv`
+  * Livemode with editor:
+    ```
+    cd C:\msys64\home\User\curv\examples
+    curv -le liquid_paint.curv
+    ```
 
-  * Livemode with editor: `CURV_EDITOR=notepad ./release/curv.exe -le ./examples/liquid_paint.curv`
+  * Export 3D model to an OBJ file (polygon mesh) for 3D printing.
+    ```
+    curv -o klein.obj -O jit C:\msys64\home\User\curv\examples\mesh_only\klein.curv
 
-  * Fast 3D rendering with C++ compiler: `./release/curv.exe ./examples/mesh_only/klein.curv -o mesh.obj -O jit`
-
-    This command assumes a C++ compiler available as `c++` on PATH. If you run it in the same MSYS environment as set up above, you already have `c++` available.
+    Note, this command uses the MSYS2 C++ compiler that you installed
+    as part of the build instructions.

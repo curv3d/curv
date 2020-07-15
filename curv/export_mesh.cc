@@ -204,8 +204,8 @@ void export_mesh(Mesh_Format format, curv::Value value,
 
     std::cerr
         << "vsize="<<voxelsize<<": "
-        << (voxelrange_max.x() - voxelrange_min.x() + 1) << "×"
-        << (voxelrange_max.y() - voxelrange_min.y() + 1) << "×"
+        << (voxelrange_max.x() - voxelrange_min.x() + 1) << "*"
+        << (voxelrange_max.y() - voxelrange_min.y() + 1) << "*"
         << (voxelrange_max.z() - voxelrange_min.z() + 1)
         << " voxels. Use '-O vsize=N' to change voxel size.\n";
     std::cerr.flush();
