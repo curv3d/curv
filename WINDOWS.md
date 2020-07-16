@@ -82,7 +82,8 @@ then you will remove both MSYS2 and Curv.
     The full pathname of this executable is:
     `C:\msys64\home\User\curv\release\curv.exe`.
 
-12. Add Curv to your PATH variable:
+12. In order to run Curv from the Command Prompt or the PowerShell,
+    you need to add Curv to your PATH variable:
     * In the "Start search" box in the Windows 10 task bar,
       type "env" and hit ENTER.
     * Select "Edit environment variables for your account".
@@ -93,15 +94,34 @@ then you will remove both MSYS2 and Curv.
       * `C:\msys64\mingw64\bin`
       * `C:\msys64\home\User\curv\release`
 
+13. In order to run Curv from the MSYS2 terminal window,
+    you need to install `winpty`:
+    ```
+    pacman -S winpty
+    ```
+    The Curv REPL (which you get by running `curv` with no arguments)
+    will not work correctly in the MSYS2 terminal due to a bug in that terminal.
+    The official workaround is to run Curv using the `winpty` command.
+
+    Next, edit your `.bashrc` file:
+    ```
+    notepad ~/.bashrc
+    ```
+    and add the following line to the end:
+    ```
+    alias curv="winpty ~/curv/release/curv"
+    ```
+    Finally, tell your shell to reload the `.bashrc` definitions:
+    ```
+    source ~/.bashrc
+    ```
+    Now the `curv` command will work in your MSYS2 terminal window.
+
+    Note that you also need `winpty` in order to make the command line
+    `gdb` debugger work (in case you want to debug `curv` using `gdb`
+    in the MSYS2 shell).
+
 ## Running Curv
-If you try to invoke Curv from an MSYS2 terminal window,
-it will _mostly_ work, but the interactive REPL (which you get by typing
-the "curv" command with no arguments) will not work correctly.
-This is caused by a bug in the MSYS2 terminal emulator.
-
-Therefore, it is recommended that you run Curv from a standard Windows
-terminal window, either the Command Prompt, or the PowerShell.
-
 Here are some commands to try:
 
   * Print version information:
@@ -115,19 +135,19 @@ Here are some commands to try:
 
   * Render some 3D graphics:
     ```
-    cd C:\msys64\home\User\curv\examples
+    cd c:/msys64/home/User/curv/examples
     curv kaboom.curv
     ```
 
   * Livemode with editor:
     ```
-    cd C:\msys64\home\User\curv\examples
+    cd c:/msys64/home/User/curv/examples
     curv -le liquid_paint.curv
     ```
 
   * Export 3D model to an OBJ file (polygon mesh) for 3D printing.
     ```
-    curv -o klein.obj -O jit C:\msys64\home\User\curv\examples\mesh_only\klein.curv
+    curv -o klein.obj -O jit c:/msys64/home/User/curv/examples/mesh_only/klein.curv
     ```
     Note, this command uses the MSYS2 C++ compiler that you installed
     as part of the build instructions.
