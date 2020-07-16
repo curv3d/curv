@@ -47,6 +47,7 @@ extern "C" {
 #include <libcurv/viewer/viewer.h>
 
 using namespace curv;
+using replxx::Replxx;
 
 View_Server view_server;
 
@@ -71,10 +72,10 @@ struct REPL_Namespace
         local_{}
     {}
 
-    std::vector<replxx::Replxx::Completion> completions(std::string prefix)
+    std::vector<Replxx::Completion> completions(std::string prefix)
     {
         // TODO: match local variables as well
-        std::vector<replxx::Replxx::Completion> result;
+        std::vector<Replxx::Completion> result;
         for (auto const& n : global_) {
             if (n.first.size() < prefix.size())
                 continue;
@@ -145,7 +146,7 @@ struct REPL_Environ : public Environ
     }
 };
 
-void color_input(std::string const& context, replxx::Replxx::colors_t& colors,
+void color_input(std::string const& context, Replxx::colors_t& colors,
     System* sys)
 {
   auto source = make<String_Source>("", context);
@@ -154,7 +155,7 @@ void color_input(std::string const& context, replxx::Replxx::colors_t& colors,
     Scanner scanner{std::move(source), *sys};
 
     for (;;) {
-      using Color = replxx::Replxx::Color;
+      using Color = Replxx::Color;
 
       Color col;
       Token tok = scanner.get_token();
@@ -324,18 +325,20 @@ void repl(System* sys, const Render_Opts* render)
     // top level definitions, extended by typing 'id = expr'
     REPL_Namespace names{*sys};
 
-    replxx::Replxx rx;
+    Replxx rx;
     rx.set_completion_callback(
         [&](std::string const& input, int& contextLen)
-        -> replxx::Replxx::completions_t
+        -> Replxx::completions_t
         {
             return names.completions(input.substr(contextLen));
         });
     rx.set_highlighter_callback(
-        [&](std::string const& input, replxx::Replxx::colors_t& colors) -> void
+        [&](std::string const& input, Replxx::colors_t& colors) -> void
         {
             color_input(input, colors, sys);
         });
+    rx.bind_key_internal( Replxx::KEY::control( 'N' ), "history_next" );
+    rx.bind_key_internal( Replxx::KEY::control( 'P' ), "history_previous" );
 
     REPL_Executor executor{names, *render};
 
