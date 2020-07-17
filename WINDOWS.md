@@ -7,12 +7,14 @@ environment. Then, using the MSYS2 interactive command line shell, Curv is
 installed as an MSYS2 application. The MSYS2 installation will reside
 in C:/msys64, which includes the entire Curv installation.
 
-Once everything is installed, you can type the "curv" command
-in a standard terminal window, either the Command Prompt or the PowerShell.
-Follow the usage instructions for Linux in the regular documentation.
+Once everything is installed, you can use the "curv" command in a terminal
+window (the Command Prompt, the PowerShell, or the MSYS2 shell window).
+Then follow the usage instructions for Linux in the regular documentation.
 
-If you uninstall MSYS2 using the System Settings app,
-then you will remove both MSYS2 and Curv.
+To fully uninstall Curv:
+ * Uninstall MSYS2 using the System Settings app.
+ * Remove references to C:\msys64 from your PATH variable:
+   see step 12 of the installation instructions.
 
 ## Building and Installing Curv
 
