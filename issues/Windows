@@ -1,3 +1,6 @@
-Make it easier for Windows users to install Curv.
- * Current plan: a powershell install script. See cmake/install_curv.ps1
-Then, announce Windows port is ready on Curv mailing list.
+Fix issues with the Windows port.
+ * Make it easier to install Curv?
+   Experiment with a powershell install script: see cmake/install_curv.ps1
+    * Download script from github, then run it inside powershell.
+ * Fix Makefile (uname -o doesn't work on MacOS)
+ * Fix REPL command completion (broken during Windows port)
