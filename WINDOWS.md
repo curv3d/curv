@@ -14,7 +14,7 @@ Then follow the usage instructions for Linux in the regular documentation.
 To fully uninstall Curv:
  * Uninstall MSYS2 using the System Settings app.
  * Remove references to C:\msys64 from your PATH variable:
-   see step 12 of the installation instructions.
+   see step 9 of the installation instructions.
 
 ## Building and Installing Curv
 
