@@ -44,10 +44,10 @@ jobs:
     - name: Copy runtime dependencies to build dir
       shell: msys2 {0}
       run: |
-        cp libHalf*.dll ./release
-        cp tbb.dll ./release
-        cp libopenvdb.dll ./release
-        cp libboost_filesystem-mt.dll ./release
+        cp /mingw64/bin/libHalf*.dll ./release
+        cp /mingw64/bin/tbb.dll ./release
+        cp /mingw64/bin/libopenvdb.dll ./release
+        cp /mingw64/bin/libboost_filesystem-mt.dll ./release
     - uses: actions/upload-artifact@v2
       if: ${{ always() }}
       with:
