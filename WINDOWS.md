@@ -52,27 +52,10 @@ then you will remove both MSYS2 and Curv.
  
  7. Install build tools and libraries:
     ```
-    pacman -S --needed diffutils mingw-w64-x86_64-clang make mingw-w64-x86_64-cmake mingw-w64-x86_64-boost mingw-w64-x86_64-mesa mingw-w64-x86_64-openexr mingw-w64-x86_64-intel-tbb mingw-w64-x86_64-glm mingw-w64-x86_64-glew mingw-w64-x86_64-dbus patch
+    pacman -S --needed git diffutils mingw-w64-x86_64-clang make mingw-w64-x86_64-cmake mingw-w64-x86_64-boost mingw-w64-x86_64-mesa mingw-w64-x86_64-openexr mingw-w64-x86_64-intel-tbb mingw-w64-x86_64-glm mingw-w64-x86_64-glew mingw-w64-x86_64-dbus patch mingw-w64-x86_64-openvdb
     ```
 
- 8. Download MINGW-packages:
-    ```
-    cd
-    git clone https://github.com/msys2/MINGW-packages
-    ```
-
- 9. Build openvdb:
-    ```
-    cd MINGW-packages/mingw-w64-openvdb
-    MINGW_INSTALLS=mingw64 makepkg-mingw -sLf
-    ```
-
-10. Install openvdb:
-    ```
-    pacman -U mingw-w64-x86_64-openvdb-*-any.pkg.tar.zst
-    ```
-
-11. Build curv:
+ 8. Build curv:
     ```
     cd
     cd curv
@@ -82,7 +65,7 @@ then you will remove both MSYS2 and Curv.
     The full pathname of this executable is:
     `C:\msys64\home\User\curv\release\curv.exe`.
 
-12. In order to run Curv from the Command Prompt or the PowerShell,
+ 9. In order to run Curv from the Command Prompt or the PowerShell,
     you need to add Curv to your PATH variable:
     * In the "Start search" box in the Windows 10 task bar,
       type "env" and hit ENTER.
@@ -94,7 +77,7 @@ then you will remove both MSYS2 and Curv.
       * `C:\msys64\mingw64\bin`
       * `C:\msys64\home\User\curv\release`
 
-13. In order to run Curv from the MSYS2 terminal window,
+10. In order to run Curv from the MSYS2 terminal window,
     you need to install `winpty`:
     ```
     pacman -S winpty

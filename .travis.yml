@@ -20,25 +20,12 @@ before_install:
         export msys2+=" -msys2 -c "\"\$@"\" --"
         $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-toolchain
         ## Install more MSYS2 packages from https://packages.msys2.org/base here
-        $msys2 pacman --sync --noconfirm --needed diffutils mingw-w64-x86_64-clang make mingw-w64-x86_64-cmake git mingw-w64-x86_64-boost mingw-w64-x86_64-mesa mingw-w64-x86_64-openexr mingw-w64-x86_64-intel-tbb mingw-w64-x86_64-glm mingw-w64-x86_64-glew mingw-w64-x86_64-dbus patch doxygen
+        $msys2 pacman --sync --noconfirm --needed diffutils mingw-w64-x86_64-clang make mingw-w64-x86_64-cmake git mingw-w64-x86_64-boost mingw-w64-x86_64-mesa mingw-w64-x86_64-openexr mingw-w64-x86_64-intel-tbb mingw-w64-x86_64-glm mingw-w64-x86_64-glew mingw-w64-x86_64-dbus patch doxygen mingw-w64-x86_64-openvdb
         ## End: Install more MSYS2 packages
         taskkill //IM gpg-agent.exe //F  # https://travis-ci.community/t/4967
         export PATH=/C/tools/msys64/mingw64/bin:$PATH
         # do NOT do this: export MAKE=mingw32-make  # so that Autotools can find it
         # see https://stackoverflow.com/questions/51211360/internal-error-unable-to-open-jobserver-semaphore-3-4-error-2-the-syst for the reason
-        ;;
-    esac
-# Build and install OpenVDB package for MSYS2
-- |-
-    case $TRAVIS_OS_NAME in
-      windows)
-        git clone --depth=1 https://github.com/msys2/MINGW-packages.git
-        
-        pushd MINGW-packages/mingw-w64-openvdb
-        export MINGW_INSTALLS=mingw64
-        yes | $msys2 makepkg-mingw -sLf
-        $msys2 pacman --noconfirm --needed -U *.pkg.tar.zst
-        popd
         ;;
     esac
 before_cache:
