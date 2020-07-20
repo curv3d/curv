@@ -16,7 +16,7 @@ install:
 	cd release; cmake $(cmake_args) -DCMAKE_BUILD_TYPE=Release ..
 	cd release; $(MAKE) install
 upgrade:
-	git pull origin master
+	git pull origin master --no-rebase
 	git submodule update --init
 uninstall:
 	mkdir -p release
