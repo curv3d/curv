@@ -17,7 +17,7 @@ END
 )
 do
     echo "== installing '$pkg'"
-    echo pacman -S --needed --noconfirm $pkg || exit 1
+    pacman -S --needed --noconfirm $pkg || exit 1
 done
 
 if test ! -d /curv; then
