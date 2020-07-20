@@ -1,6 +1,27 @@
 Fix issues with the Windows port.
+ * Install curv in c:/msys64/curv, update instructions
  * Make it easier to install Curv?
-   Experiment with a powershell install script: see cmake/install_curv.ps1
-    * Download script from github, then run it inside powershell.
+   + Put all the shell commands into a `windows.sh` script.
+     Make the script robust against network errors, and idempotent.
+     Run the script in the CI server to test it.
+     (Works. Curv build is quite slow.)
+   * Publish build artifacts using github actions? I don't see how that works.
+     Difficult to include g++.
+   * Hybrid approach: install MSYS2, then install Curv build artifacts.
+     But, curv.exe might require a different version of DLLs than are installed
+     in MSYS2. How to resolve that? Force curv.exe to look for dlls
+     in the dot directory. "rebase dlls" command in MSYS2?
+   * Provide a powershell install script: see cmake/install_curv.ps1
+     Download script from github, then run it inside powershell.
+     Problems: Need to learn powershell. This omits the 'install MSYS' step,
+     and the GUI installer provides start menu items and a GUI uninstall.
+   * Install MSYS2, then use 'pacman -S curv', then update PATH and .bashrc
+     Requires negotiation with the MSYS2 project.
+   * Provide a Windows installer program that installs MSYS2 and Curv.
  * Fix Makefile (uname -o doesn't work on MacOS)
  * Fix REPL command completion (broken during Windows port)
+ * 'make test' is broken on Windows
+ * Fix colourized error messages to work on Windows (currently disabled)
+ * Fix verbose GLSL warnings I get from GPU driver.
+   Suppress warnings unless -v, or fix code generator.
+ * Fix '#pragma warning' warning messages in replxx build.
