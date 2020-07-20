@@ -5,7 +5,7 @@ program.
 This is accomplished by installing MSYS2, which is a Linux-like operating
 environment. Then, using the MSYS2 interactive command line shell, Curv is
 installed as an MSYS2 application. The MSYS2 installation will reside
-in C:/msys64, which includes the entire Curv installation.
+in C:/msys64, and the Curv installation will reside in C:/msys64/curv.
 
 Once everything is installed, you can use the "curv" command in a terminal
 window (the Command Prompt, the PowerShell, or the MSYS2 shell window).
@@ -14,60 +14,56 @@ Then follow the usage instructions for Linux in the regular documentation.
 To fully uninstall Curv:
  * Uninstall MSYS2 using the System Settings app.
  * Remove references to C:\msys64 from your PATH variable:
-   see step 9 of the installation instructions.
+   see step 7 of the installation instructions.
 
 ## Building and Installing Curv
 
  1. On Windows, install [MSYS2 64bit](https://www.msys2.org/)
     Just follow the instructions from the web site.
 
- 2. At the end of the installation, an "MSYS" window will open.
-    The prompt says "MSYS", it does not say "MinGW64".
-    We don't want to use this shell, so just close the window,
-    or type "exit" and press ENTER.
+ 2. After the installation, an "MSYS" window will remain open.
+    Close this window.
+    (The prompt says "MSYS", it does not say "MinGW64".
+    We don't want to use this type of shell.)
 
- 3. Open a "MinGW64" shell from the start menu:
+ 3. Open a "MinGW64" shell window from the start menu:
     ```
     Start -> MSYS2 64bit -> MSYS2 MinGW 64bit
     ```
 
- 4. Upgrade MSYS2.
-    Within the MinGW64 shell, type:
+ 4. Download the Curv install script. In the shell window, type:
     ```
-    pacman -Syuu
-    ```
-    Reopen the shell if asked to do so.
-
- 5. Install `git`:
-    ```
-    pacman -S --needed git
-    ```
-    Note: One time when I tried this, I got weird error messages due to
-    a network problem. Running the command a second time succeeded.
- 
- 6. Use `git` to install the Curv source code:
-    ```
-    git clone https://github.com/curv3d/curv
-    cd curv
-    git submodule update --init
-    ```
- 
- 7. Install build tools and libraries:
-    ```
-    pacman -S --needed git diffutils mingw-w64-x86_64-clang make mingw-w64-x86_64-cmake mingw-w64-x86_64-boost mingw-w64-x86_64-mesa mingw-w64-x86_64-openexr mingw-w64-x86_64-intel-tbb mingw-w64-x86_64-glm mingw-w64-x86_64-glew mingw-w64-x86_64-dbus patch mingw-w64-x86_64-openvdb
+    wget https://raw.githubusercontent.com/curv3d/curv/master/windows.sh
     ```
 
- 8. Build curv:
+ 5. Run the Curv install script:
     ```
-    cd
-    cd curv
-    make
+    sh windows.sh
     ```
-    This creates `release/curv.exe`.
-    The full pathname of this executable is:
-    `C:\msys64\home\User\curv\release\curv.exe`.
+    This will: download additional MSYS2 packages using `pacman`,
+    download the Curv source code using `git`, and build the Curv executable
+    using `make`.
+     * If the last line of output is `== SUCCESS ==`, then it worked.
+     * If the last line of output is `== BUILD FAILED ==`, then open an
+       issue in the github repo, or post a message to the Curv mailing list.
+     * The script may fail due to a network problem. Fix your internet
+       connection and try again. Running the script multiple times does
+       not cause a problem: it will just pick up where it left off.
 
- 9. In order to run Curv from the Command Prompt or the PowerShell,
+    The script may take a long time to run, so you might wish to enjoy
+    lunch while it is running.
+
+    The full pathname of the Curv executable is:
+    `C:\msys64\curv\release\curv.exe`.
+
+ 6. To run Curv from the existing shell window, first type:
+    ```
+    source ~/.bashrc
+    ```
+    This forces the shell to re-read its startup file, thus making the
+    new `curv` command available.
+
+ 7. In order to run Curv from the Command Prompt or the PowerShell,
     you need to add Curv to your PATH variable:
     * In the "Start search" box in the Windows 10 task bar,
       type "env" and hit ENTER.
@@ -77,34 +73,7 @@ To fully uninstall Curv:
     * In the "Edit environment variable" window that pops up,
       add two additional directories using the "New" button:
       * `C:\msys64\mingw64\bin`
-      * `C:\msys64\home\User\curv\release`
-
-10. In order to run Curv from the MSYS2 terminal window,
-    you need to install `winpty`:
-    ```
-    pacman -S winpty
-    ```
-    The Curv REPL (which you get by running `curv` with no arguments)
-    will not work correctly in the MSYS2 terminal due to a bug in that terminal.
-    The official workaround is to run Curv using the `winpty` command.
-
-    Next, edit your `.bashrc` file:
-    ```
-    notepad ~/.bashrc
-    ```
-    and add the following line to the end:
-    ```
-    alias curv="winpty ~/curv/release/curv"
-    ```
-    Finally, tell your shell to reload the `.bashrc` definitions:
-    ```
-    source ~/.bashrc
-    ```
-    Now the `curv` command will work in your MSYS2 terminal window.
-
-    Note that you also need `winpty` in order to make the command line
-    `gdb` debugger work (in case you want to debug `curv` using `gdb`
-    in the MSYS2 shell).
+      * `C:\msys64\curv\release`
 
 ## Running Curv
 Here are some commands to try:
@@ -120,19 +89,19 @@ Here are some commands to try:
 
   * Render some 3D graphics:
     ```
-    cd c:/msys64/home/User/curv/examples
+    cd c:/msys64/curv/examples
     curv kaboom.curv
     ```
 
   * Livemode with editor:
     ```
-    cd c:/msys64/home/User/curv/examples
+    cd c:/msys64/curv/examples
     curv -le liquid_paint.curv
     ```
 
   * Export 3D model to an OBJ file (polygon mesh) for 3D printing.
     ```
-    curv -o klein.obj -O jit c:/msys64/home/User/curv/examples/mesh_only/klein.curv
+    curv -o klein.obj -O jit c:/msys64/curv/examples/mesh_only/klein.curv
     ```
     Note, this command uses the MSYS2 C++ compiler that you installed
     as part of the build instructions.
