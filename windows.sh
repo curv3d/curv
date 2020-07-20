@@ -35,10 +35,14 @@ echo == upgrading Curv source code
 make upgrade || exit 1
 
 echo == building Curv executable
-make || exit 1
+make || {
+    echo == BUILD ERROR ==
+    exit 1
+}
 
 grep -q 'alias curv=' ~/.bashrc || {
     echo "== adding 'curv' command to MinGW64 shell"
     echo 'alias curv="winpty /curv/release/curv"' >> ~/.bashrc
     source ~/.bashrc
 }
+echo == SUCCESS ==
