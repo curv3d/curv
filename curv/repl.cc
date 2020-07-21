@@ -23,6 +23,7 @@ extern "C" {
 #include <unistd.h>
 #include <errno.h>
 #include <unistd.h>
+#include <ctype.h>
 }
 #include <iostream>
 #include <fstream>
@@ -72,18 +73,33 @@ struct REPL_Namespace
         local_{}
     {}
 
-    std::vector<Replxx::Completion> completions(std::string prefix)
+    std::vector<Replxx::Completion> completions(
+        std::string const& input, int& contextLen)
     {
-        // TODO: match local variables as well
-        std::vector<Replxx::Completion> result;
-        for (auto const& n : global_) {
-            if (n.first.size() < prefix.size())
-                continue;
+        // TODO: Scan input using scanner. Only return completions if the final
+        // token is an identifier. (Don't complete inside strings or comments.)
+        // TODO: Match local variables as well (which may be quoted, see next)
+        // TODO: Work correctly for quoted identifiers.
 
-            if (prefix.compare(0, std::string::npos, n.first.c_str(), prefix.size()) == 0)
-                result.emplace_back(n.first.c_str());
+        // Scan input, see if the final token is a non-zero-length identifier.
+        // The length of this final identifier (or 0) is the contextLen.
+        contextLen = 0;
+        for (int i = int(input.size())-1; i >= 0; --i) {
+            if (isalnum(input[i]) || input[i] == '_')
+                ++contextLen;
+            else break;
         }
 
+        std::vector<Replxx::Completion> result;
+        if (contextLen == 0) return result;
+        const char* prefix = input.c_str() + input.size() - contextLen;
+
+        for (auto const& n : global_) {
+            if (int(n.first.size()) < contextLen)
+                continue;
+            if (memcmp(prefix, n.first.c_str(), contextLen) == 0)
+                result.emplace_back(n.first.c_str());
+        }
         return result;
     }
 
@@ -309,6 +325,25 @@ struct REPL_Executor : public Operation::Executor
     }
 };
 
+#if 0
+-- How does set_completion_callback work?
+void completionHook(char const* context, replxx_completions* lc, int* contextLen, void* ud) {
+	char** examples = (char**)( ud );
+	size_t i;
+
+	int utf8ContextLen = context_len( context );
+	int prefixLen = strlen( context ) - utf8ContextLen;
+	*contextLen = utf8str_codepoint_len( context + prefixLen, utf8ContextLen );
+	for (i = 0;	examples[i] != NULL; ++i) {
+		if (strncmp(context + prefixLen, examples[i], utf8ContextLen) == 0) {
+			replxx_add_completion(lc, examples[i]);
+		}
+	}
+}
+int context_len(const char* prefix) # of characters in the max suffix of prefix
+that are 'word' characters
+#endif
+
 void repl(System* sys, const Render_Opts* render)
 {
 #ifndef _WIN32
@@ -330,13 +365,14 @@ void repl(System* sys, const Render_Opts* render)
         [&](std::string const& input, int& contextLen)
         -> Replxx::completions_t
         {
-            return names.completions(input.substr(contextLen));
+            return names.completions(input, contextLen);
         });
     rx.set_highlighter_callback(
         [&](std::string const& input, Replxx::colors_t& colors) -> void
         {
             color_input(input, colors, sys);
         });
+    // use libedit compatible key bindings
     rx.bind_key_internal( Replxx::KEY::control( 'N' ), "history_next" );
     rx.bind_key_internal( Replxx::KEY::control( 'P' ), "history_previous" );
 
