@@ -58,7 +58,7 @@ public:
 
 private:
 
-    GLuint  compileShader(const std::string& _src, GLenum _type);
+    GLuint  compileShader(const std::string& src, GLenum type, bool verbose);
     GLint   getUniformLocation(const std::string& _uniformName) const;
 
     GLuint  m_program;

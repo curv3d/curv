@@ -49,13 +49,13 @@ bool Shader::load(const std::string& _fragmentSrc, const std::string& _vertexSrc
     std::chrono::time_point<std::chrono::steady_clock> start_time, end_time;
     start_time = std::chrono::steady_clock::now();
 
-    m_vertexShader = compileShader(_vertexSrc, GL_VERTEX_SHADER);
+    m_vertexShader = compileShader(_vertexSrc, GL_VERTEX_SHADER, _verbose);
 
     if(!m_vertexShader) {
         return false;
     }
 
-    m_fragmentShader = compileShader(_fragmentSrc, GL_FRAGMENT_SHADER);
+    m_fragmentShader = compileShader(_fragmentSrc, GL_FRAGMENT_SHADER, _verbose);
 
     if(!m_fragmentShader) {
         return false;
@@ -145,7 +145,9 @@ bool Shader::isInUse() const {
     return (getProgram() == (GLuint)currentProgram);
 }
 
-GLuint Shader::compileShader(const std::string& _src, GLenum _type) {
+GLuint Shader::compileShader(
+    const std::string& _src, GLenum _type, bool verbose)
+{
     std::string prolog = "";
     const char* epilog = "";
 
@@ -209,7 +211,7 @@ GLuint Shader::compileShader(const std::string& _src, GLenum _type) {
 
     GLint infoLength = 0;
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLength);
-    if (infoLength > 1) {
+    if (infoLength > 1 && (verbose || !isCompiled)) {
         std::vector<GLchar> infoLog(infoLength);
         glGetShaderInfoLog(shader, infoLength, NULL, &infoLog[0]);
         std::cerr << (isCompiled ? "Warnings" : "Errors");
