@@ -1,4 +1,4 @@
-ifeq ($(shell uname -o),Msys)
+ifeq ($(shell uname -s|sed 's/MINGW.*/Windows/'),Windows)
 	# By default, CMake chooses MSVC as the generator under Msys
 	# Overwrite this behavior to choose Msys Makefiles
 	cmake_args := -G"MSYS Makefiles"
