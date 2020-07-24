@@ -13,31 +13,19 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 # Configure global include directories, visible in subdirectories.
+include_directories(.
+    extern/googletest/googletest/include
+    extern/double-conversion
+    extern/ordered-map/include
+    extern/blosc
+    extern/stb
+    extern/glfw/include
+    extern/glm
+    extern/glad)
 if (MSYS)
-    # Same include directory as in else below BUT without extern/openvdb
-    #
-    # (On MSYS we use the OpenVDB MinGW package for gettings hands on our
-    #  OpenVDB dependency.)
-    include_directories(.
-        extern/googletest/googletest/include
-        extern/double-conversion
-        extern/ordered-map/include
-        extern/blosc
-        extern/stb
-        extern/glfw/include
-        extern/glm
-        extern/glad)
+    # On MSYS we use the OpenVDB MinGW package
 else ()
-    include_directories(.
-        extern/googletest/googletest/include
-        extern/double-conversion
-        extern/ordered-map/include
-        extern/openvdb
-        extern/blosc
-        extern/stb
-        extern/glfw/include
-        extern/glm
-        extern/glad)
+    include_directories(extern/openvdb)
 endif ()
 
 if (APPLE)
