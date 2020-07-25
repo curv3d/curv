@@ -14,7 +14,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 # Configure global include directories, visible in subdirectories.
 include_directories(.
-    extern/googletest/googletest/include
     extern/double-conversion
     extern/ordered-map/include
     extern/blosc
@@ -23,9 +22,11 @@ include_directories(.
     extern/glm
     extern/glad)
 if (MSYS)
-    # On MSYS we use the OpenVDB MinGW package
+    # On MSYS we use MinGW packages for OpenVDB and GoogleTest
 else ()
-    include_directories(extern/openvdb)
+    include_directories(
+	extern/googletest/googletest/include
+	extern/openvdb)
 endif ()
 
 if (APPLE)
@@ -143,7 +144,7 @@ set_property(TARGET curv curvc libcurv libcurv_geom tester PROPERTY CXX_STANDARD
 set(gccflags "-Wall -Wno-unused-result" )
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${gccflags}" )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${gccflags}" )
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${sanitize} -O1 -Werror" )
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${sanitize} -O1" )
 
 add_custom_target(tests tester WORKING_DIRECTORY ../tests)
 add_dependencies(tests tester curv)
@@ -162,11 +163,10 @@ if (NOT TARGET uninstall)
     )
 endif()
 
-add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
-
 if (NOT DEFINED MSYS)
-    # Remember that on MSYS we use the OpenVDB MinGW package and *not* obtain it via the Git submodule
+    # On MSYS we use MinGW packages for OpenVDB and GoogleTest
     add_subdirectory(extern/openvdb/openvdb EXCLUDE_FROM_ALL)
+    add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
 endif ()
 
 add_subdirectory(extern/glfw EXCLUDE_FROM_ALL)
