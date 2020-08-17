@@ -700,30 +700,10 @@ SC_Value Not_Equal_Expr::sc_eval(SC_Frame& f) const
 //      [for (row in a) dot(row,b)]  // matrix*...
 //    else
 //      sum(a*b)                     // vector*...
-Value dot(Value a, Value b, const At_Syntax& cx)
-{
-    auto av = a.to<List>(cx);
-    auto bv = b.to<List>(cx);
-    if (av->size() > 0 && av->at(0).maybe<List>()) {
-        Shared<List> result = List::make(av->size());
-        for (size_t i = 0; i < av->size(); ++i) {
-            result->at(i) = dot(av->at(i), b, cx);
-        }
-        return {result};
-    } else {
-        if (av->size() != bv->size())
-            throw Exception(cx, stringify("list of size ",av->size(),
-                " can't be multiplied by list of size ",bv->size()));
-        Value result = {0.0};
-        for (size_t i = 0; i < av->size(); ++i)
-            result = Add_Op::call(cx, result,
-                Multiply_Op::call(cx, av->at(i), bv->at(i)));
-        return result;
-    }
-}
 struct Dot_Function : public Legacy_Function
 {
     Dot_Function(const char* nm) : Legacy_Function(2,nm) {}
+    Value dot(Value a, Value b, const At_Arg& cx) const;
     Value call(Frame& args) const override
     {
         return dot(args[0], args[1], At_Arg(*this, args));
@@ -752,6 +732,61 @@ struct Dot_Function : public Legacy_Function
         throw Exception(At_SC_Frame(f), "dot: invalid arguments");
     }
 };
+Value Dot_Function::dot(Value a, Value b, const At_Arg& cx) const
+{
+    auto av = a.maybe<List>();
+    auto bv = b.maybe<List>();
+    if (av && bv) {
+        if (av->size() > 0 && av->at(0).maybe<List>()) {
+            Shared<List> result = List::make(av->size());
+            for (size_t i = 0; i < av->size(); ++i) {
+                result->at(i) = dot(av->at(i), b, cx);
+            }
+            return {result};
+        } else {
+            if (av->size() != bv->size())
+                throw Exception(cx, stringify("list of size ",av->size(),
+                    " can't be multiplied by list of size ",bv->size()));
+            Value result = {0.0};
+            for (size_t i = 0; i < av->size(); ++i)
+                result = Add_Op::call(cx, result,
+                    Multiply_Op::call(cx, av->at(i), bv->at(i)));
+            return result;
+        }
+    }
+    // Handle the case where a or b is a reactive list,
+    // and return a reactive result.
+    //   This is copied and modified from Dot_Function::sc_call_legacy.
+    //   The code ought to be identical in both cases.
+    //   The reactive result should contain SubCurv IR code,
+    //   which is simultaneously code that can be evaluated by the interpreter.
+    auto aty = sc_type_of(a);
+    auto bty = sc_type_of(b);
+    SC_Type rty;
+    if (aty.is_num_vec() && aty == bty)
+        rty = SC_Type::Num();
+    else if (aty.is_num_vec() && bty.is_mat() && aty.count() == bty.count())
+        rty = bty;
+    else if (aty.is_mat() && bty.is_num_vec() && aty.count() == bty.count())
+        rty = aty;
+    else if (aty.is_mat() && bty.is_mat() && aty.count() == bty.count())
+        rty = aty;
+    else
+        throw Exception(cx, stringify("dot[",a,",",b,"]: invalid arguments"));
+    Shared<List_Expr> args = List_Expr::make(
+        {to_expr(a, cx.syntax()), to_expr(b, cx.syntax())},
+        share(cx.syntax()));
+    args->init();
+    return {make<Reactive_Expression>(
+        rty,
+        make<Call_Expr>(
+            cx.call_frame_.call_phrase_,
+            make<Constant>(
+                func_part(cx.call_frame_.call_phrase_),
+                Value{share(*this)}),
+            args),
+        cx)};
+}
 
 struct Mag_Function : public Legacy_Function
 {
