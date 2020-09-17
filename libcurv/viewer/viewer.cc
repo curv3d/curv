@@ -743,6 +743,7 @@ void Viewer::closeGL()
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
     glfwDestroyWindow(window_);
+    glfwPollEvents(); // work around GLFW bug #1412
     window_ = nullptr;
 }
 
