@@ -50,7 +50,7 @@ Hardware Requirements
 =====================
 Linux, MacOS and Windows are supported.
 
-Precisely, Ubuntu LTS and MacOS 10.11 are currently tested by me, `@doug-moen <https://github.com/doug-moen>`_.
+Precisely, Ubuntu LTS and MacOS are currently tested by me, `@doug-moen <https://github.com/doug-moen>`_.
 The Windows port is tested by `@ComFreek <https://github.com/ComFreek>`_.
 
 Curv uses OpenGL 3.3.
@@ -61,10 +61,11 @@ using a known working GPU driver (see below).
   by the latest driver version from the GPU vendor. Any GPU from 2012 or later
   will work. Some older GPUs may work: check the list of supported hardware
   for the driver.
-* On Macintosh, you need MacOS 10.7 or later.
-  If your system supports Metal, Curv is fully supported.
-  On a pre-Metal system (hardware from 2011 or earlier),
-  some Curv programs may not work correctly.
+* On Macintosh, I recommend the current release of MacOS, or 1 or 2 releases earlier.
+  More precisely, Curv works on any version of MacOS supported by `Homebrew <https://brew.sh/>`_.
+  (For older systems, you would need to resurrect an older version of Homebrew.
+  Also, on a pre-Metal system (hardware from 2011 or earlier),
+  some Curv programs may not work correctly due to the GPU.)
 * On Windows, you can use `MSYS <https://www.msys2.org/>`_ to build and run a native executable.
   Alternatively, you can use `Windows Subystem for Linux (WSL) <https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux>`
   for building and running non-natively. However, this alternative is vastly inferior to MSYS since WSL has no GPU support so far,
