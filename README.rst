@@ -67,8 +67,8 @@ using a known working GPU driver (see below).
   Also, on a pre-Metal system (hardware from 2011 or earlier),
   some Curv programs may not work correctly due to the GPU.)
 * On Windows, you can use `MSYS <https://www.msys2.org/>`_ to build and run a native executable.
-  Alternatively, you can use `Windows Subystem for Linux (WSL) <https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux>`
-  for building and running non-natively. However, this alternative is vastly inferior to MSYS since WSL has no GPU support so far,
+  Alternatively, you can use `Windows Subystem for Linux (WSL) <https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux>`_
+  for building and running non-natively. However, this alternative is much slower than MSYS since WSL has no GPU rendering support so far,
   which forces us to fall back to software rendering. See `issue #88`_ for details.
 * Raspberry Pi isn't supported yet.
 
