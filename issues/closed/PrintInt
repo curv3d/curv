@@ -1,0 +1,30 @@
+Curv represents numbers as 64 bit IEEE floats. In this representation,
+there is a contiguous range of integers that can be represented exactly,
+from -2^53 to 2^53. Outside this range, integer are sparsely represented.
+
+Before issue #103, large integers > 2^53 printed like this:
+
+    curv> 9876543210987654321
+    9876543210987655000
+
+This looks weird. The output looks like an exact integer, but the output
+is not as expected. In order to signify that large integers are not
+represented exactly, but as floating point approximations, curv now
+has this behaviour:
+
+    curv> 9876543210987654321
+    9.876543210987655e18
+
+The use of scientific or exponential notation signifies that this is an
+approximation.
+
+But integers <= 2^53 are still printed in exponential form if they have
+more than 3 trailing zeros. Eg, 10000 is printed as 1e4.
+
+It would now be more consistent if integers whose magnitude is <= 2^53
+are always printed using integer notation.
+
+By comparison, Javascript and Python already have this behaviour.
+But large integers outside this range are printed either in integer
+or exponential notation. Javascript switches to exponential notation
+for integers with 22 or more decimal digits.

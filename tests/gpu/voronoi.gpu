@@ -25,8 +25,8 @@
     |  float r11 = 1.0;
     |  float r12 = -(r11);
     |  float r20 = 1000.0;
-    |  float r24 = 1e4;
-    |  float r27 = 1e6;
+    |  float r24 = 10000.0;
+    |  float r27 = 1000000.0;
     |  float r36 = 2.2;
     |  /* body */
     |  float r1 = r0[0];

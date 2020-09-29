@@ -10,6 +10,11 @@ Numbers are represented internally by 64 bit IEEE floating point numbers.
   For example, ``0/0`` is an error.
 * An integer is just a number whose fractional part is ``0``.
   ``1`` and ``1.0`` evaluate to the same integer.
+* Because 64 bit floats have a 53 bit mantissa, the largest contiguous range
+  of integers that can be represented exactly is ``-2^53 .. 2^53``.
+  Integers within this range are printed as integer numerals (without a decimal
+  point). Integers outside this range can only be represented approximately,
+  and are printed in scientific notation.
 
 ``is_num value``
   True if the value is a number, false otherwise.

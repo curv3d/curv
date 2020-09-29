@@ -70,30 +70,25 @@ void dtostr(double n, char* buf, dfmt::style style)
     // Choose between decimal (eg, 42) and exponential (eg, 4.2e1) formats.
 
     // We choose the shortest representation, with 3 exceptions:
-    // 1. Positive numbers < 1 begin with "0.", not ".", for JSON compatibility.
-    // 2. Integers are allowed to have up to 3 trailing zeros before we switch
-    //    to exponential. Eg, "1000", not "1e3".
-    //    Except that integers whose magnitude is > 2^53 are always printed
-    //    using exponential notation (bug #103).
+    // 1. Integers of magnitude <= 2^53 are printed in integer notation,
+    //    with no decimal point. Integers of magnitude > 2^53 are printed
+    //    in exponential notation. See bug #103.
+    // 2. Positive numbers < 1 begin with "0.", not ".", for JSON compatibility.
     // 3. Positive numbers < 1 are allowed to have up to 3 leading zeros
     //    after the decimal point before we switch to exponential.
     //    Eg, "0.0001", not "1e-4".
 
     // parameters for the algorithm, see above
-    constexpr int max_trailing_zeros = 3;
-    constexpr int max_leading_zeros = 3;
     constexpr double max_exact_int = 9007199254740992.0; /*2^53*/
+    constexpr int max_leading_zeros = 3;
 
     // First, try to output in decimal format. If successful, return early.
     // If the constraints weren't satisfied, then fall through
     // and use exponential format.
 
     if (decimal_point >= decimal_rep_length) {
-        // Integer with trailing zeros; no decimal point.
-        int n_trailing_zeros = decimal_point - decimal_rep_length;
-        if (n_trailing_zeros <= max_trailing_zeros
-            && std::abs(n) <= max_exact_int)
-        {
+        // Integer, possibly with trailing zeros; no decimal point.
+        if (std::abs(n) <= max_exact_int) {
             memcpy(p, decimal_rep, decimal_rep_length);
             p += decimal_rep_length;
             int nzeros = decimal_point - decimal_rep_length;
