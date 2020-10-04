@@ -62,11 +62,11 @@ struct Unary_Array_Func : public Function
 };
 
 template <class Prim>
-struct Binary_Array_Func : public Legacy_Function
+struct Binary_Array_Func : public Tuple_Function
 {
-    Binary_Array_Func(const char* nm) : Legacy_Function(2,nm) {}
+    Binary_Array_Func(const char* nm) : Tuple_Function(2,nm) {}
     using Op = Binary_Array_Op<Prim>;
-    Value call(Frame& args) const override
+    Value tuple_call(Frame& args) const override
     {
         return Op::call(At_Arg(*this, args), args[0], args[1]);
     }
@@ -544,25 +544,25 @@ select(Value a, Value b, Value c, const Context& cx)
 // in tail recursion optimization.
 //
 // Similar to: numpy.where, R `ifelse`
-struct Select_Function : public Legacy_Function
+struct Select_Function : public Tuple_Function
 {
-    Select_Function(const char* nm) : Legacy_Function(3,nm) {}
-    Value call(Frame& args) const override
+    Select_Function(const char* nm) : Tuple_Function(3,nm) {}
+    Value tuple_call(Frame& args) const override
     {
         return select(args[0], args[1], args[2], At_Arg(*this, args));
     }
-    SC_Value sc_call_legacy(SC_Frame& f) const override
+    SC_Value sc_tuple_call(SC_Frame& f) const override
     {
         auto cond = f[0];
         auto consequent = f[1];
         auto alternate = f[2];
         if (!cond.type.is_bool_or_vec()) {
-            throw Exception(At_SC_Arg(0,f), stringify(
+            throw Exception(At_SC_Tuple_Arg(0,f), stringify(
                 "argument is not bool or bool vector; it has type ",
                 cond.type));
         }
         if (consequent.type != alternate.type) {
-            throw Exception(At_SC_Arg(1,f), stringify(
+            throw Exception(At_SC_Tuple_Arg(1,f), stringify(
                 "2nd and 3rd argument of 'select' have different types: ",
                 consequent.type, " and ", alternate.type));
         }
@@ -580,12 +580,12 @@ struct Select_Function : public Legacy_Function
                 sc_try_extend(f, alternate, T);
             }
             else if (!consequent.type.is_vec()) {
-                throw Exception(At_SC_Arg(1,f), stringify(
+                throw Exception(At_SC_Tuple_Arg(1,f), stringify(
                     "Must be a scalar or vector to match condition argument."
                     " Instead, type is ", consequent.type));
             }
             else if (cond.type.count() != consequent.type.count()) {
-                throw Exception(At_SC_Arg(1,f), stringify(
+                throw Exception(At_SC_Tuple_Arg(1,f), stringify(
                     "Vector length ",consequent.type.count()," does not match"
                     " length of condition vector (", cond.type.count(),")"));
             }
@@ -700,15 +700,15 @@ SC_Value Not_Equal_Expr::sc_eval(SC_Frame& f) const
 //      [for (row in a) dot(row,b)]  // matrix*...
 //    else
 //      sum(a*b)                     // vector*...
-struct Dot_Function : public Legacy_Function
+struct Dot_Function : public Tuple_Function
 {
-    Dot_Function(const char* nm) : Legacy_Function(2,nm) {}
+    Dot_Function(const char* nm) : Tuple_Function(2,nm) {}
     Value dot(Value a, Value b, const At_Arg& cx) const;
-    Value call(Frame& args) const override
+    Value tuple_call(Frame& args) const override
     {
         return dot(args[0], args[1], At_Arg(*this, args));
     }
-    SC_Value sc_call_legacy(SC_Frame& f) const override
+    SC_Value sc_tuple_call(SC_Frame& f) const override
     {
         auto a = f[0];
         auto b = f[1];
@@ -756,7 +756,7 @@ Value Dot_Function::dot(Value a, Value b, const At_Arg& cx) const
     }
     // Handle the case where a or b is a reactive list,
     // and return a reactive result.
-    //   This is copied and modified from Dot_Function::sc_call_legacy.
+    //   This is copied and modified from Dot_Function::sc_tuple_call.
     //   The code ought to be identical in both cases.
     //   The reactive result should contain SubCurv IR code,
     //   which is simultaneously code that can be evaluated by the interpreter.
@@ -788,10 +788,10 @@ Value Dot_Function::dot(Value a, Value b, const At_Arg& cx) const
         cx)};
 }
 
-struct Mag_Function : public Legacy_Function
+struct Mag_Function : public Tuple_Function
 {
-    Mag_Function(const char* nm) : Legacy_Function(1,nm) {}
-    Value call(Frame& args) const override
+    Mag_Function(const char* nm) : Tuple_Function(1,nm) {}
+    Value tuple_call(Frame& args) const override
     {
         // Use hypot() or BLAS DNRM2 or Eigen stableNorm/blueNorm?
         // Avoids overflow/underflow due to squaring of large/small values.
@@ -851,21 +851,21 @@ struct Mag_Function : public Legacy_Function
         throw Exception(At_Arg(*this, args),
             stringify(args[0],": domain error"));
     }
-    SC_Value sc_call_legacy(SC_Frame& f) const override
+    SC_Value sc_tuple_call(SC_Frame& f) const override
     {
         auto arg = f[0];
         if (!arg.type.is_num_vec())
-            throw Exception(At_SC_Arg(0, f), "mag: argument is not a vector");
+            throw Exception(At_SC_Tuple_Arg(0, f), "mag: argument is not a vector");
         auto result = f.sc_.newvalue(SC_Type::Num());
         f.sc_.out() << "  float "<<result<<" = length("<<arg<<");\n";
         return result;
     }
 };
 
-struct Count_Function : public Legacy_Function
+struct Count_Function : public Tuple_Function
 {
-    Count_Function(const char* nm) : Legacy_Function(1,nm) {}
-    Value call(Frame& args) const override
+    Count_Function(const char* nm) : Tuple_Function(1,nm) {}
+    Value tuple_call(Frame& args) const override
     {
         if (auto list = args[0].maybe<const List>())
             return {double(list->size())};
@@ -877,19 +877,19 @@ struct Count_Function : public Legacy_Function
         }
         throw Exception(At_Arg(*this, args), "not a list or string");
     }
-    SC_Value sc_call_legacy(SC_Frame& f) const override
+    SC_Value sc_tuple_call(SC_Frame& f) const override
     {
         auto arg = f[0];
         if (!arg.type.is_list())
-            throw Exception(At_SC_Arg(0, f), "count: argument is not a list");
+            throw Exception(At_SC_Tuple_Arg(0, f), "count: argument is not a list");
         auto result = f.sc_.newvalue(SC_Type::Num());
         f.sc_.out() << "  float "<<result<<" = "<<arg.type.count()<<";\n";
         return result;
     }
 };
-struct Fields_Function : public Legacy_Function
+struct Fields_Function : public Tuple_Function
 {
-    Fields_Function(const char* nm) : Legacy_Function(1,nm) {}
+    Fields_Function(const char* nm) : Tuple_Function(1,nm) {}
     static Value fields(Value arg, const Context& cx)
     {
         if (auto record = arg.maybe<const Record>())
@@ -905,16 +905,16 @@ struct Fields_Function : public Legacy_Function
         else
             throw Exception(cx, stringify(arg, " is not a record"));
     }
-    Value call(Frame& args) const override
+    Value tuple_call(Frame& args) const override
     {
         return fields(args[0], At_Arg(*this, args));
     }
 };
 
-struct Strcat_Function : public Legacy_Function
+struct Strcat_Function : public Tuple_Function
 {
-    Strcat_Function(const char* nm) : Legacy_Function(1,nm) {}
-    Value call(Frame& args) const override
+    Strcat_Function(const char* nm) : Tuple_Function(1,nm) {}
+    Value tuple_call(Frame& args) const override
     {
         if (auto list = args[0].maybe<const List>()) {
             String_Builder sb;
@@ -925,20 +925,20 @@ struct Strcat_Function : public Legacy_Function
         throw Exception(At_Arg(*this, args), "not a list");
     }
 };
-struct Repr_Function : public Legacy_Function
+struct Repr_Function : public Tuple_Function
 {
-    Repr_Function(const char* nm) : Legacy_Function(1,nm) {}
-    Value call(Frame& args) const override
+    Repr_Function(const char* nm) : Tuple_Function(1,nm) {}
+    Value tuple_call(Frame& args) const override
     {
         String_Builder sb;
         sb << args[0];
         return {sb.get_string()};
     }
 };
-struct Decode_Function : public Legacy_Function
+struct Decode_Function : public Tuple_Function
 {
-    Decode_Function(const char* nm) : Legacy_Function(1,nm) {}
-    Value call(Frame& f) const override
+    Decode_Function(const char* nm) : Tuple_Function(1,nm) {}
+    Value tuple_call(Frame& f) const override
     {
         String_Builder sb;
         At_Arg cx(*this, f);
@@ -948,10 +948,10 @@ struct Decode_Function : public Legacy_Function
         return {sb.get_string()};
     }
 };
-struct Encode_Function : public Legacy_Function
+struct Encode_Function : public Tuple_Function
 {
-    Encode_Function(const char* nm) : Legacy_Function(1,nm) {}
-    Value call(Frame& f) const override
+    Encode_Function(const char* nm) : Tuple_Function(1,nm) {}
+    Value tuple_call(Frame& f) const override
     {
         List_Builder lb;
         At_Arg cx(*this, f);

@@ -65,18 +65,18 @@ At_SC_Phrase::rewrite_message(Shared<const String> msg) const
     return sc_frame_rewrite_message(&call_frame_, msg);
 }
 
-void At_SC_Arg::get_locations(std::list<Location>& locs) const
+void At_SC_Tuple_Arg::get_locations(std::list<Location>& locs) const
 {
     get_sc_frame_locations(&call_frame_, locs);
 }
-System& At_SC_Arg::system() const { return call_frame_.sc_.system_; }
-Frame* At_SC_Arg::frame() const { return nullptr; }
+System& At_SC_Tuple_Arg::system() const { return call_frame_.sc_.system_; }
+Frame* At_SC_Tuple_Arg::frame() const { return nullptr; }
 
 Shared<const String>
-At_SC_Arg::rewrite_message(Shared<const String> msg) const
+At_SC_Tuple_Arg::rewrite_message(Shared<const String> msg) const
 {
     return sc_frame_rewrite_message(&call_frame_,
-        stringify("argument[",arg_index_,"]: ", msg));
+        stringify("argument[",tuple_index_,"]: ", msg));
 }
 
 void

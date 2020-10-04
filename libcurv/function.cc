@@ -88,39 +88,39 @@ const
 }
 
 Value
-Legacy_Function::call(Value arg, Frame& f) const
+Tuple_Function::call(Value arg, Frame& f) const
 {
     if (nargs_ == 1) {
         f[0] = arg;
-        return call(f);
+        return tuple_call(f);
     }
     At_Arg cx(*this, f);
     auto list = arg.to<const List>(cx);
     list->assert_size(nargs_,cx);
     for (size_t i = 0; i < list->size(); ++i)
         f[i] = (*list)[i];
-    return call(f);
+    return tuple_call(f);
 }
 
 Value
-Legacy_Function::try_call(Value arg, Frame& f) const
+Tuple_Function::try_call(Value arg, Frame& f) const
 {
     if (nargs_ == 1) {
         f[0] = arg;
-        return call(f);
+        return tuple_call(f);
     }
     auto list = arg.maybe<const List>();
     if (list && list->size() == nargs_) {
         for (size_t i = 0; i < list->size(); ++i)
             f[i] = (*list)[i];
-        return call(f);
+        return tuple_call(f);
     } else {
         return missing;
     }
 }
 
 SC_Value
-Legacy_Function::sc_call_expr(
+Tuple_Function::sc_call_expr(
     Operation& arg, Shared<const Phrase> call_phrase, SC_Frame& f)
 const
 {
@@ -146,11 +146,11 @@ const
         for (unsigned i = 0; i < scarg.type.count(); ++i)
             (*f2)[i] = sc_vec_element(f, scarg, i);
     }
-    return sc_call_legacy(*f2);
+    return sc_tuple_call(*f2);
 }
 
 SC_Value
-Legacy_Function::sc_call_legacy(SC_Frame& f) const
+Tuple_Function::sc_tuple_call(SC_Frame& f) const
 {
     throw Exception(At_SC_Phrase(func_part(f.call_phrase_), f),
         stringify("function class <",

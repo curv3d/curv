@@ -81,22 +81,27 @@ Shared<const Function> value_to_function(Value, const Context&);
 Value call_func(
     Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f);
 
-/// A legacy function value. Only used for builtin functions.
-/// Deprecated. Builtin functions should be derived from Function.
-/// Legacy functions with 0, 1 and 2 arguments are called like this:
-/// f(), f(x), f(x,y). They have a single argument,
-/// which is a fixed size list of count `nargs` if `nargs` != 1.
-/// Within `call(Frame& args)`, use `args[i]` to fetch the i'th argument.
-struct Legacy_Function : public Function
+// A Tuple_Function has a single argument, which is a tuple when nargs!=1.
+// Tuple functions with a nargs of 0, 1 or 2 are called like this:
+//   f(), f(x), f(x,y)
+//
+// This class is a convenience for defining builtin functions.
+// The tuple is unpacked into individual values, stored as frame slots,
+// and an error is thrown if the tuple contains the wrong number of values.
+// Within `tuple_call(Frame& args)`, use `args[i]` to fetch the i'th argument.
+// Likewise, in the SC compiler, the Operation argument of sc_call_expr()
+// is processed into a sequence of SC_Values, stored in the SC_Frame that is
+// passed to sc_tuple_call().
+struct Tuple_Function : public Function
 {
     unsigned nargs_;
 
-    Legacy_Function(unsigned nargs, const char* name)
+    Tuple_Function(unsigned nargs, const char* name)
     :
         Function(nargs, name),
         nargs_(nargs)
     {}
-    Legacy_Function(unsigned nargs, unsigned nslots)
+    Tuple_Function(unsigned nargs, unsigned nslots)
     :
         Function(nslots),
         nargs_(nargs)
@@ -107,14 +112,14 @@ struct Legacy_Function : public Function
     virtual Value try_call(Value, Frame&) const override;
 
     // call the function during evaluation, with arguments stored in the frame.
-    virtual Value call(Frame& args) const = 0;
+    virtual Value tuple_call(Frame& args) const = 0;
 
     // Generate a call to the function during geometry compilation.
     // The argument is represented as an expression.
     virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const override;
 
     // generate a call to the function during geometry compilation
-    virtual SC_Value sc_call_legacy(SC_Frame&) const;
+    virtual SC_Value sc_tuple_call(SC_Frame&) const;
 };
 
 /// The run-time representation of a compiled lambda expression.

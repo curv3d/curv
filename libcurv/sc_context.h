@@ -38,14 +38,14 @@ struct At_SC_Phrase : public At_Syntax
 };
 
 // This is part of v1 of the API for builtin SC function call.
-// It is used by Legacy_Function::sc_call_legacy() in builtin.cc.
+// It is used by Tuple_Function::sc_tuple_call() in builtin.cc.
 // See At_SC_Arg_Expr for the v2 version.
-struct At_SC_Arg : public Context
+struct At_SC_Tuple_Arg : public Context
 {
-    size_t arg_index_;
+    size_t tuple_index_;
     SC_Frame& call_frame_;  // frame for THIS function call
 
-    At_SC_Arg(size_t i, SC_Frame& f) : arg_index_(i), call_frame_(f) {}
+    At_SC_Tuple_Arg(size_t i, SC_Frame& f) : tuple_index_(i), call_frame_(f) {}
 
     void get_locations(std::list<Location>& locs) const override;
     Shared<const String> rewrite_message(Shared<const String>) const override;
@@ -56,7 +56,7 @@ struct At_SC_Arg : public Context
 // This is part of v2 of the API for builtin SC function call.
 // It is used by Function::sc_call_expr() in builtin.cc.
 // It closely models the semantics of At_Arg from context.h.
-// See At_SC_Arg for the v1 version.
+// See At_SC_Tuple_Arg for the v1 version.
 struct At_SC_Arg_Expr : public At_Syntax
 {
     At_SC_Arg_Expr(

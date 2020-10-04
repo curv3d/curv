@@ -118,12 +118,6 @@ Binary_Array_Op::domain_error: use Prim::name rather than dig into cx.syntax
 * Errors resulting from sc_result_type() failures? Maybe there should be no
   errors.
 
-Rename Legacy_Function to Tuple_Function, since it isn't going away.
-    Tuple_Function(nargs, name)
-    Tuple_Function::tuple_call(f) -- was call(f), overloaded with call(val,f)
-    sc_call_legacy(f) -> sc_tuple_call(f)
-    At_SC_Arg(i,f) -> At_SC_Tuple_Arg(i,f)
-
 ISSUES:
  * rx->expr() makes more logical sense than rx->expr(ph). That's in curv5.
    The 'ph' argument is used when a Uniform Variable value is converted to an

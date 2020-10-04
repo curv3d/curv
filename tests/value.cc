@@ -20,10 +20,10 @@ bool prints_as(Value val, const char* expect)
 }
 
 
-struct Id_Function : public Legacy_Function
+struct Id_Function : public Tuple_Function
 {
-    Id_Function() : Legacy_Function(1,"id") {}
-    Value call(Frame& args) const override
+    Id_Function() : Tuple_Function(1,"id") {}
+    Value tuple_call(Frame& args) const override
     {
         return args[0];
     }
@@ -125,7 +125,7 @@ TEST(curv, value)
     ASSERT_TRUE(v.is_ref());
     EXPECT_TRUE(v.to_ref_unsafe().use_count == 1);
     EXPECT_TRUE(v.to_ref_unsafe().type_ == Ref_Value::ty_function);
-    Legacy_Function* f = (Legacy_Function*)&v.to_ref_unsafe();
+    Tuple_Function* f = (Tuple_Function*)&v.to_ref_unsafe();
     EXPECT_TRUE(f->use_count == 1);
     EXPECT_TRUE(f->type_ == Ref_Value::ty_function);
     EXPECT_TRUE(f->nargs_ == 1);
