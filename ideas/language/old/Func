@@ -1,13 +1,28 @@
+Final status of this proposal:
+ * is_fun has been replaced by is_func and is_primitive_func.
+ * The pattern syntax 'pred pat' has been replaced by 'pat :: pred'.
+ * The issue of prefixing function definitions with 'func' has been moved
+   to Labelled.
+
+---
 Rename `is_fun` to `is_func`.
-Rationale: 'func' is an unambiguous abbreviation for 'function',
-and will be less confusing for some people.
+Rationale: 'func' is an unambiguous abbreviation for 'function', and will be
+less confusing than 'fun' for ESL people (because fun-function is a homophone
+for fun-enjoyment).
 
 Made obsolete by the Types proposal, which uses `is Function` as the predicate,
 or `is Mapping` as a more general predicate for mapping values.
 
 Prefix function definitions with the `func` keyword.
     func f x = x + 1;
-New rationale: this may be more readable.
+Rationale 1: uniform notation for labelled functions.
+  The syntax 'func f = combinator arg;' constructs a labelled function value
+  (the value remembers the name 'f'). Similarly,
+    func f x = x + 1;
+  constructs a labelled function value, making it different from
+    f = x -> x + 1;
+  which constructs an anonymous function value.
+Rationale 2: this may be more readable.
 * A ton of languages use `function` as the prefix for function definitions.
   A bunch of others use `def`. So a keyword to introduce a function definition
   is familiar from other languages.

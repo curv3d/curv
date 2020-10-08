@@ -1,0 +1,84 @@
+Labelled Functions and Records
+==============================
+Store documentation metadata in function and record values.
+Print function values in a format that provides provenance or meaning,
+rather than just printing "<function>".
+
+Uniform notation for labelled function definitions
+--------------------------------------------------
+In Curv 0.4, a function definition like this:
+    f x = x + 1;
+results in a labelled function value where 'f' prints as '<function f>'.
+
+However, the name 'f' is not stored if the function is constructed by a
+combinator.
+    f = <function expression>;
+
+To make function labelling work uniformly regardless of whether a combinator
+is used, we will change the specialized function definition syntax to require
+a keyword prefix, like this:
+    func f x = x + 1;
+Most mainstream languages use a keyword prefix for function definitions,
+so it's cool. Popular choices for this keyword: function, def, func, fn.
+
+Then,
+    func f = <function expression>;
+is available for defining a labelled function using a combinator.
+
+But, what if the entire source file is a function expression, and the file
+is an element of a module using directory syntax? It seems we need to add a
+magic token or keyword to the start of the source file, especially when a
+combinator builds the function value. The Branded proposal used '@' for this.
+
+Related proposals
+-----------------
+But, I also intend to print function values as constructor expressions
+that reconstruct the original value.
+ * A builtin function prints as the function name.
+ * A function from a (nonrecursive) lambda expression prints as a lambda
+   expression.
+ * A function from a recursive lambda expression prints as
+      let fac n = ...fac(n-1)... in fac
+
+In addition, there is a proposal for branded record and function values.
+A branded value is printed as a constructor expression (global variable name,
+function call or selection), rather than as a record or function literal.
+Builtin functions are considered branded, and print as a function name.
+There are also user-defined branded functions and records.
+The limitation is that there exists a global context in which all such
+constructor expressions can be evaluated to reconstruct the value, which
+means that a function value from a local function definition can't be branded,
+even though we do label such function values in Curv 0.4.
+
+    This includes a definition syntax for named, branded record fields.
+    Something like:
+        @name = <rec-or-func>;
+        def name = <rec-or-func>;
+        term name = <rec-or-func>;
+    Which is related to the 'func' labelled function definition syntax.
+
+    In a *.curv source file referenced by a directory (directory syntax),
+    the source file begins with '@' in one version of the proposal.
+
+Finally, I want a 'help' function for displaying the documentation for a
+function value. 'help f' evaluates 'f' as a function expression, then returns
+a multi-line documentation string. Function name, parameter documentation,
+plus a general doc string. Probably this is REPL only.
+
+    Syntax is not designed yet. The metadata will include a function name,
+    even if the function is locally defined and not branded. It will include
+    a function comment, and parameter comments. A keyword like 'func' (or
+    'def' or 'term') will be needed to trigger the collection and storage of
+    this metadata in the case where a function is defined with a combinator.
+
+Combined Proposal
+-----------------
+Use same syntax for labelled and branded func/record definitions.
+Extend this syntax with main docstring and parameter/field docstrings.
+
+When this syntax is used, we collect and store metadata.
+When this syntax is not used, we don't collect and store metadata.
+We don't decide based on the syntax of the definiens expression (eg, is it
+a lambda expression), because this breaks the algebra of programs.
+You should be able to substitute a lambda expression for another expression
+that computes the same value without changing the meaning of the program.
