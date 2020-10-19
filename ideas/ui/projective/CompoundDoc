@@ -1,0 +1,47 @@
+Compound Documents
+==================
+The Curv GUI is a document editor.
+
+A document can be viewed or edited.
+When you use the editor UI, you are editing source code of an expression.
+When you use the viewer UI, you are viewing a value,
+aka the result of evaluating the expression.
+
+There is a single persistent document called the repo.
+It is hierarchical, and can be indexed or traversed using paths.
+It can be traversed and modified using Curv code.
+
+Values and source code are both constructed of the same material: T-Code.
+(In the C/Unix ontology, everything is made out of bytes: C objects in
+memory, Unix files on disk. In Curv, bytes are replaced by T-Code.)
+The individual elements of T-Code are called Terms, and they have a
+hierarchical structure.
+
+Terms include function calls, identifiers (aka variable references),
+constants.
+ * An expression is a term that is syntactically and semantically correct,
+   with no free identifiers, and which denotes a value. An expression is
+   an example of source code.
+ * A value is an expression term in head-normal form.
+   A value is a constant expression.
+
+With this ontology: every value in the Curv language, every document, every
+item of data, is an expression. And you can abstract over any subexpression
+using the full power of the Curv language: replace a subexpression with a
+variable defined elsewhere, wrap the expression in a function, etc.
+Documents are fully programmable.
+
+Not all terms are values. There is a 'quote' operation that reifies an
+arbitrary term as a value. Which means that you can quote a value
+and get a reified term that permits inspection of the value in terms of
+its Term structure. Which allows full introspection, of functions and
+all other values.
+
+This ontology is a bit different from what's found in related languages
+that I was inspired by.
+ * Mathematica doesn't distinguish values from general terms.
+   The 'evaluator' can return a term with free variables, these do not
+   result in an evaluation error. I think the difference from Mathematica
+   is motived by a desire for a stricter evaluator that catches more errors.
+ * Haskell has lazy evaluation: a value and all its subvalues
+   need not be in full head normal form.

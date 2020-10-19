@@ -1,0 +1,99 @@
+A Projective/Structure Editor for Curv
+======================================
+The internal representation of a program, maintained by the editor,
+is not a character string, it is a tree.
+
+How does the UI work?
+And how does syntax design factor affect implementation & useability?
+
+1. One approach is Hazel. It is a primarily text based language, but, the
+editor's command language will not let you create an editor state that
+doesn't represent a well formed syntax tree.
+
+    I haven't tried Hazel yet. The expected issue is that you can't simply
+    provide a standard text editor interface, like CUI, Vi, Emacs.
+    So there's a learning curve.
+
+2. It's a standard text editor interface, but if the program text is not
+a well formed syntax tree, then you cannot save your file.
+
+3. Use automatic syntax error recovery techniques to convert ambiguous
+   text to a tree? See:
+      https://soft-dev.org/pubs/html/diekmann_tratt__dont_panic/
+      https://news.ycombinator.com/item?id=23850718
+   Use whitespace/indentation as a further source of info for error recovery:
+      https://github.com/nickmqb/muon
+   Languages need redundancy in their grammar to help with error recovery.
+   Having a more flexible syntax actually hurts usability because valid
+   but semantically incorrect code can't be caught early enough and makes
+   it much harder to give friendly errors.
+
+  IDEs implement completions using an error-recovering parser, which can
+  extract a syntax tree and indicate the position of the cursor within it
+  even when there are parse errors. See:
+  * https://www.youtube.com/watch?v=Jes3bD6P0To
+    "Tree-sitter: a new parsing system for programming tools" Max Brunsfeld
+    Strange Loop 2018
+  * https://github.com/tree-sitter/tree-sitter
+    Tree-sitter is a parser generator tool and an incremental parsing library.
+    It can build a concrete syntax tree for a source file and efficiently
+    update the syntax tree as the source file is edited.
+    * General enough to parse any programming language
+    * Fast enough to parse on every keystroke in a text editor
+    * Robust enough to provide useful results in presence of syntax errors
+    * Written in pure C, no dependencies.
+
+  https://lobste.rs/s/mox1k6/turning_ide_inside_out_with_datalog
+  Data structures used to represent an incrementally updated syntax and sema
+  tree in an IDE with programmer assistance features.
+
+  https://rust-analyzer.github.io/blog/2020/07/20/three-architectures-for-responsive-ide.html
+  3 architectures. Differing constraints on language design for each.
+   1. declare before use, as in C or O'Caml
+   2. no abstraction over definitional forms, as in Java (or Curv)
+   3. binder macros and binder abstraction, as in Rust
+
+4. A hybrid system. Structure editor at high levels of the tree, text editor
+   at low levels.
+
+   Rationale: "structure based editing is unusable" is a myth. Actually it
+   is necessary.
+
+   Imagine the entire Unix file system as a live-edited text file, in
+   S-expression syntax. Inserting/deleting a paren could temporarily destroy
+   large parts of the file hierarchy due to an unbalanced paren, possibly
+   crashing the system. It's a good thing we use *structural editing*
+   instead for modifying the file system. First you create a directory,
+   then you create the children of the directory. Outlining software (with
+   a structural editing interface) is familiar, not hard to use. Plain text
+   that is dynamically parsed during editing to infer hierarchy is okay in
+   small amounts, but blocks of text like this should be small enough to
+   fit on the screen. Using plain text to represent hierarchical structure
+   gets unwieldy when a node extends over multiple screens--that's when
+   structure editing becomes an asset.
+
+   Nobody puts a large scale software project into a single source file.
+   Everyone uses structure editing at the top level. Curv will support a more
+   semantics-based set of nodes and containers (than files and directories),
+   and support more granular structure editing.
+
+   Somebody invented a name for this: Frame-Based Editing.
+   https://www.greenfoot.org/frames/
+
+http://mbeddr.com
+    open source, IDE, projectional editor, mixed text + graphical notation
+    built on JetBrains MPS
+
+https://tratt.net/laurie/blog/entries/an_editor_for_composed_programs.html
+   Eco is an editor for programs written using multiple nested languages.
+   The essay critiques JetBrains MPS: it makes syntax directed editing far
+   easier than it has been in the past, but you still don't want to use it.
+   Eco is much more usable. It is an ordinary text editor that imposes no
+   restrictions on what text you can type or how you edit the text. But,
+   if you type CTRL-L, then you insert a "language box", which is a nested
+   text region interpreted by a different parser. It's like Racket's #lang
+   except that you can nest languages in the same document. Has similarities
+   to "frame-based editing".
+
+http://kevinmahoney.co.uk/articles/structural-editor-prototype/
+  Lisp syntax, auto format and auto type-check as you type.

@@ -1,0 +1,107 @@
+Instead of focussing on a traditional text based syntax,
+focus on the idea of live coding, instantaneous feedback,
+and on the keyboard-mouse-touch interactions that you use
+to transition a live animation from one state to the next.
+
+There is a viewpane and a codepane. The codepane shows a graphical,
+diagrammatic, textual representation of the logic that creates the
+animated graphics running in the viewpane. 
+
+We want to provide an efficient, intuitive, spatial, graphical, diagrammatic
+and logical/textual code representation and a language of input gestures
+for editing/transforming/evolving the code from one state to the next.
+
+This input language/editing interface will consist of a collection of
+DSLs for different microdomains. These DSLs will be nested, you'll call up
+new DSLs for adding new elements to the code logic. There will be definitional
+mechanisms for defining new DSLs.
+
+In the context of legacy programming languages, "syntax directed editing"
+and "projectional editors" have had limited success, because they don't fit
+into existing practice/they don't follow the rules of VI and EMACS style
+text editor interfaces. But the VI and EMACS command sets are not optimized
+for and are not ideal for live coding of graphical animations. So create
+a new interaction language that is optimized for this domain.
+
+We want a quick, efficient and expressive interface (interaction language)
+that provides instant/continuous feedback and leverages spatial thinking:
+ * Live feedback in the graphics view as you drag a slider
+   beats typing in a number and refreshing the graphics view.
+ * Sweeping the mouse across 1- or 2-D spaces to explore N-dimensional
+   parameter spaces will be an important part of the interaction design.
+   This covers a lot of interaction design space, not just sliders.
+   New interactions can be implemented *in Curv*.
+    * eg, see Fubbles by Olivia Jack
+ * When you add a primitive shape to a scene, you immediately see the
+   effect of adding the shape with default parameter values. Then you
+   start modifying the parameters, and get continuous feedback as you
+   tweak them.
+
+Using a musical instrument as an input device for writing code.
+(Multiple examples of this in the 28/Jul/2020 toplap live coding symposium.)
+In the context of Curv,
+ * Generate a time sequence in real time to control an animation,
+   similar to live coding music software.
+ * Convert pleasing sounding chord patterns and pitch patterns 
+   into numeric parameters for graphics primitives. Eg,
+    * the symmetry DSL
+    * the noise DSL
+So, support MIDI input, and experiment.
+
+The cool thing about a piano keyboard is that there are a rich range of inputs
+and no syntax errors. No matter what you bang out on the keyboard, you get
+some kind of sound. You can explore, without knowing what you are are doing.
+Once you get something interesting, you can easily adjust your inputs to make
+the output closer to what you want. Create DSLs for Curv with this property.
+
+----------------------------------------------------------------------------
+"Hybrid Live Coding Interfaces" symposium 28-29/Jul/2020
+
+"Live coding is public thought"
+
+"languages need to be developed in relation to the interface"
+(from the CodeKlavier talk at toplap)
+
+Sol Bekic
+alv.s-ol.nu  mailinglist: sr.ht/~s-ol/alv
+PureData
+  good: whole program visible (code is program)
+  bad: clumsy mouse based UI
+SuperCollider, Tidal Cycles
+  good: expressive text based, editing speed
+  bad: interaction via deltas, program not visible
+ALV: best of both
+  embodied text programming
+  stateful, concurrent expressions like Pd objects
+  code and program are synchronized
+   * add expr: starts its execution
+   * delete expr: stops its execution
+   * model is: rerun entire program when text is changed,
+     and state is mapped from last running program
+   * freebie: live editor visualization
+     Lispy syntax, easy to parse
+     visualizations embedded in program text (ratio bar, pulse circle,
+       colour swatch)
+   Previous language was block-based language for VJing.
+     glue midi controller to shaders
+
+inverse.website:
+code looks like poetry, compiles to a shader
+manifesto:
+ * code must be as interesting as the artifacts it attempts to create
+ * countless different ways to write the same program
+ * programmer must embrace uncertainty and lack of control
+ * output must be relatable to a broad audience
+This is a forth based language where you use a word list to match "poetic"
+words to forth primitives, then you write a poem and get a shader. Sounds super
+difficult to use. But people with no programming experience have managed to
+get results. There is a shuffle feature, so you can randomly generate program
+texts, and search through these texts to find nice patterns. (There are no
+errors, any input produces a valid shader that puts something on the screen.)
+
+loglophone: Luke Demarest -- something weird and interesting
+
+Olivia Jack: scribble functions (fubbles)
+Scribble or draw in a 2D canvas, creating time-based control parameters
+for a live coding performance.
+Layered on Hydra, a text based language that makes animated 2D shader patterns.

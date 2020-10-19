@@ -1,0 +1,24 @@
+Clojure supports "REPL Driven Development".
+
+It seems similar to CommonLisp, but maybe weaker (no breakloops).
+
+There are editor integrations where you can select an S-Expr,
+execute it, have the result pasted back into your source as a comment.
+It is common to have a (comment ....) block containing multiple S-Exprs
+and their results--reusable code that is useful when working on that
+particular source file.
+
+The approach used by Lisp and Smalltalk to achieve a productive live
+coding environment involves mutable everything: mutable objects instead of
+values, mutable variables instead of functional variables. Then live coding
+is a matter of mutating the runtime system state.
+
+The problem, from my perspective, lies in the way the source code
+diverges from the running system state, as you edit the runtime state.
+Eg, when you dynamically replace a function with a new version by mutating
+a function variable.
+
+So the goal for denotative live programming is to present the
+source code/system state in a consistent browsable and editable form
+(rather than allowing source code to diverge from the code that is
+actually running).
