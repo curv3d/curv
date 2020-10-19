@@ -1,7 +1,7 @@
 **Warning** to **git** users:
 This project uses `git submodule`. Use:
 * `git clone --recursive https://github.com/curv3d/curv` to clone the repo.
-* `git submodule update --init` after pulling updates (or use `make update`)
+* `git submodule update --init` after pulling updates (or use `make upgrade`)
 
 **Warning** to **cmake** users:
 This project uses `make` as a wrapper around `cmake`.
