@@ -819,8 +819,7 @@ struct Mag_Function : public Tuple_Function
             if (rx->sctype_.is_num_vec())
                 arg_op = rx->expr();
         } else {
-            auto list = args[0].to<List>(fl, At_Arg(*this, args));
-            if (list == nullptr) return missing;
+            TRY_DEF(list, args[0].to<List>(fl, At_Arg(*this, args)));
             Shared<List_Expr> rlist =
                 List_Expr::make(list->size(),arg_part(args.call_phrase_));
             arg_op = rlist;
@@ -946,8 +945,7 @@ struct Decode_Function : public Tuple_Function
     {
         String_Builder sb;
         At_Arg cx(*this, f);
-        auto list = f[0].to<List>(fl, cx);
-        if (list == nullptr) return missing;
+        TRY_DEF(list, f[0].to<List>(fl, cx));
         for (size_t i = 0; i < list->size(); ++i)
             sb << (char)(*list)[i].to_int(1, 127, At_Index(i,cx));
         return {sb.get_string()};
@@ -960,8 +958,7 @@ struct Encode_Function : public Tuple_Function
     {
         List_Builder lb;
         At_Arg cx(*this, f);
-        auto str = value_to_string(f[0], fl, cx);;
-        if (str == nullptr) return missing;
+        TRY_DEF(str, value_to_string(f[0], fl, cx));
         for (size_t i = 0; i < str->size(); ++i)
             lb.push_back({(double)(int)str->at(i)});
         return {lb.get_list()};

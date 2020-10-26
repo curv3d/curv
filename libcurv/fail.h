@@ -11,7 +11,7 @@ enum class Fail { soft, hard };
 #define FAIL(fl, result, cx, msg) \
     if (fl==Fail::soft) return result; else throw Exception(cx,msg)
 #define TRY_DEF(var, expr) \
-    auto var = expr; if (!var) return var
+    auto var = expr; if (!var) return {}
 
 } // namespace curv
 #endif // header guard
