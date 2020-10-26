@@ -46,8 +46,10 @@ template <class Op>
 struct Binary_Op_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval(Frame& f) const override
-      {return Op::call(At_Phrase(*syntax_, f), arg1_->eval(f), arg2_->eval(f));}
+    virtual Value eval(Frame& f) const override {
+        return Op::call(Fail::hard, At_Phrase(*syntax_, f),
+            arg1_->eval(f), arg2_->eval(f));
+    }
     virtual SC_Value sc_eval(SC_Frame& f) const override
       { return Op::sc_call(f, *arg1_, *arg2_, syntax_); }
     static bool idchr(char c)
@@ -164,15 +166,18 @@ struct Binary_Array_Op
     }
 
     static Value
-    reduce(const At_Syntax& cx, Value zero, Value arg)
+    reduce(Fail fl, const At_Syntax& cx, Value zero, Value arg)
     {
-        auto list = arg.to<List>(cx);
+        auto list = arg.to<List>(fl, cx);
+        if (list == nullptr) return missing;
         unsigned n = list->size();
         if (n == 0)
             return {zero};
         Value result = list->front();
-        for (unsigned i = 1; i < n; ++i)
-            result = call(cx, result, list->at(i));
+        for (unsigned i = 1; i < n; ++i) {
+            TRY_DEF(r, call(fl, cx, result, list->at(i)));
+            result = r;
+        }
         return result;
     }
     static SC_Value
@@ -218,7 +223,7 @@ struct Binary_Array_Op
     }
 
     static Value
-    call(const At_Syntax& cx, Value x, Value y)
+    call(Fail fl, const At_Syntax& cx, Value x, Value y)
     {
         // fast path: both x and y are scalars
         // remaining cases:
@@ -237,7 +242,7 @@ struct Binary_Array_Op
                 Ref_Value& ry(y.to_ref_unsafe());
                 switch (ry.type_) {
                 case Ref_Value::ty_list:
-                    return broadcast_right(cx, x, (List&)ry);
+                    return broadcast_right(fl, cx, x, (List&)ry);
                 case Ref_Value::ty_reactive:
                     return reactive_op(cx, x, y);
                 }
@@ -248,12 +253,12 @@ struct Binary_Array_Op
             switch (rx.type_) {
             case Ref_Value::ty_list:
                 if (Prim::unbox_right(y, sy, cx))
-                    return broadcast_left(cx, (List&)rx, y);
+                    return broadcast_left(fl, cx, (List&)rx, y);
                 else if (y.is_ref()) {
                     Ref_Value& ry(y.to_ref_unsafe());
                     switch (ry.type_) {
                     case Ref_Value::ty_list:
-                        return element_wise_op(cx, (List&)rx, (List&)ry);
+                        return element_wise_op(fl, cx, (List&)rx, (List&)ry);
                     case Ref_Value::ty_reactive:
                         return reactive_op(cx, x, y);
                     }
@@ -288,33 +293,40 @@ struct Binary_Array_Op
     }
 
     static Value
-    broadcast_left(const At_Syntax& cx, List& xlist, Value y)
+    broadcast_left(Fail fl, const At_Syntax& cx, List& xlist, Value y)
     {
         Shared<List> result = List::make(xlist.size());
-        for (unsigned i = 0; i < xlist.size(); ++i)
-            (*result)[i] = call(cx, xlist[i], y);
+        for (unsigned i = 0; i < xlist.size(); ++i) {
+            TRY_DEF(r, call(fl, cx, xlist[i], y));
+            (*result)[i] = r;
+        }
         return {result};
     }
 
     static Value
-    broadcast_right(const At_Syntax& cx, Value x, List& ylist)
+    broadcast_right(Fail fl, const At_Syntax& cx, Value x, List& ylist)
     {
         Shared<List> result = List::make(ylist.size());
-        for (unsigned i = 0; i < ylist.size(); ++i)
-            (*result)[i] = call(cx, x, ylist[i]);
+        for (unsigned i = 0; i < ylist.size(); ++i) {
+            TRY_DEF(r, call(fl, cx, x, ylist[i]));
+            (*result)[i] = r;
+        }
         return {result};
     }
 
     static Value
-    element_wise_op(const At_Syntax& cx, List& xs, List& ys)
+    element_wise_op(Fail fl, const At_Syntax& cx, List& xs, List& ys)
     {
-        if (xs.size() != ys.size())
-            throw Exception(cx, stringify(
+        if (xs.size() != ys.size()) {
+            FAIL(fl, missing, cx, stringify(
                 "mismatched list sizes (",
                 xs.size(),",",ys.size(),") in array operation"));
+        }
         Shared<List> result = List::make(xs.size());
-        for (unsigned i = 0; i < xs.size(); ++i)
-            (*result)[i] = call(cx, xs[i], ys[i]);
+        for (unsigned i = 0; i < xs.size(); ++i) {
+            TRY_DEF(r, call(fl, cx, xs[i], ys[i]));
+            (*result)[i] = r;
+        }
         return {result};
     }
 

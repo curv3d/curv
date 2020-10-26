@@ -56,7 +56,8 @@ GPU_Program::recognize(Value val, Render_Opts opts)
             At_Field("bbox", cx));
 
         vshape_.frag_ =
-            value_to_string(r->getfield(shader_key,cx), At_Field("shader",cx))
+            value_to_string(r->getfield(shader_key,cx),
+                Fail::hard, At_Field("shader",cx))
             ->c_str();
 
         At_Field pcx("parameters",cx);
@@ -66,11 +67,11 @@ GPU_Program::recognize(Value val, Render_Opts opts)
             auto prec = p.to<Record>(picx);
             auto name =
                 value_to_string(prec->getfield(name_key, picx),
-                    At_Field("name",picx))
+                    Fail::hard, At_Field("name",picx))
                 ->c_str();
             auto label =
                 value_to_string(prec->getfield(label_key, picx),
-                    At_Field("label",picx))
+                    Fail::hard, At_Field("label",picx))
                 ->c_str();
             Picker::Config config(prec->getfield(config_key, picx),
                 At_Field("config", picx));

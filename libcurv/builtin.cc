@@ -66,9 +66,9 @@ struct Binary_Array_Func : public Tuple_Function
 {
     Binary_Array_Func(const char* nm) : Tuple_Function(2,nm) {}
     using Op = Binary_Array_Op<Prim>;
-    Value tuple_call(Frame& args) const override
+    Value tuple_call(Fail fl, Frame& args) const override
     {
-        return Op::call(At_Arg(*this, args), args[0], args[1]);
+        return Op::call(fl, At_Arg(*this, args), args[0], args[1]);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
@@ -84,7 +84,7 @@ struct Monoid_Func final : public Function
     using Op = Binary_Array_Op<Prim>;
     Value call(Value arg, Frame& f) const override
     {
-        return Op::reduce(At_Arg(*this, f), Prim::zero(), arg);
+        return Op::reduce(Fail::hard, At_Arg(*this, f), Prim::zero(), arg);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
@@ -504,7 +504,7 @@ struct Float_To_Bool32_Prim : public Unary_Num_To_Bool32_Prim
 using Float_To_Bool32_Function = Unary_Array_Func<Float_To_Bool32_Prim>;
 
 Value
-select(Value a, Value b, Value c, const Context& cx)
+select(Value a, Value b, Value c, Fail fl, const Context& cx)
 {
     if (a.is_bool())
         return a.to_bool_unsafe() ? b : c;
@@ -515,14 +515,16 @@ select(Value a, Value b, Value c, const Context& cx)
         if (clist) clist->assert_size(alist->size(), At_Index(2, cx));
         Shared<List> r = List::make(alist->size());
         for (unsigned i = 0; i < alist->size(); ++i) {
-            r->at(i) = select(alist->at(i),
+            TRY_DEF(v, select(alist->at(i),
                               blist ? blist->at(i) : b,
                               clist ? clist->at(i) : c,
-                              cx);
+                              fl, cx));
+            r->at(i) = v;
         }
         return {r};
     }
-    throw Exception(At_Index(0, cx), stringify(a, " is not a Bool or a List"));
+    FAIL(fl, missing, At_Index(0, cx),
+        stringify(a, " is not a Bool or a List"));
 }
 
 // `select[a,b,c]` is a vectorized version of `if` in which the condition is
@@ -547,9 +549,9 @@ select(Value a, Value b, Value c, const Context& cx)
 struct Select_Function : public Tuple_Function
 {
     Select_Function(const char* nm) : Tuple_Function(3,nm) {}
-    Value tuple_call(Frame& args) const override
+    Value tuple_call(Fail fl, Frame& args) const override
     {
-        return select(args[0], args[1], args[2], At_Arg(*this, args));
+        return select(args[0], args[1], args[2], fl, At_Arg(*this, args));
     }
     SC_Value sc_tuple_call(SC_Frame& f) const override
     {
@@ -703,10 +705,10 @@ SC_Value Not_Equal_Expr::sc_eval(SC_Frame& f) const
 struct Dot_Function : public Tuple_Function
 {
     Dot_Function(const char* nm) : Tuple_Function(2,nm) {}
-    Value dot(Value a, Value b, const At_Arg& cx) const;
-    Value tuple_call(Frame& args) const override
+    Value dot(Value a, Value b, Fail, const At_Arg& cx) const;
+    Value tuple_call(Fail fl, Frame& args) const override
     {
-        return dot(args[0], args[1], At_Arg(*this, args));
+        return dot(args[0], args[1], fl, At_Arg(*this, args));
     }
     SC_Value sc_tuple_call(SC_Frame& f) const override
     {
@@ -732,7 +734,7 @@ struct Dot_Function : public Tuple_Function
         throw Exception(At_SC_Frame(f), "dot: invalid arguments");
     }
 };
-Value Dot_Function::dot(Value a, Value b, const At_Arg& cx) const
+Value Dot_Function::dot(Value a, Value b, Fail fl, const At_Arg& cx) const
 {
     auto av = a.maybe<List>();
     auto bv = b.maybe<List>();
@@ -740,7 +742,8 @@ Value Dot_Function::dot(Value a, Value b, const At_Arg& cx) const
         if (av->size() > 0 && av->at(0).maybe<List>()) {
             Shared<List> result = List::make(av->size());
             for (size_t i = 0; i < av->size(); ++i) {
-                result->at(i) = dot(av->at(i), b, cx);
+                TRY_DEF(v, dot(av->at(i), b, fl, cx));
+                result->at(i) = v;
             }
             return {result};
         } else {
@@ -748,9 +751,11 @@ Value Dot_Function::dot(Value a, Value b, const At_Arg& cx) const
                 throw Exception(cx, stringify("list of size ",av->size(),
                     " can't be multiplied by list of size ",bv->size()));
             Value result = {0.0};
-            for (size_t i = 0; i < av->size(); ++i)
-                result = Add_Op::call(cx, result,
-                    Multiply_Op::call(cx, av->at(i), bv->at(i)));
+            for (size_t i = 0; i < av->size(); ++i) {
+                TRY_DEF(prod, Multiply_Op::call(fl, cx, av->at(i), bv->at(i)));
+                TRY_DEF(sum, Add_Op::call(fl, cx, result, prod));
+                result = sum;
+            }
             return result;
         }
     }
@@ -791,15 +796,14 @@ Value Dot_Function::dot(Value a, Value b, const At_Arg& cx) const
 struct Mag_Function : public Tuple_Function
 {
     Mag_Function(const char* nm) : Tuple_Function(1,nm) {}
-    Value tuple_call(Frame& args) const override
+    Value tuple_call(Fail fl, Frame& args) const override
     {
         // Use hypot() or BLAS DNRM2 or Eigen stableNorm/blueNorm?
         // Avoids overflow/underflow due to squaring of large/small values.
         // Slower.  https://forum.kde.org/viewtopic.php?f=74&t=62402
 
         // Fast path: assume we have a list of numbers, compute a result.
-        auto list = args[0].maybe<List>();
-        if (list) {
+        if (auto list = args[0].maybe<List>()) {
             double sum = 0.0;
             for (auto val : *list) {
                 double x = val.to_num_or_nan();
@@ -811,12 +815,12 @@ struct Mag_Function : public Tuple_Function
 
         // Slow path, return a reactive value or abort.
         Shared<Operation> arg_op = nullptr;
-        auto rx = args[0].maybe<Reactive_Value>();
-        if (rx) {
+        if (auto rx = args[0].maybe<Reactive_Value>()) {
             if (rx->sctype_.is_num_vec())
                 arg_op = rx->expr();
         } else {
-            list = args[0].to<List>(At_Arg(*this, args));
+            auto list = args[0].to<List>(fl, At_Arg(*this, args));
+            if (list == nullptr) return missing;
             Shared<List_Expr> rlist =
                 List_Expr::make(list->size(),arg_part(args.call_phrase_));
             arg_op = rlist;
@@ -848,7 +852,7 @@ struct Mag_Function : public Tuple_Function
                     arg_op),
                 At_Arg(*this, args))};
         }
-        throw Exception(At_Arg(*this, args),
+        FAIL(fl, missing, At_Arg(*this, args),
             stringify(args[0],": domain error"));
     }
     SC_Value sc_tuple_call(SC_Frame& f) const override
@@ -865,7 +869,7 @@ struct Mag_Function : public Tuple_Function
 struct Count_Function : public Tuple_Function
 {
     Count_Function(const char* nm) : Tuple_Function(1,nm) {}
-    Value tuple_call(Frame& args) const override
+    Value tuple_call(Fail fl, Frame& args) const override
     {
         if (auto list = args[0].maybe<const List>())
             return {double(list->size())};
@@ -875,7 +879,7 @@ struct Count_Function : public Tuple_Function
             if (re->sctype_.is_list())
                 return {double(re->sctype_.count())};
         }
-        throw Exception(At_Arg(*this, args), "not a list or string");
+        FAIL(fl, missing, At_Arg(*this, args), "not a list or string");
     }
     SC_Value sc_tuple_call(SC_Frame& f) const override
     {
@@ -890,7 +894,7 @@ struct Count_Function : public Tuple_Function
 struct Fields_Function : public Tuple_Function
 {
     Fields_Function(const char* nm) : Tuple_Function(1,nm) {}
-    static Value fields(Value arg, const Context& cx)
+    static Value fields(Value arg, Fail fl, const Context& cx)
     {
         if (auto record = arg.maybe<const Record>())
             return {record->fields()};
@@ -903,18 +907,18 @@ struct Fields_Function : public Tuple_Function
         }
       #endif
         else
-            throw Exception(cx, stringify(arg, " is not a record"));
+            FAIL(fl, missing, cx, stringify(arg, " is not a record"));
     }
-    Value tuple_call(Frame& args) const override
+    Value tuple_call(Fail fl, Frame& args) const override
     {
-        return fields(args[0], At_Arg(*this, args));
+        return fields(args[0], fl, At_Arg(*this, args));
     }
 };
 
 struct Strcat_Function : public Tuple_Function
 {
     Strcat_Function(const char* nm) : Tuple_Function(1,nm) {}
-    Value tuple_call(Frame& args) const override
+    Value tuple_call(Fail fl, Frame& args) const override
     {
         if (auto list = args[0].maybe<const List>()) {
             String_Builder sb;
@@ -922,13 +926,13 @@ struct Strcat_Function : public Tuple_Function
                 val.print_string(sb);
             return {sb.get_string()};
         }
-        throw Exception(At_Arg(*this, args), "not a list");
+        FAIL(fl, missing, At_Arg(*this, args), "not a list");
     }
 };
 struct Repr_Function : public Tuple_Function
 {
     Repr_Function(const char* nm) : Tuple_Function(1,nm) {}
-    Value tuple_call(Frame& args) const override
+    Value tuple_call(Fail, Frame& args) const override
     {
         String_Builder sb;
         sb << args[0];
@@ -938,11 +942,12 @@ struct Repr_Function : public Tuple_Function
 struct Decode_Function : public Tuple_Function
 {
     Decode_Function(const char* nm) : Tuple_Function(1,nm) {}
-    Value tuple_call(Frame& f) const override
+    Value tuple_call(Fail fl, Frame& f) const override
     {
         String_Builder sb;
         At_Arg cx(*this, f);
-        auto list = f[0].to<List>(cx);
+        auto list = f[0].to<List>(fl, cx);
+        if (list == nullptr) return missing;
         for (size_t i = 0; i < list->size(); ++i)
             sb << (char)(*list)[i].to_int(1, 127, At_Index(i,cx));
         return {sb.get_string()};
@@ -951,11 +956,12 @@ struct Decode_Function : public Tuple_Function
 struct Encode_Function : public Tuple_Function
 {
     Encode_Function(const char* nm) : Tuple_Function(1,nm) {}
-    Value tuple_call(Frame& f) const override
+    Value tuple_call(Fail fl, Frame& f) const override
     {
         List_Builder lb;
         At_Arg cx(*this, f);
-        auto str = value_to_string(f[0], cx);
+        auto str = value_to_string(f[0], fl, cx);;
+        if (str == nullptr) return missing;
         for (size_t i = 0; i < str->size(); ++i)
             lb.push_back({(double)(int)str->at(i)});
         return {lb.get_list()};
@@ -1023,7 +1029,7 @@ struct File_Expr : public Just_Expression
 
         // construct file pathname from argument
         Value arg = arg_->eval(f);
-        auto argstr = value_to_string(arg, cx);
+        auto argstr = value_to_string(arg, Fail::hard, cx);
         namespace fs = boost::filesystem;
         fs::path filepath;
         auto caller_filename = syntax_->location().source().name_;
@@ -1230,7 +1236,7 @@ struct Assert_Error_Action : public Operation
     {
         Value expected_msg_val = expected_message_->eval(f);
         auto expected_msg_str =
-            value_to_string(expected_msg_val,
+            value_to_string(expected_msg_val, Fail::hard,
                 At_Phrase(*expected_message_->syntax_, f));
 
         if (actual_message_ != nullptr) {

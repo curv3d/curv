@@ -5,10 +5,11 @@
 #ifndef LIBCURV_FUNCTION_H
 #define LIBCURV_FUNCTION_H
 
-#include <libcurv/value.h>
-#include <libcurv/meaning.h>
+#include <libcurv/fail.h>
 #include <libcurv/list.h>
+#include <libcurv/meaning.h>
 #include <libcurv/sc_frame.h>
+#include <libcurv/value.h>
 
 namespace curv {
 
@@ -112,7 +113,7 @@ struct Tuple_Function : public Function
     virtual Value try_call(Value, Frame&) const override;
 
     // call the function during evaluation, with arguments stored in the frame.
-    virtual Value tuple_call(Frame& args) const = 0;
+    virtual Value tuple_call(Fail, Frame& args) const = 0;
 
     // Generate a call to the function during geometry compilation.
     // The argument is represented as an expression.

@@ -133,8 +133,8 @@ make_string(const std::string& str)
 // convert Value to String using Value::print_string()
 Shared<const String> to_print_string(Value);
 
-// throw error if value is not a string
-Shared<const String> value_to_string(Value, const Context&);
+// fail if value is not a string
+Shared<const String> value_to_string(Value, Fail, const Context&);
 
 // return nullptr if value is not a string
 Shared<const String> maybe_string(Value);

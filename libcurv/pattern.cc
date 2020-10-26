@@ -450,7 +450,7 @@ symbolize(const Phrase& ph, Environ& env)
         return id->symbol_;
     if (auto strph = dynamic_cast<const String_Phrase*>(&ph)) {
         auto val = std_eval(*strph, env);
-        auto str = value_to_string(val, At_Phrase(ph, env));
+        auto str = value_to_string(val, Fail::hard, At_Phrase(ph, env));
         return make_symbol(str->data(), str->size());
     }
     throw Exception(At_Phrase(ph, env),

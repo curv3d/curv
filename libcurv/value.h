@@ -5,6 +5,7 @@
 #ifndef LIBCURV_VALUE_H
 #define LIBCURV_VALUE_H
 
+#include <libcurv/fail.h>
 #include <libcurv/shared.h>
 #include <libcurv/ternary.h>
 #include <cstdint>
@@ -151,6 +152,10 @@ public:
     inline bool is_missing() const noexcept
     {
         return bits_ == k_missingbits;
+    }
+    explicit operator bool () const noexcept
+    {
+        return !is_missing();
     }
 
     /// Construct a boolean value.
@@ -309,6 +314,16 @@ public:
         to_abort(cx, T::name);
     }
     void to_abort [[noreturn]] (const Context&, const char*) const;
+    template <class T>
+    inline Shared<T> to(Fail fl, const Context& cx) const
+    {
+        if (is_ref()) {
+            T* p = dynamic_cast<T*>(&to_ref_unsafe());
+            if (p != nullptr)
+                return share(*p);
+        }
+        if (fl == Fail::soft) return nullptr; else to_abort(cx, T::name);
+    }
 
     Value at(Symbol_Ref fieldname, const Context& cx) const;
 

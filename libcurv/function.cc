@@ -92,14 +92,14 @@ Tuple_Function::call(Value arg, Frame& f) const
 {
     if (nargs_ == 1) {
         f[0] = arg;
-        return tuple_call(f);
+        return tuple_call(Fail::hard, f);
     }
     At_Arg cx(*this, f);
     auto list = arg.to<const List>(cx);
     list->assert_size(nargs_,cx);
     for (size_t i = 0; i < list->size(); ++i)
         f[i] = (*list)[i];
-    return tuple_call(f);
+    return tuple_call(Fail::hard, f);
 }
 
 Value
@@ -107,13 +107,13 @@ Tuple_Function::try_call(Value arg, Frame& f) const
 {
     if (nargs_ == 1) {
         f[0] = arg;
-        return tuple_call(f);
+        return tuple_call(Fail::soft, f);
     }
     auto list = arg.maybe<const List>();
     if (list && list->size() == nargs_) {
         for (size_t i = 0; i < list->size(); ++i)
             f[i] = (*list)[i];
-        return tuple_call(f);
+        return tuple_call(Fail::soft, f);
     } else {
         return missing;
     }

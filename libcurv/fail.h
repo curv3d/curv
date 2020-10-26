@@ -5,13 +5,13 @@
 #ifndef LIBCURV_FAIL_H
 #define LIBCURV_FAIL_H
 
-#include <libcurv/exception.h>
-
 namespace curv {
 
 enum class Fail { soft, hard };
 #define FAIL(fl, result, cx, msg) \
     if (fl==Fail::soft) return result; else throw Exception(cx,msg)
+#define TRY_DEF(var, expr) \
+    auto var = expr; if (!var) return var
 
 } // namespace curv
 #endif // header guard

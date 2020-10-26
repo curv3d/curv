@@ -12,9 +12,9 @@ bool is_string(Value val)
 }
 
 Shared<const String>
-value_to_string(Value val, const Context& cx)
+value_to_string(Value val, Fail fl, const Context& cx)
 {
-    return val.to<const String>(cx);
+    return val.to<const String>(fl, cx);
 }
 
 Shared<const String>

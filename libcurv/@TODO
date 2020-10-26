@@ -1,0 +1,104 @@
+Binary_Array_Op::call() use Fail
+
+which in turn invokes Prim::unbox_left() and unbox_right(), which may not
+have the proper API (they have a Context arg but not a Fail arg).
+
+What about these unbox functions? The API needs to be redesigned, what
+should it be?
+
+At present, unbox has 3 return statii: true, false, abort.
+The abort option is rarely used, and amapped functions typically fault
+with a "domain error" message, rather than a specific message like "not
+a boolean".
+
+Two options (behaviour of unbox):
+1. No Context argument. 2 return statii: true, false.
+   Fault messages from an amapped function are "domain error".
+2. Fail, Context arguments. Returns:
+    * True if argument has correct type.
+    * Fail/Fault (with a precise error message) if argument has <= correct rank
+      and incorrect type. Where 'fail' means return false (unless I change the
+      result type to a ternary).
+    * False if argument has > correct rank or is empty list.
+
+Option 2 gives the precise error messages of the Failure proposal.
+
+Option 3 (closer to the `amap` proposal):
+ * Replace all of the unbox functions with a rank ordinal (unary),
+   or two rank ordinals (binary).
+      Prim::left_rank
+      Prim::right_rank
+ * Prim::call() now takes boxed Values instead of unboxed values,
+   and fails/faults on a bad argument.
+ * Arguments with the wrong rank will not be passed to Prim::call().
+
+Option 2 or 3? Criteria:
+ * code size and complexity (cost of adding new prims, maintenance, testing)
+ * performance
+ * how is `amap` implemented?
+
+It's like the difference between these two amap designs:
+ (a) amap F
+     F is a ranked function, and fails if the argument has the wrong rank.
+     amap fails is F is not ranked.
+ (b) amap rank_metadata F
+     amap only calls F with arguments of the appropriate rank, as specified
+     by the rank metadata.
+BUT: in the general case, you do need the ability to take an existing amapped
+function, and amap it again using a higher rank. (Nested amap.) In this case,
+design (a) doesn't work unless there is an additional combinator that applies
+a rank to an existing function. Right now, I don't see how this additional
+combinator provides any benefit, beyond constructing the amap argument.
+
+So how about option 3?
+
+C++ amap
+--------
+amap_unary<Rank, Prim> maps a Prim structure with a static call() function
+(and other stuff) to another compatible Prim structure. It is nestable.
+
+A Prim contains
+    Value call(Value, Fail, const At_Syntax&)
+    SC_Value sc_call(SC_Value, const SC_At_Syntax&)
+    static constexpr char name[]
+
+amap_unary::call(val, fl, cx)
+    auto list = deeper_than_rank<Prim::rank>(val);
+    if (list == nullptr)
+        return Prim::call(val, fl, cx);
+    else
+        auto result = List::make(list->count());
+        for (i in 0..<list.count)
+            TRY_DEF(r, call(list[i], fl, cx));
+            result[i] = r;
+        return result
+
+The current design provides helper classes that perform type checking,
+and these helpers can be added as an optional extra to this amap design.
+The helpers are class combinators (templates) that are applied to a
+typed Prim, rather than inherited as a superclass. Using them is optional.
+
+### Performance Considerations?
+In the very first implementation of vectorized arithmetic, I had the insight
+that with NaN boxing, it's efficient to apply the arithmetic operation first
+on the raw NaN boxed floats, then switch to the general algorithm if the
+result is NaN. (This trick didn't quite work for the 'max' operation, which
+isn't normally NaN preserving.)
+
+Can I reproduce this trick in the amap design? The 'happy path' code needs to be
+added at the beginning of amap_unary::call. If the Prim has a special attribute,
+then we use a constexpr if to add the happy path code (C++ 17). This 'special
+attribute' is a 'numeric_call' function with a 'double val' parameter.
+ * Test if a struct has a named member?
+   SFINAE template hacking:
+   https://stackoverflow.com/questions/257288/templated-check-for-the-existence-of-a-class-member-function
+
+    if constexpr (has_numeric_call<Prim>::value) {
+        double r = Prim::numeric_call(a.to_num_or_nan());
+        if (r == r) return {r};
+    }
+
+Instead of always allocating a result vector, reuse the input list if it
+has usecount 1. To be effective, this requires using move semantics
+throughout the interpreter, which must be enabled using a compiler
+optimization.
