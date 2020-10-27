@@ -1,0 +1,356 @@
+Precise Domains
+===============
+The domain of a function is the set of argument values that it accepts.
+This concept of "domain" goes well beyond the notion of "parameter type" in a
+statically typed language. For example, the domain of a parsing function (taking
+a string argument) is the set of strings that represent valid expressions in
+the language being parsed.
+
+A new design goal for Curv is for functions to precisely define their domains,
+to cleanly "fail" if an argument is not in the domain, giving a high quality
+error message and stack trace, and to "succeed" otherwise. This won't always
+be possible, but to the extent we can, we will give Curv high quality
+error messages and stack traces. A function with a precise domain can be
+used for pattern matching (matching any value in the function's domain).
+This proposal also supports error handling.
+
+A function call has one of the following results:
+ * success: returns a value.
+ * fail: the argument is not a member of the function's domain.
+   By default, the failure is converted into a fault, and the program aborts
+   with an error message. But the caller can choose to handle the failure.
+   The domain is designed as part of the function's API.
+ * fault: An error is detected, and the program (or process; see below) is
+   aborted with an error message. A call to function F can terminate abnormally
+   for reasons other than a failure (argument is not in F's domain). For
+   example, F can call another function G, which fails, and F has not made
+   provisions to handle the failure.
+ * diverge: the function call loops forever.
+
+The Meaning of Failure and Fault
+--------------------------------
+A Curv function can report an error as a Failure or as a Fault.
+What is the criteria for choosing one over the other?
+ * A Failure is a recoverable error that the caller may choose to handle.
+   Failure is part of the contract or external interface of a function.
+ * A Fault is a nonrecoverable error. Due to a problem detected at runtime,
+   the function is unable to honour its contract.
+   A Fault may indicate a logic error in the program. It could also indicate
+   an error in the Curv virtual machine, such as resource exhaustion.
+   A smart compiler can detect some faults at compile time, and report them
+   as compile time errors.
+
+Failure:
+ * The domain of a function is the set of argument values that it accepts.
+   This set constitutes a pattern that a caller may wish to match a value
+   against using the 'match' primitive.
+ * There are various reasons why a function call may terminate in an error.
+   If the reason is that the caller has violated the contract by passing
+   a bad argument, then the function call should fail, if it can. In the error
+   description, the top of the stack trace shows the function call and
+   indicates the bad argument. (The bug is in the caller, so the stack trace
+   doesn't show the internals of the function being called, which would just
+   obscure the stack trace.)
+
+Fault:
+ * A function call may fault due to a bug in the function itself.
+   In this case, we want the stack trace to show the location in the function
+   body where the error occurred.
+ * A function may fault to indicate that a program data structure is corrupted.
+ * Consider a combinator C, a function that maps a function argument F
+   onto a function result G. The contract for C will describe the input
+   requirements (the contract for F) and the output requirements
+   (the contract for G). If C can detect that F doesn't meet the input
+   requirements before the function call 'C F' returns, then C should fail.
+   However, it may not be possible or practical to fully determine F's
+   properties at this time. If the function G detects that F isn't
+   meeting F's contract while a call to G is running, then it is too
+   late to cause C to fail, so G must fault.
+
+Limitations on failure detection:
+ * If the domain of a function contains only simple data (scalars) or data
+   structures of simple data that will be fully traversed by the function,
+   then the function can verify that the arg is in the domain, else fail.
+ * On the other hand, if the domain is a large data structure of which only a
+   small part will be visited, or if the domain contains functions, then the
+   function can't verify the argument, and can't fail on a bad argument.
+   So, instead, passing a bad argument may instead lead to a fault later on.
+ * Strictly speaking, we need to document the function's domain, and also
+   document whether it fails properly when passed an out-of-domain argument.
+ * We mitigate this problem by providing the ability to tag values with
+   application-level type names. The type's constructors and operations ensure
+   that the data structure is valid. Only the tag needs to be checked.
+
+An example issue with failure detection is how I handle Shape arguments.
+* In std.curv, shape values are constructed by make_shape, which ensures they
+  are valid (it can't validate domain/range of the dist/colour functions).
+* Shape operators (rotate and many others) don't generally use is_shape to
+  validate arguments, and is_shape doesn't fully validate, it just checks that
+  the 5 record fields are present. More complete argument checking in the
+  parameter patterns would slow things down, and threading failure detection
+  through the code is not currently possible and probably too difficult.
+* The code that detects shape values and renders them uses the is_shape test
+  to distinguish shapes (that must be rendered in the Viewer) from non-shapes
+  (that are printed in the REPL). That means bad field values in a presumed
+  shape cause a fault, but records that lack all 5 shape fields are treated
+  as non-shapes.
+This situation doesn't fully conform to the "vision" of function domains given
+here. Instead, it appears I need a nominal Shape type. make_shape is the
+constructor that guarantees that a shape is valid, and brands the resulting
+record value. is_shape tests for this brand. See [[Labelled]] for the latest
+version of this feature.
+
+Handling Failure
+----------------
+Since it is possible to handle a failure in a function call, without aborting
+the program, we can say that Curv supports exception handling. But it is
+*denotative* exception handling, it isn't the C++/Python model of a non-local
+transfer of control.
+
+The `match` function is used to handle a failed function call.
+    x >> match[f,g]
+calls `f x`. If this fails, then `g x` is called instead.
+
+The `compose` function embodies the concept of executing a nested sequence of
+function calls, terminating and failing early if one of the function calls
+fails. It is notable that `compose` does *not* convert the failure into a
+fault, so it's still possible to handle the failure.
+
+Using a combination of `match` and `compose`, you have the minimum
+necessary set of features for handling failures. However, this is an
+embryonic feature, and I don't have the syntactic sugar to make this style
+of coding more convenient. This can be added later, driven by use cases.
+
+`match` is the fundamental conditional construct in Curv (if/then/else is
+really just sugar for match), and because of the way Curv is designed, with
+the uncompromising focus on simplicity, orthogonality and expressive power,
+it turns out that exception handling just "falls out" from the conditional
+construct.
+
+(Likewise, `compose` is the fundamental primitive for sequential evaluation.)
+
+How to derive if/then/else from match:
+    if A then B else C
+      => A >> match[#true->B, #false->C]
+If we implement the extensible mixfix operator proposal, and then add a
+macro facility, then if/then/else can be defined in user space.
+
+TODO: Develop the idioms for using `match` to write functions that handle
+exceptions, and for writing functions that define their own domain.
+Maybe this will involve creating some higher level operations, like I defined
+'if' in terms of 'match'.
+
+Reporting Failure
+-----------------
+How do I define the domain of a function with high precision (ie, beyond
+simple type predicates applied to the formal parameters)?
+There are two general approaches:
+ * Use function parameter patterns to define the domain.
+ * Construct the function using combinators. The two fundamental
+   combinators for constructing a complex domain from simpler domains
+   are compose and match.
+
+The Patterns proposal adds some new features.
+ * `pat <: func` is a cast pattern. Apply `func` to the argument.
+   Fail if `func arg` fails. Otherwise match `func arg` against pat.
+ * `pat :: pred` is equivalent to `pat <: ensure pred`.
+ * `pat when cond` matches the argument against the pattern, then
+   evaluates boolean expression `cond` in an environment that contains
+   the pattern parameters. Fail if `cond` is false.
+
+Consider a hypothetical function `str_to_int`. The domain is a character
+string containing 1 or more decimal digits, preceded by optional minus sign.
+The result is an integer. How do I code this function?
+
+ * Write a predicate P that tests the string for validity,
+   then `str_to_int s :: P = ...`. But then I'm running two passes over the
+   string argument.
+
+ * Point-free/combinator style programming could be used.
+   The trick is to find a good set of combinators, beginning with match/compose.
+   The problem is the difficulty of this programming style.
+
+ * Write a function F that converts the string to an int and returns [ival],
+   or indicates failure by returning []. This result is an encoding of
+   a Maybe or Optional type in Curv. Then I apply the unbox combinator to F,
+   converting the optional value to an unboxed value or failure.
+      unbox f x:
+         if f x is [a], return a.
+         if f x is [], fail.
+         otherwise, fault.
+      unbox f x = f x >> match [
+         [a] -> a,
+         a when a != [] -> error "unbox",
+      ];
+   Then, `str_to_int = unbox F`.
+
+   I would also need a combinator to 'box' an existing function, boxing a normal
+   result and converting failure to a [] value.
+      box f = match[compose[f,x->[x]], _->[]];
+
+ * I could add an imperative 'fail' action that can only be invoked inside
+   a function, and which causes the current function call to fail.
+   It's hacky, because it's not composable the way the 'unbox' protocol
+   is composable. You can't just abstract some code that uses 'fail'
+   into an auxiliary function.
+
+Re: unbox. There is a general problem in Curv 0.4 with defining functions
+using combinators, as in 'f = <combinator-call>'. One, inability to use
+recursion, fixed by the Recursive Definitions proposal. Two, the function 'f'
+is labelled with the combinator name, not with the name 'f', which makes error
+messages more obscure. Fixed by the Labelled proposal.
+
+It would be useful to provide a way to fail with a message. The message is
+used to construct an error in the situation where the failure is converted
+to a fault. This opens a can of worms, though:
+
+ * 'fail "message"' returns a function that ignores its argument
+   and always fails with the specified message. You use this with 'match':
+      match [
+         a :: pred -> f a,
+         fail "no good"
+      ]
+   The problem is that in order for 'fail' to fail and not fault, it
+   has the empty domain, which means that, according to the algebra of
+   programs, match will skip it. We need to change match to do a tail call
+   into the final function in the list. This is part of the operational
+   semantics of match because the fail message is a side effect.
+   A corollary is that since 'fail' is impure, it is a primitive, not definable
+   using 'error'.
+
+ * 'fail' is no good because it is impure. A better idea is
+      fail_with msg F
+   which modifies 'F' to fail with the message 'msg'. Then you write:
+      match [
+         a :: pred -> f a,
+      ]
+      >> fail_with "no good"
+   The error function can be defined as
+      error msg = (match[] >> fail_with msg) msg
+
+ * The 'box' function given earlier discards any error message associated with
+   failure in the function being boxed. So there is a loss of composability
+   when using the box/unbox protocol for controlling a function's domain.
+
+   We could change 'box' to convert failure to an error value containing the
+   error message.
+
+Complex Domains
+---------------
+A complex domain over large data structures is, essentially, a language.
+Consider a complex domain over character strings as a motivating example.
+Another example: a triangle mesh that is 2-manifold, watertight, and
+non-self-intersecting.
+
+Traversing one of these large data structures and finding an error (aka,
+checking that an argument value belongs to the function domain) is, essentially,
+parsing. High level pattern matching is a much easier coding style for this
+problem space than low level imperative code.
+ * Parameter patterns are easier to read and write than imperative code
+   for destructuring an argument.
+ * Regular expressions are easier to read and write than the equivalent
+   imperative code.
+ * Combinator based parsing libraries are lovely to use.
+
+When parsing a large data structure, we want to combine validation with
+generating the result, for efficiency reasons, and because it should be less
+code. So we may be deep in the parser when we detect an error, and that causes
+the function call to fail with a domain error.
+
+If this function F is being called in the way that converts failures to faults,
+we want to generate an accurate, useful error message. This is essentially the
+problem of generating good error messages in a compiler. The error message
+will contain the stack trace, up to the function F that failed, plus a data
+structure path, identifying the location in the data structure where the error
+occurred, plus a description of the error, which might be contributed by a
+combinator matching a specific pattern. So this takes us back to the idea of
+implementing such functions as an assembly of pattern matching combinators.
+How do these combinators cooperate to generate an error message for F?
+
+Handling Faults
+---------------
+* Imagine that the Curv UI is written in Curv.
+  The UI can't abort when a fault occurs (like computing 0/0 in the REPL).
+  So we will need a way to trap and handle faults.
+* We'll need to introduce error values that represent and reify faults.
+* And we'll need to preserve equational reasoning and the algebra of programs.
+
+There are right ways and wrong ways to do this.
+* There's an early Haskell paper showing that traditional (C++ style)
+  exception handling breaks the algebra of programs. This is because there
+  are different exception types, and handling different exception types
+  in different ways will indirectly expose the order of evaluation
+  (`a + b` has a different meaning from `b + a`, if `a` and `b` both throw
+  exceptions of different types, which breaks commutativity). Their solution
+  was to move exception handling into the IO monad, as I recall.
+* My lesson is that we shouldn't distinguish different fault types.
+  All error values are the same at the high level, and they are distinct
+  from ordinary values. A fault is not an exception. Curv's failure/fault
+  distinction is similar to Rust's recoverable/nonrecoverable errors.
+
+Instead of treating a fault as a nonlocal jump, let's treat faults as values,
+while preserving the algebra of programs.
+
+As a first approximation, expression evaluation order in Curv can be ignored,
+because it cannot affect the value returned by an expression.
+(This permits denotative or equational reasoning.)
+
+But, evaluation order is still important for the following reasons:
+ * performance
+ * divergence
+ * aborting the program due to a fault
+
+Let's tweak the semantics of Curv so that you don't have to be so careful
+about evaluation order in order to avoid a fault changing the meaning of
+your program. However, performance and divergence issues will remain.
+
+The goal is to improve equational reasoning by making the algebraic laws
+work in more cases. Eg, currently you have to write
+    n != 0 && a/n < 1
+instead of (a/n < 1) in order to avoid an abort when n==0. But we would
+like the && operator to be commutative so that it obeys the laws of
+Boolean algebra. So (modulo performance considerations) you should also be
+able to write
+    a/n < 1 && n != 0
+and get the same result.
+
+The tweak is: a fault produces an error value, rather than immediately
+terminating the program. Most operations on error values produce further
+error values (similar to the non-local jump design). However, we introduce
+exceptions to this rule in order to preserve equational reasoning. An error
+value can be bound to a variable or passed as an argument. Perhaps it can
+be stored in a data structure. Eg,
+ * (0/0) now denotes an error value
+ * is_bool <error> is an error (not true or false)
+ * x == <error> is an error (not true or false)
+
+An error value contains a Curv error message and stack trace. If the result
+of a program is an error value, then the error message and stack trace are
+printed.
+
+I guess that faults as error values is a little like lazy evaluation in Haskell.
+Both ideas are introduced in order to preserve algebraic laws and improve
+equational reasoning. In this case, error values introduce a kind of laziness
+in fault handling, in that we don't immediately jump into a fault handler
+when a fault is first detected.
+
+Curv doesn't implement lazy evaluation because lazy evaluation improves the
+program algebra at the expense of debugging and performance analysis.
+The goal of lazy evaluation by default is to make programs easier to reason
+about, but due to this tradeoff, it is actually a net loss.
+
+So what is the impact of error values? If we don't immediately jump into an
+fault handler when a fault is first detected, then do we not lose some of
+the original context, making the bug harder to analyze? Or do we preserve
+the full program state and potentially incur a large memory cost for keeping
+error values around? This is a research problem, and I don't know prior art
+that resolves these issues.
+
+For now, a Rust-like approach for fault handling seems more workable.
+Maybe we have multiple processes, and a fault terminates the process, or
+you can jump into the debugger and debug the process. The debugger can be
+written in Curv, and runs in a separate process from the process being
+debugged. Maybe the process architecture is like Actors/Erlang.
+This process termination model means that (single threaded) equational
+reasoning works inside a process. But interaction between processes is
+nondeterministic anyway, so the program algebra is quite different.
