@@ -52,9 +52,8 @@ struct Function : public Ref_Value
     virtual Value call(Value, Fail, Frame&) const = 0;
     virtual void tail_call(Value, std::unique_ptr<Frame>&) const;
 
-    // Attempt a function call: return `missing` if the parameter pattern
-    // doesn't match the value; otherwise call the function and return result.
-    virtual Value try_call(Value, Frame&) const;
+    // Attempt a tail call: return false if the call fails (parameter pattern
+    // doesn't match the value); otherwise call the function and return true.
     virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) const;
 
     // Generate a call to the function during geometry compilation.
@@ -115,7 +114,6 @@ struct Tuple_Function : public Function
 
     // call the function during evaluation, with specified argument value.
     virtual Value call(Value, Fail, Frame&) const override;
-    virtual Value try_call(Value, Frame&) const override;
 
     // call the function during evaluation, with arguments stored in the frame.
     virtual Value tuple_call(Fail, Frame& args) const = 0;
@@ -197,7 +195,6 @@ struct Closure : public Function
 
     virtual Value call(Value, Fail, Frame&) const override;
     virtual void tail_call(Value, std::unique_ptr<Frame>&) const override;
-    virtual Value try_call(Value, Frame&) const override;
     virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) const override;
 
     // generate a call to the function during geometry compilation
@@ -219,7 +216,6 @@ struct Piecewise_Function : public Function
     // call the function during evaluation, with specified argument value.
     virtual Value call(Value, Fail, Frame&) const override;
     virtual void tail_call(Value, std::unique_ptr<Frame>&) const override;
-    virtual Value try_call(Value, Frame&) const override;
     virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) const override;
 
     // generate a call to the function during geometry compilation
@@ -240,7 +236,6 @@ struct Composite_Function : public Function
 
     // call the function during evaluation, with specified argument value.
     virtual Value call(Value, Fail, Frame&) const override;
-    virtual Value try_call(Value, Frame&) const override;
 
     // generate a call to the function during geometry compilation
 //  virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const override;

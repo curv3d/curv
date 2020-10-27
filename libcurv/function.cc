@@ -52,12 +52,6 @@ Function::print_repr(std::ostream& out) const
     out << ">";
 }
 
-Value
-Function::try_call(Value arg, Frame& f) const
-{
-    return call(arg, Fail::soft, f);
-}
-
 void
 Function::tail_call(Value arg, std::unique_ptr<Frame>& f) const
 {
@@ -68,7 +62,7 @@ Function::tail_call(Value arg, std::unique_ptr<Frame>& f) const
 bool
 Function::try_tail_call(Value arg, std::unique_ptr<Frame>& f) const
 {
-    Value result = try_call(arg, *f);
+    Value result = call(arg, Fail::soft, *f);
     if (!result.is_missing()) {
         f->result_ = result;
         f->next_op_ = nullptr;
@@ -105,23 +99,6 @@ Tuple_Function::call(Value arg, Fail fl, Frame& f) const
     for (size_t i = 0; i < list->size(); ++i)
         f[i] = (*list)[i];
     return tuple_call(fl, f);
-}
-
-Value
-Tuple_Function::try_call(Value arg, Frame& f) const
-{
-    if (nargs_ == 1) {
-        f[0] = arg;
-        return tuple_call(Fail::soft, f);
-    }
-    auto list = arg.maybe<const List>();
-    if (list && list->size() == nargs_) {
-        for (size_t i = 0; i < list->size(); ++i)
-            f[i] = (*list)[i];
-        return tuple_call(Fail::soft, f);
-    } else {
-        return missing;
-    }
 }
 
 SC_Value
@@ -184,15 +161,6 @@ Closure::tail_call(Value arg, std::unique_ptr<Frame>& f) const
     f->next_op_ = &*expr_;
 }
 
-Value
-Closure::try_call(Value arg, Frame& f) const
-{
-    f.nonlocals_ = &*nonlocals_;
-    if (!pattern_->try_exec(f.array_, arg, At_Arg(*this, f), f))
-        return missing;
-    return expr_->eval(f);
-}
-
 bool
 Closure::try_tail_call(Value arg, std::unique_ptr<Frame>& f) const
 {
@@ -234,7 +202,7 @@ Value
 Piecewise_Function::call(Value arg, Fail fl, Frame& f) const
 {
     for (auto c : cases_) {
-        Value result = c->try_call(arg, f);
+        Value result = c->call(arg, Fail::soft, f);
         if (!result.is_missing())
             return result;
     }
@@ -251,17 +219,6 @@ Piecewise_Function::tail_call(Value arg, std::unique_ptr<Frame>& f) const
     }
     throw Exception(At_Arg(*this, *f), stringify(
         arg," has no matching pattern"));
-}
-
-Value
-Piecewise_Function::try_call(Value arg, Frame& f) const
-{
-    for (auto c : cases_) {
-        Value result = c->try_call(arg, f);
-        if (!result.is_missing())
-            return result;
-    }
-    return missing;
 }
 
 bool
@@ -297,17 +254,6 @@ Composite_Function::call(Value arg, Fail fl, Frame& f) const
 {
     for (auto c : cases_) {
         arg = c->call(arg, fl, f);
-        if (arg.is_missing())
-            break;
-    }
-    return arg;
-}
-
-Value
-Composite_Function::try_call(Value arg, Frame& f) const
-{
-    for (auto c : cases_) {
-        arg = c->try_call(arg, f);
         if (arg.is_missing())
             break;
     }
