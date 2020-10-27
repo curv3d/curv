@@ -49,7 +49,7 @@ struct Function : public Ref_Value
     }
 
     // call the function during evaluation
-    virtual Value call(Value, Frame&) const = 0;
+    virtual Value call(Value, Fail, Frame&) const = 0;
     virtual void tail_call(Value, std::unique_ptr<Frame>&) const;
 
     // Attempt a function call: return `missing` if the parameter pattern
@@ -74,8 +74,13 @@ struct Function : public Ref_Value
 // only happens for directory records).
 Shared<const Function> maybe_function(Value, const Context&);
 
-// If Value is not a Function, throw an exception.
-Shared<const Function> value_to_function(Value, const Context&);
+// If Value is not a Function, fail.
+Shared<const Function> value_to_function(Value, Fail, const Context&);
+
+inline Shared<const Function> value_to_function(Value val, const Context& cx)
+{
+    return value_to_function(val, Fail::hard, cx);
+}
 
 // Call a function or index into a list or string.
 // Implements the Curv juxtaposition operator: `func arg`.
@@ -109,7 +114,7 @@ struct Tuple_Function : public Function
     {}
 
     // call the function during evaluation, with specified argument value.
-    virtual Value call(Value, Frame&) const override;
+    virtual Value call(Value, Fail, Frame&) const override;
     virtual Value try_call(Value, Frame&) const override;
 
     // call the function during evaluation, with arguments stored in the frame.
@@ -190,7 +195,7 @@ struct Closure : public Function
         argpos_ = lambda.argpos_;
     }
 
-    virtual Value call(Value, Frame&) const override;
+    virtual Value call(Value, Fail, Frame&) const override;
     virtual void tail_call(Value, std::unique_ptr<Frame>&) const override;
     virtual Value try_call(Value, Frame&) const override;
     virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) const override;
@@ -212,7 +217,7 @@ struct Piecewise_Function : public Function
     {}
 
     // call the function during evaluation, with specified argument value.
-    virtual Value call(Value, Frame&) const override;
+    virtual Value call(Value, Fail, Frame&) const override;
     virtual void tail_call(Value, std::unique_ptr<Frame>&) const override;
     virtual Value try_call(Value, Frame&) const override;
     virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) const override;
@@ -234,7 +239,7 @@ struct Composite_Function : public Function
     {}
 
     // call the function during evaluation, with specified argument value.
-    virtual Value call(Value, Frame&) const override;
+    virtual Value call(Value, Fail, Frame&) const override;
     virtual Value try_call(Value, Frame&) const override;
 
     // generate a call to the function during geometry compilation

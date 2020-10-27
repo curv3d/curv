@@ -22,7 +22,7 @@ struct Parametric_Ctor : public Function
         defl_(defl)
     {}
 
-    virtual Value call(Value arg, Frame& fr) const override;
+    virtual Value call(Value arg, Fail, Frame& fr) const override;
 };
 
 } // namespace curv

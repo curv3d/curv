@@ -35,7 +35,7 @@ struct Unary_Op_Expr : public Prefix_Expr_Base
 {
     using Prefix_Expr_Base::Prefix_Expr_Base;
     virtual Value eval(Frame& f) const override
-      { return Op::call(At_Phrase(*syntax_, f), arg_->eval(f)); }
+      { return Op::call(Fail::hard, At_Phrase(*syntax_, f), arg_->eval(f)); }
     virtual SC_Value sc_eval(SC_Frame& f) const override
       { return Op::sc_op(At_SC_Phrase(syntax_,f), *arg_, f); }
     virtual void print(std::ostream& out) const override
@@ -74,7 +74,7 @@ struct Unary_Array_Op
     using Prim = PRIM;
 
     static Value
-    call(const At_Syntax& cx, Value x)
+    call(Fail fl, const At_Syntax& cx, Value x)
     {
         typename Prim::scalar_t sx;
         if (Prim::unbox(x, sx, cx)) {
@@ -84,12 +84,12 @@ struct Unary_Array_Op
             Ref_Value& rx(x.to_ref_unsafe());
             switch (rx.type_) {
             case Ref_Value::ty_list:
-                return element_wise_op(cx, (List&)rx);
+                return element_wise_op(fl, cx, (List&)rx);
             case Ref_Value::ty_reactive:
-                return reactive_op(cx, (Reactive_Value&)rx);
+                return reactive_op(fl, cx, (Reactive_Value&)rx);
             }
         }
-        throw domain_error(cx, x);
+        FAIL(fl, missing, cx, domain_error(x));
     }
     static SC_Value
     sc_op(const At_Syntax& cx, Operation& argx, SC_Frame& f)
@@ -101,17 +101,19 @@ struct Unary_Array_Op
     }
 
     static Value
-    element_wise_op(const At_Syntax& cx, List& xs)
+    element_wise_op(Fail fl, const At_Syntax& cx, List& xs)
     {
         Shared<List> result = List::make(xs.size());
-        for (unsigned i = 0; i < xs.size(); ++i)
-            (*result)[i] = call(cx, xs[i]);
+        for (unsigned i = 0; i < xs.size(); ++i) {
+            TRY_DEF(r, call(fl, cx, xs[i]));
+            (*result)[i] = r;
+        }
         return {result};
     }
 
     // Argument x is reactive. Construct a Reactive_Expression.
     static Value
-    reactive_op(const At_Syntax& cx, Reactive_Value &rx)
+    reactive_op(Fail fl, const At_Syntax& cx, Reactive_Value &rx)
     {
         SC_Type rtype = Prim::sc_result_type(rx.sctype_);
         if (rtype) {
@@ -121,13 +123,13 @@ struct Unary_Array_Op
                     share(cx.syntax()), rx.expr()),
                 cx)};
         } else {
-            throw domain_error(cx, {share(rx)});
+            FAIL(fl, missing, cx, domain_error({share(rx)}));
         }
     }
 
-    static Exception domain_error(const Context& cx, Value x)
+    static Shared<const String> domain_error(Value x)
     {
-        return Exception(cx, stringify(x, ": domain error"));
+        return stringify(x, ": domain error");
     }
 };
 

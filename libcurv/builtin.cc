@@ -50,9 +50,9 @@ struct Unary_Array_Func : public Function
 {
     using Function::Function;
     using Op = Unary_Array_Op<Prim>;
-    Value call(Value arg, Frame& f) const override
+    Value call(Value arg, Fail fl, Frame& f) const override
     {
-        return Op::call(At_Arg(*this, f), arg);
+        return Op::call(fl, At_Arg(*this, f), arg);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
@@ -82,9 +82,9 @@ struct Monoid_Func final : public Function
 {
     using Function::Function;
     using Op = Binary_Array_Op<Prim>;
-    Value call(Value arg, Frame& f) const override
+    Value call(Value arg, Fail fl, Frame& f) const override
     {
-        return Op::reduce(Fail::hard, At_Arg(*this, f), Prim::zero(), arg);
+        return Op::reduce(fl, At_Arg(*this, f), Prim::zero(), arg);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
@@ -101,7 +101,7 @@ struct Monoid_Func final : public Function
 struct Is_Bool_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Frame&) const override
+    Value call(Value arg, Fail, Frame&) const override
     {
         return {is_bool(arg)};
     }
@@ -109,7 +109,7 @@ struct Is_Bool_Function : public Function
 struct Is_Symbol_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Frame&) const override
+    Value call(Value arg, Fail, Frame&) const override
     {
         return {is_symbol(arg)};
     }
@@ -117,7 +117,7 @@ struct Is_Symbol_Function : public Function
 struct Is_Num_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Frame&) const override
+    Value call(Value arg, Fail, Frame&) const override
     {
         return {is_num(arg)};
     }
@@ -125,7 +125,7 @@ struct Is_Num_Function : public Function
 struct Is_String_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Frame&) const override
+    Value call(Value arg, Fail, Frame&) const override
     {
         return {is_string(arg)};
     }
@@ -133,7 +133,7 @@ struct Is_String_Function : public Function
 struct Is_List_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Frame&) const override
+    Value call(Value arg, Fail, Frame&) const override
     {
         return {is_list(arg)};
     }
@@ -141,7 +141,7 @@ struct Is_List_Function : public Function
 struct Is_Record_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Frame&) const override
+    Value call(Value arg, Fail, Frame&) const override
     {
         return {arg.maybe<Record>() != nullptr};
     }
@@ -149,7 +149,7 @@ struct Is_Record_Function : public Function
 struct Is_Primitive_Func_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Frame&) const override
+    Value call(Value arg, Fail, Frame&) const override
     {
         return {arg.maybe<Function>() != nullptr};
     }
@@ -157,7 +157,7 @@ struct Is_Primitive_Func_Function : public Function
 struct Is_Func_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Frame& fr) const override
+    Value call(Value arg, Fail, Frame& fr) const override
     {
         return {maybe_function(arg, At_Arg(*this, fr)) != nullptr};
     }
@@ -422,9 +422,9 @@ struct Bool32_To_Nat_Function : public Function
         }
     };
     static Unary_Array_Op<Prim> array_op;
-    Value call(Value arg, Frame& f) const override
+    Value call(Value arg, Fail fl, Frame& f) const override
     {
-        return array_op.call(At_Arg(*this, f), arg);
+        return array_op.call(fl, At_Arg(*this, f), arg);
     }
 };
 
@@ -446,9 +446,9 @@ struct Nat_To_Bool32_Function : public Function
         }
     };
     static Unary_Array_Op<Prim> array_op;
-    Value call(Value arg, Frame& f) const override
+    Value call(Value arg, Fail fl, Frame& f) const override
     {
-        return array_op.call(At_Arg(*this, f), arg);
+        return array_op.call(fl, At_Arg(*this, f), arg);
     }
     SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
     const override
@@ -968,13 +968,15 @@ struct Encode_Function : public Tuple_Function
 struct Match_Function : public Function
 {
     using Function::Function;
-    virtual Value call(Value arg, Frame& f) const override
+    virtual Value call(Value arg, Fail fl, Frame& f) const override
     {
         At_Arg ctx0(*this, f);
-        auto list = arg.to<List>(ctx0);
+        TRY_DEF(list, arg.to<List>(fl, ctx0));
         std::vector<Shared<const Function>> cases;
-        for (size_t i = 0; i < list->size(); ++i)
-            cases.push_back(value_to_function(list->at(i), At_Index(i,ctx0)));
+        for (size_t i = 0; i < list->size(); ++i) {
+            TRY_DEF(fn, value_to_function(list->at(i), fl, At_Index(i,ctx0)));
+            cases.push_back(fn);
+        }
         auto mf = make<Piecewise_Function>(cases);
         mf->name_ = name_;
         mf->argpos_ = 1;
@@ -985,13 +987,15 @@ struct Match_Function : public Function
 struct Compose_Function : public Function
 {
     using Function::Function;
-    virtual Value call(Value arg, Frame& f) const override
+    virtual Value call(Value arg, Fail fl, Frame& f) const override
     {
         At_Arg ctx0(*this, f);
-        auto list = arg.to<List>(ctx0);
+        TRY_DEF(list, arg.to<List>(fl, ctx0));
         std::vector<Shared<const Function>> cases;
-        for (size_t i = 0; i < list->size(); ++i)
-            cases.push_back(value_to_function(list->at(i), At_Index(i,ctx0)));
+        for (size_t i = 0; i < list->size(); ++i) {
+            TRY_DEF(fn, value_to_function(list->at(i), fl, At_Index(i,ctx0)));
+            cases.push_back(fn);
+        }
         auto mf = make<Composite_Function>(cases);
         mf->name_ = name_;
         mf->argpos_ = 1;
@@ -1108,13 +1112,9 @@ struct Warning_Metafunction : public Metafunction
 struct Error_Function : public Function
 {
     using Function::Function;
-    virtual Value call(Value arg, Frame& f) const override
+    virtual Value call(Value arg, Fail fl, Frame& fm) const override
     {
-        throw Exception{At_Frame(f), to_print_string(arg)};
-    }
-    virtual Value try_call(Value, Frame&) const override
-    {
-        return {};
+        FAIL(fl, missing, At_Frame(fm), to_print_string(arg));
     }
 };
 /// The meaning of a call to `error`, such as `error("foo")`.

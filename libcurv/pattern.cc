@@ -176,7 +176,7 @@ struct Predicate_Pattern : public Pattern
                 std::unique_ptr<Frame> f2 {
                     Frame::make(fun->nslots_, f.system_, &f, call_phrase(), nullptr)
                 };
-                auto result = fun->call(arg, *f2);
+                auto result = fun->call(arg, Fail::hard, *f2);
                 return result.to_bool(At_Phrase(*call_phrase(), f));
               }
             case Ref_Value::ty_record:

@@ -147,7 +147,7 @@ Shape_Program::dist(double x, double y, double z, double t)
 {
     At_Program cx(*this);
     Shared<List> point = List::make({Value{x}, Value{y}, Value{z}, Value{t}});
-    Value result = dist_fun_->call({point}, *dist_frame_);
+    Value result = dist_fun_->call({point}, Fail::hard, *dist_frame_);
     return result.to_num(cx);
 }
 
@@ -156,7 +156,7 @@ Shape_Program::colour(double x, double y, double z, double t)
 {
     At_Program cx(*this);
     Shared<List> point = List::make({Value{x}, Value{y}, Value{z}, Value{t}});
-    Value result = colour_fun_->call({point}, *colour_frame_);
+    Value result = colour_fun_->call({point}, Fail::hard, *colour_frame_);
     Shared<List> cval = result.to<List>(cx);
     cval->assert_size(3, cx);
     return Vec3{ cval->at(0).to_num(cx),

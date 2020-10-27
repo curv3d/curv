@@ -104,7 +104,7 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Render_Opts& opts)
         std::unique_ptr<Frame> f2 {
             Frame::make(sh_constructor->nslots_, shape.system_, nullptr, nullptr, nullptr)
         };
-        Value result = sh_constructor->call({cparams}, *f2);
+        Value result = sh_constructor->call({cparams}, Fail::hard, *f2);
         //std::cerr << "parametric shape: " << result << "\n";
 
         auto r = result.maybe<Record>();

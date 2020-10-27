@@ -951,27 +951,28 @@ Predicate_Assertion_Expr::eval(Frame& f) const
     throw Exception(At_Phrase(*syntax_, f), "predicate assertion failed");
 }
 
-Value Parametric_Ctor::call(Value arg, Frame& fr) const
+Value Parametric_Ctor::call(Value arg, Fail fl, Frame& fr) const
 {
     At_Phrase acx(arg_part(fr.call_phrase_), fr);
-    auto arec = arg.to<const Record>(acx);
+    TRY_DEF(arec, arg.to<const Record>(fl, acx));
     auto drec = make<DRecord>();
-    // Merge defl_ with arec; error if arec contains fields not in defl_;
+    // Merge defl_ with arec; fail if arec contains fields not in defl_;
     // place result in drec.
     defl_->each_field(acx, [&](Symbol_Ref id, Value val) -> void {
         drec->fields_[id] = val;
     });
-    arec->each_field(acx, [&](Symbol_Ref id, Value val) -> void {
+    for (auto field = arec->iter(); !field->empty(); field->next()) {
+        auto id = field->key();
         auto ep = drec->fields_.find(id);
         if (ep != drec->fields_.end())
-            ep->second = val;
+            ep->second = field->value(acx);
         else {
-            throw Exception(acx, stringify("bad argument ",id));
+            FAIL(fl, missing, acx, stringify("bad argument ",id));
         }
-    });
+    }
     // call parametric record constructor
-    auto rval = ctor_->call({drec}, fr);
-    auto result = update_drecord(rval, acx);
+    TRY_DEF(rval, ctor_->call({drec}, fl, fr));
+    auto result = update_drecord(rval, acx); // fault on error
     result->fields_[make_symbol("call")] = {ctor_};
     result->fields_[make_symbol("argument")] = {drec};
     return {result};
@@ -990,7 +991,7 @@ Parametric_Expr::eval(Frame& f) const
         Frame::make(closure->nslots_, f.system_, &f, call_phrase, nullptr)
     };
     auto default_arg = record_pattern_default_value(*closure->pattern_,*f2);
-    Value res = closure->call({default_arg}, *f2);
+    Value res = closure->call({default_arg}, Fail::hard, *f2);
     auto rec = res.to<Record>(cx);
     auto drec = make<DRecord>();
     rec->each_field(cx, [&](Symbol_Ref id, Value val) -> void {

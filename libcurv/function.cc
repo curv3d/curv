@@ -30,12 +30,12 @@ maybe_function(Value funv, const Context& cx)
 }
 
 Shared<const Function>
-value_to_function(Value funv, const Context& cx)
+value_to_function(Value funv, Fail fl, const Context& cx)
 {
     auto fun = maybe_function(funv, cx);
     if (fun != nullptr)
         return fun;
-    throw Exception(cx, stringify(funv," is not a function"));
+    FAIL(fl, nullptr, cx, stringify(funv," is not a function"));
 }
 
 const char Function::name[] = "function";
@@ -55,13 +55,13 @@ Function::print_repr(std::ostream& out) const
 Value
 Function::try_call(Value arg, Frame& f) const
 {
-    return call(arg, f);
+    return call(arg, Fail::soft, f);
 }
 
 void
 Function::tail_call(Value arg, std::unique_ptr<Frame>& f) const
 {
-    f->result_ = call(arg, *f);
+    f->result_ = call(arg, Fail::hard, *f);
     f->next_op_ = nullptr;
 }
 
@@ -88,18 +88,23 @@ const
 }
 
 Value
-Tuple_Function::call(Value arg, Frame& f) const
+Tuple_Function::call(Value arg, Fail fl, Frame& f) const
 {
     if (nargs_ == 1) {
         f[0] = arg;
-        return tuple_call(Fail::hard, f);
+        return tuple_call(fl, f);
     }
     At_Arg cx(*this, f);
     auto list = arg.to<const List>(cx);
-    list->assert_size(nargs_,cx);
+    if (list->size() != nargs_) {
+        if (fl == Fail::soft)
+            return {};
+        else
+            list->assert_size(nargs_,cx);
+    }
     for (size_t i = 0; i < list->size(); ++i)
         f[i] = (*list)[i];
-    return tuple_call(Fail::hard, f);
+    return tuple_call(fl, f);
 }
 
 Value
@@ -159,10 +164,15 @@ Tuple_Function::sc_tuple_call(SC_Frame& f) const
 }
 
 Value
-Closure::call(Value arg, Frame& f) const
+Closure::call(Value arg, Fail fl, Frame& f) const
 {
     f.nonlocals_ = &*nonlocals_;
-    pattern_->exec(f.array_, arg, At_Arg(*this, f), f);
+    if (fl == Fail::soft) {
+        if (!pattern_->try_exec(f.array_, arg, At_Arg(*this, f), f))
+            return missing;
+    } else {
+        pattern_->exec(f.array_, arg, At_Arg(*this, f), f);
+    }
     return expr_->eval(f);
 }
 
@@ -221,15 +231,15 @@ Piecewise_Function::maxslots(std::vector<Shared<const Function>>& cases)
 }
 
 Value
-Piecewise_Function::call(Value arg, Frame& f) const
+Piecewise_Function::call(Value arg, Fail fl, Frame& f) const
 {
     for (auto c : cases_) {
         Value result = c->try_call(arg, f);
         if (!result.is_missing())
             return result;
     }
-    throw Exception(At_Arg(*this, f), stringify(
-        arg," has no matching pattern"));
+    FAIL(fl, missing, At_Arg(*this, f),
+        stringify(arg," has no matching pattern"));
 }
 
 void
@@ -283,10 +293,13 @@ Composite_Function::maxslots(std::vector<Shared<const Function>>& cases)
 }
 
 Value
-Composite_Function::call(Value arg, Frame& f) const
+Composite_Function::call(Value arg, Fail fl, Frame& f) const
 {
-    for (auto c : cases_)
-        arg = c->call(arg, f);
+    for (auto c : cases_) {
+        arg = c->call(arg, fl, f);
+        if (arg.is_missing())
+            break;
+    }
     return arg;
 }
 
