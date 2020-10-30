@@ -80,7 +80,6 @@ is_fun x =
     do warning
         "'is_fun' is deprecated. Use is_func or is_primitive_func instead.";
     in is_primitive_func x;
-compose = reduce[id, [f,g]->x->g(f x)];
 into f rest first = f [first, ...rest];
 
 merge rs = {for (r in rs) ...r};

@@ -1,4 +1,6 @@
 #include <gtest/gtest.h>
+#undef FAIL
+
 #include <libcurv/location.h>
 
 using namespace std;

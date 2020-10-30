@@ -23,7 +23,7 @@ struct System;
 /// SubCurv is a set of types and operations on those types. It is a statically
 /// typed subset of Curv which is also a subset of GLSL (but with different
 /// type and operation names). Curv distance functions must be restricted to the
-/// SC subset or the Shape Compiler will report an error during rendering.
+/// SC subset or the SubCurv Compiler will report an error during rendering.
 ///
 /// The compiler operates on Curv function *values*. Non-local variables
 /// captured by closures become compile time constants. Intermediate function
@@ -86,7 +86,7 @@ struct SC_Compiler
             return body_;
     }
 
-    // This is the main entry point to the Shape Compiler.
+    // This is the main entry point to the SubCurv Compiler.
     void define_function(
         const char* name, SC_Type param_type, SC_Type result_type,
         Shared<const Function> func, const Context&);
@@ -104,6 +104,22 @@ struct SC_Compiler
     {
         return SC_Value(valcount_++, type);
     }
+};
+
+// Encapsulate an SC_Value as an expression (Operation).
+// This will never be evaluated; it's only used as an argument
+// to Function::sc_call_expr.
+struct SC_Value_Expr : public Operation
+{
+    SC_Value val_;
+    SC_Value_Expr(Shared<const Phrase> syntax, SC_Value val)
+    :
+        Operation(syntax),
+        val_(val)
+    {
+    }
+    virtual void exec(Frame&, Executor&) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 
 SC_Value sc_eval_op(SC_Frame& f, const Operation& op);

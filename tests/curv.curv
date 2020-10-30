@@ -706,7 +706,6 @@ assert_error [
 // match and compose form a non-commutative ring with error and id
 assert(match[error,n->n+1] 2 == 3);
 assert(compose[id,n->n+1,n->n*5] 2 == 15);
-/*
 let
   in_domain F = match[compose[F,_->true],_->false];
   f (x :: is_num) = x + 1;
@@ -714,7 +713,6 @@ in (
   assert(in_domain error 2 == false && in_domain id 2 == true);
   assert(in_domain f 2 == true && in_domain f #foo == false);
 );
-*/
 
 assert_error [
     "statements cannot be mixed with definitions",

@@ -23,7 +23,7 @@ bool prints_as(Value val, const char* expect)
 struct Id_Function : public Tuple_Function
 {
     Id_Function() : Tuple_Function(1,"id") {}
-    Value tuple_call(Frame& args) const override
+    Value tuple_call(Fail, Frame& args) const override
     {
         return args[0];
     }

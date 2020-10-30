@@ -56,7 +56,7 @@ struct Function : public Ref_Value
     // doesn't match the value); otherwise call the function and return true.
     virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) const;
 
-    // Generate a call to the function during geometry compilation.
+    // Generate a call to the function during SubCurv compilation.
     // The argument is represented as an expression.
     virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const;
 
@@ -118,11 +118,11 @@ struct Tuple_Function : public Function
     // call the function during evaluation, with arguments stored in the frame.
     virtual Value tuple_call(Fail, Frame& args) const = 0;
 
-    // Generate a call to the function during geometry compilation.
+    // Generate a call to the function during SubCurv compilation.
     // The argument is represented as an expression.
     virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const override;
 
-    // generate a call to the function during geometry compilation
+    // generate a call to the function during SubCurv compilation
     virtual SC_Value sc_tuple_call(SC_Frame&) const;
 };
 
@@ -197,7 +197,7 @@ struct Closure : public Function
     virtual void tail_call(Value, std::unique_ptr<Frame>&) const override;
     virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) const override;
 
-    // generate a call to the function during geometry compilation
+    // generate a call to the function during SubCurv compilation
     virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const override;
 };
 
@@ -218,7 +218,7 @@ struct Piecewise_Function : public Function
     virtual void tail_call(Value, std::unique_ptr<Frame>&) const override;
     virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) const override;
 
-    // generate a call to the function during geometry compilation
+    // generate a call to the function during SubCurv compilation
     virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const override;
 };
 
@@ -237,8 +237,9 @@ struct Composite_Function : public Function
     // call the function during evaluation, with specified argument value.
     virtual Value call(Value, Fail, Frame&) const override;
 
-    // generate a call to the function during geometry compilation
-//  virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const override;
+    // generate a call to the function during SubCurv compilation
+    virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&)
+        const override;
 };
 
 } // namespace curv

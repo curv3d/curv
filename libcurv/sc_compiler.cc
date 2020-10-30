@@ -914,4 +914,14 @@ SC_Value sc_unary_call(SC_Frame& f, SC_Type rtype, const char* fn, SC_Value x)
     return result;
 }
 
+void SC_Value_Expr::exec(Frame& f, Executor&) const
+{
+    throw Exception(At_Phrase(*syntax_, f),
+        "SC_Value_Expr::exec internal error");
+}
+SC_Value SC_Value_Expr::sc_eval(SC_Frame&) const
+{
+    return val_;
+}
+
 } // namespace curv

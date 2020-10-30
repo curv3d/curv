@@ -1,4 +1,6 @@
 #include <gtest/gtest.h>
+#undef FAIL
+
 #include <libcurv/string.h>
 #include <libcurv/symbol.h>
 #include <sstream>
