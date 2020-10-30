@@ -1,0 +1,79 @@
+Reimplement List and Record Comprehensions using Monads?
+========================================================
+Or something with similar flexibility to Monads, since the Haskell mapping
+of list comprehensions to monads is very different from the Curv mapping of
+list comprehensions to imperative operations.
+
+Every language's implementation of 'monads' includes additional operations
+(not part of the monad concept) to support special purpose statement types.
+And each language has different requirements.
+
+Better to use a design that is fully extensible: add any new statement types
+you like, supported by whatever new 'monad' operations are needed. And at this
+point the word 'monad' becomes increasingly inaccurate. F# at least uses the
+terms 'computation expression' and 'Builder class' instead.
+
+'do' notation in Haskell
+------------------------
+ 1. '>>' is the "then" operator:
+      do { action1
+         ; action2
+         ; action3 }
+    is
+      action1 >>
+      action2 >>
+      action3
+
+ 2. '>>=' is the "bind" operator:
+      do { x1 <- action1
+         ; x2 <- action2
+         ; mk_action3 x1 x2 }
+    is
+      action1 >>= (\ x1 -> action2 >>= (\ x2 -> mk_action3 x1 x2 ))
+    But not quite, this doesn't account for code generated to deal with
+    pattern match failures using "fail".
+ 
+ 3. 'let pat = expr' is an ordinary definition.
+
+ 4. In do notation, 'return val' wraps 'val' in the monad.
+    If a return statement is the final statement in a do block, then that
+    becomes the result of the do expression, otherwise the return statement
+    is effectively ignored. (This is a design flaw in the syntax! But GHC now
+    emits a warning.)
+
+There is a problem with 'do' notation where it silently ignores return values.
+It's better to make this explicit. So the 'void' function is now used to discard
+a value within do notation.
+
+Converting List Comprehensions to Do Notation in Haskell
+--------------------------------------------------------
+    do n <- [1,2]
+       ch <- ['a','b']
+       return (n,ch)
+vs
+    [ (n,ch) | n <- [1,2], ch <- ['a','b'] ]
+
+A 'guard (boolean)' action is the do-notation equivalent of a guard.
+
+Heresy language (Racket)
+------------------------
+Monads and do notation in a dynamically typed language with Lisp syntax.
+
+F# Computation Expressions
+--------------------------
+* based on monads
+* "A computation expression is: something that allows you to sneak your own
+  code in to be called in the background, which in turn allows you to focus on
+  the important code in the foreground."
+
+'let! name = val' is equivalent to 'name <- val' in Haskell.
+
+Here are all of the special statement types:
+    expr { let! ... }
+    expr { do! ... }
+    expr { yield ... }
+    expr { yield! ... }
+    expr { return ... }
+    expr { return! ... }
+    expr { match! ... }
+

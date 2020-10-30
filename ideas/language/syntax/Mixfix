@@ -150,11 +150,20 @@ Curried Backfix notation
 if a then: b else: c   <=>   if a {then: b, else: c}
 cylinder d: 1 h: 10    <=>   cylinder {d: 1, h: 10}
 
+In an IDE, once you type 'if', the syntax of the following arguments is
+determined for autocomplete. For true mixfix with split identifiers, the
+autocomplete mechanics are different.
+
 backfix ::= postfix
   | postfix id: backfix
   | postfix id: primary id: backfix
   | postfix id: primary id: primary id: backfix
   | ...
+
+Curried Macros
+--------------
+if (a) then (b) else (c)
+This works with my current parser. The `if` macro has 5 curried arguments.
 
 Alternative Ways to Distinguish Keywords
 ----------------------------------------

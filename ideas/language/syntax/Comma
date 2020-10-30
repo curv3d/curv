@@ -21,9 +21,11 @@ Now I must decide how semicolon should work, taking into account:
 
 STATUS:
 All of the suggested syntax extensions are implemented.
-Theories 1, 2 and 3 may be used as coding styles, but we don't enforce one
-style and prohibit the other two. I still don't know which style to promote
-as the standard.
+Theories 1 and 2 may be used as coding styles.
+ 1. Use semicolon everywhere.
+ 2. Use comma for compound definitions, semicolon for compound statements.
+Theory 3 still has issues, is somewhat useable.
+We don't enforce a style, and I don't know which to promote as the standard.
 
 0. Embedded Tests (Done)
 ------------------------
@@ -184,12 +186,7 @@ Perhaps there is a conflict between rigorous orthogonality and formal
 simplicity, on one hand, and "frame-based" language design, where each
 feature signals what "frame" (cognitive linguistics) it is a part of.
 
-This breaks the ability to put parens around a compound recursive definition.
-Maybe we need to remove the (a,b,c) list syntax first?
-Actually, no, with #0 implemented, we can interpret (def1,def2) as a compound
-definition and still treat (expr1,expr) as a list.
-
-A generalized 'local' definition would allow
+Generalized 'local' definitions now allow
     local (a=1, b=2);
 for simultaneous or parallel definition (like 'let' in Scheme),
 and that *is* mainstream syntax (as opposed to 'local (a=1; b=2)').
@@ -217,16 +214,30 @@ In this theory,
  * A new feature is added. {a:1,b:2,a:3} aborts due to a duplicate definition.
    This contrasts with the override semantics of {a:1;b:2;a:3}.
 
-Do we still have a comma operator? In what contexts is a parenthesized
-comma list meaningful?
+The comma operator can be overloaded for definition and statement compounds.
+ * (def1,def2) is a definition. Nesting doesn't change things, and comma is
+   associative, so ((d1,d2),d3) === (d1,(d2,d3)).
+ * This equivalence can also work in list and record comprehensions.
+   (stmt1,stmt2) is a compound statement where the statements can be evaluated
+   in either order.
+ * () is the identity for the comma operator (it is the null definition
+   and the null statement, depending on context). So comma is a monoid.
+Can't make this change right now because it breaks backward compatibility.
+
+ISSUE: If I define comma as a compound statement constructor, then what happens
+when comma- and semicolon- compound statements are nested?
+
+ISSUE: Alternatively, in addition to constructing compound definitions,
+comma is an ad-hoc notation that can occur at the top level of a list or record
+constructor. When this happens, compound statements are not allowed in a list
+or record constructor, so that we avoid questions about "what the comma
+operator means" while matching conventional notation like [1,2] and {a:1,b:2}.
 
 This is a better match to conventional notation.
 
 It is more complicated.
 The semicolon operator is unchanged from theory 2.
-But comma has a different meaning in list, record and definition contexts.
- * In an unconstrained context, 'a,b,c' is a compound recursive definition.
-   Eg, a=1,b=2 is a REPL command, just like Theory 2.
+The comma operator is overloaded for definition and statement lists.
 
 This leads to a better partition of the language into dialects, and
 a better partition of the documentation.

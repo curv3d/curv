@@ -1,16 +1,46 @@
-Special Syntax for `match`
-==========================
+Conditional Operators (if, match, switch)
+=========================================
+
+`if` is sugar for `match`
+-------------------------
+`match` is the fundamental conditional operator.
+`if` expressions are sugar for `match` expressions.
+    if (cond) expr1 else expr2  <=>  cond >> match[#true->expr1, #false->expr2]
+
+Bad reasoning:
+    By this logic, we should also support if-then expressions:
+        if (cond) expr1  <=>  cond >> match[#true->expr1]
+    This expression faults unless the condition is true.
+    That means it is an assertion, equivalent to
+        do assert(cond) in expr1
+This conflicts with the fact that 'if (cond) stmt' does not fault, but is
+instead equivalent to the empty statement.
+
+By this logic, `match` should support tail call optimization.
+And it does!
+
+Finally, I don't know how to use `match` for conditional statements.
+
+Special syntax for `match`
+--------------------------
+I disagree with this now.
+
 A call to `match` has special properties if it has the form
     match[f1,f2,...]
 where the function position is a literal constant (the `match` function)
 and the argument position is a list literal:
 
  * You can define recursive piecewise functions.
+   (I already have a general proposal for fixing this for all combinator
+   functions, without making 'match' magical.)
  * A match call like this is considered a function literal, for the purposes
    of the Abstract Value proposal.
+   [Function literals should not be magic, for composability reasons.
+   Replacing a function literal with a variable name should not change
+   the semantics of a program. Now addressed by [[Labelled]].]
  * The argument expressions f1, f2, ... are in tail positions if the match
    literal is in a tail position. This is relevant to tail call optimization
-   and the Abstract Value proposal.
+   [already implemented without magic] and the Abstract Value proposal [Huh?]
 
 How is this implemented?
 * Maybe `match` is a keyword. This prevents `match` from being used as
@@ -76,10 +106,17 @@ because:
 
 The second definition doesn't work, the error is "illegal recursive definition".
 To fix this, `match` is special syntax, not an ordinary function binding.
+[The new Recursive Definition proposal fixes this without magic in `match`.]
 
 The lambdas in the match argument list should inherit the name 'colour',
 so that partial applications print better and we get better error messages.
 That also requires `match` to be magic.
+[For composability and the program algebra, we need to use an alternate
+approach for defining labeled functions. Some new syntax like
+    func colour = <function expression>;
+    def colour = <function expression>;
+    term colour = <function expression>;
+perhaps, which works all cases where you use combinators to define functions.]
 
 2. piecewise parametric records
 -------------------------------

@@ -8,7 +8,7 @@ Recursive Definitions
 A recursive definition has the syntax:
     a = 1
     f x = x + 1
-    include "foo.curv"
+    include file "foo.curv"
 
 Or you can use abstraction to compose recursive definitions:
     (defn)
@@ -41,7 +41,7 @@ Sequential Definitions
 A sequential definition has the syntax:
     local a = 1
     local f x = x + 1
-    local include "foo.curv"
+    local include file "foo.curv"
 
 There is no abstraction over sequential definitions. Not even parentheses.
 There's a reason for that.

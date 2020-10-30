@@ -1,5 +1,5 @@
-Functor, Applicative, Monad (Haskell)
-=====================================
+Functor, Applicative, Monad in Haskell
+======================================
 http://adit.io/posts/2013-04-17-functors,_applicatives,_and_monads_in_pictures.html
 
 These 3 type classes are the idea of applying a function to a value embedded
@@ -7,8 +7,37 @@ within a context. You get different results, depending on the context.
 
 The context is given by a type constructor, like 'Maybe a' or '[a]'.
 
+Category
+--------
+A category is an algebraic structure for modelling objects and their
+relationships. A category C consists of objects 'ob(C)' and a collection
+of arrows/morphisms 'hom(C)' connecting the objects. Every arrow f can be
+defined as a pair [a,b] of the objects it connects: f : a -> b.
+
+A category defines a composition operator, for composing arrows.
+This operator is associative.
+If f:a->b and g:b->c then co[f,g] : a -> c.
+
+For every object a, there is an identity arrow Ia : a -> a.
+These are identities for the composition operator.
+
+In the data type interpretation, category Hask contains all of the Haskell
+types as its objects. A function from type a to type b is an arrow in Hask.
+
 Functor
 -------
+A functor F is a structure-preserving mapping between categories A and B.
+It must map every object and arrow from A onto B, and it must preserve
+identity arrows and composition.
+
+An endofunctor maps a category A onto itself.
+
+In the data type interpretation, a Functor is an endofunctor over Hask.
+It maps each object (type T) in Hask onto another object TC T, where TC
+is a type constructor. It maps each arrow (function f:a->b) onto another
+arrow (fmap : (A->B) -> (TC A -> TC B)).
+
+Intuitively, a Functor is a type that can be mapped over.
 Functor provides 'fmap', which is the same as 'map', except generalized to
 work on data types other than lists.
 
@@ -27,7 +56,10 @@ instance Functor Maybe where
 
 Applicative
 -----------
-Extends Functor, adding <*>, which lets you wrap the function in a context.
+An applicative functor is a functor with additional structure.
+
+In the data type interpretation, Applicative extends Functor, adding <*>,
+which lets you wrap the function in a context.
 This allows for invoking a curried function with multiple arguments.
 
   (Just(+3)) <*> (Just 2) => Just 5
@@ -35,7 +67,45 @@ This allows for invoking a curried function with multiple arguments.
 
 Monad
 -----
+A monad is a functor (specifically, an endofunctor).
+A monad is a monoid in the category of endofunctors.
+
+In Haskell, Monad extends Applicative (as of GHC 7.10).
+The design isn't clean because of backwards compatibility.
+  Monad::return and Applicative::pure are the same thing.
+
+The old Haskell monad interface is:
+  class Monad m where
+    (>>=)  :: m a -> (  a -> m b) -> m b
+    (>>)   :: m a ->  m b         -> m b
+    return ::   a                 -> m a    -- same as Applicative::pure
+    fail   :: String -> m a
+
 Functors apply a function to a wrapped value.
 Applicatives apply a wrapped function to a wrapped value.
 Monads apply a function that returns a wrapped value to a wrapped value,
 using >>= (bind).
+
+In Programming Language Design
+==============================
+Monads, etc, are patterns that appear in every programming language.
+By recognizing these patterns, we can find parts of the language that are
+not composable, special cases where the monad laws don't work (even though
+they should). It's an analysis that can be used to improve the consistency
+and composability of the language. It's not necessary for users to understand
+category theory in order to benefit from the language improvements.
+
+In Haskell, Monad is a type class. So the internet is confused: it thinks
+that monad patterns only occur in data types. But that's not the full story.
+
+So let's apply this analysis to Curv. Where are the monads?
+Obviously, in the imperative subset.
+
+This blog post:
+  https://medium.com/better-programming/monads-are-just-fancy-semicolons-ffe38401fd0e
+claims that monads in Haskell give you "programmable semicolons", where
+semicolon is the imperative sequencing operator. The >>= monad operator
+is identified with a programmable semicolon. The basic idea is that imperative
+sequencing describes some state that is transformed by a sequence of
+statements. The >>= / ; operator controls how the statement transforms the
+state.

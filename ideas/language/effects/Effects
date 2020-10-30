@@ -11,7 +11,7 @@ It is an alternative to imperative procedures, which cause side effects
 when called. In Curv, there are no side effects. There are Effects,
 but they don't occur "on the side".
 
-In an imperative language, a function can have arbitrary side effects,
+In an imperative language, any function can have arbitrary side effects,
 modifying state anywhere in the program, with no limitations.
 This is an inherently unsafe programming model.
 

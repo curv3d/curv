@@ -1,0 +1,29 @@
+The Pointless programming language: https://ptls.dev
+
+It's a simple, dynamically typed, almost pure functional language.
+I like the syntax in some ways better than Curv.
+Here are some interesting points.
+
+--------------------
+-- comment syntax --
+--------------------
+incr(x) = x + 1  -- a function definition
+
+if _ then _ else _
+_ and _
+_ or _
+not _
+
+f(x,y) is function call syntax. The parens are required.
+f(x) is a curried function call: not all arguments specified.
+a[i] is array indexing.
+
+foo is a variable name.
+Foo is a label (aka symbol value).
+Foo(a,b,c) is a labelled tuple.
+Foo{a=1,b=2} is a labelled object (objects are like records in Curv)
+
+Labels and labelled structures are clean, simple syntax for inventing new types.
+The closest correspondence in Curv is #Foo, {Foo: [a,b,c]} and {Foo: {a=1,b=2}}.
+However, *every* value has a label; there are labels for each built-in
+data type. is(label,value) is a predicate for type classification.

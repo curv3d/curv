@@ -1,0 +1,54 @@
+Idea: Curv works more like Jq.
+A Lens syntax inspired by Jq.
+
+COMMAND LINE OPTIONS
+
+'curv -f' is a batch mode flag that interprets the Curv program as a function F,
+reads standard input, evaluates it (as a Curv program) into a value A,
+calls F A, then outputs the result.
+
+Some additional flags could be used to read and write JSON, but we'll skip
+this for now.
+
+cat foo.curv | curv -fx 'expression'
+
+Curv values are pretty printed (just as Jq pretty prints JSON).
+Bonus: support syntax colouring (later). The pretty printer is abstract
+enough to be extended to support this.
+
+BASIC FILTERS (after the Jq man page)
+
+id
+    The simplest filter, maps input to output unchanged.
+.foo
+    Input is a record R, output is R.foo
+.foo.bar
+    Likewise
+.[i]
+    Input is a list L, output is L.[i], which is the new array indexing syntax.
+@L
+    Input is a value V, output is V@L where L is a lens.
+map(filter)
+    Input is a list L, output is map(filter) L
+F1 | F2
+    Filter composition.
+
+TYPES AND VALUES (after Jq man page)
+
+pick[f1,f2,f3]
+    from input x, construct the list [f1 x, f2 x, f3 x]
+pick{key1: f1, key2: f2}
+    from input x, construct the record {key1: f x, key2: f x}
+
+BUILTIN OPERATORS AND FUNCTIONS
+
+In Jq, f1 + f2 takes two filters, applies them to the same input, and adds
+the results together. If the result is a number N, that is actually a filter
+that maps its input to N.
+
+Jq can raise arbitrary JSON values to filters, because JSON doesn't have
+function values. Curv needs a different strategy. How about:
+    $f1 + $f2
+For example,
+    $f + 1
+    x -> f x + 1

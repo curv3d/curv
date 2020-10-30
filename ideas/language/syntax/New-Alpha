@@ -1,0 +1,105 @@
+New Syntax Alpha
+================
+A function call argument is a delimited or bracketed primary expression:
+    (...)
+    [...]
+    {...}
+    "..."
+'f x' is not allowed (x an identifier) because it conflicts with mixfix syntax.
+Use f(x) instead.
+'f 42' is not allowed because it is confusing that 'f -42' is not a function
+call. Use f(42) and f(-42) instead.
+
+if (x) then (y) else (z)  <=>  'if then else'(x,y,z)
+  Mixfix notation. No reserved words are used. Mixfix keywords are
+  distinguished from identifiers in funcall position by the grammar alone.
+  A mixfix call with only one keyword is indistinguishable
+  from an ordinary function call.
+
+f(x,y,z)  <=>  f(x)(y)(z)
+Syntactic sugar for a Curried function call.
+
+ISSUE: What does 'foo (a,b) bar (c,d)' mean?
+Syntactically, it means 'foo bar'((a,b),(c,d)). Alternatives:
+ 1. This is flattened to 'foo bar'(a,b,c,d).
+    Which, confusingly, is equivalent to foo (a) bar (b,c,d).
+ 2. Currying doesn't nest, so this is an error.
+
+Dot Operator:
+  idea 1:
+    a.f      <=> f(a)
+    a.f(b)   <=> f(a,b)
+    a.f(b,c) <=> f(a,b,c)
+
+    Numerals:
+      0.5 is a numeral
+      .5 or 1. are not numerals (avoids conflict with dot operator)
+      The lexer is context sensitive: .0.1 is tokenized as . 0 . 1
+
+    list.0     list.i    -- list indexing
+    array.0.1  array.i.j -- multi-D list indexing
+    array.[1,2,3] -- list slicing/swizzling
+    {#a:1, #b:2} -- a record
+    {#a:1}.#a -- field selection
+
+    invoking a mixfix operator from a module M:
+        M.#if (a) then (b) else (c)
+    This is weird because unlike in all other cases, here the '#if'
+    cannot be replaced by an arbitrary subexpression. This is an argument
+    for the earlier design where 'expr.id' is field selection.
+  idea 2:
+    'expr.id' is record field selection.
+    'x@f' <=> 'f(x)' and 'r@#foo' <=> 'r.foo'
+    a@f(b,c) <=> f(a,b,c)
+    x >> f  <=>  f(x)
+    a >> f(b,c) <=> f(b,c,a)
+        '@' has higher precedence than '>>', same semantics.
+    Traditional parsing of decimal numerals.
+    M.foo (a) bar (b) <=> M.'foo bar'(a,b)
+    M.+ <=> M.'+'
+    a `M.+` b <=> M.'+'(a,b)
+    {#a:1, #b:2} and {a=1, b=2} -- record constructors
+    {#a:1}@#a and {a=1}.a -- field selection
+    list@0     list@i    -- list indexing
+    array@0@1  array@i@j -- multi-D list indexing
+    array@[1,2,3] -- list slicing/swizzling
+
+[1,2,3] -- a list
+list.0     list.i    -- list indexing
+array.0.1  array.i.j -- multi-D list indexing
+array.[1,2,3] -- list slicing/swizzling
+
+{#a:1, #b:2} -- a record
+{#a:1}.#a -- field selection
+{a=1, b=2} -- a scoped record
+
+Lenses use function call for the 'get' operation.
+Common data types double as lenses.
+    [4,5,6].0  -- array indexing, == 4
+    {a:1}.#a     -- field selection, ==  1
+    array.[i,j]  -- array swizzling, == [array.(i), array.(j)]
+    record.[#a,#b]  <=>  [record.#a, record.#b]
+
+User defined infix operator symbols, no precedence declarations.
+    x + y  <=>  '+'[x,y]
+There is one precedence level for infix, left associative operators
+(including x^y, arithmetic, relational, boolean, user-defined).
+Maybe there is whitespace sensitive precedence, a+b binds tighter than a + b.
+
+Only one prefix operator symbol, '-', because it's traditional.
+For other operations, use function call syntax.
+    -x  <=>  negate(x)
+    not(x)
+
+Infix keyword operators. Two syntax ideas
+    a `foo` b   Haskell
+    a foo: b    Smalltalk, Supercollider
+The 'foo:' syntax looks nicer. The `foo` syntax generalizes to support
+postfix expressions.
+
+Syntax for a range:
+    a .. b
+    a .. b by: c
+The last expression parses as '(a .. b) by: c' since all user-defined infixes
+have the same precedence and are left-associative. The 'by:' operator is a macro
+that requires its left argument to be a 'a..b' expression.

@@ -354,3 +354,25 @@ debugged. Maybe the process architecture is like Actors/Erlang.
 This process termination model means that (single threaded) equational
 reasoning works inside a process. But interaction between processes is
 nondeterministic anyway, so the program algebra is quite different.
+
+Primitive Operators
+-------------------
+'[x,y]->x+y' is not equivalent to the native '+' operator, because the latter
+has a more precise domain.
+
+So we need a way to directly reference the primitive operators (the ones that
+are functions, anyway). The names of the primitive infix operators are just
+the operator names, quoted, eg '+'. I want to avoid prefix operators that
+are functions. The one special case I can't avoid is prefix -, whose name is
+'negate'. Prefix ! has already been renamed as 'not'.
+
+Binding one of these names in a local scope rebinds the corresponding operator.
+
+SubCurv
+-------
+In SubCurv, there is no way to convert a call to a typed partial function
+into a fault. It has to return an invalid value instead (eg NaN or a data
+structure containing NaN). There are limited possibilities for implementing
+a 'compose' function that short circuits when one of the functions fails.
+There is limited benefit compared to the costs, and I can implement a compose
+that doesn't short circuit in SubCurv, for now.

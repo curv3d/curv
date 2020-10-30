@@ -49,3 +49,24 @@ might never learn a language like C.
 > this program?"
 
 So the syntax cliff is real.
+
+Hedy and Pronounceable Programming
+----------------------------------
+https://github.com/Felienne/hedy
+https://www.youtube.com/watch?v=CgR5mSAGxtA&feature=youtu.be&t=2663
+
+Hedy is a 'gradual programming language', which increases in syntactic
+elements level by level. Directly attacks the problem of teaching complicated
+Python syntax to public school students. Illustrates all the problem areas
+in Python syntax.
+
+Parentheses and the colon are the hardest syntax to learn for high-schoolers,
+possibly because of their pronunciation. So this is introduced last.
+According to this research, learners verbalise programs and work with the
+pronounced version as their mental representation. Any ambiguities with the
+pronounced version causes problems. Eg, for non-English speakers, the 'for'
+keyword is hard to grasp because it sounds like '4'. So Hedy uses 'repeat'.
+
+(I did some previous research uncovering that 'fun' is a bad abbreviation
+for 'function' for non-English speakers due to confusion with 'fun' in English.
+So 'func' is better.)

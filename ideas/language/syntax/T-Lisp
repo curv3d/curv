@@ -1,0 +1,51 @@
+Consider the hypothetical language T-Lisp, based on T-expressions:
+
+(f x)
+    A call. f is an abstraction (function or macro). Abstractions always have
+    a single argument, like in ML/Haskell. In a call, 'f' is an evaluated
+    subexpression, like in Scheme.
+
+(f x y z)
+    A call chain. (f x y z) is sugar for (((f x) y) z). This gives us a
+    natural syntax for invoking a curried function or macro.
+
+[a b c]
+    A list. The subexpressions a, b, c are evaluated, similar to (list a b c)
+    in Lisp.
+
+List exprs and call exprs are orthogonal concepts. A list expr expresses
+the fundamental concept of an ordered sequence of expressions.  It is a
+mistake to intertwine or complect list exprs with call exprs, because that
+creates complexity.
+
+A function has a single argument, but you can simulate multiple arguments
+using Currying, or by passing a list as an argument. There is no need for the
+'apply' function. This is important for composability. Let's say that the +
+function takes a list of zero or more numbers, as it does in Scheme. Then you
+write (+ [a b c]). Suppose you want to abstract out the list [a b c], replace
+it with the variable x. No need for mental gymnastics, you just write (+ x).
+
+Macros can be curried. The 'let' macro has two curried arguments. For example,
+
+    (let [[x [a b c]]] (+ x))
+
+In T-Lisp, every value is printed as a constructor expression. When
+you evaluate this printed representation, you reconstruct the original
+value. List values are printed as list expressions, eg [1 2 3]. This is
+intuitive, easy to understand, useful.
+
+One of my criticisms of Lisp is that the printed representation of a list
+is a function call, and this is confusing to non-experts. For example, in
+Lisp, the printed representation of (list 'a 2) is (a 2). You can manually
+convert this to an expression that reconstructs the original list by writing
+'(a 2), but now you have lost composability (the ability to substitute like
+for like). You can't trivially abstract out one of the subexpressions and
+replace it with a variable containing the same value.
+
+Here is empirical research supporting my complaint about list syntax in Lisp:
+https://www.cs.kent.ac.uk/people/staff/dat/miranda/wadler87.pdf
+
+    The difference between (1 2 3) and (quote (1 2 3)) is subtle, and it
+    inevitably confuses students. In particular, it plays havoc with the
+    substitution model of evaluation.
+

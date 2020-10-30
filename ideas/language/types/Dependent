@@ -1,0 +1,102 @@
+I'm intrigued by Dan Friedman's new book "The Little Typer".
+Friedman's perspective is that languages should either have no types,
+or they should have dependent types, because weaker type systems are
+too restricted and frustrating. Dependent types are elegant and expressive:
+they allow you to use the same language for both programs and types.
+
+Dependent type checking can guarantee that code doesn't diverge or encounter
+a run-time error (at the cost of outlawing general recursion), but this is
+exactly what we want for code that runs on a GPU. A hybrid type system that
+combines dynamic and dependent typing seems like an excellent fit for Curv.
+
+I'm intrigued by Friedman's language, Pie, which is an extremely simple
+implementation of dependent types. I'm intrigued by the fact that they
+can compare two functions for equality, which arises as a design issue in Curv.
+
+Curv is philosopically a dynamically typed language, but the SubCurv compiler
+introduces static types, which introduces stupid language limitations.
+Since I must have types anyway, and their limitations frustrate me,
+should I be using dependent types? SubCurv should be dependently typed.
+
+Much research into dependent type systems focusses on using dependent types
+to prove theorums, which creates a lot of difficulty for users, alleviated
+by interactive theorum proving assistants that automate a lot of the work.
+This is irrelevant and counterproductive when Curv is used as a live
+programming environment for artists.
+
+However, we can view Curv as a hybrid language supporting both "carpentry"
+and "architecture": the latter is more structured and painstaking, requiring
+expert skills, but is appropriate for library/API and language design. I'm
+impressed by the book "Algebra Directed Programming", which describes a
+painstaking process of modelling APIs using algebras and algebraic laws,
+with the benefit of producing beautiful, simple, composable and expressive
+library APIs. The automation and tooling desired for reasoning about algebraic
+laws could be provided in the context of a dependent type system, probably.
+
+I want to increase the size of the SubCurv dialect so that more programs can
+be compiled into GPU code, and a dependent type system would do this.
+
+I'm already planning to introduce Types as first class values.
+What dependent types add is some kind of logic system.
+
+What about Gradual Dependent Types?
+https://arxiv.org/abs/1906.06469 Aug 2019
+  Abstract
+    Dependent types help programmers write highly reliable code. However,
+    this reliability comes at a cost: it can be challenging to write new
+    prototypes in (or migrate old code to) dependently-typed programming
+    languages. Gradual typing makes static type disciplines more flexible, so
+    an appropriate notion of gradual dependent types could fruitfully lower
+    this cost. However, dependent types raise unique challenges for gradual
+    typing. Dependent typechecking involves the execution of program code,
+    but gradually-typed code can signal runtime type errors or diverge. These
+    runtime errors threaten the soundness guarantees that make dependent
+    types so attractive, while divergence spoils the type-driven programming
+    experience.
+
+    This paper presents GDTL, a gradual dependently-typed language that
+    emphasizes pragmatic dependently-typed programming. GDTL fully embeds
+    both an untyped and dependently-typed language, and allows for smooth
+    transitions between the two. In addition to gradual types we introduce
+    gradual terms, which allow the user to be imprecise in type indices
+    and to omit proof terms; runtime checks ensure type safety. To account
+    for nontermination and failure, we distinguish between compile-time
+    normalization and run-time execution: compile-time normalization is
+    approximate but total, while runtime execution is exact, but may fail
+    or diverge. We prove that GDTL has decidable typechecking and satisfies
+    all the expected properties of gradual languages. In particular,
+    GDTL satisfies the static and dynamic gradual guarantees: reducing
+    type precision preserves typedness, and altering type precision does
+    not change program behavior outside of dynamic type failures. To prove
+    these properties, we were led to establish a novel normalization gradual
+    guarantee that captures the monotonicity of approximate normalization
+    with respect to imprecision.
+
+  Introduction
+    Dependently-typed extensions of practical programming languages maintain
+    a clear phase distinction between compile-time typechecking and runtime
+    execution, and have to embrace some compromise regarding impurity. One
+    possibility is to forbid potentially impure expressions from occurring in
+    types, either by considering a separate pure sub-language of type-level
+    computation as in Dependent ML, by using an effect system and termination
+    checker to prevent impurity to leak in type dependencies as in F⋆ and
+    Idris, or by explicitly separating the language into two fragments with
+    controlled interactions between them, as in Zombie. A radical alternative
+    is to give up on decidable typechecking and logical consistency altogether
+    and give all responsibility to the programmer, as in Dependent Haskell. The
+    design space is wide, and practical dependently-typed programming is a
+    fertile area of research.
+
+"Dynamic Typing with Dependent Types"
+https://www.cs.princeton.edu/~dpw/papers/DTDT-tr.pdf
+Xinming Ou, Gang Tan, Yitzhak Mandelbaum, and David Walker, 2004
+    Subexpressions may be either dependently typed (at the cost of 10-20% of
+    the code being type annotations), or it may be "simply typed" (which seems
+    to mean dynamically typed: no type annotations). You can also declare the
+    type of a function using dependent types, then supply an untyped body.
+
+    Dependently typed code cannot diverge or encounter a run time error.
+    That's exactly what we want for code that runs on a GPU.
+    A subset of the language, pure expressions, supports the ability to
+    compare two expressions for equivalence. Pure expressions cannot be
+    recursive, but again, that's also a requirement for GPU code.

@@ -1,0 +1,35 @@
+http://depts.washington.edu/dxscdoc/Help/Reference/Syntax-Shortcuts.html
+http://depts.washington.edu/dxscdoc/Help/Overviews/SymbolicNotations.html
+
+Supercollider method call syntax (it is OOP first); some highlights:
+    x.m     <=>  m(x)
+    x.m(y)  <=>  m(x,y)
+    x m: y  <=>  m(x,y)
+
+funcall syntax:
+    f.(x,y) <=> f.value(x,y)
+
+indexing:
+    a[i]      <=>  a.at(i)
+    a[i] = b  <=>  a.put(i,b)
+    p.x = y   <=>  p.x_(y)
+
+symbols:
+    'abc'
+    \abc
+characters:
+    $A  <=>  "ABC"[0]
+
+key-value pair lists
+    [\a, 1, \b, 2]  <=>  [a: 1, b: 2]
+    Event[\a -> 1, \b -> 2]  <=>  (a: 1, b: 2)
+
+abbreviated function literals (aka partial application):
+    x.f(y, _, _)
+    a + _
+    [a, b, _]
+    (a: _)
+
+Adverbs, which modify infix operators:
+    a +.id b
+where 'id' is the name of the adverb (loosely inspired by J).

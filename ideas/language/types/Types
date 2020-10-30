@@ -326,6 +326,14 @@ distinctions between `String` and `repr`, `Char` and `ucode`, `Bool` and `bit`.
    Eg, in Swift, Double(1) => 1.0 and String(0) => "0".
 So I'm still good.
 
+Another idea: `foo_t` because it is pronounced differently than `foo`,
+whereas `foo` and `Foo` have the same pronunciation.
+I noticed when reading foreign code that I can get confused if two distinct
+names in the same scope have the same pronunciation (especially when tired).
+    c::char_t  and  char_t 97
+    char_t[97,98,99]  vs  repr"foo"
+    type algebras also use the foo_t naming convention.
+
 Type Constructor Requirements
 -----------------------------
 Semantics:

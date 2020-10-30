@@ -1,0 +1,40 @@
+Boxed Values and Null
+=====================
+Algebraic structures that appear everywhere in programming.
+
+A box is a trivial data structure that contains a single value.
+Boxes are used when there is a need to deal with heterogenous
+values of different types or shapes in a uniform way.
+
+When boxes are combined with the special value Null, then you can represent
+the presence or absence of a value: an optional value. If the value is present,
+put it in a box. If the value is absent, represent that situation using Null.
+This representation works even if the value that is present is Null,
+because a box containing Null is distinct from Null.
+
+In Curv, we'd need the following:
+    box a -- construction
+    unbox b -- inspection
+    b@unbox := a
+    a != box a
+    box a == box b iff a == b
+    box <pattern> -- pattern matching
+    is_box b
+
+Modern APL dialects have boxes. See [[Amap]] for the reasons.
+To satisfy these requirements, a box is a rank zero array.
+Scalar operations that are generalized to work on arrays also work on boxes.
+So,
+    box 2 + box 3 == box 5
+    box[1,1] + [box[2,3], box[10,20]] == [box[3,4], box[11,21]]
+
+A box is a new container type, how does it interact with Tree Theory?
+
+A simple design that satisfies all requirements *except* the APL requirement is
+  box a = [a]
+  Null = []
+I need to weigh the cost of adding 'box' as a fundamental new container type
+vs the benefits. K has essentially the same data model as Curv, and doesn't
+provide these kind of boxes. The 'eachleft' and 'eachright' adverbs cover
+common use cases for APL boxes. If K doesn't need this concept, then arguably
+neither does Curv.

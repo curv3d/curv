@@ -4,15 +4,19 @@
 Variable binding patterns:
   * `pat :: type` is a type assertion pattern,
     which fails if `is type arg` is false, otherwise matches pat.
-  * `pat >> func` is a cast pattern. Pipe the argument into `func`.
+  * `pat <: func` is a cast pattern. Apply `func` to the argument.
     Fail if `func arg` fails. Otherwise match `func arg` against pat.
   * `pat when cond` matches pat, then evaluates cond with pat's bindings,
     and fails if cond is false. Alt. syntax: `pat if cond` (like Python, Rust)
     O'Caml uses 'when'.
-  * `pat :: If predicate` is a unary predicate assertion pattern:
+  * DEPRECATED:
+    `pat :: If predicate` is a unary predicate assertion pattern:
     `If` converts a predicate to a type. Upgrade path from Curv 0.4.
     Alt. syntax: `x :: If pred` becomes `x if pred x`.
+    This is equivalent to `pat <: ensure predicate`.
   Variable names line up on the left.
+  :: and <: are left associative, same precedence, chainable. In a chain,
+  the argument value flows left to right until it is matched by the pattern.
 Equality patterns:
   * `== expr` binds no variables, matches when arg==expr.
 Boolean patterns:
@@ -40,6 +44,15 @@ behaviour. It also points out that:
  * O'Caml doesn't use backtracking. However, it issues a compile time warning
    if backtracking would produce different results.
  * Rust uses backtracking in an experimental impl of or-patterns.
+
+What happens if I nest `when` with :<< and :: ?
+ 0. 'pat when cond' is equivalent to
+    pat :<< (arg && pat -> cond >> match[#true->arg])
+ 1.
+    x :<< f when (x < 0)
+        (x :<< f) is evaluated first, binding x, then the
+    x when (x < 0) :<< f
+ 2.
 
 ## Brainstorming
 Sublist patterns: [a, ...b] or [a, ...b, c]
@@ -151,12 +164,13 @@ New Pattern Types:
   * Useful when simulating a switch statement (one case matching 2 values).
   * [x,y] || [x,y,_==0]
   * Rust, F# use 'pat1|pat2' -- looks nice in switch.
-* 'pat >> cast' -- cast pattern.
+* 'pat << cast' -- cast pattern.
   * If V is the value being matched, then we evaluate `cast V`.
     If cast's parameter pattern fails, the match fails.
     If the body of cast aborts, then the program aborts.
     Otherwise, the result of `cast V` becomes the new value
     that is matched against `pat`.
+    (Conceptually, this is like 'pat << cast << V', where V is implied.)
   * A cast is a function that maps values onto a particular type, and is
     idempotent for members of that type. This feature implements implicit
     conversions to a type.
@@ -167,10 +181,34 @@ New Pattern Types:
   * S.P.Jones uses the term 'transformational pattern' (pat!fun), and shows
     that this is a way to reconcile pattern matching with data abstraction.
     The cast fun transforms an ADT to a pattern matchable value.
-  * `pat >> cast1 >> cast2` equals `(pat >> cast1) >> cast2`.
-  * Which equals `pat >> compose[cast1,cast2]`, but only if the result of
-    `compose` reports a pattern match failure if any of the constituent
-    functions have a pattern match failure.
+  * A problem with `<<` as the syntax is that it is low-precedence right
+    associative. You can write 'a :: pred -> body' but with '<<' patterns
+    you need parens: '(a << cast) -> body'.
+  * Earlier syntax was `pat >> cast`, which has the right precedence
+    (lower than ->). Does the arrow point the wrong way? This way, it points
+    into a function.
+    Note, `pat >> cast1 >> cast2` equals `(pat >> cast1) >> cast2`.
+    This means the argument is processed first by cast2, then the output of
+    that goes into cast1, then we match against pat. It's backwards and
+    confusing, since the arrows point the wrong way.
+    pat >> compose[cast1,cast2] would be less confusing.
+    Or change the syntax:
+     * `pat << cast`.
+       `pat << cast1 << cast2` means `pat << (cast1 << cast2)` which is wrong
+       because (cast1 << cast2) is an expression that won't evaluate correctly.
+     * `cast >> pat`.
+       `cast1 >> cast2 >> pat` means `(cast1 >> cast2) >> pat`, also wrong.
+    I want 'pat' on the left so that variable names are on the left.
+    Maybe 'pat << cast1 << cast2' is an error (not nestable).
+    Well, in that case, it's confusing to use >> when the output of the cast
+    goes into the pattern, so I should use 'pat << cast' and disallow nesting.
+    Use pat << compose[cast1,cast2] to compose casts, and change `compose` to
+    fail if any constitutent functions fail.
+  * Maybe invent a new operator with the desired characteristics.
+      :< is left associative, same precedence as ::
+      :: and :< are fully chainable. Eg, pat :< cast1 :< cast2 :: pred
+      The argument value flows right to left through this pipeline.
+
 * Variations of predicate patterns:
   * 'pat == expr', 'pat != expr', 'pat < expr', ... -- relational op predicates
   * 'pat `elem` listexpr' -- range patterns, like 'x `elem` 1..10'.

@@ -1,0 +1,14 @@
+Add an OOP-like facility to define 'method' fields within a record or module.
+A method field is bound to a function. When the field is referenced,
+the function is called with the record as an argument.
+
+This was proposed to support Colour as an abstract data type, with
+multiple method fields for accessing the colour data in different formats.
+The rationale is just that using dot notation is somehow nicer than calling
+a function. Eg, col.sRGB vs get_sRGB(col). The field name can be shorter
+due to it not being in the global scope.
+
+I'm not sure if this actually occupies less memory. I don't have classes,
+or even Self-like delegation to a parent object. So all those fields will
+theoretically still take up memory in each Colour instance. Unless there is
+a trick to reduce memory consumption

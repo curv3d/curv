@@ -1,0 +1,49 @@
+Algebraic Effects
+=================
+From Microsoft's Koka paper:
+  "Algebraic effects are a purely functional approach to modeling effects.
+  They were introduced by Plotkin and Power in 2002.
+  Algebraic effect handlers were introduced by Plotkin and Pretnar in 2009."
+
+  "As a restriction on general monads, algebraic effects come with various
+  advantages: they can be freely composed, and there is a natural separation
+  between their interface (as a set of operations) and their semantics
+  (as a handler)."
+
+Is this true? The Koka language is based on algebraic effects.
+In Koka, functions have side effects, but the type of a function has both
+a result type and an effect type. There's a static typing discipline that
+allows you to control what effects are allowed in a given context.
+If the effect type of a function is "total" (this is the default), then the
+function is pure. So you have control over side effects, and you use an
+imperative style for coding effects.
+ * Eg, randomInt() returns a different integer each time you call it, by
+   accessing shared mutable state. It has the effect 'ndet' (non-deterministic).
+In the Koka IDE you can hover over a function name and see its type/effect.
+
+It's interesting, but it's not what I had in mind for Curv. I've been trying
+to design a language with no side effects, inspired more by Haskell, but
+with monads replaced by something with a closer resemblance to imperative
+style programming.
+
+---
+Koka is classified as "function-oriented" (not functional). There is no
+OOP. The focus is on functions and data. a.f(b,c) is sugar for f(a,b,c),
+where f is a regular function.
+
+So far, the literature on AE focusses on modelling language features
+I don't care about: exceptions, async/await, coroutines, call/cc.
+It *seems* to be all about non-local flow of control.
+AE handlers support some model of resumable exceptions, which can then be
+mapped onto all these different control flow abstractions.
+In typed AE languages, a function has both a result type and an effect type,
+so they *seem* to be modelling procedures that simultanously have side effects
+and a return value, which I also don't care about, since I don't want
+expressions with side effects. (Raises the question: how can AE be pure
+functional?)
+
+What I want instead is: simple, composable, pure functional abstractions
+for mutable state and list comprehensions.
+
+Free Monads
+-----------

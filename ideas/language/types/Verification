@@ -1,0 +1,60 @@
+Type systems for program verification
+=====================================
+A claimed benefit of Haskell is that it's a lot of effort to get your
+program to type check, but once it does, it is likely to just work. At least,
+it will have far fewer bugs than an equivalent Scheme program, if you are
+coding directly in Scheme.
+
+However, the Haskell type system is extremely complicated. Too complicated
+to actually be implemented as part of a one-man project. It has a steep learning
+curve. Modern Haskell is GHC plus all of the type system extensions (some of
+which are mutually exclusive). I don't want something this complicated,
+messy and arbitrary to be built in to the core language.
+ * I have a feeling that statically typed languages with higher order type
+   systems (as exemplified by Haskell) are a dead end. The complexity of the
+   type system increases non-linearly as you add more features so that you can
+   express more things that the type system won't let you express. (All these
+   things you want to express but can't are *already expressible* in a simple
+   dynamically typed language. A DT language lets you abstract over any
+   expression, which is exactly what a type system prohibits.)
+ * So you should begin with a dynamically typed core.
+ * A solution is to use an external static type checker or program
+   verifier, packaged as a library.
+    * Organizations that rely on static program analysis to root out bugs
+      often use external static analysis tools as well, rather than relying
+      entirely on the static type checker built into their language. These
+      tools exist even for Haskell (eg, Liquid Haskell).
+    * Static type checking and program verification are not mature technologies
+      with a single best design that works optimally for all use cases.
+      Pushing this out to user defined libraries allow multiple designs
+      to coexist and compete with each other. It allows for improvements
+      without modifying the core language.
+
+Curv supports "multi-phase evaluation", where the initial phase could be a
+static type checker or program verification tool.
+ * A Curv program is an expression. I don't have I/O or UI programming yet,
+   but when I do, such programs will be represented as functions, and a
+   program will be an expression that evaluates to such a function. This
+   initial evaluation phase is where type checking and program verification
+   can be added in.
+ * Curv supports partial evaluation.
+ * SubCurv: By the time a Curv function has been compiled to GPU code,
+   it *has* been type checked using a simple static type system.
+
+This strategy requires that function values are data that can be inspected.
+The core language specification describes the language primitives as a data
+type (which is essentially an IR), plus a mapping from a concrete syntax
+to the IR. I think this is really one of the core contributions of Lisp,
+if you strip away dogma like: the necessity of fully parenthesized prefix
+notation to implement this idea, and the confusion caused by describing
+this feature as "homoiconic".
+
+I imagine an extension of this strategy, where an initial partial evaluation
+phase does error checking, and spits out a residual program from which many
+classes of bug have been excluded.
+
+The details are elusive, but it's something to think about.
+Some initial thoughts:
+ * Leverages the partial evaluator.
+ * May involve a dependent type system.
+ * Leverages the idea that a function with a complex domain is a compiler.

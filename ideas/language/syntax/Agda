@@ -1,0 +1,5 @@
+How Agda deals with operators.
+
+_+_ means a binary operator + in particular x + y is syntactic sugar for _+_ x y. Similarly if x then y else z is just if_then_else_ x y z where if_then_else_ : Bool -> X -> X -> X. You can provide fixity and precedence like this: infix 10 _+_, infixr 11 _::_, infixl 10.5 _*_ etc.
+
+You can do "a" concat "b" by defining _concat_ : String -> String -> String. Agda supports arbitrary mixfix operators e.g. if you define |_| : Int -> Nat you can have | -3 | == 3.

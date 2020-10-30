@@ -1,0 +1,137 @@
+Representing Shapes
+===================
+In the original design of Curv, I did not want to support user defined
+nominal types, because this opens up a complexity tarpit. Instead, I chose
+a small fixed set of types, inspired by JSON (APL, early Scheme, etc), and
+tried to encode everything with these types.
+
+Now I'm considering to model Shapes as "user defined nominal types"
+(tagged values, tagged by user defined names). I'll consider multiple
+alternative designs, from different languages, and see what the simplest
+design is.
+
+Requirements and Benefits
+-------------------------
+Abstract Data Types
+  The tag on a value guarantees that it conforms to a specified ADT.
+  The data structure isn't corrupted and the contained scalar values
+  are not out of range. The tag means that only constructors belonging
+  to the ADT can have constructed the value.
+
+Values print as Expressions
+  Every value prints as an expression that, when evaluated, reconstructs the
+  original value, even if the expression is shipped across the internet
+  and evaluated on a different machine. What you see is all there is
+  (no hidden state). Quite unlike printing [1,2,3] in Python, for example.
+  The ADT mechanism doesn't violate this requirement.
+
+No Strict Encapsulation
+  Although ADTs provide a kind of "information hiding", encapsulation is not
+  strict. You have full access to a value's representation, which is important
+  for debugging and browsing a workspace. More Clojure than Haskell.
+
+Precise Domains
+  Each function F precisely defines its domain.
+  A call to F fails if the argument is not in the domain, giving a high
+  quality error message that tells the user they called the function
+  incorrectly. (As opposed to failing deep in the function's implementation
+  and giving a confusing stack trace.) ADT tags can be tested inexpensively
+  at runtime, unlike full data structure verification.
+
+Managing Complexity: Self Identifying Data
+  A 'cube' is represented by a complex data structure, and you can't tell what
+  it is just by looking at the raw data. If we print a cube value as, eg,
+  `cube 10`, then we can more easily understand what the data is when examining
+  a dump of Curv data. So this is an aid to human comprehension.
+
+Overloading
+  With tagged values, data can be more easily classified, so we can more
+  easily overload generic functions to take different actions on different
+  types of data.
+
+Shapes
+  Every shape value has a Shape tag, which asserts the existence of the 5
+  shape fields, with the correct range for each field. There is a generic
+  shape constructor, currently 'make_shape': shapes that don't have a more
+  specific constructor print as 'make_shape' expressions. Each shape constructor
+  in the standard library (eg, 'cube') has a branded constructor that tags
+  shapes with this constructor. Cubes print as 'cube' expressions.
+
+The Julia manual says "This is why a nominative type system is necessary:
+if structure determined type, which in turn dictates behavior, then it would
+be impossible to make Bool behave any differently than Int8 or UInt8."
+(because all 3 are defined (in Julia) as 8 bit primitive types).
+
+Design Alternatives
+-------------------
+I want to define a 'Shape' type, and various constructors like cube, etc,
+which might be considered subtypes of Shape. So what characteristics do
+values of type Shape have? Right now shapes are records with 5 fields.
+
+1. A branded value prints as a variable name or function call expression
+(the variable is a term, the function is a constructor). So, the value
+remembers its constructor, which is like a type tag. There is a function
+'open' which removes the outermost brand from a value, showing you what is
+inside the box. Brands can be stacked, so the 'cube' brand sits on top of
+the 'Shape' brand.
+
+Haskell
+-------
+Years ago, I tried and failed to find a shape representation in Haskell that
+meets these requirements. Haskell doesn't solve the expression problem.
+(Obviously I can embed another language in Haskell with the features I want,
+but that leads to complexity and heavy boilerplate.)
+ * You can put all of the shape constructors into a algebraic data type,
+   like ImplicitCAD. But then you can't add new constructors without modifying
+   this central type definition.
+ * You can define a Shape type class, and then Cube is an instance.
+   But you can't make a polymorphic list of shapes, and then query individual
+   members of this list to discover their constructor/pattern match on the
+   constructor.
+
+Julia
+-----
+Types are values of type Type.
+Three kinds of DataType: abstract, primitive, composite(struct).
+A datatype has a name, a supertype, optional parameters.
+Every concrete value is an instance of some datatype.
+
+A parametric type is not merely a function from type arguments to a type
+result: a parametric type name is itself an abstract type, and is the supertype
+of all the types derived from invoking it with arguments. A parametric type
+argument can be either a type expression, or the special form <:T, which means
+any type that is a subtype of T. ... Oh this becomes very complicated.
+
+An abstract type has:
+ * A name.
+ * An optional supertype. Other types (including concrete types) may declare
+   the abstract type as their supertype: these are its subtypes.
+   This creates a single inheritance hierarchy with concrete types as leaves.
+   'Any' is the abstract type at the top of the type hierarchy.
+ * Generic functions can be overloaded on abstract types.
+   These methods act as default implementations, overridden by methods defined
+   on concrete types.
+
+A "composite type" is a record/struct/object type, defined using 'struct'. Has:
+ * A name.
+ * A set of fieldname/type pairs (default type is Any).
+Struct values are by default immutable (unless type is defined as 'mutable
+struct'). But a struct contains object references, not values, and some of
+those objects may themselves be mutable.
+
+So how would I implement the Shape types in Julia?
+    abstract type Shape end
+    struct Cube <: Shape
+        size :: Real
+    end
+    ... then define methods for all the shape functions like dist, etc.
+    If I want to cache the bbox in the Cube structure (rather than recompute
+    it each time shape_bbox(mycube) is called) then I'm writing boilerplate
+    that must be repeated for each shape type that works this way (it seems).
+    This isn't OOP, there is no implementation inheritance.
+
+A forum discussion about how to avoid the boilerplate talks about defining
+macros to extend the language (eg rafaqz/Mixers.jl for mixins).
+
+Clojure
+-------

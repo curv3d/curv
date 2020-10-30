@@ -1,0 +1,10 @@
+Requirement: a kind of procedure that takes one or more locatives as
+by-reference arguments, then reads and writes these locatives using
+statement syntax (as if the locative parameters were local variables
+defined using 'local').
+
+Let's say that we use named arguments: the model is that the procedure
+argument is a record.
+
+Semantically, a procedure like this is a mapping from a record to another
+record with the same fields.

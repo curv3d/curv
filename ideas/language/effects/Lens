@@ -2,7 +2,7 @@ How this relates to the Lens feature.
 
 To implement lenses efficiently, we need the ability to define ordinary
 functions that take a large data structure as an argument, efficiently
-updates the structure without copying it, then returns the modified copy
+update the structure without copying it, then return the modified copy
 as a result. (Let's call these "linear functions".) So let's assume that
 feature is available.
 

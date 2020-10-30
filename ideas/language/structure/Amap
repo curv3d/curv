@@ -1,18 +1,70 @@
-amap rank func args
+Mapping Functions over Arrays
+=============================
+Curv extends scalar operations to operate over arrays, in the manner originally
+defined by APL, and now adopted by numerous array languages, including GPU
+shader languages. This APL feature is implemented in hardware by CPU
+vector units, and a GPU is essentially a hardware implementation of APL.
+Given the domain (graphics on a GPU), this is a mandatory language feature.
 
+There needs to be a combinator for mapping a unary or binary scalar
+operation over an array, APL style, used to implement the language primitives,
+and available to users to create new array primitives. That is 'amap'
+(aka the 'rank' operator in APL).
+
+It also makes sense to map vector operations over an array. Curv's 'phase'
+function (which maps a Vec2 to a Number) is generalized to work on arrays of
+points. 'amap' (and APL's 'rank') support this as well.
+
+But this isn't enough. Suppose we want to add a point to each element of a
+list of points. The default generalization of '+' over arrays won't work.
+To fix the problem, we need some way to specify that the '+' is actually
+operating on points. The left argument is a unitary point that behaves like
+a scalar, and the right argument is a list of unitary points.
+
+There are two ways to fix this, and modern APLs support both techniques.
+ 1. We can use a combinator to modify the '+' operation to operate on
+    units of vectors, analogous to how 'phase' operates on units of vectors.
+    That's 'amap' or APL 'rank'. The K language has eachleft and eachright
+    adverbs to handle the most common case.
+ 2. We can encapsulate the point values, so that we distinguish a unitary
+    point from a list of numbers, and we distinguish a list of unitary points
+    from a matrix.
+     * The APL approach is to add boxed values. Although a nice syntax in
+       Curv for boxing a value is [x], these boxes need to behave like
+       rank 0 arrays.
+     * Curv will have labelled values. If we are going to put values in boxes,
+       maybe label those boxes to indicate the value's role?
+    In [[Box]] I explore this idea and decide to omit it from Curv in favour
+    of combinators.
+
+Note: I don't plan to generalize scalar operations to distribute across records
+(eg, so that {a:1,b:1}+{a:10,b:20}=={a:11,b:21}). It is unusual for all of
+the elements in a record to be scalars that are operated on in a uniform way.
+Yes, I can think of use cases: {x,y,z} or {r,g,b}. And yes, this could seem
+like a logical extension of Tree Theory. But I don't think the extra complexity
+is a price worth paying. Just use arrays when you want a collection of scalars
+that are operated on in parallel by the same operation, and use records when
+each element has a different role and algebra. Do other array languages support
+this and prove it worthwhile? Awkward Arrays, maybe?
+
+amap rank func args
+-------------------
 `amap` takes a function of one or more arguments and "vectorizes" it,
 generalizing it so that each argument can be a multi-dimensional array
 of values, instead of a single value.
 
 Not all operations can be vectorized. In order for `amap` to work, a valid
 argument must be distinguishable from a list of arguments, in all cases.
+
 If a unary operation F can be vectorized, then it has a rank N, which is a
 natural number:
  * Rank 0 means that every valid argument is a scalar.
  * Rank 1 means that every valid argument is a non-empty list of scalars.
+   An example of this from Curv is the `phase` function.
  * Rank 2 means that every valid argument is a non-empty list of non-empty
-   lists of scalars.
- * ...and so on.
+   lists of scalars. An argument A doesn't have to be a 2D rectangular array;
+   the requirement is looser: each scalar in the tree A has a depth of 2.
+ * ...and so on for higher ranks.
 
 And then `amap N F args` will replace every subarray A of rank N within args
 with `F A`.
@@ -20,36 +72,124 @@ with `F A`.
 We can think of the rank argument N as a pattern for matching arguments
 within the `args` array.
 
-Another case is that the function F takes, as its argument, a fixed size
-tuple of argument arrays. In that case, the `rank` argument is a tuple of
-rank values. This case is important for binary infix operators.
+The second important case is a binary operation, that takes a pair [A,B]
+as its argument. In that case, the `rank` argument is a pair of rank scalars.
 
-We could extend this further, with more patterns. If the function F takes
-a record as its argument, then the `rank` argument could be a record whose
-field values are rank patterns. We could allow rank patterns to be arbitrarily
-nested.
+Extended Function Ranks
+-----------------------
+We could generalize from binary operations to functions whose argument is
+a fixed size tuple. In that case, the `rank` argument is a list of rank
+scalars. Few array languages provide this generality. The unary and binary
+cases are the important ones. I'd like to find examples of languages that
+implement this more general case before implementing it myself.
 
+We could further generalize to a tree of rank scalars.
+
+If the function F takes a record as its argument, then the `rank` argument
+could be a record whose field values are rank patterns. We could allow rank
+patterns to be arbitrarily nested.
+
+Put the Rank into the Function?
+-------------------------------
+The rank is really part of the function's contract.
+We should put the rank into the function, so that specifying the rank
+can be the job of the function implementor, not the user of `amap`.
+So you write `amap func arg`. A function can optionally have a 'rank' field.
+To explicitly specify or override the rank, use:
+    amap {call: func, rank: R} arg
+
+Can the rank be inferred from the function's domain, as a way to reduce
+code duplication?
+
+At first glance, the `rank` argument duplicates information contained in
+a function's domain. But that's not actually true. The domain is just a set
+of values, but the rank is more than that. A rank distinguishes a binary
+operation on scalars from a unary operation on 2-vectors. Primitive '+' and
+'phase' (before vectorization) both have the same domain, a pair of numbers,
+but their ranks are [0,0] and 1.
+
+A rank ordinal could be associated with a type that meets the requirements.
+In the amap API, we could replace rank ordinals with types.
+A rank becomes a ranked type, or a list of ranks (recursively).
+Then we could attempt to infer a rank value from the form of a function's
+parameter pattern.
+
+This kind of rank inference won't always work. In the general case, it's best
+if the function rank can be stated explicitly (see above).
+
+Type Directed Array Mapping
+---------------------------
+Maybe I am mimicking APL too closely in using rank ordinals to describe
+the 'size' of the values that the mapped function operates on.
+A rank ordinal > 0 can really only describe an N-dimensional rectangular
+array of scalars (which is the only data type that APL and J support).
+In Curv, a function argument is often a *tuple*: a list of two or more values
+of different ranks, which is not a rectangular array. What if I want the
+leaves of the tree being mapped over to be tuples? How do I describe the
+shape of a tuple using a rank ordinal?
+
+What the implementation of amap needs is a predicate for distinguishing an
+argument from a list of arguments, so that it can efficiently determine how
+deep to recurse into a nested list structure. We could say that the rank R of
+a tuple type is the rank of the first tuple element + 1. Then amap walks the
+tree by examining: tree, tree[0], tree[0,0], tree[0,0,0] until it reaches a
+scalar (non-list), then retreats R levels and uses the result as the first
+argument in the tree.
+
+Since amap works on trees, not just rectangular arrays, maybe it should
+be called tmap.
+
+So I could document this algorithm, and make the user specify a rank ordinal
+for a tuple in this way, or I could provide a higher level interface based
+on types instead of ranks. A type value contains an optional rank (the rank
+is only present if the type is rankable). The type constructors in the Types
+proposal take care of computing the rank ordinal internally.
+
+A hybrid design is possible, where a rank is specified either using a natural
+number, or a type value. This allows forward compatibility, allowing 'amap'
+to be built before the Types proposal is implemented.
+
+Lens
+----
+Is unary 'amap' a lens? Seems plausible. But, going in the opposite direction,
+what is the rank of the result values? If we are extracting domain and range
+rank information from functions, this could work. For now, I'm not pursuing
+the idea.
+
+Is binary 'amap' a lens? Not sure. Broadcasting breaks bidirectionality?
+
+Maybe 'amap' and 'amap2' are different functions, especially since I'm
+unsure about efficiently generalizing to amap3 and beyond, and there's a lack
+of prior art for generalized amap3 and beyond. GLSL has some amap3-ed functions,
+but broadcasting doesn't work. My own 'select' or 'if_multi' function doesn't
+do symmetric 3-way broadcasting because the semantics seemed to point in a
+different direction.
+
+In Other Languages
+------------------
 `amap` is closely related to the Rank operator in APL.
+It supports unary and binary cases, with a single rank integer argument R.
+* If R is >= 0, it's like amap with rank R or [R,R] (unary and binary cases):
+  "R specifies the number of final axes to which the function applies".
+* If R < 0, "R specifies complementary rank, i.e. the number of leading axes
+  to be excluded." So R==-1 is equivalent to 'map' in Curv.
+https://aplwiki.com/wiki/Rank_(operator)
+
+The original APL language supported only "scalar extension" (rank 0 amap).
+Probably most array languages don't go beyond scalar extension.
+https://aplwiki.com/wiki/Scalar_extension
 
 numpy.vectorize is similar (although the API is a mess).
 https://docs.scipy.org/doc/numpy/reference/generated/numpy.vectorize.html
 
-------
-The `rank` argument duplicates information contained in a function's
-parameter pattern. Can we leverage this?
- * validity checking
- * default field values in record patterns
- * Just obtain the rank pattern directly from a function value.
-   Then you code the function specifically to work with amap,
-   and invoke using `amap func args`.
- * Or maybe the amap feature is built in to parameter pattern syntax.
-   Then invoke using `func args`.
+Unified API, with Precise Domains
+---------------------------------
+The 'Prim' API in libcurv provides amap functionality, but it does not use
+a rank to recognize arguments. Instead, it relies on an 'unbox' function
+to recognize an argument. I want to use a single API in both C++ and Curv,
+so I'd like to unify these APIs.
 
-What if a 'rank' ordinal is replaced by a type value, and types contain
-a rank, or the predicate is used to identify type instances?
-That seems more abstract/higher level.
-
-What if the rank & func arguments of amap are placed in a record:
-    amap {call: func, rank: R} arg
-This means that a function F with a `rank` field could be used directly:
-    amap F arg
+I also want to make the amap API consistent with the Precise Domains feature
+described in [[../Precise_Domains]].
+ * a primitive has a precise domain
+ * an amapped operation has a precise domain

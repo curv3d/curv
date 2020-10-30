@@ -1,0 +1,103 @@
+Parametric Include
+------------------
+OpenSCAD issue #1770, 4 July 2020, asks for 'include filename' to work for
+adding variables to the customizer.
+
+Maybe this should work in Curv.
+In every other variable definition context, you can write 'include filename'.
+But this doesn't work in 'parametric <variables> in <expr>'.
+It looks like a weird oversight.
+
+I compile the variable definitions in a parametric phrase as the contents
+of a record pattern. So I need to support 'include' field specifiers within a
+record pattern.
+
+There are problems with this idea.
+A record pattern field specifier carries more information than a field in
+a record value. The latter is just a name/value pair. The former consists of:
+    fieldname : pattern = default_value
+In the case of 'parametric', the common use case is
+    name :: picker_type = default_value
+and we need whatever value we are including to contain a map from names
+to <type,value> pairs.
+
+If we extend module values to remember the type of each field, then we
+would be able to use 'include static_module' to implement this feature.
+
+However, before I would implement 'modules with typed fields', I would need
+to have a solid theory about why modules should work this way, with an
+understanding of how this change interacts everything else in the language,
+and why it is *generally* a good idea, outside this specific feature
+request for parametric record constructors.
+
+Typed Variables and Typed Fields
+--------------------------------
+In the imperative language, typed variables (remembering the type of a
+local variable) would have a semantic consequence for := (assignment).
+When you assign a new value, the new value must conform to the type.
+SubCurv already needs to work this way.
+
+Typed module fields:
+ * The Type proposal supports "type restrictions" (as T val) which associate
+   a representation type T with a value, for the purpose of using a more
+   efficient representation. This means you can associate a Record type with
+   record values, which associates types with fields.
+      as (Record{a:Num}) {a=1}
+ * Should we treat '{a::Num=1}' as a type restricted record value,
+   the same as above?
+ * In SubCurv, we will support type restricted records. Assigning a new
+   value to a record field will be restricted: the new value must conform
+   to the field type.
+ * Should we implement this same restriction on update of typed record fields
+   in general Curv?
+
+If records work this way, then fields types are part of the value,
+and must be part of the printed representation. Eg, the example record
+from earlier is printed as
+    {a :: Num = 1}
+instead of as {a: 1}.
+
+Record comprehensions don't provide a way to associate a type with fields.
+So that's a conflict with this proposal?
+Or maybe this is inducing a distinction between records and modules.
+
+So do Tuple types also induce a semantic restriction as well as a
+representation change? They do in SubCurv. If this restriction also exists
+in the general language, how are tuple values printed differently from lists?
+    as (Tuple[Num]) [42]
+    [42] :: Tuple[Num]
+
+If arrays work this way, then it may conflict with the String proposal,
+which allows lists to contain a mix of characters and non-characters.
+I will represent lists of characters compactly and efficiently (utf-8),
+(as if a type restriction was being used to create an efficient implementation),
+but I will permit reassigning a string element to a non-character.
+
+I think that using an efficient storage representation (using a type assertion
+on a value) is distinct from restricting the type of a mutable variable
+(which is an API / design by contract / data integrity concept).
+I shouldn't conflate the two.
+
+'SubCurv works this way' shouldn't be driving any design decisions.
+Instead, what could be allowed to drive this is "design by contract"
+concerns, where optional strict typing can be added to a program in
+order to detect errors earlier. (Then, whatever the design, SubCurv needs
+to be made compatible with it.)
+
+So what's the point of remembering the type of a module field, after the
+field has already been bound to a value? What useful new semantics does
+this provide, useful in the context of stricter type checking and early
+error detection?
+ * 'include <module>' will remember the types of the new bindings added
+   to the scope. If used to bind local variables, using 'let include module'
+   or 'local include module', and if those local variables are mutated using
+   :=, then the assignment is type checked.
+ * 'include <module>' in a 'parametric' clause, as noted above.
+ * 'module.foo := x' is type checked.
+    * Elsewhere I've proposed that modules should be immutable, if the fields
+      are not independent, but are instead related by constraints that are
+      enforced by the module's constructor function. The constructor + abstract
+      value proposal addresses this need, however.
+
+If modules have typed, independently assignable fields, then
+what are the types of these fields: {[a,b] :: predicate = value}?

@@ -1,0 +1,55 @@
+Syntax of the "Scopes" language (by Paniq)
+==========================================
+Scopes has a simple, Lisp-inspired syntax.
+
+Scoping is controlled either by parentheses or indentation. To permit users
+to freely exchange code without friction, the indentation level is fixed at
+four spaces outside of parenthesed expressions, and the use of tab characters
+for indentation is not permitted.
+
+# classic braced expression
+(head argument1 ... argumentN)
+# naked syntax
+head argument1 ... argumentN
+# naked paragraph form
+head argument1 ...
+    ...
+    argumentN
+
+The value and type of the head controls how the expression is dispatched:
+ * A syntax macro (called a sugar), called at expansion time, which has
+   complete control over which, when and how remaining arguments will be
+   expanded and evaluated, and can either return new symbolic lists to be
+   expanded further, or a template IL.
+ * An IL macro (called a spice), called at compile time, which receives typed
+   arguments and can generate new template IL to be specialized.
+ * A function, called at runtime.
+
+As a result of this principle, there are no reserved words in Scopes.
+Every symbol can be rebound or deleted, globally or just for one scope.
+
+Scopes allows to define new scoped infix operators at the users convenience
+using define-infix< and define-infix>, as a simple alias to an existing sugar,
+spice or function.
+
+An infix expression is recognized by looking for an infix definition for the
+second token of an expression. If a matching definition is found, all tokens
+within that expression are treated as left/right-hand arguments and operators.
+
+The infix expression must follow the pattern (x0 op x1 op ... op xN) to be
+recognized. If an odd argument is not a valid infix token, a syntax error
+will be raised.
+
+Scopes does deliberately not implement any concept of mixed infix, prefix
+or postfix expressions to keep confusion to a minimum.
+
+This account doesn't explain how the 'if' statement is implemented:
+    if (boolean expr)
+        stmt1
+        stmt2
+    else
+        stmt3
+        stmt4
+Perhaps a sugar is not restricted to the argument list
+it is given, it can look ahead at the following token stream.
+

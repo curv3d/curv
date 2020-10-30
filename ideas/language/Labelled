@@ -1,8 +1,115 @@
-Labelled Functions and Records
-==============================
-Store documentation metadata in function and record values.
-Print function values in a format that provides provenance or meaning,
-rather than just printing "<function>".
+Labelled Values
+===============
+Store documentation and provenance metadata in function/record values.
+This is a transitional design, not the final Curv 1.0 design.
+
+This is a variant of the "branded values" proposal.
+ * Weaker, because it doesn't require the printed representation to be globally
+   unambiguous, or that value equality is isomorphic to printed rep equality.
+   (This is a transitional design, I'll worry about that other stuff later.)
+ * Labels can be stacked (to support a "Shape" type).
+ * Labelled values may contain documentation metadata.
+
+Rationale & Requirements
+------------------------
+Introducing labelled values (as opposed to only using JSON style data structures
+to represent all data) is analogous to introducing nominal types (as opposed to
+using structural type equivalence exclusively). It's more language complexity,
+so why?
+  Modula 3/"How The Language Got Its Spots" provides a rationale for the latter
+  question (why branded types were added to Modula 3).
+   * Structural type equivalence is more elegant, because name equivalence
+     (in languages like Modula 2) violates referential transparency.
+   * Referential transparency is important because it allows you to reason
+     about the identity of types in data that crosses program boundaries.
+     (Something that JSON allows. An important consideration for Curv.)
+   * But sometimes you want two types with the same structure to be treated
+     as distinct types. The Modula-3 solution is to add a 'brand' string to
+     the type and use structural equivalence.
+   * Curv labels are like these brand strings. Referential transparency is
+     preserved. Taking this further, two labelled values are equal if the
+     labels are equal and the payloads are equal. It's possible for two
+     labelled values created by different libraries from different authors to
+     be accidently equal, but this problem is solved at a higher level with
+     culture and naming conventions.
+
+Tagged/Encapsulated/Abstract Data Types
+  The tag on a value guarantees that it conforms to a specified ADT:
+  the data structure isn't corrupted and the contained scalar values
+  are not out of range. The tag means that only constructors belonging
+  to the ADT can have constructed the value.
+
+Algebras
+  I want to use Algebra Directed Design when programming in Curv.
+  A single-sorted algebra is a record that packages a tagged data type with
+  operations and a predicate or type. If the type is scalar or a product,
+  then the primary constructor is 'call'. If the type is a sum, then there
+  are multiple primary constructors (not named 'call'). The primary constructors
+  return labelled values. There may be secondary constructors that are aliases
+  for calls to primary constructors. A primary constructor that doesn't carry
+  a payload is a labelled {}. The Algebra value itself is a labelled record.
+
+Values print as Expressions
+  Every value prints as an expression that, when evaluated in the correct
+  scope, reconstructs the original value. (This weakens the Branded Value
+  proposal.) What you see is all there is (no hidden state). Quite unlike
+  printing [1,2,3] in Python, for example.
+
+No Strict Encapsulation
+  Although ADTs provide a kind of "information hiding", encapsulation is not
+  strict. You have full access to a value's representation, which is important
+  for debugging and browsing a workspace. More Clojure than Haskell.
+
+Precise Domains
+  Each function F precisely defines its domain.
+  A call to F fails if the argument is not in the domain, giving a high
+  quality error message that tells the user they called the function
+  incorrectly. (As opposed to failing deep in the function's implementation
+  and giving a confusing stack trace.) ADT tags can be tested inexpensively
+  at runtime, unlike full data structure verification (of structural types).
+
+Managing Complexity: Self Identifying Data
+  This is an aid to human comprehension when reading a data dump.
+
+  We'd like to print function values in a format that provides provenance
+  and meaning, rather than just printing "<function>" or an anonymous lambda
+  expression. Just knowing the name of the function provides an important hint.
+
+  A 'cube' is represented by a complex data structure, and you can't tell what
+  it is just by looking at the raw data. If we print a cube value as a label,
+  eg as `cube 10`, then we can more easily understand what it is.
+
+Shapes
+  Every shape value has a Shape tag, which asserts the existence of the 5
+  shape fields, with the correct range for each field. There is a generic
+  shape constructor, currently 'make_shape': shapes that don't have a more
+  specific constructor print as 'make_shape' expressions. Each shape constructor
+  in the standard library (eg, 'cube') has a branded constructor that tags
+  shapes with this constructor. Cubes print as 'cube' expressions.
+  (Nested brands were not in the original Branded Value proposal.)
+
+Overloading
+  With tagged values, data can be more easily classified, so we can more
+  easily overload generic functions to take different actions on different
+  types of data.
+
+(1) Labelled Values and Algebras are the Curv equivalent of newtype/algebraic
+types in Haskell, classes in OOP, nominal structure and enum types in Algol
+descendents. (2) Theories are the Curv equivalent of type classes in Haskell,
+interfaces or traits or protocols in OOP. (3) The Tagless Final Interpreter
+papers describe a duality between algebraic types and type classes, and this
+finally made it seem inevitable that Curv should include features (1) and (2)
+in some form.
+
+Curv is intended to be as simple, elegant and expressive as possible (but no
+simpler). There is a high level subset that has a shallow learning curve and
+allows non-experts to quickly become productive. There are additional features
+needed by experts, which are used for designing library APIs that have high
+performance and are easy to use. While a simple language can be learned more
+quickly, the extra complexity added by labelled values is used by experts
+to construct APIs that are easier to use for non-experts. Values are self
+identifying and easy to decode, and contain documentation metadata. Functions
+produce higher level and more accurate error messages when you misuse them.
 
 Uniform notation for labelled function definitions
 --------------------------------------------------
@@ -24,6 +131,13 @@ so it's cool. Popular choices for this keyword: function, def, func, fn.
 Then,
     func f = <function expression>;
 is available for defining a labelled function using a combinator.
+
+Further rationale: In Curv 0.4, function literals are magic, because
+    f = x -> x + 1
+results in a function labelled 'f', but substituting the definiens for
+another expression returning the same value produces a different result.
+This breaks equational reasoning. We need a special keyword like 'func'
+to indicate the definition of a labelled value.
 
 But, what if the entire source file is a function expression, and the file
 is an element of a module using directory syntax? It seems we need to add a
@@ -55,6 +169,8 @@ even though we do label such function values in Curv 0.4.
         @name = <rec-or-func>;
         def name = <rec-or-func>;
         term name = <rec-or-func>;
+        named name = <rec-or-func>;
+        labelled name = <rec-or-func>;
     Which is related to the 'func' labelled function definition syntax.
 
     In a *.curv source file referenced by a directory (directory syntax),
@@ -82,3 +198,182 @@ We don't decide based on the syntax of the definiens expression (eg, is it
 a lambda expression), because this breaks the algebra of programs.
 You should be able to substitute a lambda expression for another expression
 that computes the same value without changing the meaning of the program.
+
+Docstring Syntax
+----------------
+I don't want to overthink or overengineer the doc syntax.
+This is a transitional design, so I'm going for the simplest design that works,
+and I'll get experience with this before choosing a final design.
+
+I don't need any new syntax for doc strings. If I just do what pydoc does,
+it's fine. Pydoc doesn't require string-literal docstring syntax, it will
+collect a documentation string from a block comment preceding a definition.
+I'll just rely on block comment syntax.
+
+Quote from pydoc:
+  For modules, classes, functions and methods, the displayed documentation
+  is derived from the docstring (i.e. the __doc__ attribute) of the object,
+  and recursively of its documentable members. If there is no docstring,
+  pydoc tries to obtain a description from the block of comment lines just
+  above the definition of the class, function or method in the source file,
+  or at the top of the module.
+
+In Curv, a labelled value definition (function or module or constructor) can be
+preceded with a block comment, which provides the doc string.
+
+I considered collecting docstrings from formal parameter comments,
+like in doxygen. However, I won't do this. First, it doesn't work for
+functions defined using combinators. Second, there's no need (Python doesn't
+do this: the parameter documentation is embedded in the function's docstring).
+So this idea is overengineering.
+
+What about per-module-field docstrings?
+ 1. Internal field documentation.
+    Maybe only labelled values in a module have their own documentation,
+    similar to how in Python, only "documentable members" of a class or module
+    have documentation. To collect documentation from a module, you get the
+    module's docstring, then you iterate over the fields, and for each element
+    that is a labelled value, you collect that labelled value's documentation.
+    (Note that a labelled value field can be defined as 'x = labelled_val_expr',
+    so in this case the documentation string is actually defined elsewhere.)
+    Fields that don't have internal documentation can be documented in the
+    module's central docstring. This design nicely explains how unlabelled
+    definitions like
+        x = expr
+        [a,b] = expr
+        include expr
+    can produce fields with docstrings. It's compositional. To display module
+    documentation, first display the module's docstring (which will end with
+    docs for otherwise undocumented fields), then display the docstrings for
+    each member value that has one. I should start with this design, because
+    anything else will be a superset. And hey, it's good enough for Python.
+ 2. External field documentation.
+    Maybe I want all the members of a labelled module to have their own doc
+    strings, even definitions like 'pi' in stdlib. This gets complicated:
+    we have to define the precedence of external vs internal docstrings,
+    and define rules for multi-variable definitions. Later.
+
+Data Model
+----------
+A brand or formula is:
+  <brand> ::= <identifier>
+            | <brand> . <identifier>
+            | <brand> <argument>
+  <formula> ::= <symbol>                // variable formula
+              | <module> . <symbol>     // field selection formula
+              | <function> <argvalue>   // function call formula
+Storing the original constructor function value in a call formula is useful
+for "customizing" a parametric model (tweaking some of the parameters).
+Storing the original module value in a field formula may also be useful,
+but depending on implementation, it might result in a recursive object cycle
+(requiring a tracing garbage collector or cyclic reference counts), or we can
+avoid that by applying the label to the field value each time the '.' operator
+is evaluated. Alternatively, instead of storing a module value, we store the
+module's formula.
+
+A label is a pair of [formula, docstring]. The docstring may be an empty string.
+
+A function has a stack of 0 or more labels, and orthogonal to that,
+it has a constructor flag. If the constructor flag is true, the function
+is called a constructor.
+
+A record has a stack of 0 or more labels, and orthogonal to that, each field
+has a constructor flag.
+
+Labelled Definition Syntax
+--------------------------
+I don't have a syntax I like; I don't know what keywords or symbols to use.
+It is an esthetic and linguistic problem of choosing the right words.
+As a stopgap measure, here is a temporary syntax.
+
+<definition> ::=
+  labelled <singleton-pattern> = <function-or-module-expression>
+  labelled <id> <param>... = <expression>
+      same as labelled <id> = <param> -> labelled ... -> <expression>
+  constructor <id> <param>... = <function-or-module-expression>
+      same as labelled <id> = <param> -> labelled ... -> labelled <expression>
+
+In the case of directory syntax, the first token in a *.curv file appearing
+as a directory entry can begin with the 'labelled' keyword,
+and that results in a labelled definition.
+
+<program> ::=
+  labelled <expression>
+
+In all cases, the keyword 'labelled' or 'constructor' can be preceeded by a
+block comment, which will form the doc string for the labelled function or
+module.
+
+Syntax alternative: In the Branded proposal, the keyword 'labelled' is
+replaced by '@', and each variable in a definiendum pattern can be either
+prefixed or not prefixed by '@'. But this doesn't take doc strings into
+account. In the present syntax, the entire definition is prefixed by
+    // <doc comment> <nl> labelled <definition>
+
+Syntax alternative: In the Branded proposal, an anonymous constructor
+is 'a -> @b' and a labelled constructor definition is '@f a = @b'.
+(Instead of two special tokens, => and constructor, we only need one.)
+And also, we could put a docstring before the second @ in a constructor:
+    <doc> @f a = <doc>@b
+    <doc> @f = a -> <doc>@b
+
+A module constructor is a scoped record constructor containing one or more
+labelled field definitions. When an anonymous module value is bound as the
+definiens in a labelled definition, the label from that definition is combined
+with field names and applied to the labelled fields in the module.
+
+A constructor expression is like a lambda expression with -> replaced by =>.
+When an anonymous constructor value is bound as the definiens in a labelled
+definition, the label from that definition is applied to the result of calling
+the constructor function.
+
+We need anonymous constructor values as a first class concept, otherwise we
+can't use combinators to compute a constructor before binding it to a label.
+
+Labelled Value Semantics
+------------------------
+An anonymous module value is printed as a sequence of singleton definitions
+within curly braces, where labelled definitions are prefixed with 'labelled'.
+
+An anonymous constructor value is printed as <pattern> ->labelled <expr>.
+
+A labelled record, module, function or constructor is printed as a label
+expression.
+
+The 'open' function takes a labelled value as an argument, strips the label,
+and returns the value component of the label/value pair. Labels can be stacked.
+If you apply 'open' enough times to strip all the labels, you get an anonymous
+record, module, function or constructor. The 'open' function is used to look
+inside a data abstraction, perhaps during debugging. Or it is applied in the
+body of a constructor to strip an existing label and apply a new one.
+    constructor cube n = open (box [n,n,n]);
+
+'include R' and '... R' ignore the label of R.
+
+'{include R, ***}' preserves the labelled status of the included fields.
+    Rationale: if you are including a library API into a superset library
+    module, you want to preserve API labels.
+'...R' preserves the labelled status of the included fields.
+    * For consistency with 'include', so as not to create a useless distinction
+      between "records" and "modules".
+    * Also, it is plausible to use a record comprehension to build an API.
+    When records are used purely as data structures, they don't need or use
+    field labels, but that's not a good reason to disallow the use of
+    comprehension syntax to build a module.
+So, a record has an extra bit of information per field: is it labelled?
+
+a==b
+    Two labelled values are equal if they have equal labels and equal payloads.
+    (So we are comparing documentation strings for equality?)
+
+Products, Sums and Subtypes
+---------------------------
+Based on my requirements, it seems like I want the equivalents of nominally
+typed product types, sum types and subtypes.
+
+Ugh. Just like every mainstream programming language? This potentially gives
+two ways to encode data: (1) the original Curv style, writing out structured
+data literals directly (without having to declare types first), and (2)
+first defining nominal types & type constructors, and then invoking those
+constructors. Which potentially sucks: warring language constructs, which
+ones do I use? Can I unify these two approaches?
