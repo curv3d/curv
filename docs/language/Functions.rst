@@ -193,3 +193,101 @@ Other Operations
 
 .. _`Patterns`: Patterns.rst
 .. _`Blocks`: Blocks.rst
+
+Domains and Errors
+~~~~~~~~~~~~~~~~~~
+The domain of a function is the set of argument values that it accepts,
+and maps onto valid results, without reporting an error. The domain is
+part of the function's contract: it's something you document for users
+of the function.
+
+There are two ways that a function call can terminate and report an error:
+it can fail, or it can panic.
+
+ * Failure means that the argument is not a member of the function's domain:
+   the caller has violated the function's contract by passing a bad argument.
+   A failure is a recoverable error: it can be converted into
+   a pattern matching failure (allowing other patterns to be matched instead).
+
+ * A panic is a nonrecoverable error. Due to a problem detected at runtime,
+   the function is unable to honour its contract. A panic may indicate
+   data structure corruption, or a logic error in the program. It could
+   also indicate an error in the Curv virtual machine, such as resource
+   exhaustion. A smart compiler could detect some panics at compile time,
+   and report them as compile time errors.
+
+When an ordinary function call such as ``f x`` fails, the program aborts
+with an error message. The top of the stack trace is the failing function
+call ``f x``, because that's where the problem is: the caller passed a bad
+argument to the function.
+
+When an ordinary function call panics, the program aborts with an error message.
+But the stack trace is different: it indicates the subexpression within the
+function's body where the panic occurred. In order to decode the stack trace,
+you need to understand the function's implementation.
+
+In practice, whether a bad argument (not in the function's domain) is
+reported as a failure or a panic depends on how you implement the function.
+It is desirable to report bad arguments as failures, rather than as panics,
+because the stack trace is easier to understand, and you can use failures
+in pattern matching.
+
+The general syntax for a function literal is::
+
+    pattern -> expression
+
+The argument is matched against the pattern, and if the pattern match fails,
+then the function call fails. So pattern matching is the primary mechanism
+for reporting failure in a function call.
+
+Using ``match`` and ``compose``, you can construct a function with a complex
+domain by combining functions with simpler domains.
+However, this means using hardcore functional programming idioms.
+Designing the best coding style for reporting domain
+errors as failures remains an active area of research.
+
+Here are the detailed semantics of ``match`` and ``compose``.
+
+The ``match`` function is the fundamental primitive for conditional evaluation.
+It maps a list of functions ``[f1,f2,...]`` onto another function ``f``.
+To evaluate ``f x``, we first try ``f1 x``. If that succeeds, return the result.
+If that panics, then panic. Otherwise, if that fails, then try ``f2 x``
+next. If all of the functions in the list have been tried, and none of them
+succeed, then ``f x`` fails. The domain of ``f`` is the union of the domains
+of the argument functions.
+
+The ``compose`` function is the fundamental primitive for sequential evaluation.
+It maps a list of functions ``[f1,f2,...]`` onto another function ``f``.
+``compose[f1,f2] x`` is similar to ``x >> f1 >> f2``, except that if either
+``f1`` or ``f2`` fail, then the composed function also fails. The domain
+of ``f`` is the intersection of the domains of the argument functions.
+
+The ``id`` function always succeeds. ``id x`` always returns the value ``x``.
+It never fails, because its domain is the set of all values.
+
+The ``error`` function always fails: its domain is the empty set.
+
+Match and compose form an algebraic structure over function values.
+It's actually a "non-commutative semiring", with ``match`` playing the
+role of addition, ``compose`` playing the role of multiplication,
+``error`` playing the role of ``0``,
+and ``id`` playing the role of ``1``.
+
+ * Match is an associative function with ``error`` as the identity.
+
+   * ``match[error,f]`` is ``match[f,error]`` is ``f``.
+   * ``match[]`` is equivalent to ``error``.
+
+ * Compose is an associative function with ``id`` as the identity.
+
+   * ``compose[id,f]`` is ``compose[f,id]`` is ``f``.
+   * ``compose[]`` is equivalent to ``id``.
+
+ * Multiplication by zero yields zero. That is,
+
+   * ``compose[f,error]`` is ``compose[error,f]`` is ``error``.
+
+ * Product distributes over sum. That is,
+
+   * ``compose[a,match[b,c]]`` is ``compose[a,b] `match` compose[a,c]``
+   * ``compose[match[a,b],c]`` is ``compose[a,c] `match` compose[b,c]``
