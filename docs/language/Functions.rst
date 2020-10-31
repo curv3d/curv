@@ -168,14 +168,8 @@ This is equivalent to writing ``hello.call "Fred"``.
 One way of thinking of this feature is that a record with a ``call``
 field is a function with additional user-defined attributes.
 
-Other Operations
-~~~~~~~~~~~~~~~~
-``compose function_list``
-  Function composition.
-  ``x>>compose[f,g,h]``
-  is equivalent to
-  ``x>>f>>g>>h``.
-
+Predicates
+~~~~~~~~~~
 ``is_func value``
   Returns true either if the argument is a primitive function like ``x->x+1``,
   or if it is a record with a ``call`` field for which ``is_func`` is true.
@@ -204,17 +198,17 @@ of the function.
 There are two ways that a function call can terminate and report an error:
 it can fail, or it can panic.
 
- * Failure means that the argument is not a member of the function's domain:
-   the caller has violated the function's contract by passing a bad argument.
-   A failure is a recoverable error: it can be converted into
-   a pattern matching failure (allowing other patterns to be matched instead).
+* Failure means that the argument is not a member of the function's domain:
+  the caller has violated the function's contract by passing a bad argument.
+  A failure is a recoverable error: it can be converted into
+  a pattern matching failure (allowing other patterns to be matched instead).
 
- * A panic is a nonrecoverable error. Due to a problem detected at runtime,
-   the function is unable to honour its contract. A panic may indicate
-   data structure corruption, or a logic error in the program. It could
-   also indicate an error in the Curv virtual machine, such as resource
-   exhaustion. A smart compiler could detect some panics at compile time,
-   and report them as compile time errors.
+* A panic is a nonrecoverable error. Due to a problem detected at runtime,
+  the function is unable to honour its contract. A panic may indicate
+  data structure corruption, or a logic error in the program. It could
+  also indicate an error in the Curv virtual machine, such as resource
+  exhaustion. A smart compiler could detect some panics at compile time,
+  and report them as compile time errors.
 
 When an ordinary function call such as ``f x`` fails, the program aborts
 with an error message. The top of the stack trace is the failing function
@@ -241,13 +235,13 @@ then the function call fails. So pattern matching is the primary mechanism
 for reporting failure in a function call.
 
 Using ``match`` and ``compose``, you can construct a function with a complex
-domain by combining functions with simpler domains.
+domain by combining functions with simpler domains (see below).
 However, this means using hardcore functional programming idioms.
 Designing the best coding style for reporting domain
 errors as failures remains an active area of research.
 
-Here are the detailed semantics of ``match`` and ``compose``.
-
+An Algebra of Functions
+~~~~~~~~~~~~~~~~~~~~~~~
 The ``match`` function is the fundamental primitive for conditional evaluation.
 It maps a list of functions ``[f1,f2,...]`` onto another function ``f``.
 To evaluate ``f x``, we first try ``f1 x``. If that succeeds, return the result.
@@ -256,16 +250,28 @@ next. If all of the functions in the list have been tried, and none of them
 succeed, then ``f x`` fails. The domain of ``f`` is the union of the domains
 of the argument functions.
 
+``compose function_list``
+  Function composition.
+  ``x>>compose[f,g,h]``
+  is equivalent to
+  ``x>>f>>g>>h`` (except for the domain, see below).
+  The argument functions are applied left to right, which is the opposite
+  of the standard function composition operator ``g ∘ f`` in mathematics.
+
 The ``compose`` function is the fundamental primitive for sequential evaluation.
 It maps a list of functions ``[f1,f2,...]`` onto another function ``f``.
 ``compose[f1,f2] x`` is similar to ``x >> f1 >> f2``, except that if either
 ``f1`` or ``f2`` fail, then the composed function also fails. The domain
 of ``f`` is the intersection of the domains of the argument functions.
 
-The ``id`` function always succeeds. ``id x`` always returns the value ``x``.
-It never fails, because its domain is the set of all values.
+``id``
+  The identity function. ``id x`` returns ``x`` for all ``x``.
+  It never fails, because its domain is the set of all values.
 
-The ``error`` function always fails: its domain is the empty set.
+``error``
+  The error function ``error x`` always fails: its domain is the empty set.
+  The value ``x`` is converted to a string and used as the error message
+  that appears above the stack trace.
 
 Match and compose form an algebraic structure over function values.
 It's actually a "non-commutative semiring", with ``match`` playing the
