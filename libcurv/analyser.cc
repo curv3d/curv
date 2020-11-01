@@ -448,32 +448,12 @@ analyse_assoc(Environ& env,
     throw Exception(At_Phrase(left, env), "invalid definiendum");
 }
 
-/// In the grammar, a <list> phrase is zero or more constituent phrases
-/// separated by commas or semicolons.
-/// This function iterates over each constituent phrase.
-void
-each_item(Phrase& phrase, std::function<void(Phrase&)> func)
-{
-    if (dynamic_cast<Empty_Phrase*>(&phrase))
-        return;
-    if (auto commas = dynamic_cast<Comma_Phrase*>(&phrase)) {
-        for (auto& i : commas->args_)
-            func(*i.expr_);
-        return;
-    }
-    if (auto semis = dynamic_cast<Semicolon_Phrase*>(&phrase)) {
-        for (auto& i : semis->args_)
-            func(*i.expr_);
-        return;
-    }
-    func(phrase);
-}
-
 // Analyse one item in a compound statement, or in the head of a `do` expr,
 // which could be either a statement or a local definition.
 Shared<Operation>
 analyse_stmt(Shared<const Phrase> stmt, Scope& scope, Interp terp)
 {
+    stmt = strip_parens(stmt);
     if (auto local = cast<const Local_Phrase>(stmt)) {
         auto defn = local->arg_->as_definition(scope, Fail::hard);
         defn->analyse_sequential(scope);
@@ -497,7 +477,7 @@ Shared<Meaning>
 analyse_do(
     Environ& env,
     Shared<const Phrase> syntax,
-    Shared<Phrase> bindings,
+    Shared<const Phrase> stmts,
     Shared<const Phrase> bodysrc,
     Interp terp)
 {
@@ -505,23 +485,24 @@ analyse_do(
     terp = terp.deepen();
     
     Shared<Compound_Op> actions;
-    if (isa<const Empty_Phrase>(bindings))
-        actions = Compound_Op::make(0, bindings);
-    else if (auto commas = cast<const Comma_Phrase>(bindings)) {
+    stmts = strip_parens(stmts);
+    if (isa<const Empty_Phrase>(stmts))
+        actions = Compound_Op::make(0, stmts);
+    else if (auto commas = cast<const Comma_Phrase>(stmts)) {
         throw Exception(
-            At_Token(commas->args_.front().separator_, *bindings, env),
+            At_Token(commas->args_.front().separator_, *stmts, env),
             "syntax error");
     }
-    else if (auto semis = cast<const Semicolon_Phrase>(bindings)) {
-        actions = Compound_Op::make(semis->args_.size(), bindings);
+    else if (auto semis = cast<const Semicolon_Phrase>(stmts)) {
+        actions = Compound_Op::make(semis->args_.size(), stmts);
         for (size_t i = 0; i < semis->args_.size(); ++i) {
             actions->at(i) =
                 analyse_stmt(semis->args_[i].expr_, scope, terp.to_stmt());
         }
     }
     else {
-        actions = Compound_Op::make(1, bindings);
-        actions->at(0) = analyse_stmt(bindings, scope, terp.to_stmt());
+        actions = Compound_Op::make(1, stmts);
+        actions->at(0) = analyse_stmt(stmts, scope, terp.to_stmt());
     }
 
     auto body = analyse_op(*bodysrc, scope, terp);

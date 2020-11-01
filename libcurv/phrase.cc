@@ -6,6 +6,38 @@
 
 namespace curv {
 
+/// In the grammar, a <list> phrase is zero or more constituent phrases
+/// separated by commas or semicolons.
+/// This function iterates over each constituent phrase.
+void
+each_item(Phrase& phrase, std::function<void(Phrase&)> func)
+{
+    if (dynamic_cast<Empty_Phrase*>(&phrase))
+        return;
+    if (auto commas = dynamic_cast<Comma_Phrase*>(&phrase)) {
+        for (auto& i : commas->args_)
+            func(*i.expr_);
+        return;
+    }
+    if (auto semis = dynamic_cast<Semicolon_Phrase*>(&phrase)) {
+        for (auto& i : semis->args_)
+            func(*i.expr_);
+        return;
+    }
+    func(phrase);
+}
+
+Shared<const Phrase>
+strip_parens(Shared<const Phrase> ph)
+{
+    for (;;) {
+        auto p = cast<const Paren_Phrase>(ph);
+        if (p == nullptr) break;
+        ph = p->body_;
+    }
+    return ph;
+}
+
 Shared<const Phrase>
 nub_phrase(Shared<const Phrase> ph)
 {
