@@ -853,11 +853,9 @@ Shared<Meaning>
 Paren_Phrase::analyse(Environ& env, Interp terp) const
 {
     if (cast<const Empty_Phrase>(body_)) {
-      #if 0 // TODO: enable once I have 'curv --fix' to automatically fix source
-        env.analyser_.deprecate(&File_Analyser::paren_list_deprecated_,
+        env.analyser_.deprecate(&File_Analyser::paren_empty_list_deprecated_,
             At_Phrase(*this, env),
-            "'()' is deprecated. Use '[]' instead.");
-      #endif
+            "Using '()' as the empty list is deprecated. Use '[]' instead.");
         return List_Expr::make(0, share(*this));
     }
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {

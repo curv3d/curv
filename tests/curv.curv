@@ -1,6 +1,6 @@
 do
 assert(is_list 0 == false);
-assert(is_list());
+assert(is_list[]);
 
 assert(bit(false)==0 && bit(true)==1);
 
@@ -47,10 +47,10 @@ assert(
 );
 
 assert((0..<5) == [0,1,2,3,4]);
-assert((1,2,3)==[1,2,3] && (1,)==[1] && ()==[]);
+assert((1,2,3)==[1,2,3] && (1,)==[1] && []==[]);
 
-assert(reverse(1,2,3) == [3,2,1] && reverse() == []);
-assert(sum(1,2,3)==6 && sum()==0);
+assert(reverse(1,2,3) == [3,2,1] && reverse[] == []);
+assert(sum(1,2,3)==6 && sum[]==0);
 
 assert(
   (let f(x,y) = x+y; a = (2,3); in f a)
@@ -151,7 +151,7 @@ assert(
 );
 
 assert(
-    is_bool false && is_num 42 && is_string "" && is_list ()
+    is_bool false && is_num 42 && is_string "" && is_list []
     && is_record{a:1} && is_record{a=1} && is_record(cube 1)
     && not(is_record[])
     && is_func(x->x) && is_shape(cube 1)
@@ -238,7 +238,6 @@ assert_error(
     let {a=12,b=23,c=34} = {d:true} in [a,b,c]
 );
 let {} = {} in (;);
-let () = () in (;);
 let [] = [] in (;);
 
 let {a:[x,y]} = {a:[1,2]} in assert([x,y]==[1,2]);

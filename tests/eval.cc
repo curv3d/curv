@@ -247,17 +247,17 @@ TEST(curv, eval)
     SUCCESS("sqrt(2)", "1.4142135623730951");
     SUCCESS("max(1,2,)", "2"); // test syntax: trailing , after last argument
     SUCCESS("sqrt << sqrt 16", "2");
-    FAILALL("let f=()->sqrt(true);\nin f()",
+    FAILALL("let f=[]->sqrt(true);\nin f[]",
         "argument #1 of sqrt: #true: domain error\n"
-        "1| let f=()->sqrt(true);\n"
+        "1| let f=[]->sqrt(true);\n"
         "                 ^^^^^^ "
         /* removed due to tail call optimization
         "at:\n"
-        "2| in f()\n"
+        "2| in f[]\n"
         "      ^^^"
         */
         );
-    SUCCESS("count()", "0");
+    SUCCESS("count[]", "0");
     FAILALL("count 0",
         "argument #1 of count: not a list or string\n"
         "1| count 0\n"
@@ -333,7 +333,7 @@ TEST(curv, eval)
         "1| let x=x in x\n"
         "         ^     ");
     SUCCESS("let f=x->(let a=x+1 in a) in f 2", "3");
-    FAILMSG("let f(x,y)=x in f()",
+    FAILMSG("let f(x,y)=x in f[]",
         "argument #1 of f: [] is not a list of 2 items");
     SUCCESS("let add=(x,y)->x+y in add(1,2)", "3");
     SUCCESS("let add=x->y->x+y in add 1 2", "3");
@@ -455,10 +455,10 @@ TEST(curv, eval)
         "Try 'a == b' to test for equality.");
 
     // max, min
-    SUCCESS("max()", "-inf");
+    SUCCESS("max[]", "-inf");
     SUCCESS("max(1,)", "1");
     SUCCESS("max(1,2)", "2");
-    SUCCESS("min()", "inf");
+    SUCCESS("min[]", "inf");
     SUCCESS("min(1,)", "1");
     SUCCESS("min(1,2)", "1");
     SUCCESS("(max([1,100],[10,20]), max(20,[5,17,30]), max([1,2],1.5))",
@@ -480,11 +480,11 @@ TEST(curv, eval)
         "   ^^^^    ");
 
 
-    SUCCESS("(mag(), mag(2,), mag(3,4))",
+    SUCCESS("(mag[], mag(2,), mag(3,4))",
         "[0,2,5]");
 
     SUCCESS("is_list 0","#false");
-    SUCCESS("is_list ()","#true");
+    SUCCESS("is_list []","#true");
 
     FAILALL("1,2",
         "syntax error\n"

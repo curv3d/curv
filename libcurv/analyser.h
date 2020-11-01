@@ -23,6 +23,7 @@ struct File_Analyser
     // Have we already emitted a 'deprecated' warning for this topic?
     // Used to prevent an avalanche of warning messages.
     bool var_deprecated_ = false;
+    bool paren_empty_list_deprecated_ = false;
     bool paren_list_deprecated_ = true;
     bool not_deprecated_ = false;
 
