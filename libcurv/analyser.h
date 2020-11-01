@@ -24,7 +24,7 @@ struct File_Analyser
     // Used to prevent an avalanche of warning messages.
     bool var_deprecated_ = false;
     bool paren_empty_list_deprecated_ = false;
-    bool paren_list_deprecated_ = true;
+    bool paren_list_deprecated_ = false;
     bool not_deprecated_ = false;
 
     File_Analyser(System& system, Frame* file_frame)
@@ -33,7 +33,7 @@ struct File_Analyser
         file_frame_(file_frame)
     {}
 
-    void deprecate(bool File_Analyser::*, const Context&, const String_Ref&);
+    void deprecate(bool File_Analyser::*, int, const Context&, const String_Ref&);
 };
 
 // Local analysis state that changes when entering a new name-binding scope.

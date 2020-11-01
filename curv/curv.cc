@@ -36,10 +36,11 @@ namespace fs = curv::Filesystem;
 
 curv::System&
 make_system(const char* argv0, std::list<const char*>& libs, std::ostream& out,
-    bool verbose)
+    bool verbose, int depr)
 {
     static curv::System_Impl sys(out);
     sys.verbose_ = verbose;
+    sys.depr_ = depr;
 #ifndef _WIN32
     if (isatty(2)) sys.use_colour_ = true;
 #endif
@@ -94,6 +95,7 @@ const char help_infix[] =
 "   -x : Interpret filename argument as expression.\n"
 "general options:\n"
 "   -v : Verbose & debug output.\n"
+"   --depr=N : Deprecation warning level 0, 1 or 2; default is 1.\n"
 "   -O name=value : Set parameter controlling the specified output format.\n"
 "      If '-o fmt' is specified, use 'curv --help -o fmt' for help.\n"
 "      If '-o fmt' is not specified, the following parameters are available:\n"
@@ -119,6 +121,7 @@ main(int argc, char** argv)
     ExPtr exporter = exporters.end();
     Export_Params::Options options;
     bool verbose = false;
+    int depr = 1;
     bool live = false;
     std::list<const char*> libs;
     bool expr = false;
@@ -128,11 +131,13 @@ main(int argc, char** argv)
 
     constexpr int HELP = 1000;
     constexpr int VERSION = 1001;
+    constexpr int DEPR = 1002;
     static const char opts[] = ":o:O:lnNi:xev";
     static struct option longopts[] = {
-        {"help",    no_argument, nullptr, HELP },
-        {"version", no_argument, nullptr, VERSION },
-        {nullptr,   0,           nullptr, 0 }
+        {"help",    no_argument,       nullptr, HELP },
+        {"version", no_argument,       nullptr, VERSION },
+        {"depr",    required_argument, nullptr, DEPR },
+        {nullptr,   0,                 nullptr, 0 }
     };
 
     int opt;
@@ -144,6 +149,9 @@ main(int argc, char** argv)
             break;
         case VERSION:
             version = true;
+            break;
+        case DEPR:
+            depr = atoi(optarg);
             break;
         case 'o':
           {
@@ -212,8 +220,18 @@ main(int argc, char** argv)
                      << "Use " << argv0 << " --help for help.\n";
             return EXIT_FAILURE;
         case ':':
-            std::cerr << "-" << (char)optopt << ": missing argument\n"
-                     << "Use " << argv0 << " --help for help.\n";
+            if (optopt > 255) {
+                for (auto o = longopts; o->name != nullptr; ++o) {
+                    if (o->val == optopt) {
+                        std::cerr << "--" << o->name;
+                        break;
+                    }
+                }
+            } else {
+                std::cerr << "-" << (char)optopt;
+            }
+            std::cerr << ": missing argument\n"
+                      << "Use " << argv0 << " --help for help.\n";
             return EXIT_FAILURE;
         default:
             curv::die("main: bad result from getopt()");
@@ -282,7 +300,7 @@ main(int argc, char** argv)
     // Create system, a precondition for parsing -O parameters.
     // This can fail, so we do as much argument validation as possible
     // before this point.
-    curv::System& sys(make_system(usestdlib, libs, std::cerr, verbose));
+    curv::System& sys(make_system(usestdlib, libs, std::cerr, verbose, depr));
     atexit(curv::geom::remove_all_tempfiles);
 
     try {

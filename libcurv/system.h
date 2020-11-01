@@ -29,6 +29,10 @@ struct System
     // Set by the `-v` command line argument.
     bool verbose_ = false;
 
+    // Deprecation level (0, 1 or 2) for deprecation warnings.
+    // Set by the `--depr=N` command line argument.
+    int depr_ = 1;
+
     // Set to true if you want coloured text to be written on the console.
     bool use_colour_ = false;
 

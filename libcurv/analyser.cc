@@ -20,10 +20,10 @@
 namespace curv
 {
 
-void File_Analyser::deprecate(bool File_Analyser::* flag,
+void File_Analyser::deprecate(bool File_Analyser::* flag, int lvl,
     const Context& cx, const String_Ref& msg)
 {
-    if (system_.verbose_ || !((*this).*flag)) {
+    if (system_.depr_ >= lvl && (system_.verbose_ || !((*this).*flag))) {
         system_.warning(Exception{cx, msg});
         (*this).*flag = true;
     }
@@ -312,7 +312,7 @@ Unary_Phrase::analyse(Environ& env, Interp) const
 {
     switch (op_.kind_) {
     case Token::k_not:
-        env.analyser_.deprecate(&File_Analyser::not_deprecated_,
+        env.analyser_.deprecate(&File_Analyser::not_deprecated_, 1,
             At_Phrase(*this, env),
             "'!a' is deprecated. Use 'not(a)' instead.");
         return make<Not_Expr>(
@@ -460,7 +460,7 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, Interp terp)
         return defn->add_to_sequential_scope(scope);
     }
     if (auto vardef = cast<const Var_Definition_Phrase>(stmt)) {
-        scope.analyser_.deprecate(&File_Analyser::var_deprecated_,
+        scope.analyser_.deprecate(&File_Analyser::var_deprecated_, 1,
             At_Phrase(*vardef, scope),
             "'var pattern := expr' is deprecated.\n"
             "Use 'local pattern = expr' instead.");
@@ -853,17 +853,16 @@ Shared<Meaning>
 Paren_Phrase::analyse(Environ& env, Interp terp) const
 {
     if (cast<const Empty_Phrase>(body_)) {
-        env.analyser_.deprecate(&File_Analyser::paren_empty_list_deprecated_,
+        env.analyser_.deprecate(
+            &File_Analyser::paren_empty_list_deprecated_, 1,
             At_Phrase(*this, env),
             "Using '()' as the empty list is deprecated. Use '[]' instead.");
         return List_Expr::make(0, share(*this));
     }
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
-      #if 0 // TODO: enable once I have 'curv --fix' to automatically fix source
-        env.analyser_.deprecate(&File_Analyser::paren_list_deprecated_,
+        env.analyser_.deprecate(&File_Analyser::paren_list_deprecated_, 2,
             At_Phrase(*this, env),
             "'(a,b,c)' is deprecated. Use '[a,b,c]' instead.");
-      #endif
         auto& items = commas->args_;
         Shared<List_Expr> list = List_Expr::make(items.size(), share(*this));
         for (size_t i = 0; i < items.size(); ++i)

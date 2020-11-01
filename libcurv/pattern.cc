@@ -523,20 +523,24 @@ make_pattern(const Phrase& ph, Environ& env)
     }
     if (auto parens = dynamic_cast<const Paren_Phrase*>(&ph)) {
         std::vector<Shared<Pattern>> items;
-        if (dynamic_cast<const Empty_Phrase*>(&*parens->body_) != nullptr) {
+        if (isa<Empty_Phrase>(parens->body_)) {
             env.analyser_.deprecate(
-                &File_Analyser::paren_empty_list_deprecated_,
+                &File_Analyser::paren_empty_list_deprecated_, 1,
                 At_Phrase(ph, env),
                 "Using '()' as the empty list is deprecated. Use '[]' instead.");
             return make<List_Pattern>(share(ph), items);
         }
-        if (dynamic_cast<const Comma_Phrase*>(&*parens->body_) == nullptr
-         && dynamic_cast<const Semicolon_Phrase*>(&*parens->body_) == nullptr)
-            return make_pattern(*parens->body_, env);
-        each_item(*parens->body_, [&](Phrase& item)->void {
-            items.push_back(make_pattern(item, env));
-        });
-        return make<List_Pattern>(share(ph), items);
+        if (isa<Comma_Phrase>(parens->body_)) {
+            env.analyser_.deprecate(
+                &File_Analyser::paren_list_deprecated_, 2,
+                At_Phrase(ph, env),
+                "Pattern '(a,b,c)' is deprecated. Use '[a,b,c]' instead.");
+            each_item(*parens->body_, [&](Phrase& item)->void {
+                items.push_back(make_pattern(item, env));
+            });
+            return make<List_Pattern>(share(ph), items);
+        }
+        return make_pattern(*parens->body_, env);
     }
     if (auto braces = dynamic_cast<const Brace_Phrase*>(&ph)) {
         Symbol_Map<Record_Pattern::Field> fields;
