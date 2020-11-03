@@ -121,4 +121,11 @@ Value* List_Base::ref_element(Value index, bool need_value, const Context& cx)
     return &array_[i];
 }
 
+Value* List_Base::ref_lens(Value lens, bool need_value, const Context& cx)
+{
+    int i = lens.to_int(0, int(size_)-1, cx);
+    (void)need_value;
+    return &array_[i];
+}
+
 } // namespace curv

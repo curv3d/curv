@@ -742,6 +742,11 @@ analyse_locative(Shared<const Phrase> ph, Environ& env, Interp terp)
             return base->get_element(env, ph, index);
         }
     }
+    if (auto at = cast<const Apply_Lens_Phrase>(ph)) {
+        auto base = analyse_locative(at->arg_, env, terp);
+        auto lens = analyse_op(*at->function_, env);
+        return base->lens_get_element(env, ph, lens);
+    }
     throw Exception(At_Phrase(*ph, env), "not a locative");
 }
 

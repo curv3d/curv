@@ -929,6 +929,8 @@ struct Locative : public Shared_Base
         Environ&, Shared<const Phrase>, Symbol_Expr) = 0;
     virtual Shared<Locative> get_element(
         Environ&, Shared<const Phrase>, Shared<Operation>) = 0;
+    virtual Shared<Locative> lens_get_element(
+        Environ&, Shared<const Phrase>, Shared<Operation>) = 0;
     virtual void sc_print(SC_Frame& f) const;
 };
 
@@ -941,6 +943,8 @@ struct Boxed_Locative : public Locative
     virtual Shared<Locative> get_field(
         Environ&, Shared<const Phrase>, Symbol_Expr) override;
     virtual Shared<Locative> get_element(
+        Environ&, Shared<const Phrase>, Shared<Operation>) override;
+    virtual Shared<Locative> lens_get_element(
         Environ&, Shared<const Phrase>, Shared<Operation>) override;
     // reference: get a pointer to the locative's state.
     // need_value is false if we are just going to immediately overwrite the
@@ -998,6 +1002,26 @@ struct Indexed_Locative : public Boxed_Locative
 
     virtual Value* reference(Frame&,bool) const override;
     virtual void sc_print(SC_Frame& f) const override;
+};
+
+// A Locative representing <boxed-locative>@<lens>
+struct Lens_Locative : public Boxed_Locative
+{
+    Shared<Boxed_Locative> base_;
+    Shared<Operation> lens_;
+
+    Lens_Locative(
+        Shared<const Phrase> syntax,
+        Shared<Boxed_Locative> base,
+        Shared<Operation> lens)
+    :
+        Boxed_Locative(std::move(syntax)),
+        base_(std::move(base)),
+        lens_(std::move(lens))
+    {}
+
+    virtual Value* reference(Frame&,bool) const override;
+    //virtual void sc_print(SC_Frame& f) const override;
 };
 
 // 'locative := expression'

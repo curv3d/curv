@@ -635,6 +635,15 @@ Boxed_Locative::get_element(
     return make<Indexed_Locative>(syntax, share(*this), index);
 }
 
+Shared<Locative>
+Boxed_Locative::lens_get_element(
+    Environ& env,
+    Shared<const Phrase> syntax,
+    Shared<Operation> lens)
+{
+    return make<Lens_Locative>(syntax, share(*this), lens);
+}
+
 Value*
 Local_Locative::reference(Frame& f,bool) const
 {
@@ -665,6 +674,19 @@ Indexed_Locative::reference(Frame& f, bool need_value) const
     }
     auto ix = index_->eval(f);
     return base_list->ref_element(ix, need_value, At_Phrase(*syntax_, f));
+}
+
+Value*
+Lens_Locative::reference(Frame& f, bool need_value) const
+{
+    Value* base = base_->reference(f,true);
+    Shared<List> base_list = base->to<List>(At_Phrase(*base_->syntax_, f));
+    if (base_list->use_count > 1) {
+        base_list = base_list->clone();
+        *base = {base_list};
+    }
+    auto lens = lens_->eval(f);
+    return base_list->ref_lens(lens, need_value, At_Phrase(*syntax_, f));
 }
 
 void

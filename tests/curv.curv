@@ -533,7 +533,8 @@ assert_error(
     local a = [1,2,3];
     local b = a;
     a[0] := 17;
-    assert(a == [17,2,3] && b == [1,2,3]);
+    a@1 := 42;
+    assert(a == [17,42,3] && b == [1,2,3]);
 );
 assert_error(   // a[i] is a locative; [i]>>a is not a locative
     "not a locative",

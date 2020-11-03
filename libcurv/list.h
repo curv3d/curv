@@ -37,6 +37,7 @@ struct List_Base : public Ref_Value
 
     Shared<List> clone() const;
     Value* ref_element(Value, bool need_value, const Context&);
+    Value* ref_lens(Value, bool need_value, const Context&);
 
     static const char name[];
     TAIL_ARRAY_MEMBERS(Value)
