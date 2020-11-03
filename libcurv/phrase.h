@@ -433,6 +433,12 @@ struct Call_Phrase : public Phrase
         arg_(std::move(arg))
     {}
 
+    // True if this is a juxtaposition phrase 'f x'.
+    bool is_juxta() const
+    {
+        return op_.kind_ == Token::k_missing;
+    }
+
     virtual Location location() const override
     {
         if (op_.kind_ == Token::k_backtick)

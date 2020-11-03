@@ -425,12 +425,12 @@ Shared<Meaning>
 analyse_assoc(Environ& env,
     const Phrase& src, const Phrase& left, Shared<Phrase> right)
 {
-    if (auto call = dynamic_cast<const Call_Phrase*>(&left))
-        if (call->op_.kind_ == Token::k_missing)
-        {
+    if (auto call = dynamic_cast<const Call_Phrase*>(&left)) {
+        if (call->is_juxta()) {
             return analyse_assoc(env, src, *call->function_,
                 make<Lambda_Phrase>(call->arg_, Token(), right));
         }
+    }
 
     Shared<Operation> right_expr;
     if (isa<Empty_Phrase>(right))
@@ -741,9 +741,11 @@ analyse_locative(const Phrase& ph, Environ& env, Interp terp)
             "invalid expression after '.'");
     }
     if (auto call = dynamic_cast<const Call_Phrase*>(&ph)) {
-        auto base = analyse_locative(*call->function_, env, terp);
-        auto index = analyse_op(*call->arg_, env);
-        return base->get_element(env, share(ph), index);
+        if (call->is_juxta()) {
+            auto base = analyse_locative(*call->function_, env, terp);
+            auto index = analyse_op(*call->arg_, env);
+            return base->get_element(env, share(ph), index);
+        }
     }
     throw Exception(At_Phrase(ph, env), "not a locative");
 }
@@ -771,7 +773,7 @@ as_definition_iter(
                 make_pattern(*id,env), std::move(right));
     }
     if (auto call = dynamic_cast<const Call_Phrase*>(&left))
-        if (call->op_.kind_ == Token::k_missing)
+        if (call->is_juxta())
             return as_definition_iter(env, std::move(syntax), *call->function_,
                 make<Lambda_Phrase>(call->arg_, Token(), right));
     return make<Data_Definition>(std::move(syntax),

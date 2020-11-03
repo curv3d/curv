@@ -535,6 +535,10 @@ assert_error(
     a[0] := 17;
     assert(a == [17,2,3] && b == [1,2,3]);
 );
+assert_error(   // a[i] is a locative; [i]>>a is not a locative
+    "not a locative",
+    do local a=[1,2,3]; [0]>>a := 17; in true
+);
 
 // bitwise operators
 assert( and[] == true && and[true,false] == false );
