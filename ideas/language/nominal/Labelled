@@ -371,9 +371,28 @@ Products, Sums and Subtypes
 Based on my requirements, it seems like I want the equivalents of nominally
 typed product types, sum types and subtypes.
 
-Ugh. Just like every mainstream programming language? This potentially gives
-two ways to encode data: (1) the original Curv style, writing out structured
-data literals directly (without having to declare types first), and (2)
-first defining nominal types & type constructors, and then invoking those
-constructors. Which potentially sucks: warring language constructs, which
-ones do I use? Can I unify these two approaches?
+Problem: Having two ways to encode data: (1) the original Curv style,
+writing out structured data literals directly (without having to declare
+types first), and (2) first defining nominal types & type constructors,
+and then invoking those constructors. Which would suck: warring language
+constructs, which ones do I use? Can I unify these two approaches?
+
+A Haskell algebraic type such as
+    data T = Foo | Bar a
+could be represented by these constructors:
+    labelled Foo = {};
+    labelled Bar x =labelled {};
+
+Can labelled values created by these constructors be unified with tagged
+values?
+
+Criticism of Labelled Values for Performance
+--------------------------------------------
+Labelled values as a performance hack for precise domains?
+At the cost of language complexity, and heading down the path towards
+reinventing the complex and inexpressive type systems found in mainstream
+languages? Maybe there is a better way. Try thinking differently about
+this problem.
+
+What if we start with a simpler design with the performance hit, then look for
+alternate ways to speed things up without so much language complexity.

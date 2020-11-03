@@ -1,13 +1,46 @@
 Tagged Data: a representation for Application Data Types
 ========================================================
+Many simple functional languages provide a bureaucracy-free method of
+directly constructing instances of "discriminated union types", without
+the requirement to first define a type. These are tagged values.
+
 Haskell discriminated union
     data T = Foo | Bar a
-represented in Curv as
+
+The syntax requirements are:
+ * construct 'Foo', a tagged value without a payload
+ * construct 'Bar x', a tagged value with a payload
+ * pattern matching of tagged values, binding payload to a variable
+
+There should also be a method of defining a predicate or type for recognizing
+the values of an informal discriminated union. This can be done post-hoc,
+after there is already code constructing and using these tagged values.
+
+The benefit of this approach is extreme simplicity.
+It's perfect when all code is written by a single user or small cohesive group.
+The drawbacks come from the lack of sophistication and bureaucracy:
+ * You can't certify a value as being a valid instance of an application data
+   type using an unforgeable 'brand' verifying that the value was constructed
+   using approved operations.
+ * At scale, there will arise a need for 'namespaces' or hierarchical tags.
+   This will arise if Curv gets a large user base of people writing and
+   sharing code libraries, each with their own tags, that need to be distinct
+   from tags created by other authors.
+
+Symbols and Singleton Records
+-----------------------------
+In Curv, we can satisfy these requirements using symbols and singleton records.
+No need for any new language features!
     #Foo
     {Bar: a}
 
-In general, we can use singleton records to represent tagged data,
-where the singleton field name denotes some application data type.
+The picker field of a picker predicate uses tagged data. This picker field
+never contains anyone other than a picker descriptor, so the tags do not
+need to be globally unique. In this context, the encoding works fine.
+
+In the following, I speculate on using this encoding for application types
+that need to be globally distinct, since shapes, colours and characters
+are displayed differently from other values. This is more problematic.
 
 For shapes, we can use
   { shape:
