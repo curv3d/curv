@@ -100,7 +100,9 @@ is_vec3 x = is_list x && count x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(
 indices a = 0..<count a;
 cross[p,q] = [p[Y]*q[Z] - p[Z]*q[Y], p[Z]*q[X] - p[X]*q[Z], p[X]*q[Y] - p[Y]*q[X]];
 idmatrix n = [for(i in 1..n) [for(j in 1..n) if(i==j) 1 else 0]];
-transpose a = [for (i in indices(a[0])) [for (j in indices a) a[j,i]]];
+transpose a =
+    if (a == []) a
+    else [for (i in indices(a[0])) [for (j in indices a) a[j,i]]];
 normalize v = v / mag v;
 
 // convert phase angle to unit vector

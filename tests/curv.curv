@@ -158,7 +158,12 @@ assert(
 );
 
 assert(
-    transpose([1,1],[2,2]) == [[1,2],[1,2]]
+    transpose [] == [] &&
+    transpose [[]] == [] &&
+    transpose [[],[]] == [] &&
+    transpose [[1]] == [[1]] &&
+    transpose [[1],[2]] == [[1,2]] &&
+    transpose [[1,2,3],[4,5,6]] == [[1,4],[2,5],[3,6]]
 );
 
 assert( asin 1 == 1.5707963267948966 && acos 1 == 0 );
