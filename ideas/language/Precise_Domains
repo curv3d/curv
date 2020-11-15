@@ -376,3 +376,39 @@ structure containing NaN). There are limited possibilities for implementing
 a 'compose' function that short circuits when one of the functions fails.
 There is limited benefit compared to the costs, and I can implement a compose
 that doesn't short circuit in SubCurv, for now.
+
+Hacking the Requirement
+-----------------------
+The "precise domains" requirement is a bureaucratic requirement, adding
+one more thing you need to worry about, adding complexity to programming.
+
+If "precise domains" is elevated from a means (how do I produce better error
+messages for my users when they pass bad data to my functions?) to an end in
+itself, then you look for the easiest way to satisfy the stupid requirement.
+This happens a lot in functional programming with powerful type systems, where
+your top priority is to silence the type checker so you can run your program.
+
+So then your strategy is to simplify the domain so that it can be more easily
+described to your type system, or to your pattern matching DSL.
+
+In Haskell, Data.List.transpose is a total function over lists of lists,
+because you can't describe a 'list of lists of the same length' in the Haskell
+type system. So Haskell's transpose must be well defined over non-rectangular
+inputs. If non-rectangular data can only happen as a result of data corruption,
+then too bad, Haskell's transpose won't report an error. The game here is to
+"guarantee that the program can't go wrong at compile time" by redefining the
+meaning of "can't go wrong" to fit the limitations of the type system.
+
+I would have expected that a dependent type system would eliminate the need
+to play this game, but actually, it turns out that you need to play this game
+even harder. Total functions are very valuable when you have dependent types,
+and complex domains create a huge bureaucratic overhead (the need to prove
+at each function call that your input satisfies the domain).
+
+"Division by zero in type theory: a FAQ"
+https://xenaproject.wordpress.com/2020/07/05/division-by-zero-in-type-theory-a-faq/
+quote:
+    Hey! I heard that Lean thinks 1/0 = 0. Is that true?
+    Yes. So do Coq and Agda and many other theorem provers.
+
+This game of "simplifying the domain" also works in Curv.
