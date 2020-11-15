@@ -1,0 +1,47 @@
+https://github.com/tulip-lang/tulip/blob/master/doc/intro.md#readme
+
+simple, functional, dynamically typed, syntax optimized for a REPL
+
+in Curv syntax, Tulip pipelines allow for this:
+
+     foo >> a -> bar >> baz a
+ is  foo >> (a -> bar >> baz a)
+
+Rationale: you are composing a pipeline, you want to grab a value and
+reuse it later in the pipeline.
+
+Tagged Values
+-------------
+    .foo
+is a tagword. Seems to be like a symbol, since .t and .f are the boolean
+values. A tagword prints as itself.
+
+When a tagword is called like a function, it creates a tagged value.
+    .foo 1
+constructs the value that prints as '.foo 1'. Calling this as a function
+appends another element to the tagged value.
+    .foo 1 2
+prints as '.foo 1 2'.
+
+So, here are instances of famous data types, constructed without any
+bureaucracy:
+  # lists
+    .cons 1 (.cons 2 (.cons 3 .nil))
+  # result
+    .ok value
+    .err message
+  # option
+    .some value
+    .none
+
+More information: "Variants are not Unions"
+https://www.youtube.com/watch?v=ZQkIWWTygio
+It's about putting algebraic types into Clojure as a dynamically typed lang.
+Variants are tagged data, capable of "branching and destructuring".
+  [:tag data]           {tag: data}
+  (match thing
+    [:tag data] (use data)
+    [:other-tag data more-data] (...))
+
+So far this looks like #foo and {bar: data} in Curv, except for the part
+where x.bar can be used to fetch data.

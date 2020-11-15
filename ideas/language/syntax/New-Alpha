@@ -86,6 +86,15 @@ There is one precedence level for infix, left associative operators
 (including x^y, arithmetic, relational, boolean, user-defined).
 Maybe there is whitespace sensitive precedence, a+b binds tighter than a + b.
 
+An idea from Tulip on the precedence of the -> operator:
+  a >> b -> c >> f b
+groups as
+  a >> (b -> c >> f b)
+Rationale: you are typing a pipeline left to right, you need to grab a value
+and use it later on.
+Downside: left operand of -> is now a term, not a pipeline. Requires more
+parens in `match` expressions: match[(x::Num)->x+1,...].
+
 Only one prefix operator symbol, '-', because it's traditional.
 For other operations, use function call syntax.
     -x  <=>  negate(x)
@@ -95,7 +104,7 @@ Infix keyword operators. Two syntax ideas
     a `foo` b   Haskell
     a foo: b    Smalltalk, Supercollider
 The 'foo:' syntax looks nicer. The `foo` syntax generalizes to support
-postfix expressions.
+postfix expressions as operator names.
 
 Syntax for a range:
     a .. b

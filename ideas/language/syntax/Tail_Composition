@@ -48,3 +48,22 @@ A simplified expr syntax will be easier to make graphical.
 
 To convert a pipeline into an argument, use parentheses for grouping.
 See also Infix
+
+Extended >> Pipelines
+---------------------
+A proposal to make >> pipelines more chainable.
+
+You are typing a pipeline, and suddenly you need to grab a pipeline value
+so you can reference it later.
+      a >> x -> b >> f x
+  is  a >> (x -> b >> f x)
+
+      a >> let x=foo in b >> f x
+  is  a >> (let x=foo in b >> f x)
+
+      a >> do print "here" in b >> f x
+  is  a >> (do print "here" in b >> f x)
+
+Downside: left operand of -> is now a term, not a pipeline. Requires more
+parens in `match` expressions: match[(x::Num)->x+1,...]. Unless I prefix
+lambda exprs with \ or fn like in Haskell or Rust.
