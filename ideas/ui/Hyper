@@ -1,0 +1,117 @@
+Hyperliterate Programming
+=========================
+Hyper is an advanced hypertext browser and editor.
+Forked from language/nominal/Help.
+
+1. The Curv Manual is a web of hypertext documents, with the structure of a
+   gman database. "Hyper" is the GUI for browsing and editing the manual.
+   I want to match the experience of Book of Shaders, where you can live edit
+   example code and see the output.
+
+2. Hyper supports literate programming for Curv:
+   * Source code comprises a mix of code and documentation, with the
+     documentation and its narrative structure being more prominent.
+   * Modern literate programming should be based on hypertext, not on the
+     structure of a printed book.
+
+Data Model (for the Manual)
+---------------------------
+A "web" is a coherent collection of "pages" with a local namespace.
+Analogous to a "wiki".
+
+Page names are called "topics", and they look somewhat like Unix pathnames.
+Topics are organized in a tree. Each node in the topic tree (root, interior
+nodes and leaves) has an associated page. The same page can appear multiple
+times in the topic tree. Each page has 1 or more topics, a synopsis line,
+and a body.
+
+Within a page, the "synopsis line" is inline Rich Text, and the body is a
+Rich Text block. This Rich Text type is elsewhere called the Document type.
+Rich Text includes roughly the same capabilities as Markdown, and supports
+as elements:
+ * Local hypertext links to other pages in the same web, using Topic names.
+   Analogous to wiki links.
+ * Shapes, displayed graphically: images, animated and interactive
+   2D and 3D shapes.
+ * More generally, Curv values of arbitrary type. Values are trees, which are
+   potentially large, so there may be scrolling within a limited size pane,
+   and a folding tree browser for large trees (see UI).
+ * Curv source code. Analogous to `foo` inline elements and ```foo```
+   block elements in Markdown, I guess.
+ * Inspired by The Book of Shaders, an "example" element comprises
+   a source code element that is linked to a value element displaying the
+   output. Edit the code and the result value is live updated. Since
+   this is example code in a manual, you can reset the example back to the
+   original source code. Also need a debug console for print statement output?
+   Errors appear in the output pane: they contain stack traces, which may be
+   large and scrolled, and they contain values, which may be large and folded.
+   You can navigate from a stack trace item to a source code location in the
+   source pane. An Example element reiterates the classic 3-pane OpenSCAD GUI.
+ * Inspired by gman, a Topic Tree element displays the child elements
+   of a given topic name, initially in table-of-contents style, as
+   <name, synopsis> pairs, one per line, each item being a hypertext link
+   to the corresponding page. The general tree browser UI applies here.
+
+There is an ASCII based markup language for Rich Text. You must be able to copy
+and paste any element as text, or losslessly transport Rich Text in ASCII form
+via files and email. This means that image data has a representation in the
+markup language (eg, base64 encoded PNG file), and also has a representation
+in Curv source code.
+
+UI (for the Curv Manual)
+------------------------
+The UI borrows elements from web browsers, folding tree editors (outliners),
+Miller columns, and tiling window managers.
+
+From the Unix shell, I imagine typing
+    $ hyper <pathname of Curv manual>
+and getting an OS window containing a single pane displaying the root page
+of the Curv manual. From there, you can navigate to any page.
+
+By default, Hyper runs inside a single OS window, partitioning it into tiles
+as needed. You can detach a tile or hierarchical tile group and make it into
+a separate OS window. This could be useful with a multi-monitor setup.
+
+Many things are potentially large trees:
+ * topic trees
+ * Curv values
+ * source code?
+so there is a rich UI for tree navigation:
+ * folding tree UI (outliner UI)
+ * Miller columns
+
+Structure and Interpretation of Source Code
+-------------------------------------------
+A Document is a Curv value, and a Source Code element is one kind of Document
+value. So, source code can be edited by Hyper and source is represented as
+a value.
+
+Let's suppose that Hyper is an image based system like Smalltalk. Suppose that
+a "web" is represented in Unix as an opaque image file, some kind of database,
+not as a tree of directories and files. Suppose that we don't expose the
+abstraction of Unix directories and files in Hyper at all. The only thing that
+matters to the UI is the abstract Hyper data structures described in this
+essay.
+
+When you edit source code in Hyper, you are only editing one node of a larger
+hierarchical source code data structure.
+
+A source code node might be edited by converting it to ASCII, and editing it
+with an ASCII text editor UI. It's only one node, because it would be ridiculous
+to convert the entire web into a single monolithic flat text in order to edit
+any part.
+
+Because the Hyper UI doesn't present the Unix text file abstraction, it doesn't
+impose fixed text file boundaries. All the source is in a single tree,
+and you pick a node at any level of that tree to view and edit source.
+
+While editing a node as ASCII, a mismatched parenthesis error doesn't
+propagate past the boundaries of the node you selected for editing.
+
+Maybe you don't have to convert source code to ASCII to edit it.
+Source code is natively a hierarchical data structure, so you can also use
+tree editing operations (such as the outliner based editing UI).
+
+Literate Programming
+--------------------
+???

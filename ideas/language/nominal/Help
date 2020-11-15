@@ -70,6 +70,8 @@ more prominent?
 Modern literate programming should be based on hypertext, not on the structure
 of a printed book. The wiki view of a gman database can be our starting point.
 
+See also [[ui/Hyper]].
+
 help <value>
 ------------
 Display documentation for an arbitrary value. `help` is a function returning
