@@ -21,3 +21,5 @@ What adverbs do other languages define?
 Scheme sfri-1 defines many: https://srfi.schemers.org/srfi-1/srfi-1.html
 So does Haskell.
 Clojure.
+
+In Scala, /: is foldLeft and :\ is foldRight.

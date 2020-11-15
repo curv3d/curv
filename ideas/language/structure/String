@@ -365,3 +365,10 @@ $a  $' '
 $a  $\n     Erlang
 #"a"        Standard ML, Red
 Character("a")    Swift
+
+In OilShell, the same character literal syntax works inside or outside
+of a string literal:
+    Chars are \u{012345}
+    Character literals stand alone in the expression language, like
+    var x = \u{3bf}  # mu character
+
