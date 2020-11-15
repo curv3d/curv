@@ -4,8 +4,9 @@
 Variable binding patterns:
   * `pat :: type` is a type assertion pattern,
     which fails if `is type arg` is false, otherwise matches pat.
-  * `pat <: func` is a cast pattern. Apply `func` to the argument.
+  * `pat <: func` is a transform pattern. Apply `func` to the argument.
     Fail if `func arg` fails. Otherwise match `func arg` against pat.
+    Pronouce '<:' as 'from'. Alt names: ':<<'.
   * `pat when cond` matches pat, then evaluates cond with pat's bindings,
     and fails if cond is false. Alt. syntax: `pat if cond` (like Python, Rust)
     O'Caml uses 'when'.
@@ -30,9 +31,11 @@ Boolean patterns:
           #foo || #bar
           ==0 || ==1
     * Rust, F# use 'pat1|pat2' -- looks nice in switch.
-    * Consider using backtracking when an || pattern is constrained by a
-      guard, predicate, type or cast. (If the constraint fails, try the
-      next alternative.)
+    * Use backtracking when an || pattern is constrained by a guard, predicate,
+      type or transform. If the constraint fails, try the next alternative.
+      * Algebra of programs: should backtracking extend inside the function
+        of a transform pattern, so that program equivalences are satisfied
+        when a pattern is abstracted into a function using <: ?
 
 There is an interaction between || patterns and guards ('if' patterns).
    https://ncik-roberts.github.io/posts/pep622.html
@@ -45,13 +48,13 @@ behaviour. It also points out that:
    if backtracking would produce different results.
  * Rust uses backtracking in an experimental impl of or-patterns.
 
-What happens if I nest `when` with :<< and :: ?
+What happens if I nest `when` with <: and :: ?
  0. 'pat when cond' is equivalent to
-    pat :<< (arg && pat -> cond >> match[#true->arg])
+    pat <: (arg && pat -> cond >> match[#true->arg])
  1.
-    x :<< f when (x < 0)
-        (x :<< f) is evaluated first, binding x, then the
-    x when (x < 0) :<< f
+    x <: f when (x < 0)
+        (x <: f) is evaluated first, binding x, then the
+    x when (x < 0) <: f
  2.
 
 ## Brainstorming
@@ -164,51 +167,31 @@ New Pattern Types:
   * Useful when simulating a switch statement (one case matching 2 values).
   * [x,y] || [x,y,_==0]
   * Rust, F# use 'pat1|pat2' -- looks nice in switch.
-* 'pat << cast' -- cast pattern.
-  * If V is the value being matched, then we evaluate `cast V`.
-    If cast's parameter pattern fails, the match fails.
-    If the body of cast aborts, then the program aborts.
-    Otherwise, the result of `cast V` becomes the new value
-    that is matched against `pat`.
-    (Conceptually, this is like 'pat << cast << V', where V is implied.)
-  * A cast is a function that maps values onto a particular type, and is
-    idempotent for members of that type. This feature implements implicit
-    conversions to a type.
-  * Within the cast function, the parameter pattern match fails for values that
-    are clearly not a member of the type. For values that are considered
-    corrupted instances of the type, the parameter matches but an assertion
-    fails, aborting the program.
+* 'pat <: F' -- transform pattern. '<:' is pronounced "from".
+  * If V is the value being matched, then we evaluate `F V`.
+    If F's parameter pattern fails, the match fails.
+    If the body of F aborts, then the program aborts.
+    Otherwise, the result of `F V` becomes the new value matched against `pat`.
+    (Conceptually, this is like 'pat << F << V', where V is implied.)
+  Transform patterns are very powerful. They allow you to abstract over
+  patterns, and in the catamorphism case, construct recursive patterns.
+  * Use case: the transform function is a cast that maps compatible values
+    onto a specific type, and is idempotent for members of that type.
+    This implements implicit conversions to a type.
   * S.P.Jones uses the term 'transformational pattern' (pat!fun), and shows
     that this is a way to reconcile pattern matching with data abstraction.
-    The cast fun transforms an ADT to a pattern matchable value.
-  * A problem with `<<` as the syntax is that it is low-precedence right
-    associative. You can write 'a :: pred -> body' but with '<<' patterns
-    you need parens: '(a << cast) -> body'.
-  * Earlier syntax was `pat >> cast`, which has the right precedence
-    (lower than ->). Does the arrow point the wrong way? This way, it points
-    into a function.
-    Note, `pat >> cast1 >> cast2` equals `(pat >> cast1) >> cast2`.
-    This means the argument is processed first by cast2, then the output of
-    that goes into cast1, then we match against pat. It's backwards and
-    confusing, since the arrows point the wrong way.
-    pat >> compose[cast1,cast2] would be less confusing.
-    Or change the syntax:
-     * `pat << cast`.
-       `pat << cast1 << cast2` means `pat << (cast1 << cast2)` which is wrong
-       because (cast1 << cast2) is an expression that won't evaluate correctly.
-     * `cast >> pat`.
-       `cast1 >> cast2 >> pat` means `(cast1 >> cast2) >> pat`, also wrong.
-    I want 'pat' on the left so that variable names are on the left.
-    Maybe 'pat << cast1 << cast2' is an error (not nestable).
-    Well, in that case, it's confusing to use >> when the output of the cast
-    goes into the pattern, so I should use 'pat << cast' and disallow nesting.
-    Use pat << compose[cast1,cast2] to compose casts, and change `compose` to
-    fail if any constitutent functions fail.
-  * Maybe invent a new operator with the desired characteristics.
-      :< is left associative, same precedence as ::
-      :: and :< are fully chainable. Eg, pat :< cast1 :< cast2 :: pred
-      The argument value flows right to left through this pipeline.
-
+    The function transforms an ADT to a pattern matchable value.
+  * In Scheme, (func -> pat) is a catamorphism pattern, and 'func' may be
+    a recursive reference. Example is a recursive 'eval' function that matches
+    expression patterns and uses <: to evaluate operands in pattern matches.
+      eval = match [{plus: [a <: eval, b <: eval]} -> a+b, ...]
+  * <: is left associative with the same precedence as :: and <<.
+    `pat <: cast1 <: cast2` equals `(pat <: cast1) <: cast2`.
+    The argument is processed first by cast2, then the output of that goes into
+    cast1, then we match against pat.
+    :: and <: are fully chainable. Eg, pat <: cast1 <: cast2 :: pred
+    The arrows show the direction of data flow.
+  * Alt syntax :< or :<<, since <: means is-subtype-of in some contexts.
 * Variations of predicate patterns:
   * 'pat == expr', 'pat != expr', 'pat < expr', ... -- relational op predicates
   * 'pat `elem` listexpr' -- range patterns, like 'x `elem` 1..10'.
