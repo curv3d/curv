@@ -7,22 +7,31 @@ Functional Programming:
 Array Programming:
 * multidimensional array slicing
 * a string is a list of characters (see structure/String)
+* a ++ b == concat[a,b]
+* '[a,...b]' is a pattern
 
 Imperative Programming:
 * V[[X,Y]] := vec2 in Curv, SubCurv
 * M[i,j] := a
+* a +:= b, a `max`:= b
 
-Symbols:
-* replace foo."bar" with
-  * foo!#bar, foo!#bar := newval, defined(foo!#bar)
-  * foo >> at[#bar]
-    foo >> at[#bar] := newval ?
-    defined(foo >> at[#bar]) ?
-    This is okay as a replacement for `!`, if dictionaries are distinct
-    from modules and support dict[key] syntax.
-  * fetch [i1,i2,i3] S, amend path newvalue S
-* replace {"foo":bar} with {#foo => bar}.
-* {pattern : value}
+Replace foo."bar" syntax.
+ * foo@#bar is already implemented (not documented)
+ * Implement 'foo@#bar := x'
+ * Then deprecate old syntax.
+
+Replace {"$foo":bar} syntax.
+An older proposal:
+ * Replace {"foo":bar} with {#foo => bar}
+ * {pattern : value}
+New idea: Replace {"foo":bar} with {[#foo,bar]}.
+ * `id : expr` is sugar for `[#id, expr]`.
+ * `{a:1,b:2}` is sugar for `{[#a,1],[#b,2]}`.
+ * `...R` (with R a record) generates symbol/value pairs.
+ * `items R` converts record R to a list of symbol/value pairs [[Collections]].
+ * `{...items R}` is the inverse operation.
+ * No strong need for {pattern : value} syntax.
+WAIT: any interaction with tagged/branded values?
 
 High:
 * vectorized boolean operations: for noise, and colour conversion
@@ -39,9 +48,6 @@ Medium:
 * Use _ as digit separator in numerals.
 
 Low:
-* Disallow actions in a `let` clause. However, there's a use case for
-  assertions in a scoped record constructor. Let's see how record literals
-  evolve.
 * Mixed a=/a: record literals. This now conflicts with simplified syntax.
 * Issue #50: unintuitive operator precedence. My proposed solutions:
   * warn about inconsistent white space in expressions, eg: 'f -1' or 'f a.b'
@@ -60,13 +66,7 @@ Breaking changes:
 Extensions:
 * std
 * compose -- function composition. Short form is 'co'?
-  x >> compose[f,g,h] means x>>f>>g>>h ?
-  * The function returned by compose reports a pattern match failure if any
-    of the constituent functions reports a pattern match failure. This is
-    important for `match` and *cast* patterns.
-  * This means that several of the constituent functions are called before a
-    pattern match failure is detected. Is that okay?
-* Record constructors may combine definitions and field generators.
+* Record constructors may combine definitions and field generators?
   Shorter definitions for shape constructors with .mitred/.exact members.
 
 ## Terse Function Literals
