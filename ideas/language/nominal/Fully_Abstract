@@ -1,0 +1,374 @@
+Fully Abstract Values
+=====================
+Curv aims to provide simple, zero-friction, bureaucracy-free programming
+for the 90% use case where you are an artist or designer and you are
+writing small programs to generate a new design. You are focused on producing
+a result, not on the craft of programming, and you don't want the programming
+language and environment to add unnecessary complexity and speed bumps
+that get in the way of producing a result.
+
+However, Curv is also its own extension language. In order to implement
+simple, composable, zero-friction library abstractions in Curv, we need
+bureaucratic language features that increase the complexity of implementing
+a library feature at the same time that they simplify its use. This is the
+10% case. That's okay as long as the bureaucractic features are optional,
+and you don't need to learn these bureaucratic features or navigate this
+bureaucracy in order to create models and use libraries.
+
+A library feature is simple to use if it is fully abstract.
+This means: it has a well defined interface or contract;
+you get clean, easy to understand error messages if the contract is violated;
+and the implementation is hidden. You don't need to understand the
+implementation in order to use the feature. The implementation details
+do not "shine through" and add extra complexity to using the feature.
+
+By contrast, the zero-friction, bureaucracy-free subset of Curv is fully
+concrete. It does not include the mechanisms for defining fully abstract
+values. Quite the opposite. In the zero-friction subset, you make new
+values by constructing them using constructor expressions (using either
+primitive constructors, or constructors defined by libraries). These values
+retain knowledge of how you constructed them, so you can see exactly how a
+value was constructed by examining the value. Your "implementation details"
+are not hidden.  What you did to make a value is fully exposed to you, which
+helps you to understand the values in your program when you are debugging.
+
+This full exposure of value construction details can change from an asset
+to a liability when you are using a library created by somebody else.
+
+The "bureaucratic" mechanisms in Curv for defining fully abstract library
+APIs are designed so that you can begin with simple, concrete programming,
+then incrementally make your code more abstract, without having to rewrite
+existing code to use an abstract interface. In other words, you don't have to
+commit up front to using either a concrete or abstract coding style before
+you begin to implement a collection of library functions. These are not two
+mutually incompatible styles of programming. Instead, you can begin with
+the simpler concrete coding style, and incrementally add more abstraction
+at the points in development where you need those benefits.
+
+The only purpose of the abstraction mechanisms described here is to make
+library APIs as simple and easy to use as possible for designers making models,
+who need only use the "concrete" subset of Curv for getting work done. These
+abstraction mechanisms are intended to be the simplest solution to this
+specific problem. It is not a goal to turn Curv into a general purpose
+"software engineering" language, due to the complexity that would create.
+
+In the "Fully Abstract" proposal, the mechanism for constructed labelled
+or branded functions and records is only used for functions and modules,
+which are entry points in library APIs. This mechanism is not used for
+constructing instances of abstract data types. That should eliminate
+significant complexity from the labelled/branded proposals.
+
+Functions
+---------
+A function literal like
+    x -> x + 1
+constructs a concrete value that prints as a function literal.
+
+In the concrete subset of Curv, a function definition looks like this:
+    f = x -> x + 1
+This binds 'f' to a concrete function value.
+    curv> f = x -> x + 1
+    curv> f
+    x -> x + 1
+The implementation of the function 'f' is fully exposed.
+
+Part of the job of making a function abstract is to hide its implementation
+when it is printed. An abstract function definition looks like this:
+    func f = x -> x + 1
+or
+    func f x = x + 1
+The keyword 'func' is bureaucratic overhead. It's something extra you need
+to do to make a value abstract. An abstract function prints as its name,
+instead of printing as its implementation.
+
+    curv> func f x = x + 1
+    curv> f
+    f
+
+Another part of the job of making a function abstract is to hide its
+implementation when it reports an error due to a bad argument.
+
+Right now, when we pass a bad argument to 'f', we get a stack trace
+that exposes f's implementation.
+    curv> f true
+    ERROR: #true + 1: domain error
+    at:
+    1| func f x = x + 1
+                  ^^^^^
+    at:
+    1| f true
+       ^^^^^^
+
+To fix this, we add a type assertion (more bureaucracy):
+    curv> func f (x :: Number) = x + 1
+    curv> f true
+    ERROR: argument #1 of f: #true is not a Number
+    1| f true
+         ^^^^
+
+Note that we can change a concrete function to an abstract function
+by adding additional (bureaucratic) syntax, but not otherwise changing
+the existing code or, more crucially, changing the interface.
+This avoids some problems:
+ * Avoids "two different ways to do it", where you are forced to choose
+   between concrete and abstract up front, before you start coding the
+   function.
+ * Allows abstraction to be added incrementally without breaking existing
+   client code.
+
+Design Alternatives for Abstract Data Types
+===========================================
+An AD (Application Datum) is an instance of an ADT (Application Data Type).
+
+A 'term' is an expression that navigates through an API hierarchy to construct
+a function, module or AD. Abstract function, module and AD values print as
+terms, in which case the interior nodes denote modules and functions.
+
+    term ::= primary | term '.' identifier | term primary
+
+Consider a module that implements an application-specific data type (ADT),
+exporting constructors and operations for instances of that data type.
+The data type is abstract if it has a well defined interface, if you can
+only operate on the data using the interface, and the implementation is hidden.
+
+Conceptually, a module that defines an ADT is a single-sorted algebra, with
+constructors, operations, and laws or axioms. See the book Algebra Directed
+Design for motivation. (I don't yet know how to formalize algebraic laws
+so that they can be checked by the implementation.)
+
+Here are some potential goals for abstract ADTs:
+ * Fully abstract. The representation is hidden. This could mean strict
+   encapsulation, or it could mean a "speed bump" when you try to access
+   the internal representation, so that code that is tightly coupled to
+   internal implementation details is clearly marked.
+ * Equally good support for sum types and product types. OOP is biased
+   towards product types.
+ * Pattern matching on ADT values. (Term matching.)
+ * We don't require all operations to be "inside" the ADT definition, or
+   "inside" the "object" (as they are in OOP). The goal is to allow new
+   operations to be defined, for the ADT to be enlisted in new algebras,
+   without editing the original ADT definition. Just as you can in concrete,
+   function-oriented programming in Curv. See also, The Expression Problem.
+ * Concrete-style code can be made incrementally more abstract.
+ * Code is not incredibly verbose with tons of boilerplate.
+ * An ADT implements an Algebra.
+ * Author B can write a module that implements a specific algebraic theory
+   for ADT A written by author A, without modifying A's source code.
+ * Generic programming: multiple ADTs implement the same algebraic theory.
+   Generic functions can be coded in terms of the theory interface, and
+   become polymorphic across multiple ADTs.
+ * Support for parametric shapes.
+
+The labelled/branded proposal gives us branded or nominal functions and
+modules (these are the building blocks of APIs). This proposal feels inevitable,
+and it's the only path (so far) to fully abstract functions, and to nominally
+typed functions that participate in an algebra more specific than Function.
+
+I could implement abstract ADs as labelled records. This is rather OOPy,
+seemingly favouring product types over sum types.
+ * Full OOP means putting methods in these records, which I don't favour.
+   It's best if 'methods' are kept outside of the ADs: see The Expression
+   Problem, and using a function oriented style compatible with concrete Curv.
+ * So then, a more CLOS flavoured design, where the records store only state?
+
+Or, a design where abstract ADs are labelled values of any type.
+ * Like Haskell 'data'/'newtype'. Plus type classes for algebras/theories
+   and representation hiding.
+ * Like SML module system.
+
+The common theme is that we need two things:
+ * Simple nominative 'type' definitions that define a constructor name
+   and a representation, which is not hidden. Unless the constructor is
+   niladic, an instance of the representation type is passed as the constructor
+   argument.
+ * A module system (eg, algebras and theories), that group a type together
+   with its operations, provides a notion of module type, provides some
+   form of overloading for generic programming.
+
+What the above doesn't provide is a way to define a nominative AD constructor
+whose constructor argument differs from the state.
+ * We do have this with labelled module constructors -- but with no information
+   hiding. Also, now we have two ways to define a nominative AD constructor:
+   one where the state is represented by record fields, another where the
+   state is in the constructor argument and is accessed via pattern matching.
+ * An SML module defines an opaque type and separate constructor functions.
+   In Curv, we could use a 'constructor' definition that returns a labelled
+   value of arbitrary payload type. This is an opaque value with no record
+   fields, disjoint from any primitive type.
+
+Abstract Data Types
+-------------------
+Consider a module that implements an application-specific data type (ADT),
+exporting constructors and operations for instances of that data type.
+The data type is abstract if it has a well defined interface, if you can
+only operate on the data using the interface, and the implementation is hidden.
+
+Conceptually, a module that defines an ADT is a single-sorted algebra, with
+constructors, operations, and laws or axioms. See the book Algebra Directed
+Design for motivation. (I don't yet know how to formalize algebraic laws
+so that they can be checked by the implementation.)
+
+We will design the ADT mechanics to work the same as concrete/abstract
+functions, where you can begin with a concrete design, and then introduce
+abstraction incrementally.
+
+ 0. You can begin with a fully concrete ADT. Instances of your ADT are
+    constructed from primitive types: symbols, numbers, strings, lists, records.
+    Typically, you'll use a record for a product type, and a variant value
+    for a sum type. This ADT representation is just a coding convention, perhaps
+    documented in a comment. The representation is not explicitly declared
+    using code.
+
+    There are two subcases. In the direct case, the user directly constructs
+    an instance of the ADT using primitive data constructors. So the
+    representation is part of the API. In the constructed case, the
+    representation is more complex or subtle, and the user calls
+    constructor functions to make ADT instances.
+    
+    You will implement one or more concrete functions that take
+    ADT instances as arguments, and/or return them as results. In the
+    constructed case, you will also implement constructor functions.
+    These functions are your only code.
+
+    At this stage, instances of your ADT cannot be reliably distinguished
+    from values of other types. For example, if your ADT is represented by
+    an integer, then there's no way to distinguish one of your integers
+    from another integer with a different role in the program.
+
+ 1. The first stage of data abstraction is to define a type. Eg,
+        My_Type = Variant[#foo, {bar: Number}]
+    Now you have a predicate for validating arguments in the operations
+    on My_Type.
+
+ 2. The next stage is to define a nominal type that encapsulates instances
+    of your ADT. Benefits:
+     * Instances of your ADT can now be reliably distinguished from values
+       of other types. This allows for overloaded or generic functions
+       that take a specific code path for instances of your ADT.
+     * The printed or string representation of your ADT now looks like a
+       constructor expression, and hides the representation.
+
+    This nominal type T has a name; it is a constructor function that maps
+    an argument onto an ADT instance; it behaves as a type and a predicate.
+    A constructor call to T works as a pattern.
+    (In the Algebra proposal, T is an algebra record with 'call' and 'type'
+    fields.)
+     a. In the 'direct' case, T maps the representation onto a branded
+        copy of the representation.
+     b. In the 'constructed' case, T maps a constructor argument onto an
+        instance of the ADT, using the constructor function from step 0.
+
+     In either case, an ADT instance will print as a constructor expression,
+     as a call to the function T, with an appropriate argument. If there
+     are multiple constructor arguments that create the same ADT instance,
+     then the printed string representation will choose a canonical argument
+     value. The representation is now hidden, at least for the case of the
+     string repr. This canonical constructor expression is also what you
+     will pattern match against.
+
+     How is 'T' defined or constructed? (syntax for cases (a) and (b) above)
+      a. direct:
+          May need a canonization function (usually not).
+          Needs a specification of the parameter type, even if there isn't a
+          function body:
+          * From a type?
+          * From a parameter pattern? Allows for default values in record
+            fields, which is a form of canonization.
+      b. constructed:
+         Maps the argument value onto an internal representation, which is
+         stored *in addition to* the argument value.
+
+      How do operations access the representation data in an ADT instance?
+      This data is divided into two parts: the constructor argument, and the
+      extra data (in the 'constructed' case).
+       * The data could be considered a pair, accessed with 2 primitive lenses.
+
+SML-Inspired ADTs
+-----------------
+The SML system of modules, signatures and functors is an elegant and profound
+design for fully abstract ADTs. ADTs are encapsulated inside modules, which
+export ADTs and AD operations. The ADT representation is only accessible
+inside the module. Modules may be parameterized by other modules (ie, modules
+may be passed as arguments and returned as results).
+Let's try to mimic that design.
+
+An AD (Application Datum) is an instance of an ADT (Application Data Type).
+
+A 'term' is an expression that navigates through an API hierarchy to construct
+a function, module or AD. Abstract function, module and AD values print as
+terms, in which case the interior nodes denote modules and functions.
+
+    term ::= primary | term '.' identifier | term primary
+
+A 'pipeline' is an expression consisting of a chain of operations on ADs,
+transforming one AD into another, navigating the hierarchy of a collection
+of ADs. Most infix operators are pipeline operators: left associative,
+all have the same precedence.
+
+    pipeline ::= term | pipeline pipeline-infix-op term
+
+'>>' is an important pipeline operator: 'AD >> function' produces an AD.
+In this SML-module-inspired design, AD operations are often named by terms
+of the form 'module.opname', and so 'AD >> module.opname' appears frequently.
+This explains the different precedences of term and pipeline operators.
+The 'function' position can also be a lens, so 'a>>b' is a locative.
+
+How does a module encapsulate an ADT representation? The static-typing trick
+used by SML won't work. There could be a lens that maps the external
+tagged representation of an ADT to the internal representation, and that lens
+could be local to the module.
+
+A constructor definition
+ * Can only appear in a module.
+ * Defines a function mapping a constructor argument onto a tagged AD,
+   whose ADT is identified with the constructor itself.
+ * Within the module scope, the constructor binding is a value that can be
+   used to extract the representation value from a tagged AD. But this
+   capability is missing from the constructor binding that is exported by the
+   module.
+ * A constructor function is a bidirectional bijection (see below).
+
+So, an abstract ADT has a single primary constructor, which is exported from
+the module in which it is defined (otherwise the printed representation
+references a private module member). For convenience, there can also be
+secondary constructors which invoke the primary constructor.
+
+My requirement that a constructor provides a function mapping a tagged ADT
+to a string adds complexity.
+ * In other languages (Haskell, Rust), there is an explicit pragma for deriving
+   the to_string function, which handles only simple cases. To handle difficult
+   cases, the programmer must explicitly define the to_string function.
+ * Mathematically, I want the constructor to be bidirectional & bijective.
+   We run the constructor in reverse, mapping the representation to the ctor
+   argument, in order to print an abstract value.
+    * Maybe provide a set of combinators for constructing bijections.
+      `id` is a bijection, but in the general case you use bijection[in,out].
+      Bijection is an algebraic theory. Is this useful elsewhere in Curv?
+      Shape transformations are built from bijections?
+
+Constructor syntax
+...
+
+-------------------------------------------------
+ * I don't see how to do that right now. With a fully concrete/BF/Fless design,
+   you don't define data constructors. You just use the ADT representation
+   directly (eg, symbol literals, record literals).
+ * Okay, but, the ADT operations will have type assertions on parameters
+   with an ADT type. Maybe these type assertions can cast the representation
+   type (used in the original concrete API) to the abstract type.
+ * So then, one benefit of making the ADT more abstract is that ADT instances
+   are now branded in a more distinctive way, so that these values can now be
+   used in polymorphic contexts. You now have a type name, a type predicate,
+   a pattern for matching instances of your ADT. Before, you only had
+   operations.
+
+
+ * The data type has a representation, in terms of primitive types, or
+   abstract types from other libraries, but the representation is hidden.
+ * If you print an instance of the data type, it prints as a constructor
+   expression, using the constructors provided by the module that defines
+   the ADT. The underlying representation is hidden.
+ * Let's say that instances of the ADT are represented as record values.
+   That is a common choice. Then, representation hiding means that the fields
+   of the record representation cannot be selected from instances of the ADT.
+ * ...

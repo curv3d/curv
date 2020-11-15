@@ -1,0 +1,144 @@
+Online documentation for Curv, accessible from the REPL.
+
+man <topic>
+-----------
+'man' is a function that maps a topic name onto a man page, which is a
+Document value that can be displayed by the REPL. Initially, a Document is
+a multi-line string, but we really want rich text with embedded images and
+interactive, animated shapes. Plus hypertext links.
+
+Documentation can be converted to HTML for the Curv web site.
+
+Data model:
+    The data model for the online manual is inspired by "gman".
+    A topic is an identifier, or a relative or absolute pathname.
+    There is a hierarchy of topics. Each document (man page) has one or more
+    pathnames. Each node in the hierarchy (root, interior and leaf nodes)
+    has a man page, with a synopsis line and body (automatically generated if
+    necessary for interior nodes--just a table of contents). The markup language
+    includes a command for generating a table of contents for a specified topic
+    and inserting that into a document.
+
+    This data model is also great for a wiki.
+
+    For a large module (like std.curv), we don't want to put all of the members
+    at the same hierarchy level, which would put all of the documentation
+    into a single man page. We want to partition the members into subtopics,
+    but we also want to allow the same member to appear in more than one
+    subtopic. The existing Curv manual does these things.
+
+    Some nodes in the topic hierarchy correspond to module roots, but there
+    are more levels in the topic hierarchy than in the module hierarchy,
+    so they aren't isomorphic.
+
+How is documentation stored?
+    Is documentation stored in the source code (like docstrings and doc
+    comments) or is it stored externally? The former is more convenient for
+    developers, and helps keep developer-maintained documentation in sync
+    with the code.  The latter is more convenient for people in a "technical
+    writer" role to write documentation without touching the source code.
+
+    Why not both? In a sufficiently advanced coding environment (a projective
+    editor, rather than a directory + file based source repository), these are
+    just two different views into the same code database.
+
+    A Curv package contains its own documentation. Topic names are relative
+    to the package root. Probably, a Curv package reifies as a module value
+    that contains documentation for that module. (Either that, or source code
+    and documentation are treated separately at the source code level. But then,
+    how is `help` implemented?)
+
+Can one package splice the documentation for another package into its
+doc namespace? Probably like this:
+    { module thatpkg = package {...}; ... }
+Or assign it to a subtopic:
+    { // subtopic: #grond
+      module thatpkg = package {...};
+      ... }
+Note: 'thatpkg' is a nominal binding using the 'module' keyword, which is
+  necessary for integrating the external package's namespaces into both the
+  'term' namespace and the 'gman' namespace.
+Note: Integrating a local doc-comment with the documentation from the
+  definiens.
+
+Hyperliterate Programming
+-------------------------
+Literate programming for Curv? Source code comprises a mix of code and
+documentation, with the documentation and its narrative structure being
+more prominent?
+
+Modern literate programming should be based on hypertext, not on the structure
+of a printed book. The wiki view of a gman database can be our starting point.
+
+help <value>
+------------
+Display documentation for an arbitrary value. `help` is a function returning
+a Document value.
+
+Data Model for Values and Man Pages
+-----------------------------------
+* Following gman, there is a database mapping topics to man pages.
+* There is a mapping from constructor terms to help documents.
+
+Expression Completion
+---------------------
+<recordexpr> .<tab>
+<funcexpr> <tab>
+<expr> <infixop> <tab>
+
+For each expression that needs to be completed, the REPL needs to infer
+information about the operands. So, we partially evaluate the operands.
+ * Could be a constant expression. Then we have full information.
+ * Could be a constructor expression with non-constant arguments.
+   Then we probably have enough information for completion.
+ * A function call expression could be partially evaluated, with normal
+   order evaluation, until we reach a constructor expression.
+ * Or maybe we infer a type. This is a later feature, because now we need
+   a compile-time type system that supports expression completion in addition
+   to SubCurv code generation. Maybe this isn't necessary, because partial
+   evaluation sounds pretty powerful.
+
+Initial design:
+    <recordexpr> .<tab>
+    <funcexpr> <tab>
+Left operand is partially evaluated, with normal order evaluation, until
+reaching a constructor expression for a record or function (or BEEP on fail).
+
+Document Values
+---------------
+Initially, a document value is a multi-line character string.
+Which is capable of being displayed directly by the existing Unix-terminal
+based REPL.
+
+Later, we want rich text, with embedded images, and embedded animated
+interactive shapes.
+
+A rich Document value has a hierarchical structure (a doc tree), loosely
+inspired by the Markdown subset of HTML, etc.
+
+How are rich Document values displayed? Scrolling for large documents?
+What happens when you click on a hypertext link?
+ * We display Document values in the Preview graphics window.
+   The UI is based on web browsers. Initial design.
+ * We create a new cterm terminal program that directly supports rich text.
+   Rethink what a terminal is. Consider Acme and the proposed Technetium shell.
+   Later design, ultimately a more powerful UI.
+
+Markup Language
+---------------
+There is a markup language, which is really an expression language for
+constructing Document values. The syntax can be inspired by Markdown,
+Scribble (Racket) and DML.
+
+How is the markup syntax is processed to create a doctree?
+
+ * Hierarchical syntax, like XML. Evaluates directly into a doc tree.
+    * Has benefits for extensibility.
+    * Logically, a 'section' is a block object with a title and a body,
+      and sections can be nested. XHTML supports this structure with the
+      <section> and <h> elements, but HTML, Markdown, most markup languages
+      rely on h1..h6 style numbered section titles, with no explicit section
+      hierarchy.
+ * Stream syntax: after evaluating escape sequences, you have a stream of
+   text and abstract token values, which is then reparsed into a doc tree.
+   Works with any syntax.

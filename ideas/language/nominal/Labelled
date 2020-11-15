@@ -132,6 +132,10 @@ Then,
     func f = <function expression>;
 is available for defining a labelled function using a combinator.
 
+(Note: 'func' panics if <function expression> doesn't return a function,
+as defined by 'is_func'. A record with a 'call' field containing a function
+will work.)
+
 Further rationale: In Curv 0.4, function literals are magic, because
     f = x -> x + 1
 results in a function labelled 'f', but substituting the definiens for
@@ -142,7 +146,9 @@ to indicate the definition of a labelled value.
 But, what if the entire source file is a function expression, and the file
 is an element of a module using directory syntax? It seems we need to add a
 magic token or keyword to the start of the source file, especially when a
-combinator builds the function value. The Branded proposal used '@' for this.
+combinator builds the function value.
+ * 'func' will work.
+ * The original Branded proposal used '@' for this.
 
 Related proposals
 -----------------
@@ -170,8 +176,11 @@ even though we do label such function values in Curv 0.4.
         def name = <rec-or-func>;
         term name = <rec-or-func>;
         named name = <rec-or-func>;
+        module name = <rec-or-func>;
         labelled name = <rec-or-func>;
     Which is related to the 'func' labelled function definition syntax.
+    Notes:
+     * A 'module' is an abstract, labelled, record or module value.
 
     In a *.curv source file referenced by a directory (directory syntax),
     the source file begins with '@' in one version of the proposal.
