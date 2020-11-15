@@ -34,8 +34,13 @@ Two records are equal if they have the same keys and the same mapping
 from key to element values. So {a:1,b:2} == {b:2,a:1}.
 
 A dictionary {|#a=>1,#b=>2|} is ordered by insertion order, similar to
-dictionaries in Python 3.7 and Maps in Javascript. Dictionary equality takes
-field ordering into account, so {|#a=>1,#b=>2|} /= {|#b=>2,#a=>1|}.
+dictionaries in Python 3.7 and Maps in Javascript.
+
+Dictionary equality takes field ordering into account,
+so {|#a=>1,#b=>2|} /= {|#b=>2,#a=>1|}.
+This follows from the principle that two values print the same if they are equal.
+(Note that Python 3.7 ignores dictionary ordering for equality tests. Probably
+due to backward compatibility, and not based on any design principle.)
 
 Rationale:
  * Collections must be printed in some order.
@@ -155,6 +160,37 @@ There are 3 kinds of iteration: over elements, over keys, over key/element pairs
 deprecated operations:
     fields R -- use keys R
     defined(R.F) -- use elem[#F,keys R]
+
+Record Items are Pairs
+----------------------
+`items R` converts a record to a list of pairs.
+    `items {a:1, b:2}` => `[[#a,1],[#b,2]]`
+
+What is the inverse operation?
+
+The field generator statement `a:1` is sugar for `[#a,1]`.
+The `...R` statement (R is a record) generates a sequence of key/element pairs.
+
+So `{a:1,b:2}` is sugar for `{[#a,1],[#b,2]}`
+and `{...items R}` is R.
+
+I don't need any additional syntax like the proposed `#a => 1`
+to specify a record field using a symbol expression. Although the need for
+this syntax comes back if I implement dictionaries.
+
+What if a:b is sugar for [a,b].
+A record literal is {a=1,b=2} or {#a:1,#b:2}. Braces for sugar.
+A dictionary literal is Dict[k1:e1, k2:e2]. No special bracket syntax,
+just a Dict function that takes a list of pairs as argument.
+ * In Scala, a->b is sugar for the 2-tuple (a,b) in a map constructor.
+
+If sets are added, then similar constructor syntax Set[a,b,c].
+
+WAIT: How does this interact with nominal values?
+ * In labelled/branded values, each record item has an additional boolean
+   flag.
+ * What if 'foo:42' is not the pair [#foo,42], but is instead a more
+   abstract 'tagged value', as part of the Tagged Value proposal?
 
 Critique of Generic Collection Operations
 -----------------------------------------

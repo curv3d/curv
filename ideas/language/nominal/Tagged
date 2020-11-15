@@ -27,6 +27,25 @@ The drawbacks come from the lack of sophistication and bureaucracy:
    sharing code libraries, each with their own tags, that need to be distinct
    from tags created by other authors.
 
+Symbols and Associations
+------------------------
+We introduce a new kind of value, which is a name/value association.
+The constructor syntax is 'foo: 42'.
+This serves as a tagged value (in the case where there is a payload).
+It also serves as the underlying machinery for constructing record values.
+* A record literal contains a list of expressions that construct association
+  values: '{a: 1, b: 2}'.
+* '...record' generates a sequence of association values.
+* [...record] converts a record to a list of assoc values.
+* {...list} converts a list of assoc values to a record.
+* 'id : elempattern' is a standalone assoc pattern.
+
+Any arbitrary value can be the payload of an assoc pattern.
+I think that you have to extract the payload value before you can do anything
+with it. Assoc values are abstract, and can't be accidently confused with
+their payloads in any context, which I think is desirable for tagged values.
+(Just as symbols are abstract.)
+
 Symbols and Singleton Records
 -----------------------------
 In Curv, we can satisfy these requirements using symbols and singleton records.
