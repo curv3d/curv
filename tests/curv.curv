@@ -740,5 +740,8 @@ assert_error [
     |Try 'a == b' to test for equality.",
     let x=1 in a=1 ];
 
+let f = match[ensure is_num, _->#null]
+in assert(f 42 == 42 && f true == #null);
+
 // script return value:
 in null

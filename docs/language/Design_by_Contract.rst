@@ -151,9 +151,15 @@ of the primitive types, otherwise ``#false``::
     incr (n :: is_num) = n + 1;
 
 ``ensure`` *pred* *val*
-  This is an alternate (older) syntax for predicate assertions.
-  Assert that ``pred val`` is true,
-  then return ``val`` if the assertion succeeds.
+  This is another syntax for predicate assertions.
+  It's a curried function that is useful for tacit style programming.
+  For example, ``map (ensure is_num)`` is a function asserting that its
+  argument is a list of numbers.
+
+  * If ``pred val`` is true, then succeed, and return ``val``.
+  * If ``pred val`` is false, then fail.
+  * If ``pred val`` doesn't return true or false, then panic.
+
   It can be used to enforce a post-condition on the return value of a function,
   with the predicate appearing at the beginning of the function::
 

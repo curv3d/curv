@@ -84,7 +84,7 @@ into f rest first = f [first, ...rest];
 
 merge rs = {for (r in rs) ...r};
 
-ensure pred expr = do assert(pred expr) in expr;
+ensure pred (x :: pred) = x;
 
 // complex numbers: [RE,IM]
 RE=0;
