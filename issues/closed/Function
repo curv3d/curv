@@ -5,7 +5,7 @@ TODO:
  - `identity` is renamed to `idmatrix`.
  - `error` is a function value when used in an expression context.
    It always fails.
- + `compose` is reimplemented as a primitive function, so that it satisfies
+ - `compose` is reimplemented as a primitive function, so that it satisfies
    the following requirements.
  + consider if `co` should be an abbreviated form of `compose`.
  + Function compositions print as `compose` expressions (part of Printable).
