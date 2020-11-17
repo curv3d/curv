@@ -59,3 +59,39 @@ How are type errors reported? Type of the lens doesn't match type of the target.
     Lens: 42
     1| x@y
        ^^^
+
+Implementation: Locative, linear logic, precise domains
+-------------------------------------------------------
+How is this implemented efficiently?
+* 'c@lens := val' uses "linear logic" to incrementally update a large
+  collection object rather copying it.
+* After getting deep into a complex update, if we encounter a domain error,
+  then we should panic, because the original collection is gone and we can't
+  fail cleanly. This conflicts with the Precise Domains objective. Although
+  with the := interface there is no way to trap a failure, so it always panics.
+* With the functional version of the interface, you can trap a failure,
+  so maybe efficiency is more elusive.
+
+I'll start with the panic-only efficient implementation.
+  lens_get(Value val, Value lens) -> Value
+  lens_put(Value val, Value lens, Value nu) -> Value
+Use std::move to pass the first argument to lens_put.
+
+Locatives
+  x := foo
+  x@lens := foo
+  x.id := foo
+  x[i] := foo
+nested locatives
+
+Meaning classes:
+    Locative : Shared_Base
+        // run time; analogues of Operation::eval(Frame&)
+        void store(Frame&, Value) const
+        Value fetch_copy(Frame& f) const
+        Value fetch_move(Frame& f) const
+
+        // analysis/code gen time
+        Shared<Locative> analyse_dot(Environ&, Shared<Phrase>, Shared<Op>)
+        Shared<Locative> analyse_juxta(Environ&, Shared<Phrase>, Shared<Op>)
+        Shared<Locative> analyse_at(Environ&, Shared<Phrase>, Shared<Op>)

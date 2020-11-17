@@ -1,19 +1,146 @@
-A string is a list of characters.
+A string is a list of zero or more characters.
+
+Rationale: Better, more consistent semantics & program algebra.
+Now it is possible for a list comprehension to iterate over the characters
+in a string, and to return a string, using a simple dynamic type system,
+instead of using a complex static type system. We can now have general
+polymorphic operations over strings and lists.
 
 Add a "character" data type.
+ * `is_char val` is a predicate.
  * `char n` converts the code point n to a character value. (Vectorized.)
  * `ucode c` converts the character c to a code point integer. (Vectorized.)
  * deprecate `encode` and `decode`
+ * a character prints as: "A"[0] => char 65
+ * characters are ordered: see the Ordered issue.
+
+Additional operations:
+ * a++b infix concat operator
+ * `string` converts an arbitrary value to a string (using print_string format).
+ * `strcat(L)` is deprecated; replaced by `concat(map string L)`.
+ * symbol("foo") => #foo
 
 A character string literal "abc" is semantically a list of characters.
-Internally we'll retain the String data type.
+By definition, a string is a list of zero or more character values.
+Therefore [] is the empty string.
  * "ab" == [char 97, char 98]
- * add the a++b infix concat operator
+ * is_string [] == #true
  * concat supports a mixture of Strings and Lists
    * List_Builder returns either a String or a List
  * "" prints as []
  * concat["abc",[1,2,3]] prints as "abc"++[1,2,3] but is represented
    internally as a List
- * a==b and equal[a,b] treat strings and lists as equivalent
+ * a==b and equal[a,b] treat strings and lists as equivalent.
+   equal["foo","fob"] => [#true,#true,#false]
  * "abc"[[0,[1,2]]] == "abc"@[0,[1,2]] == "a"++["bc"]
  * do local a = "abc"; a[0] := 42 in a==[42]++"bc"
+
+Internally we'll retain the curv::String data type.
+
+Issue: Types
+------------
+The Type proposal replaces 'char' and 'is_char' with 'Char'.
+It replaces 'symbol' and 'is_symbol' with 'Symbol'.
+It replaces 'string' and 'is_string' with 'String'.
+
+Issue: Empty Lists
+------------------
+Previously, we had two different representations for an empty list:
+[] and "". Lists of characters were arbitrarily given special status,
+as has been traditional for dynamically typed languages.
+In the String proposal, there is exactly one empty list, called [].
+In many other languages, empty lists have additional structure.
+ * In most of the APLs, empty arrays are typed, so that there is at least
+   a distinction between an empty array of characters vs numbers.
+   In some APLs, empty arrays have a "prototype".
+   Arrays are explicitly multidimensional, and any dimension may be zero,
+   so APL can distinguish a 0x3 matrix from a 0 vector, unlike Curv.
+   This metadata enriches the semantics of array operations, eg by providing
+   an appropriate identity element. Eg, max/a returns the identity for max,
+   which differs for numbers and characters.
+ * The APL metadata for an empty array maps pretty closely to an element type
+   for an empty list in Curv. And of course statically typed languages
+   have typed lists, which provide the same thing.
+
+there is a more general notion of typed arrays, so an empty
+
+Issue: JSON import/export
+-------------------------
+This design potentially complicates JSON export and import.
+
+To perform JSON export and import (or any kind of export and import via
+an external data representation), we want a bijection between Curv data
+and the data represented in this external file format. This bijection
+might be application-specific (ie, specific to a particular schema), or it
+might be a general bijection between all possible JSON payloads and Curv.
+ * In the former case, we have a bespoke bijection between the particular
+   JSON schema selected by an external application, and the most natural or
+   convenient way to represent this data using Curv data types.
+   This is required if we are translating between Curv shapes and JSON data.
+ * In the latter case, there is a default bijection that supports the set
+   of all JSON values. This may be easier to use because you don't need to
+   set up an app-specific bijection.
+
+With the String proposal, we no longer have a natural bijection between
+JSON and Curv, since we no longer distinguish "" and [] in Curv.
+
+-------------------------------------------------------------------------
+We no longer distinguish "" and [], so "" is exported to JSON as [].
+That's fine if the program reading the JSON is Curv, but:
+ * It might may the schema of some JSON files if "" cannot be exported.
+   External software might need modification to handle Curv JSON output.
+ * We no longer have a bijection between JSON values and a subset of Curv
+   values. Round trip JSON -> Curv -> JSON is not the identity function,
+   because JSON "" -> JSON [].
+
+We could work around this problem by designating a special Curv value
+to be exported as "". Currently, #'' is exported as "" to JSON.
+However, the problem is that #'' does not have the same semantics as ""
+in Curv. Let's say we want a bijective transformation, where after
+importing JSON as a Curv value, then exporting that same value produces
+the identical JSON. Importing JSON "" as Curv #'' is not a good choice if
+we expect this value to have the same semantics as the empty string.
+
+[The flip side is that in some cases we might want to import JSON strings
+as Curv symbols, in order to better fit the Curv data model.]
+
+What to do?
+ * Use data patterns/schemas/specs/types to map between data models?
+   Eg, 'curv -o json -Oschema=S' or 'file{path: "foo.json", schema: S}'.
+   Maybe a schema is a Type? Dunno.
+ * Invent a value *x* that has the semantics of the empty list/empty string,
+   but that exports to JSON as "". The JSON "" imports as *x*.
+   *x* is spelled "" in Curv. This provides a bijection between JSON and Curv
+   values, without using that "schema" mechanism.
+
+So now "" is this weird value. What is it?
+ * In the Type proposal, you can attach a representation type to a value.
+   The semantics of the value do not change, but the internal in-memory
+   representation can change (can be more efficient).
+   Maybe type String also has a JSON representation (in addition to an
+   in-memory representation). Maybe "" is just []::String.
+
+Because "" and [] are semantically equivalent, it's going to be arbitrary
+whether a particular computation returns "" or []; it could depend on
+internal details of how the algorithm is implemented, details which
+could change when the program is subject to semantics-preserving
+transformations. So, I don't like it. The 'schema' proposal is at least
+explicit and your code doesn't break when you perform program algebra.
+
+More broadly, reintroducing this distinction between "" and [] potentially adds
+a lot of complexity to Curv, and conflicts with the goals of the String feature.
+ * It begins with: an expectation that is_string "" == #true and
+   is_string [] == #false (both should be true).
+ * Then, in order to make this consistent, every primitive that operates on
+   lists needs to perform type inference so that it can return a string rather
+   than a list when the typing rules require it. So we need to create these
+   typing rules, document them, and implement them. For example, `a++b`
+   must return a string if both arguments are strings.
+ * Implementing these typing rules for list comprehensions is quite difficult.
+   In fact, this was the original motivation for the String proposal: to make
+   list comprehensions return strings when the result is a list of zero or more
+   characters, without implementing a full blown type system and type inference
+   mechanism. To achieve this result in a simple way, I use dynamic typing, and
+   I define a string as a list of zero or more characters, nothing more.
+
+The general issue can be framed as exporting and importing typed data.

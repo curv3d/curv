@@ -1,4 +1,5 @@
 Symbols are lexicographically ordered. #a < #b is true.
+Characters are ordered under the String proposal.
 
 Rationale:
  * Symbol ordering defines the iteration ordering of a record,
@@ -24,11 +25,37 @@ What does max[] return? It no longer makes sense, because:
  * There is a minimum and maximum character.
  * There is a minimum symbol, but no maximum symbol.
  * But we don't know which of the 3 ordered types for max[] to return.
+
 Options:
- * max[] is an error.
- * As in K, max[]==-inf and max only works on numbers, even though `<` etc
+ * Num.max[] == -inf, Char.max[] == Char 1, Symbol.max[] == ''
+   Pass Num, Char or Symbol as an explicit argument in contexts where you
+   need the full algebra (SML style module programming).
+
+ * Generic functions may need access to the algebra T of an ordered value
+   (one of Num, Char, Symbol).
+    * In some cases, this could be derived from an ordered value argument.
+      How do generic functions derive T from an argument?
+      How does the built-in '>' function derive T from an argument?
+       * Use an overloaded function, which could be part of the 'Ordered'
+         theory. Eg, Ordered.algebra(42) == Num.
+       * Some dynamic languages have a general 'typeof' or 'classof' operation,
+         but that's too centralized. Instead of putting everything into an
+         object's unique "class", we allow the same value to be part
+         of multiple algebras.
+    * In other cases, there is no ordered value available, and the need is
+      to query an identity element such as T.max[] or T.min[].
+       * T could be passed as an explicit argument.
+       * T could be passed implicitly, being inferred from the argument list
+         or from the wider context using type inference, as in Haskell.
+
+ * Generic max[] is an error, max with 2 or more args requires all args to have
+   the same ordered type.
+ * For backwards compatibility, max = Num.max.
+   As in K, max[]==-inf and max only works on numbers, even though `<` etc
    work on ordered types. Problem: algebra of programs.
- * We add more structure to the type system/data model:
+
+ * Array values carry around their base type, even empty arrays, at the cost
+   of a more complex and restrictive type system.
     * A statically type language has unityped lists and a separate tuple type.
     * APL has typed arrays: the scalar type affects semantics of operations.
     * In the type proposal, I plan to support optionally typed arrays,

@@ -1,0 +1,19 @@
+'gcurv' or 'curv -g' is a 3 pane live editor GUI, consisting of a text editing
+pane, a console output pane, and a graphics pane.
+
+Initially, this will just mimic the capabilities of 'curv -le', except using
+a built-in editor rather than an external editor, and with the entire UI
+running in a single window.
+
+Later, we can leverage the integrated design and extend the GUI with new
+features that aren't available in 'curv -le'.
+
+Rationale:
+ * The pandemic. I was unable to share a 'curv -le' session over jitsi,
+   because screen sharing didn't work, even though sharing a single app
+   window worked.
+ * Ease of use. There is demand for an easy to install Windows version of
+   Curv. The requirement is to minimize the time it takes to install Curv
+   and start playing with it. A GUI will remove friction for casual users
+   who just want to play with Curv a bit and see what it is all about.
+ * A basis for a smoother and more integrated live editing experience.

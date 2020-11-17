@@ -149,7 +149,157 @@ graph (all the refcounts that are part of a cycle are in the ground state).
     free the object when the refcount reaches 1.
     The root object is (obviously) not an independently refcounted object.
 
-This is the idea I'm going forward with.
+Idea (2) is the one I'm going forward with.
+
+"Weak references" are a technique for breaking cycles so that a cyclic object
+can be reclaimed by conventional refcounting. In this proposal, a recursive
+closure has an uncounted reference to its recursive binding dictionary
+(aka the root object of this proposal), and the root contains uncounted
+references to the trunk objects. This reminds us of weak references, which are
+also uncounted references. If there was only a single externally referenceable
+object in the entire cyclic structure (ie, a single closure object), then we
+could dispense with indirect reference counting, and rely on a weak reference
+from the root to the closure to make conventional reference counting work.
+Perhaps this alternate representation could be used as an optimization.
+However, once there are multiple externally referenceable objects in the same
+cyclic graph, they need a shared reference count, because the entire graph must
+continue to exist as long as any one of the nodes is externally referenced.
+
+What if: I don't enforce the restriction that recursive references must be
+inside lambdas? Since the trunk expressions are eagerly evaluated, the only
+other places recursive references will work are in unevaluated branches of
+conditional expressions. This means that some trunk values may not be cyclic
+values: after trunk evaluation, such values will have immediate refcounts,
+instead of indirect refcounts. (Or a trunk value could even be a cyclic
+value from a different cyclic object!) Nothing will break. The only issue is
+that holding such values in the root may increase memory pressure, because
+the values may not be freed as early as possible.
+
+What if: Closures don't have two separate dictionaries (recursive and
+non-recursive)? The issue is increased memory pressure, as mentioned above.
+
+What if: The root is an externally referenced object? Eg, maybe it is a module,
+and module values serve double-duty as the root for any recursive definitions
+they contain. Then the root's refcount is the sum of the cyclic values in its
+cycle, plus the # of external references. No problem (other than the issue of
+memory pressure): The module value continues to exist, even after there are no
+more external references to it, if it is referenced by cyclic objects. And
+those cyclic objects may not depend on all the fields in the module.
+The problem is addressed by segregating the recursive values in a separate
+root object that is referenced by the main module object.
+
+These memory pressure issues also exist in the garbage collection world.
+There are imprecise collectors, such as the Boehm collector, which sometimes
+misclassify dead objects as live. Even with a precise collector, you can have
+storage leaks, because an object can become "algorithmically dead": the
+algorithm has reached a state beyond which it will never access the object
+again, even though there is still a live reference to it in memory.
+
+What if: I don't evaluate all of the thunks immediately? What if I want lazy
+data structures? Well, in this design, a thunk can only be evaluated in the
+context of a specific root object. After evaluating a thunk, we traverse the
+resulting value tree, and if any of the values are closures that reference
+the root, then those closures are given indirect refcounts pointing to the root,
+and likewise for any values pointing directly or indirectly to those closures.
+The thunks can only reside in a root object. If we have module values that are
+also roots, then we could lazily evaluate module fields.
+
+How do lazy data structures interact with COW?
+ * A CRThunk (Cyclic value Reference Thunk) contains two fields: a counted
+   reference to a root object, and a trunk index. To evaluate the thunk,
+   we force the specified trunk value to be evaluated, then we replace the
+   thunk with the trunk value.
+ * COW data structures use CRThunks to represent unevaluated cyclic values.
+   CRThunks can be copied without any adverse consequence. When any copy of
+   a CRThunk is forced, it is replaced by a reference to the same unique
+   cyclic object as all of its clones.
+ * CRThunks are needed if the trunk values in a root are themselves lazy.
+
+We support:
+ * Lisp-style cyclic data structures,
+ * Haskell-style lazy infinite data structures,
+ * Curv's prohibition of cyclic/infinite data structures,
+ * or a hybrid, as determined by the data structure constructors.
+We also support efficient incremental update of immutable data structures
+using copy-on-write (COW).
+
+Do nested recursive scopes complicate the implementation?
+
+The details are in the initial construction of a cyclic value.
+ * During analysis, we recognize definitions and groups of definitions that
+   are recursive and mutually recursive. We group such definitions into
+   "recursion groups", which eventually give rise to cyclic structures at run
+   time. While recursive definitions are being analysed, each recursive
+   reference is initially compiled to a Symbolic_Ref (we initially don't know
+   the recursion group/cycle id or the index into the root object).
+
+   Each recursion group is assigned a slot in the stack frame (which
+   contains a pointer to the Cyc_Root object. Each recursive reference is
+   compiled to a Recursive_Ref, which contains group id/root id (mapping to a
+   slot id), plus an index into the group.
+
+   which identifiers are recursive references,
+   an definitions are
+ * To construct a cyclic value:
+    * The root (Cyc_Root) is initialized with an array of thunks
+      (Open_Thunk wrapped in a Value).
+    * Then we force the thunk in each trunk. To force a single trunk, use:
+         thunk = trunks[i];
+         trunks[i] = Value{}; // missing Value
+         trunks[i] = thunk->eval(frame, root);
+      The reason for storing a missing value in the trunk before evaluating it
+      is that if we try to recursively evaluate the same trunk a second time
+      during thunk->eval(), then we can check for the missing value and take
+      special action.
+    * To evaluate the thunk, we do this:
+         Open_Thunk::eval(Frame& fr, Cyc_Root* root)
+            auto old_root = fr.cyc_root_;
+            fr.cyc_root_ = root;
+            auto result = this->expr_->eval(fr);
+            fr.cyc_root_ = old_root;
+            return result;
+
+Can lazy data structures be infinite? (1) Can this scheme support infinite data
+structures? (2) Can this scheme support lazy data structures but prohibit
+infinite ones? What about this: `a = [1, ...a]`?
+ 1. We can prohibit infinite data structures. Curv will work this way.
+    Even if lists are lazy, when the thunk for `...a` is forced, we will report
+    an error "Illegal recursive reference" for the subexpression 'a'.
+ 2. We can support infinite data structures.
+    * At compile time, we notice that `...a` contains a recursive reference.
+      A list constructor may contain only one such element, it must be the final
+      element. A special representation is used for lazy tailed lists (LTLs).
+    * An LTL is a cyclic object. The root contains one trunk, which is a
+      reference to the LTL object. The LTL itself has an indirect reference
+      count pointing at the root, it has slots for the head elements of
+      the list, and it has a final slot for the tail element. The tail is
+      initially a CThunk containing the tail expression (in this case, 'a').
+    * The structure is '[1, ...a]' where 'a' is a CThunk. Previously, CThunks
+      only existed in the root object. I am not sure about this.
+    * When the tail thunk is forced, we first evaluate the tail expression,
+      and we get the LTL value. Next, we update the LTL object to contain the
+      thunk evaluation result, using COW, and the result has this structure:
+          [1, ...[1, a]]
+      The inner LTL has the original thunk for 'a'. If we force that thunk,
+      we get
+          [1, ...[1, ...[1, ...a]]]
+      And so on.
+
+Data Types:
+  Cyc_Root : Shared_Base -- array of Values (initially thunks)
+    refcount is # of external references to objects in the cycle
+  Open_Thunk : Ref_Value -- an internal/open thunk: Shared<Operation>
+    Only appears in the trunk array in Cyc_Root, for non-lazy trunk values.
+    Much cheaper than a Closed_Thunk.
+  Closed_Thunk : Ref_Value -- a closure, takes Cyc_Root as argument.
+    (The Cyc_Root argument is passed in the cyc_root VM register.)
+    Only appears in the trunk array in Cyc_Root, for lazy trunk values.
+  Cyc_Ref : Ref_Value -- { Shared<Cyc_Root> root, int trunk_id }
+    A reference to a lazy trunk value in a cyclic structure.
+    The trunk value must be a Closed_Thunk or a proper value.
+    A copyable lazy evaluation thunk, used in lazy data structures.
+    A Cyc_Ref is an improper value, replaced by a proper value on first
+    reference, evaluating the corresponding Closed_Thunk if necessary.
 
 Implementation: Thunks
 ======================

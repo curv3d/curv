@@ -1,0 +1,50 @@
+The standard combinators should have precise domains, because tacit programming
+is a standard method for defining functions with precise domains.
+
+TODO
+* into F L
+* map F L
+* filter P L
+* reduce [zero, F] L
+
+map
+---
+map F L fails if L is not a list or if F(L[i]) fails for some i.
+
+Current definition:
+    map f list = [for (x in list) f x];
+
+Possible implementations:
+* As a primitive.
+* Using recursive transform pattern and variable-length list pattern:
+    map F =
+        match [
+            [] -> [],
+            [a <: F, ...b <: map F] -> [a] ++ b
+        ];
+   Note that this is a sequential algorithm, not a data-parallel algorithm.
+
+filter
+------
+filter F L fails if L is not a list or if F(L[i]) fails for some i.
+
+Current definition:
+    filter p list = [for (x in list) if (p x) x];
+
+Possible implementations:
+
+Hmmm, how about a 'for' pattern?
+We'll start with a 'for combinator':
+    for (pattern) stmt
+This returns a function that takes a list argument L, and transforms the list
+into [for (pattern in L) stmt]. The function fails if L is not a list, or if
+the pattern match fails, or if any invocation of 'stmt' fails. We need to define
+failure for a statement.
+
+Can the failure semantics of Icon suggest an extension to imperative programming
+that models failure?
+
+Can the Bananas/Lenses/Barbed Wire paper suggest a vocabulary of primitive
+combinators that model failure and provide the expressive power I need?
+
+An advanced set of pattern matching primitives?

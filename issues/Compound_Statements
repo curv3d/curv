@@ -1,0 +1,80 @@
+In the original design of Curv (0.4 and earlier),
+the syntax
+    (stmt1; stmt2; stmt3)
+is justified as the syntax for compound statements, because the ';' operator
+has lower precedence than any other operator, so a compound statement must
+be parenthesized to pass it as an argument. Otherwise, there is nothing
+magical about parentheses. The ; operator is associative, so that
+    (stmt1; stmt2); stmt3
+    stmt1; (stmt2; stmt3)
+are equivalent.
+
+Today (Oct 2020), there is a 'local' statement which introduces a local
+definition into a compound statement. The ';' operator can no longer be
+considered an associative binary operator. Now it is an n-ary operator.
+Parenthesizing a statement subsequence is no longer benign: this changes the
+scope of any local definitions in the subsequence.
+
+Also, the following expressions are not equivalent:
+    do local x=1 in x
+    do (local x=1) in x
+In the latter case, the parentheses limit the scope of the local definition
+so that it isn't visible in the do body.
+
+curv> local x=1; print x
+1
+curv> (local x=1); print x
+ERROR: a local definition must be followed by '; <statement>'
+1| (local x=1); print x
+    ^^^^^^^^^
+
+curv> {local x = 1}
+{}
+curv> [local x = 1]
+ERROR: a local definition must be followed by '; <statement>'
+1| [local x = 1]
+    ^^^^^^^^^^^
+
+So the introduction of 'local' statements has introduced a weird nonuniformity
+into the syntax. A language design principle is violated. Curv has bottom-up
+compositional semantics. Each node in a parse tree is a 'phrase', and the
+meaning of a phrase is derived from the meaning of its subphrases. Any phrase
+can be parenthesized without changing the meaning of a program.
+
+How do I fix this?
+
+## Alternative 1
+The meaning of:
+  * A local definition:
+        is the set of bindings it adds to the environment.
+    The contexts that consume a local definition argument are:
+    the head of 'do', and an item in a compound statement.
+    The 'head of do' is supported because it gives Curv an analogue to
+    'let' and 'let*' of Scheme.
+  * A compound statement (two or more statements and/or local definitions
+    separated by semicolons):
+        is two things: the effects of the statements,
+        and the bindings added by local definitions.
+    In all contexts that consume a compound statement as an argument,
+    except for the head of 'do', the bindings are ignored.
+Parenthesing a local definition phrase or a compound statement phrase
+does not change its meaning.
+
+Note: in order to make this work, a local definition is not a statement.
+(local x = 1) is a local definition.
+(local x = 1;) is a compound statement, which is a statement.
+They have the same result if used as the head of a 'do',
+but they are not interchangeable.
+
+## Alternative 2
+A local definition is only legal when used as an item in a compound statement.
+The head of a 'do', the body of a list or record comprehension, these must
+be statements, they cannot be local definitions.
+
+In order to simulate Scheme's 'let' and 'let*', you can use
+    do local (x=y,y=x); in ...
+Note the semicolon, which creates a compound statement.
+[After implementation, I decided the ; isn't necessary.]
+
+A compound statement is constructed using the ';' operator.
+Parenthesizing a compound statement does not change its meaning.

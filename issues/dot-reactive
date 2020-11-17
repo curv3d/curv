@@ -1,0 +1,13 @@
+`dot` does not support reactive arguments.
+
+Bug report:
+
+    parametric
+        a :: slider[0,90] = 45;
+    in
+    cube >> rotate {angle: a*deg, axis: Y_axis}
+
+I get this error:
+
+ERROR: argument #1 of dot: ([-1,-1,-1]*(1-cos(-((<param a>*0.017453292519943295))))) is not a list
+at file "/usr/local/lib/curv/std.curv":

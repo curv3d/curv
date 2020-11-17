@@ -1,0 +1,39 @@
+From the Curv mailing list.
+
+union [for (i in [1..3]) (box >> move [i*10, 0, 0])]
+
+Is bad because the loop should be for (i in 1..3).
+The error message is unclear:
+
+ERROR: assertion failed
+at file "/usr/local/lib/curv/std.curv":
+132|         assert (is_bbox3(shape.bbox));
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+at file "/usr/local/lib/curv/std.curv":
+879|     in make_shape {
+            ^^^^^^^^^^^^
+880|>        // TODO: dist[x,y,z,t] : shape.dist(...[x,y,z]-delta, t),
+881|>        // TODO: dist p : shape.dist(...p[[X,Y,Z]]-delta, p[T]),
+882|>        dist p : shape.dist(p[X]-delta[X], p[Y]-delta[Y], p[Z]-delta[Z], p[T]),
+883|>        colour p : shape.colour(p[X]-delta[X],p[Y]-delta[Y],p[Z]-delta[Z],p[T]),
+884|>        bbox : [shape.bbox[MIN]+delta, shape.bbox[MAX]+delta],
+885|>        is_2d : shape.is_2d,
+886|>        is_3d : shape.is_3d,
+887|     };
+     ^^^^^
+
+The fix is to make 'move' report a domain error on a bad argument.
+  ERROR: bad argument to 'move': [[1,2,3]] is not a Vec3.
+But how? The argument is either Vec2 or Vec3.
+
+func move = match [
+    pt :: Vec2 -> move[...pt,0],
+    pt :: Vec3 -> ...
+];
+-- Note: 'func' applies the 'move' label to the piecewise function,
+-- for better error messages. See 'ideas/lang/Labelled'.
+-- Note: this relies on Generalized Recursive Functions. See issues/Recursive.
+
+func move (pt :<< Vec3) = ...
+-- where Vec3 accepts Vec2 or Vec3 argument, returns Vec3
+-- Note: depends on the :<< pattern operator. See 'ideas/lang/Patterns'.

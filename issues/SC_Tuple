@@ -1,7 +1,4 @@
 TODO:
- - SC_Type: clean up API to make it more regular.
- - SC_Type: make it fully abstract (all data members private)
- - Reimplement SC_Type using Type values (Num,Bool,List)
  * SC_Compiler denotes a GLSL or C++ program that is under construction.
    It accumulates code (top level definitions) which are output all at once.
    Type definitions (such as Tuple types) must be output before functions.
@@ -17,8 +14,10 @@ TODO:
      SC_Value Function::sc_call(SC_Value, SC_Frame&)
    There is no longer a need to convert List_Expr ops directly into
    function call parameter lists.
-
-Required by: native `compose` function.
+Done:
+ - SC_Type: clean up API to make it more regular.
+ - SC_Type: make it fully abstract (all data members private)
+ - Reimplement SC_Type using Type values (Num,Bool,List)
 
 I don't currently have primitive functions supported by SubCurv that take
 record, rather than tuple, arguments (named rather than positional arguments).

@@ -1,5 +1,40 @@
 Fix issues with the Windows port.
+ * 'make test' fails -- float precision and different msg for ENOENT
+
+Pending/In Progress
+ * test `windows.sh` install script using CI server (github actions)
+ * Fix '#pragma warning' warning messages in replxx build.
+   Opened issue #81 in replxx, created pull request.
+ * Make it faster to install Curv? Research project right now.
+    * Binary distro containing: /bin/curv.exe, /lib/curv/*, /examples, /docs.
+      No C++ compiler, that's a separate MSYS2 install if desired.
+      No DLLs, to avoid DLL hell when /curv/bin is put in PATH.
+      Therefore curv is statically linked.
+      MSYS2 lacks static libs for libHalf and libtbb, so get rid of openvdb,
+      replace by a new mesher with sharp feature detection.
+      Looking at TMC-DMC right now.
+    * gcurv is a single window, 3 pane GUI (with initially no file export).
+ * Fix colourized error messages to work on Windows? (currently disabled)
+   Unix terminals use escape sequences. Windows apps use the Windows Console
+   API to set text colour. Eg, use SetConsoleTextAttribute().
+   Replxx contains code that filters a text stream, parses out escape sequences,
+   and calls SetConsoleTextAttribute to set colours.
+
+Done:
  * Install curv in c:/msys64/curv, update instructions
+ * Simplified installation instructions
+ * Fix REPL command completion (broken during Windows port)
+ * Fix Makefile (uname -o doesn't work on MacOS)
+ * Fix verbose GLSL warnings I get from GPU driver.
+   Suppress warnings unless -v, or fix code generator.
+     examples/liquid_paint.curv:
+     Warnings while compiling fragment shader:
+     WARNING: 1:14: Divide by zero error during constant folding
+       /* constants */
+       float r1 = 1.0/0.0;
+ * 'make test' builds
+
+Brainstorming for simplified Curv installation:
  * Make it easier to install Curv?
    + Put all the shell commands into a `windows.sh` script.
      Make the script robust against network errors, and idempotent.
@@ -18,10 +53,3 @@ Fix issues with the Windows port.
    * Install MSYS2, then use 'pacman -S curv', then update PATH and .bashrc
      Requires negotiation with the MSYS2 project.
    * Provide a Windows installer program that installs MSYS2 and Curv.
- * Fix Makefile (uname -o doesn't work on MacOS)
- * Fix REPL command completion (broken during Windows port)
- * 'make test' is broken on Windows
- * Fix colourized error messages to work on Windows (currently disabled)
- * Fix verbose GLSL warnings I get from GPU driver.
-   Suppress warnings unless -v, or fix code generator.
- * Fix '#pragma warning' warning messages in replxx build.
