@@ -551,7 +551,7 @@ tetrahedron =
                 v3 = [1,-1,-1];
                 v4 = [-1,1,-1];
 
-                // faces: (1,2,3) (1,4,2) (2,4,3) (1,3,4)
+                // faces: [1,2,3] [1,4,2] [2,4,3] [1,3,4]
                 // vertices in CCW order viewed from outside (right hand rule)
 
                 // face normals
@@ -603,7 +603,7 @@ cube =
                 bbox = [[-r, -r, -r], [r,r,r]];
                 is_3d = true;
             };
-        cube_e d = box.exact(d,d,d);
+        cube_e d = box.exact[d,d,d];
     );
 
 octahedron =
@@ -618,19 +618,19 @@ octahedron =
     } where (
         octahedron_m d =
             let r = d / 2;
-                v0 = normalize(1,1,1);
-                v1 = normalize(-1,1,1);
-                v2 = normalize(1,-1,1);
-                v3 = normalize(1,1,-1);
+                v0 = normalize[1,1,1];
+                v1 = normalize[-1,1,1];
+                v2 = normalize[1,-1,1];
+                v3 = normalize[1,1,-1];
                 // radius of circumscribed sphere / radius of inscribed sphere
                 circumratio = (1/2*sqrt 2) / (1/6*sqrt 6);
             in make_shape {
                 dist p :
                     max [
-                        abs(dot(p[[X,Y,Z]], v0)),
-                        abs(dot(p[[X,Y,Z]], v1)),
-                        abs(dot(p[[X,Y,Z]], v2)),
-                        abs(dot(p[[X,Y,Z]], v3)),
+                        abs(dot[p[[X,Y,Z]], v0]),
+                        abs(dot[p[[X,Y,Z]], v1]),
+                        abs(dot[p[[X,Y,Z]], v2]),
+                        abs(dot[p[[X,Y,Z]], v3]),
                     ] - r,
                 is_3d : true,
                 bbox : circumratio * [[-r,-r,-r], [r,r,r]],
@@ -649,23 +649,23 @@ dodecahedron =
     } where (
         dodecahedron_m d =
             let r = d / 2;
-                v0 = normalize(0, phi, 1);
-                v1 = normalize(0, -phi, 1);
-                v2 = normalize(1, 0, phi);
-                v3 = normalize(-1, 0, phi);
-                v4 = normalize(phi, 1, 0);
-                v5 = normalize(-phi, 1, 0);
+                v0 = normalize[0, phi, 1];
+                v1 = normalize[0, -phi, 1];
+                v2 = normalize[1, 0, phi];
+                v3 = normalize[-1, 0, phi];
+                v4 = normalize[phi, 1, 0];
+                v5 = normalize[-phi, 1, 0];
                 midratio = (.25*(3+sqrt(5))) / (1/20*sqrt(250+110*sqrt(5)));
                 circumratio = (.25*(sqrt 3 + sqrt 15)) / (1/20*sqrt(250+110*sqrt(5)));
             in make_shape {
                 dist p :
                     max [
-                        abs(dot(p[[X,Y,Z]], v0)),
-                        abs(dot(p[[X,Y,Z]], v1)),
-                        abs(dot(p[[X,Y,Z]], v2)),
-                        abs(dot(p[[X,Y,Z]], v3)),
-                        abs(dot(p[[X,Y,Z]], v4)),
-                        abs(dot(p[[X,Y,Z]], v5)),
+                        abs(dot[p[[X,Y,Z]], v0]),
+                        abs(dot[p[[X,Y,Z]], v1]),
+                        abs(dot[p[[X,Y,Z]], v2]),
+                        abs(dot[p[[X,Y,Z]], v3]),
+                        abs(dot[p[[X,Y,Z]], v4]),
+                        abs(dot[p[[X,Y,Z]], v5]),
                     ] - r,
                 is_3d : true,
                 bbox : midratio * [[-r,-r,-r],[r,r,r]],
@@ -684,32 +684,32 @@ icosahedron =
     } where (
         icosahedron_m d =
             let r = d / 2;
-                v0 = normalize(1,1,1);
-                v1 = normalize(-1,1,1);
-                v2 = normalize(1,-1,1);
-                v3 = normalize(1,1,-1);
-                v4 = normalize(0, +1, phi+1);
-                v5 = normalize(0, -1, phi+1);
-                v6 = normalize(+phi+1, 0, 1);
-                v7 = normalize(-phi-1, 0, 1);
-                v8 = normalize(+1, phi+1, 0);
-                v9 = normalize(-1, phi+1, 0);
+                v0 = normalize[1,1,1];
+                v1 = normalize[-1,1,1];
+                v2 = normalize[1,-1,1];
+                v3 = normalize[1,1,-1];
+                v4 = normalize[0, +1, phi+1];
+                v5 = normalize[0, -1, phi+1];
+                v6 = normalize[+phi+1, 0, 1];
+                v7 = normalize[-phi-1, 0, 1];
+                v8 = normalize[+1, phi+1, 0];
+                v9 = normalize[-1, phi+1, 0];
                 // radius of midsphere / radius of insphere
                 midratio = (phi/2) / (1/12*(3*sqrt(3)+sqrt(15)));
                 circumratio = (.25*sqrt(10+2*sqrt 5)) / (1/12*(3*sqrt(3)+sqrt(15)));
             in make_shape {
                 dist p :
                     max [
-                        abs(dot(p[[X,Y,Z]], v0)),
-                        abs(dot(p[[X,Y,Z]], v1)),
-                        abs(dot(p[[X,Y,Z]], v2)),
-                        abs(dot(p[[X,Y,Z]], v3)),
-                        abs(dot(p[[X,Y,Z]], v4)),
-                        abs(dot(p[[X,Y,Z]], v5)),
-                        abs(dot(p[[X,Y,Z]], v6)),
-                        abs(dot(p[[X,Y,Z]], v7)),
-                        abs(dot(p[[X,Y,Z]], v8)),
-                        abs(dot(p[[X,Y,Z]], v9)),
+                        abs(dot[p[[X,Y,Z]], v0]),
+                        abs(dot[p[[X,Y,Z]], v1]),
+                        abs(dot[p[[X,Y,Z]], v2]),
+                        abs(dot[p[[X,Y,Z]], v3]),
+                        abs(dot[p[[X,Y,Z]], v4]),
+                        abs(dot[p[[X,Y,Z]], v5]),
+                        abs(dot[p[[X,Y,Z]], v6]),
+                        abs(dot[p[[X,Y,Z]], v7]),
+                        abs(dot[p[[X,Y,Z]], v8]),
+                        abs(dot[p[[X,Y,Z]], v9]),
                     ] - r,
                 is_3d : true,
                 bbox : midratio * [[-r,-r,-r], [r,r,r]],
@@ -745,37 +745,37 @@ complement s =
 // Approximate union that produces a mitred SDF inside. Fast.
 // When unioning a list of coloured shapes, we paint the shapes from first to
 // last order: the last shape is painted on top of its predecessors.
-union list = reduce(nothing, _union2) list;
-_union2 (s1,s2) =
+union list = reduce[nothing, _union2] list;
+_union2 [s1,s2] =
     make_shape {
-        dist p : min(s1.dist p, s2.dist p),
+        dist p : min[s1.dist p, s2.dist p],
         colour p :
             let d1 = s1.dist p;
                 d2 = s2.dist p;
             in if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p,
-        bbox : [min(s1.bbox[MIN], s2.bbox[MIN]), max(s1.bbox[MAX], s2.bbox[MAX])],
+        bbox : [min[s1.bbox[MIN], s2.bbox[MIN]], max[s1.bbox[MAX], s2.bbox[MAX]]],
         is_2d : s1.is_2d && s2.is_2d,
         is_3d : s1.is_3d && s2.is_3d,
     };
 
-intersection list = reduce(everything, _intersection2) list;
-_intersection2 (s1,s2) =
+intersection list = reduce[everything, _intersection2] list;
+_intersection2 [s1,s2] =
     make_shape {
-        dist p : max(s1.dist p, s2.dist p),
+        dist p : max[s1.dist p, s2.dist p],
         colour : s1.colour,
-        bbox : [max(s1.bbox[MIN], s2.bbox[MIN]), min(s1.bbox[MAX], s2.bbox[MAX])],
+        bbox : [max[s1.bbox[MIN], s2.bbox[MIN]], min[s1.bbox[MAX], s2.bbox[MAX]]],
         is_2d : s1.is_2d && s2.is_2d,
         is_3d : s1.is_3d && s2.is_3d,
     };
 
-difference(s1,s2) = _intersection2(s1, complement s2);
-symmetric_difference shapes = difference(union shapes, intersection shapes);
+difference[s1,s2] = _intersection2[s1, complement s2];
+symmetric_difference shapes = difference[union shapes, intersection shapes];
 
 row = match [
-    d :: is_num -> shapes -> row_impl(d,shapes);
-    shapes -> row_impl(null, shapes);
+    d :: is_num -> shapes -> row_impl[d,shapes];
+    shapes -> row_impl[null, shapes];
 ] where (
-    row_impl(d,shapes) =
+    row_impl[d,shapes] =
         let widths = [for (s in shapes) size s [X]];
             gap = if (d==null) max widths / 4 else d;
             width = sum widths + (count shapes - 1)*gap;
@@ -784,88 +784,88 @@ row = match [
             i = 0;
         in do 
             while (i < count shapes) (
-                xdelta := concat(xdelta, [x - shapes[i].bbox[MIN,X]]);
+                xdelta := concat[xdelta, [x - shapes[i].bbox[MIN,X]]];
                 x := x + gap + size(shapes[i])[X];
                 i := i + 1;
             );
-        in union[for (i in 0..<count shapes) shapes[i] >> move(xdelta[i],0,0)];
+        in union[for (i in 0..<count shapes) shapes[i] >> move[xdelta[i],0,0]];
 );
 
 smooth k = {
-    union (s1,s2) =
+    union [s1,s2] =
         make_shape {
-            dist p : smooth_min(s1.dist p, s2.dist p, k),
+            dist p : smooth_min[s1.dist p, s2.dist p, k],
             colour p :
                 let d1 = s1.dist p;
                     d2 = s2.dist p;
                 in if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p,
-            bbox : [ min(s1.bbox[MIN], s2.bbox[MIN]) - k/4,
-                     max(s1.bbox[MAX], s2.bbox[MAX]) + k/4 ],
+            bbox : [ min[s1.bbox[MIN], s2.bbox[MIN]] - k/4,
+                     max[s1.bbox[MAX], s2.bbox[MAX]] + k/4 ],
             is_2d : s1.is_2d && s2.is_2d,
             is_3d : s1.is_3d && s2.is_3d,
         };
 
-    intersection (s1,s2) =
+    intersection [s1,s2] =
         make_shape {
-            dist p : smooth_max(s1.dist p, s2.dist p, k),
+            dist p : smooth_max[s1.dist p, s2.dist p, k],
             colour : s1.colour,
-            bbox : [ max(s1.bbox[MIN], s2.bbox[MIN]),
-                     min(s1.bbox[MAX], s2.bbox[MAX]) ],
+            bbox : [ max[s1.bbox[MIN], s2.bbox[MIN]],
+                     min[s1.bbox[MAX], s2.bbox[MAX]] ],
             is_2d : s1.is_2d && s2.is_2d,
             is_3d : s1.is_3d && s2.is_3d,
         };
 
-    difference (s1,s2) = intersection (s1, complement s2);
+    difference [s1,s2] = intersection [s1, complement s2];
 };
 
 // polynomial smooth min, from IQ
 // http://www.iquilezles.org/www/articles/smin/smin.htm
-smooth_min(a,b,k) =
+smooth_min[a,b,k] =
     if (a == inf)
         // TODO: work around bug in 'max' that exists on ubuntu/nvidia GTX 1050
-        // Bug is: max(-inf,x) returns NaN.
+        // Bug is: max[-inf,x] returns NaN.
         b
     else
-        let h = clamp( 0.5+0.5*(b-a)/k, 0, 1 );
-        in lerp( b, a, h ) - k*h*(1.0-h);
-smooth_max(a,b,k) = -smooth_min(-a,-b,k);
+        let h = clamp[ 0.5+0.5*(b-a)/k, 0, 1 ];
+        in lerp[ b, a, h ] - k*h*(1.0-h);
+smooth_max[a,b,k] = -smooth_min[-a,-b,k];
 
 chamfer r = {
-    union (s1,s2) =
+    union [s1,s2] =
         make_shape {
             dist p =
                 let a = s1.dist p;
                     b = s2.dist p;
-                in chamfer_min(a,b,r);
+                in chamfer_min[a,b,r];
             colour p =
                 let d1 = s1.dist p;
                     d2 = s2.dist p;
                 in if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p;
-            bbox = [ min(s1.bbox[MIN], s2.bbox[MIN]),
-                     max(s1.bbox[MAX], s2.bbox[MAX]) ];
+            bbox = [ min[s1.bbox[MIN], s2.bbox[MIN]],
+                     max[s1.bbox[MAX], s2.bbox[MAX]] ];
             is_2d = s1.is_2d && s2.is_2d;
             is_3d = s1.is_3d && s2.is_3d;
         };
 
-    intersection (s1,s2) =
+    intersection [s1,s2] =
         make_shape {
             dist p =
                 let a = s1.dist p;
                     b = s2.dist p;
-                in chamfer_max(a,b,r);
+                in chamfer_max[a,b,r];
             colour = s1.colour;
-            bbox = [ max(s1.bbox[MIN], s2.bbox[MIN]),
-                     min(s1.bbox[MAX], s2.bbox[MAX]) ];
+            bbox = [ max[s1.bbox[MIN], s2.bbox[MIN]],
+                     min[s1.bbox[MAX], s2.bbox[MAX]] ];
             is_2d = s1.is_2d && s2.is_2d;
             is_3d = s1.is_3d && s2.is_3d;
         };
 
-    difference (s1,s2) = intersection (s1, complement s2);
+    difference [s1,s2] = intersection [s1, complement s2];
 
-    chamfer_min(a, b, r) =
-        let e = max(r - abs(a - b), 0);
-        in min(a, b) - e*.5;
-    chamfer_max(a,b,k) = -chamfer_min(-a,-b,k);
+    chamfer_min[a, b, r] =
+        let e = max[r - abs(a - b), 0];
+        in min[a, b] - e*.5;
+    chamfer_max[a,b,k] = -chamfer_min[-a,-b,k];
 };
 
 ////////////////////////////
@@ -878,10 +878,10 @@ translate _delta shape =
     in do
         if (shape.is_2d) assert(delta[Z] == 0);
     in make_shape {
-        // TODO: dist[x,y,z,t] : shape.dist(...[x,y,z]-delta, t),
-        // TODO: dist p : shape.dist(...p[[X,Y,Z]]-delta, p[T]),
-        dist p : shape.dist(p[X]-delta[X], p[Y]-delta[Y], p[Z]-delta[Z], p[T]),
-        colour p : shape.colour(p[X]-delta[X],p[Y]-delta[Y],p[Z]-delta[Z],p[T]),
+        // TODO: dist[x,y,z,t] : shape.dist[...[x,y,z]-delta, t],
+        // TODO: dist p : shape.dist[...p[[X,Y,Z]]-delta, p[T]],
+        dist p : shape.dist[p[X]-delta[X], p[Y]-delta[Y], p[Z]-delta[Z], p[T]],
+        colour p : shape.colour[p[X]-delta[X],p[Y]-delta[Y],p[Z]-delta[Z],p[T]],
         bbox : [shape.bbox[MIN]+delta, shape.bbox[MAX]+delta],
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
@@ -890,9 +890,9 @@ translate _delta shape =
 // Isotropic scale operation, preserves structure of the distance field.
 scale (s :: is_num) shape =
     make_shape {
-        // TODO: dist p : shape.dist(...p[[X,Y,Z]] / s, p[T]) * s,
-        dist[x,y,z,t] : shape.dist(x/s, y/s, z/s, t) * s,
-        colour[x,y,z,t] : shape.colour(x/s, y/s, z/s, t),
+        // TODO: dist p : shape.dist[...p[[X,Y,Z]] / s, p[T]] * s,
+        dist[x,y,z,t] : shape.dist[x/s, y/s, z/s, t] * s,
+        colour[x,y,z,t] : shape.colour[x/s, y/s, z/s, t],
         bbox : [s*shape.bbox[MIN], s*shape.bbox[MAX]],
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
@@ -904,9 +904,9 @@ stretch _s shape =
             else if (is_vec2 _s) [..._s, 1]
             else do assert(is_vec3(_s) && shape.is_3d) in _s;
     in make_shape {
-        // TODO: dist p : shape.dist(...p[[X,Y,Z]] / s, p[T]) * min(s),
-        dist[x,y,z,t] : shape.dist(x/s[X], y/s[Y], z/s[Z], t) * min(s),
-        colour[x,y,z,t] : shape.colour(x/s[X], y/s[Y], z/s[Z], t),
+        // TODO: dist p : shape.dist[...p[[X,Y,Z]] / s, p[T]] * min(s),
+        dist[x,y,z,t] : shape.dist[x/s[X], y/s[Y], z/s[Z], t] * min(s),
+        colour[x,y,z,t] : shape.colour[x/s[X], y/s[Y], z/s[Z], t],
         bbox : [s*shape.bbox[MIN], s*shape.bbox[MAX]],
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
@@ -922,10 +922,10 @@ warp_domain_xy warp shape =
     in make_shape {
         dist[x,y,z,t] =
             let p = warp.inverse[x,y];
-            in warp.fix_distance(x,y,shape.dist(p[X], p[Y], z, t));
+            in warp.fix_distance[x,y,shape.dist[p[X], p[Y], z, t]];
         colour[x,y,z,t] =
             let p = warp.inverse[x,y];
-            in shape.colour(p[X], p[Y], z, t);
+            in shape.colour[p[X], p[Y], z, t];
         bbox = [
             [ ...min bv, shape.bbox[MIN,Z] ],
             [ ...max bv, shape.bbox[MAX,Z] ],
@@ -935,17 +935,17 @@ warp_domain_xy warp shape =
     };
 
 // rotate angle shape -- 2D rotation around the Z axis
-// rotate (angle,axis) shape -- 3D rotation around specified axis
+// rotate [angle,axis] shape -- 3D rotation around specified axis
 rotate arg shape =
     arg >> match [
     a :: is_num ->
         let // 2D rotation around the Z axis
-            rot2(a,p) = cmul(p, cis a);
+            rot2[a,p] = cmul[p, cis a];
             b = if (shape.bbox[MIN,X] == -inf || shape.bbox[MIN,Y] == -inf
                     || shape.bbox[MAX,X] == inf || shape.bbox[MAX,Y] == inf)
                 [[-inf,-inf], [inf,inf]]
             else
-                let bv = map (p->rot2(a,p)) [
+                let bv = map (p->rot2[a,p]) [
                         [shape.bbox[MIN,X], shape.bbox[MIN,Y]],
                         [shape.bbox[MAX,X], shape.bbox[MIN,Y]],
                         [shape.bbox[MAX,X], shape.bbox[MAX,Y]],
@@ -954,11 +954,11 @@ rotate arg shape =
                 in [min bv, max bv];
         in make_shape {
             dist[x,y,z,t] :
-                let xy = rot2(-a,[x,y]);
-                in shape.dist(xy[X],xy[Y],z,t),
+                let xy = rot2[-a,[x,y]];
+                in shape.dist[xy[X],xy[Y],z,t],
             colour[x,y,z,t] :
-                let xy = rot2(-a,[x,y]);
-                in shape.colour(xy[X],xy[Y],z,t),
+                let xy = rot2[-a,[x,y]];
+                in shape.colour[xy[X],xy[Y],z,t],
             bbox : [
                 [ b[MIN,X], b[MIN,Y], shape.bbox[MIN,Z] ],
                 [ b[MAX,X], b[MAX,Y], shape.bbox[MAX,Z] ],
@@ -971,10 +971,10 @@ rotate arg shape =
             assert(shape.is_3d);
         in let
             axis = normalize a;
-            rot3(a,axis,p) =
+            rot3[a,axis,p] =
                     p * cos(a)
-                    - cross(axis, p) * sin(a)
-                    + axis * dot(axis, p * (1 - cos a));
+                    - cross[axis, p] * sin(a)
+                    + axis * dot[axis, p * (1 - cos a)];
             b = if (shape.bbox[MIN,X] == -inf || shape.bbox[MIN,Y] == -inf
                     || shape.bbox[MIN,Z] == -inf
                     || shape.bbox[MAX,X] == inf || shape.bbox[MAX,Y] == inf
@@ -983,7 +983,7 @@ rotate arg shape =
                     shape.bbox
                 else
                     let bb = shape.bbox;
-                        bv = map (p->rot3(-angle,axis,p)) [
+                        bv = map (p->rot3[-angle,axis,p]) [
                             [bb[MIN,X], bb[MIN,Y], bb[MIN,Z]],
                             [bb[MAX,X], bb[MIN,Y], bb[MIN,Z]],
                             [bb[MAX,X], bb[MAX,Y], bb[MIN,Z]],
@@ -995,13 +995,13 @@ rotate arg shape =
                         ];
                     in [ min bv, max bv ];
         in make_shape {
-            //TODO: dist p : shape.dist(...rot3(angle,axis,p[[X,Y,Z]]),p[T]),
+            //TODO: dist p : shape.dist[...rot3[angle,axis,p[[X,Y,Z]]],p[T]],
             dist[x,y,z,t] :
-                let q = rot3(angle, axis, [x,y,z]);
-                in shape.dist(q[X],q[Y],q[Z],t),
+                let q = rot3[angle, axis, [x,y,z]];
+                in shape.dist[q[X],q[Y],q[Z],t],
             colour[x,y,z,t] :
-                let q = rot3(angle, axis, [x,y,z]);
-                in shape.colour(q[X],q[Y],q[Z],t),
+                let q = rot3[angle, axis, [x,y,z]];
+                in shape.colour[q[X],q[Y],q[Z],t],
             bbox : b,
             is_3d : true,
         };
@@ -1009,8 +1009,8 @@ rotate arg shape =
 
 reflect_x shape =
     make_shape {
-        dist[x,y,z,t] = shape.dist(-x,y,z,t);
-        colour[x,y,z,t] = shape.colour(-x,y,z,t);
+        dist[x,y,z,t] = shape.dist[-x,y,z,t];
+        colour[x,y,z,t] = shape.colour[-x,y,z,t];
         bbox = [
             [-shape.bbox[MAX,X], shape.bbox[MIN,Y], shape.bbox[MIN,Z]],
             [-shape.bbox[MIN,X], shape.bbox[MAX,Y], shape.bbox[MAX,Z]],
@@ -1020,8 +1020,8 @@ reflect_x shape =
     };
 reflect_y shape =
     make_shape {
-        dist[x,y,z,t] = shape.dist(x,-y,z,t);
-        colour[x,y,z,t] = shape.colour(x,-y,z,t);
+        dist[x,y,z,t] = shape.dist[x,-y,z,t];
+        colour[x,y,z,t] = shape.colour[x,-y,z,t];
         bbox = [
             [shape.bbox[MIN,X], -shape.bbox[MAX,Y], shape.bbox[MIN,Z]],
             [shape.bbox[MAX,X], -shape.bbox[MIN,Y], shape.bbox[MAX,Z]],
@@ -1032,8 +1032,8 @@ reflect_y shape =
 reflect_z shape =
     do assert(is_shape shape && shape.is_3d)
     in make_shape {
-        dist[x,y,z,t] = shape.dist(x,y,-z,t);
-        colour[x,y,z,t] = shape.colour(x,y,-z,t);
+        dist[x,y,z,t] = shape.dist[x,y,-z,t];
+        colour[x,y,z,t] = shape.colour[x,y,-z,t];
         bbox = [
             [shape.bbox[MIN,X], shape.bbox[MIN,Y], -shape.bbox[MAX,Z]],
             [shape.bbox[MAX,X], shape.bbox[MAX,Y], -shape.bbox[MIN,Z]],
@@ -1043,8 +1043,8 @@ reflect_z shape =
     };
 reflect_xy shape = // reflect shape across plane X=Y
     make_shape {
-        dist[x,y,z,t] = shape.dist(y,x,z,t);
-        colour[x,y,z,t] = shape.colour(y,x,z,t);
+        dist[x,y,z,t] = shape.dist[y,x,z,t];
+        colour[x,y,z,t] = shape.colour[y,x,z,t];
         bbox = [
             [shape.bbox[MIN,Y], shape.bbox[MIN,X], shape.bbox[MIN,Z]],
             [shape.bbox[MAX,Y], shape.bbox[MAX,X], shape.bbox[MAX,Z]],
@@ -1055,8 +1055,8 @@ reflect_xy shape = // reflect shape across plane X=Y
 reflect_xz shape = // reflect shape across plane X=Z
     do assert(is_shape shape && shape.is_3d)
     in make_shape {
-        dist[x,y,z,t] = shape.dist(z,y,x,t);
-        colour[x,y,z,t] = shape.colour(z,y,x,t);
+        dist[x,y,z,t] = shape.dist[z,y,x,t];
+        colour[x,y,z,t] = shape.colour[z,y,x,t];
         bbox = [
             [shape.bbox[MIN,Z], shape.bbox[MIN,Y], shape.bbox[MIN,X]],
             [shape.bbox[MAX,Z], shape.bbox[MAX,Y], shape.bbox[MAX,X]],
@@ -1067,8 +1067,8 @@ reflect_xz shape = // reflect shape across plane X=Z
 reflect_yz shape = // reflect shape across plane Y=Z
     do assert(is_shape shape && shape.is_3d)
     in make_shape {
-        dist[x,y,z,t] = shape.dist(x,z,y,t);
-        colour[x,y,z,t] = shape.colour(x,z,y,t);
+        dist[x,y,z,t] = shape.dist[x,z,y,t];
+        colour[x,y,z,t] = shape.colour[x,z,y,t];
         bbox = [
             [shape.bbox[MIN,X], shape.bbox[MIN,Z], shape.bbox[MIN,Y]],
             [shape.bbox[MAX,X], shape.bbox[MAX,Z], shape.bbox[MAX,Y]],
@@ -1085,63 +1085,63 @@ reflect normal shape =
 
 shear_x kx shape =
     warp_domain_xy {
-        function[x,y] = (x + kx*y, y);
-        inverse[x,y] = (x - kx*y, y);
-        fix_distance(x,y,d) = d; // TODO
+        function[x,y] = [x + kx*y, y];
+        inverse[x,y] = [x - kx*y, y];
+        fix_distance[x,y,d] = d; // TODO
     } shape;
 
 // TODO: In `taper`, the Lipschitz compensation code seems like overkill.
-local_taper_x {range:(y0,y1), scale:(kx0, kx1)} shape =
+local_taper_x {range:[y0,y1], scale:[kx0, kx1]} shape =
     do assert(kx0 > 0 && kx1 > 0);
        assert(y0 < y1);
     in make_shape {
         dist[x,y,z,t] =
             (if (y <= y0)
-                shape.dist(x/kx0,y,z,t) * kx0
+                shape.dist[x/kx0,y,z,t] * kx0
             else if (y >= y1)
-                shape.dist(x/kx1,y,z,t) * kx1
+                shape.dist[x/kx1,y,z,t] * kx1
             else
-                let kx = lerp(kx0,kx1,(y-y0)/(y1-y0));
-                in shape.dist(x/kx,y,z,t) * kx
-            ) * min(kx0,kx1);
+                let kx = lerp[kx0,kx1,(y-y0)/(y1-y0)];
+                in shape.dist[x/kx,y,z,t] * kx
+            ) * min[kx0,kx1];
         colour[x,y,z,t] =
             if (y <= y0)
-                shape.colour(x/kx0,y,z,t)
+                shape.colour[x/kx0,y,z,t]
             else if (y >= y1)
-                shape.colour(x/kx1,y,z,t)
+                shape.colour[x/kx1,y,z,t]
             else
-                let kx = lerp(kx0,kx1,(y-y0)/(y1-y0));
-                in shape.colour(x/kx,y,z,t);
-        bbox = shape.bbox * [[max(kx0,kx1),1,1],[max(kx0,kx1),1,1]];
+                let kx = lerp[kx0,kx1,(y-y0)/(y1-y0)];
+                in shape.colour[x/kx,y,z,t];
+        bbox = shape.bbox * [[max[kx0,kx1],1,1],[max[kx0,kx1],1,1]];
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
     };
-local_taper_xy {range:(z0,z1), scale:([kx0, ky0], [kx1, ky1])} shape =
+local_taper_xy {range:[z0,z1], scale:[[kx0, ky0], [kx1, ky1]]} shape =
     do assert(kx0 > 0 && ky0 > 0 && kx1 > 0 && ky1 > 0);
        assert(z0 < z1);
     in make_shape {
         dist[x,y,z,t] =
             (if (z <= z0)
-                shape.dist(x/kx0,y/ky0,z,t) * min(kx0,ky0)
+                shape.dist[x/kx0,y/ky0,z,t] * min[kx0,ky0]
             else if (z >= z1)
-                shape.dist(x/kx1,y/ky1,z,t) * min(kx1,ky1)
+                shape.dist[x/kx1,y/ky1,z,t] * min[kx1,ky1]
             else
-                let kx = lerp(kx0,kx1,(z-z0)/(z1-z0));
-                    ky = lerp(ky0,ky1,(z-z0)/(z1-z0));
-                in shape.dist(x/kx,y/ky,z,t) * min(kx,ky)
-            ) * min(kx0,kx1,ky0,ky1);
+                let kx = lerp[kx0,kx1,(z-z0)/(z1-z0)];
+                    ky = lerp[ky0,ky1,(z-z0)/(z1-z0)];
+                in shape.dist[x/kx,y/ky,z,t] * min[kx,ky]
+            ) * min[kx0,kx1,ky0,ky1];
         colour[x,y,z,t] =
             if (z <= z0)
-                shape.colour(x/kx0,y/ky0,z,t)
+                shape.colour[x/kx0,y/ky0,z,t]
             else if (z >= z1)
-                shape.colour(x/kx1,y/ky1,z,t)
+                shape.colour[x/kx1,y/ky1,z,t]
             else
-                let kx = lerp(kx0,kx1,(z-z0)/(z1-z0));
-                    ky = lerp(ky0,ky1,(z-z0)/(z1-z0));
-                in shape.colour(x/kx,y/ky,z,t);
+                let kx = lerp[kx0,kx1,(z-z0)/(z1-z0)];
+                    ky = lerp[ky0,ky1,(z-z0)/(z1-z0)];
+                in shape.colour[x/kx,y/ky,z,t];
         bbox =
-            let kx = max(kx0,kx1);
-                ky = max(ky0,ky1);
+            let kx = max[kx0,kx1];
+                ky = max[ky0,ky1];
             in shape.bbox * [[kx,ky,1],[kx,ky,1]];
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
@@ -1172,8 +1172,8 @@ at p t shape = shape >> move(-p) >> t >> move p;
 slice = slice_xy;
 slice_xy shape =
     make_shape {
-        dist p : shape.dist(p[X],p[Y],0,p[T]),
-        colour p : shape.colour(p[X],p[Y],0,p[T]),
+        dist p : shape.dist[p[X],p[Y],0,p[T]],
+        colour p : shape.colour[p[X],p[Y],0,p[T]],
         bbox : [
             [shape.bbox[MIN,X],shape.bbox[MIN,Y],0],
             [shape.bbox[MAX,X],shape.bbox[MAX,Y],0],
@@ -1182,8 +1182,8 @@ slice_xy shape =
     };
 slice_xz shape =
     make_shape {
-        dist p : shape.dist(p[X],0,p[Y],p[T]),
-        colour p : shape.colour(p[X],0,p[Y],p[T]),
+        dist p : shape.dist[p[X],0,p[Y],p[T]],
+        colour p : shape.colour[p[X],0,p[Y],p[T]],
         bbox : [
             [shape.bbox[MIN,X],shape.bbox[MIN,Z],0],
             [shape.bbox[MAX,X],shape.bbox[MAX,Z],0],
@@ -1192,8 +1192,8 @@ slice_xz shape =
     };
 slice_yz shape =
     make_shape {
-        dist p : shape.dist(0,p[X],p[Y],p[T]),
-        colour p : shape.colour(0,p[X],p[Y],p[T]),
+        dist p : shape.dist[0,p[X],p[Y],p[T]],
+        colour p : shape.colour[0,p[X],p[Y],p[T]],
         bbox : [
             [shape.bbox[MIN,Y],shape.bbox[MIN,Z],0],
             [shape.bbox[MAX,Y],shape.bbox[MAX,Z],0],
@@ -1213,8 +1213,8 @@ extrude = {
     mitred d shape =
         let h = d / 2;
         in make_shape {
-            dist p : max(abs(p[Z]) - h, shape.dist(p[X],p[Y],0,p[T])),
-            colour p : shape.colour(p[X],p[Y],0,p[T]),
+            dist p : max[abs(p[Z]) - h, shape.dist[p[X],p[Y],0,p[T]]],
+            colour p : shape.colour[p[X],p[Y],0,p[T]],
             bbox : [
                 [shape.bbox[MIN,X],shape.bbox[MIN,Y],-h],
                 [shape.bbox[MAX,X],shape.bbox[MAX,Y],+h],
@@ -1226,9 +1226,9 @@ extrude = {
         in make_shape {
             dist p :
                 let dz = abs(p[Z]) - h;
-                    dxy = shape.dist(p[X],p[Y],0,p[T]);
-                in mag(max([dz,dxy],0)) + min(max(dz,dxy), 0),
-            colour p : shape.colour(p[X],p[Y],0,p[T]),
+                    dxy = shape.dist[p[X],p[Y],0,p[T]];
+                in mag(max[[dz,dxy],0]) + min[max[dz,dxy], 0],
+            colour p : shape.colour[p[X],p[Y],0,p[T]],
             bbox : [
                 [shape.bbox[MIN,X],shape.bbox[MIN,Y],-h],
                 [shape.bbox[MAX,X],shape.bbox[MAX,Y],+h],
@@ -1237,22 +1237,22 @@ extrude = {
         };
 };
 
-morph t (shape1, shape2) =
+morph t [shape1, shape2] =
     make_shape {
-        dist p : lerp(shape1.dist p, shape2.dist p, t),
-        colour p : lerp(shape1.colour p, shape2.colour p, t),
-        bbox : lerp(shape1.bbox, shape2.bbox, t),
+        dist p : lerp[shape1.dist p, shape2.dist p, t],
+        colour p : lerp[shape1.colour p, shape2.colour p, t],
+        bbox : lerp[shape1.bbox, shape2.bbox, t],
         is_2d : shape1.is_2d && shape2.is_2d,
         is_3d : shape1.is_3d && shape2.is_3d,
     };
 
-loft d (shape1, shape2) =
+loft d [shape1, shape2] =
     let r = d / 2;
     in make_shape {
         dist[x,y,z,t] =
-            max(abs z - r,
-                lerp(shape1.dist(x,y,0,t), shape2.dist(x,y,0,t),
-                    (clamp(z, -r, r) + r) / d));
+            max[abs z - r,
+                lerp[shape1.dist[x,y,0,t], shape2.dist[x,y,0,t],
+                    (clamp[z, -r, r] + r) / d]];
         is_3d = true;
     };
 
@@ -1263,8 +1263,8 @@ loft d (shape1, shape2) =
 repeat_x d shape =
     let r = d / 2;
     in make_shape {
-        dist[x,y,z,t] : shape.dist(mod(x + r, d) - r, y, z, t),
-        colour[x,y,z,t] : shape.colour(mod(x + r, d) - r, y, z, t),
+        dist[x,y,z,t] : shape.dist[mod[x + r, d] - r, y, z, t],
+        colour[x,y,z,t] : shape.colour[mod[x + r, d] - r, y, z, t],
         bbox : [
             [-inf, shape.bbox[MIN,Y], shape.bbox[MIN,Z]],
             [+inf, shape.bbox[MAX,Y], shape.bbox[MAX,Z]],
@@ -1277,15 +1277,15 @@ repeat_xy d shape =
     let r = d / 2;
     in make_shape {
         dist[x,y,z,t] =
-            shape.dist(
-                mod(x + r[X], 2*r[X]) - r[X],
-                mod(y + r[Y], 2*r[Y]) - r[Y],
-                z, t);
+            shape.dist[
+                mod[x + r[X], 2*r[X]] - r[X],
+                mod[y + r[Y], 2*r[Y]] - r[Y],
+                z, t];
         colour[x,y,z,t] =
-            shape.colour(
-                mod(x + r[X], 2*r[X]) - r[X],
-                mod(y + r[Y], 2*r[Y]) - r[Y],
-                z, t);
+            shape.colour[
+                mod[x + r[X], 2*r[X]] - r[X],
+                mod[y + r[Y], 2*r[Y]] - r[Y],
+                z, t];
         bbox = [
             [-inf, -inf, shape.bbox[MIN,Z]],
             [+inf, +inf, shape.bbox[MAX,Z]],
@@ -1298,17 +1298,17 @@ repeat_xyz d shape =
     let r = d / 2;
     in make_shape {
         dist [x,y,z,t] =
-            shape.dist(
-                mod(x + r[X], 2*r[X]) - r[X],
-                mod(y + r[Y], 2*r[Y]) - r[Y],
-                mod(z + r[Z], 2*r[Z]) - r[Z],
-                t);
+            shape.dist[
+                mod[x + r[X], 2*r[X]] - r[X],
+                mod[y + r[Y], 2*r[Y]] - r[Y],
+                mod[z + r[Z], 2*r[Z]] - r[Z],
+                t];
         colour [x,y,z,t] =
-            shape.colour(
-                mod(x + r[X], 2*r[X]) - r[X],
-                mod(y + r[Y], 2*r[Y]) - r[Y],
-                mod(z + r[Z], 2*r[Z]) - r[Z],
-                t);
+            shape.colour[
+                mod[x + r[X], 2*r[X]] - r[X],
+                mod[y + r[Y], 2*r[Y]] - r[Y],
+                mod[z + r[Z], 2*r[Z]] - r[Z],
+                t];
         bbox = [
             [-inf, -inf, -inf],
             [+inf, +inf, +inf],
@@ -1319,8 +1319,8 @@ repeat_xyz d shape =
 
 repeat_mirror_x shape =
     make_shape {
-        dist[x,y,z,t] : shape.dist(abs x, y, z, t),
-        colour[x,y,z,t] : shape.colour(abs x, y, z, t),
+        dist[x,y,z,t] : shape.dist[abs x, y, z, t],
+        colour[x,y,z,t] : shape.colour[abs x, y, z, t],
         bbox : [
             [-shape.bbox[MAX,X], shape.bbox[MIN,Y], shape.bbox[MIN,Z]],
             shape.bbox[MAX],
@@ -1334,9 +1334,9 @@ repeat_radial reps shape =
         inradius = -shape.bbox[MIN,Y];
         circumradius = inradius / cos(angle/2);
         max_x =
-            if (mod(reps,4)==0)
+            if (mod[reps,4]==0)
                 inradius
-            else if (mod(reps,2)==0)
+            else if (mod[reps,2]==0)
                 circumradius
             else
                 circumradius * sin((floor(reps/4)+.5)*angle);
@@ -1344,9 +1344,9 @@ repeat_radial reps shape =
         f[x,y,z,t] =
             let a = phase[x,y] + ashift;
                 r = mag[x,y];
-                a2 = mod(a,angle) - ashift;
+                a2 = mod[a,angle] - ashift;
                 xy = cis(a2) * r;
-            in (xy[X], xy[Y], z, t);
+            in [xy[X], xy[Y], z, t];
     in make_shape {
         dist p = shape.dist(f p);
         colour p = shape.colour(f p);
@@ -1356,7 +1356,7 @@ repeat_radial reps shape =
               -inradius,
               shape.bbox[MIN,Z] ],
             [ max_x,
-              if (mod(reps,2)==0) inradius else circumradius,
+              if (mod[reps,2]==0) inradius else circumradius,
               shape.bbox[MAX,Z] ]
         ];
         is_2d = shape.is_2d;
@@ -1373,10 +1373,10 @@ colour c shape = c >> match [
             ... shape,
             colour p : c,
         };
-    (ifield, cmap) ->
+    [ifield, cmap] ->
         make_shape {
             ... shape,
-            colour : compose(ifield, cmap),
+            colour : compose[ifield, cmap],
         };
     c :: is_shape ->
         make_shape {
@@ -1394,14 +1394,14 @@ show_colour c = colour c everything;
 
 sRGB = {
     call c = c^2.2;
-    hue h = HSV(h,1,1);
-    grey i = call(i,i,i);
+    hue h = HSV[h,1,1];
+    grey i = call[i,i,i];
     HSV c =
-        let m = abs(mod(c[0] + [1,2/3,1/3], 1) * 6 - 3);
-        in call(c[2] * lerp(1, clamp(m - 1, 0, 1), c[1]));
+        let m = abs(mod[c[0] + [1,2/3,1/3], 1] * 6 - 3);
+        in call(c[2] * lerp[1, clamp[m - 1, 0, 1], c[1]]);
 };
 
-webRGB(r,g,b) = sRGB(r/255, g/255, b/255);
+webRGB[r,g,b] = sRGB[r/255, g/255, b/255];
 
 red = [1, 0, 0];
 orange = sRGB[1, .5, 0];
@@ -1423,16 +1423,16 @@ black = [0, 0, 0];
 texture = colour;
 make_texture x = colour x everything;
 
-i_linear d (x,_,_,_) = x/d `mod` 1;
-i_radial n (x,y,_,_) = (phase[x,y]/tau-.25)*n `mod` 1;
-i_concentric d (x,y,_,_) = mag[x,y]/d `mod` 1;
+i_linear d [x,_,_,_] = x/d `mod` 1;
+i_radial n [x,y,_,_] = (phase[x,y]/tau-.25)*n `mod` 1;
+i_concentric d [x,y,_,_] = mag[x,y]/d `mod` 1;
 i_gyroid [x,y,z,t] = (cos(x)*sin(y) + cos(y)*sin(z) + cos(z)*sin(x) + 1.5)/3;
 i_animate period ifield [x,y,z,t] = ifield[x,y,z,t] + t/period `mod` 1;
-show_ifield ifield = make_texture(ifield, sRGB.grey);
+show_ifield ifield = make_texture[ifield, sRGB.grey];
 
-show_cmap f = union(
-    rect(4.05,1.05) >> colour grey,
-    rect(4,1) >> colour ((x,_,_,_)->f((x+2)/4)));
+show_cmap f = union[
+    rect[4.05,1.05] >> colour grey,
+    rect[4,1] >> colour ([x,_,_,_]->f((x+2)/4))];
 
 ///////////////////////////////////////////////////////////////
 // RESEARCH -- shapes and operators with bad distance fields //
@@ -1454,19 +1454,19 @@ gyroid =
 // Bad distance field.
 twist tr shape =
     let b = shape.bbox;
-        r = max(map mag (
+        r = max(map mag [
                 [b[MIN,X], b[MIN,Y]],
                 [b[MAX,X], b[MIN,Y]],
                 [b[MIN,X], b[MAX,Y]],
                 [b[MAX,X], b[MAX,Y]],
-            ));
+            ]);
     in make_shape {
         dist p :
-            let xy = cmul(p[[X,Y]], cis(p[Z]*-tr));
-            in shape.dist(xy[X], xy[Y], p[Z], p[T]),
+            let xy = cmul[p[[X,Y]], cis(p[Z]*-tr)];
+            in shape.dist[xy[X], xy[Y], p[Z], p[T]],
         colour p :
-            let xy = cmul(p[[X,Y]], cis(p[Z]*-tr));
-            in shape.colour(xy[X], xy[Y], p[Z], p[T]),
+            let xy = cmul[p[[X,Y]], cis(p[Z]*-tr)];
+            in shape.colour[xy[X], xy[Y], p[Z], p[T]],
         bbox : [[-r,-r,b[MIN,Z]],[r,r,b[MAX,Z]]],
         is_3d : true,
     };
@@ -1484,9 +1484,9 @@ bend {d = null, angle: a = tau} shape =
             shape.bbox[MAX,Y] + ry,
         ];
         f[x,y,z,t] =
-            let nx = (mod(phase[x,y]/pi+1.5,2)-1)*rx+offset[X];
+            let nx = (mod[phase[x,y]/pi+1.5,2]-1)*rx+offset[X];
                 ny = offset[Y] - mag[x,y];
-            in (nx,ny,z,t);
+            in [nx,ny,z,t];
         ymax = shape.bbox[MAX,Y] - shape.bbox[MIN,Y] + ry;
     in make_shape {
         dist p = shape.dist(f p);
@@ -1508,7 +1508,7 @@ distance_field shape =
         colour p :
             let d = shape.dist p;
                 c = if (d >= 0) ceil(d)-d else floor(d)-d;
-            in [max(-c,0), bit(abs(d)==inf), max(c,0)],
+            in [max[-c,0], bit(abs(d)==inf), max[c,0]],
         is_2d : true,
     };
 
@@ -1569,17 +1569,17 @@ lipschitz k shape =
 // or with white where it is > n (worst).
 // Debug strategy: find the smallest value of n that doesn't produce white,
 // and that's your Lipschitz constant. Try n=2 as an initial value.
-show_gradient (j,k) shape =
+show_gradient [j,k] shape =
     let xy = make_shape {
         dist[x,y,z,t] : abs(z),
         colour p :
             let eps = 0.01;
-                d = shape.dist(p[X],p[Y],0,p[T]);
-                up = shape.dist(p[X],p[Y]+eps,0,p[T]);
-                down = shape.dist(p[X],p[Y]-eps,0,p[T]);
-                left = shape.dist(p[X]-eps,p[Y],0,p[T]);
-                right = shape.dist(p[X]+eps,p[Y],0,p[T]);
-                g = max(abs(d-up),abs(d-down),abs(d-left),abs(d-right)) / eps;
+                d = shape.dist[p[X],p[Y],0,p[T]];
+                up = shape.dist[p[X],p[Y]+eps,0,p[T]];
+                down = shape.dist[p[X],p[Y]-eps,0,p[T]];
+                left = shape.dist[p[X]-eps,p[Y],0,p[T]];
+                right = shape.dist[p[X]+eps,p[Y],0,p[T]];
+                g = max[abs(d-up),abs(d-down),abs(d-left),abs(d-right)] / eps;
             in if (g <= j)
                 [0,0,0]
             else if (g > k)
@@ -1588,7 +1588,7 @@ show_gradient (j,k) shape =
                 sRGB.hue((g-j)/(k-j)),
         is_2d : true,
         is_3d : true,
-    } in if (shape.is_2d) xy else union(shape, xy);
+    } in if (shape.is_2d) xy else union[shape, xy];
 
 show_dist shape =
     let xy = make_shape {
@@ -1596,11 +1596,11 @@ show_dist shape =
         colour p :
             let eps = 0.01;
                 d = shape.dist p;
-                up = shape.dist(p[X],p[Y]+eps,0,p[T]);
-                down = shape.dist(p[X],p[Y]-eps,0,p[T]);
-                left = shape.dist(p[X]-eps,p[Y],0,p[T]);
-                right = shape.dist(p[X]+eps,p[Y],0,p[T]);
-                g = max(abs(d-up),abs(d-down),abs(d-left),abs(d-right)) / eps;
+                up = shape.dist[p[X],p[Y]+eps,0,p[T]];
+                down = shape.dist[p[X],p[Y]-eps,0,p[T]];
+                left = shape.dist[p[X]-eps,p[Y],0,p[T]];
+                right = shape.dist[p[X]+eps,p[Y],0,p[T]];
+                g = max[abs(d-up),abs(d-down),abs(d-left),abs(d-right)] / eps;
                 c = if (d >= 0) ceil(d)-d else floor(d)-d;
             in if (d == d)
                 if (d == inf)
@@ -1608,29 +1608,29 @@ show_dist shape =
                 else if (d == -inf)
                     [0,.5,.5]^2.2
                 else
-                    [clamp(g-1,0,1), max(-c,0), max(c,0)]^2.2
+                    [clamp[g-1,0,1], max[-c,0], max[c,0]]^2.2
             else
                 [1,1,1],
         bbox : [[-inf,-inf,0],[inf,inf,0]],
         is_2d : true,
         is_3d : shape.is_3d,
     };
-    in if (shape.is_2d) xy else union(shape, xy);
+    in if (shape.is_2d) xy else union[shape, xy];
 
 show_axes shape =
     let eps = .05;
     in if (shape.is_2d)
         union [
             shape,
-            rect(eps, inf) >> colour green,
-            rect(inf, eps) >> colour red,
+            rect[eps, inf] >> colour green,
+            rect[inf, eps] >> colour red,
         ]
     else
         union [
             shape,
-            box(inf, eps, eps) >> colour red,
-            box(eps, inf, eps) >> colour green,
-            box(eps, eps, inf) >> colour blue,
+            box[inf, eps, eps] >> colour red,
+            box[eps, inf, eps] >> colour green,
+            box[eps, eps, inf] >> colour blue,
         ];
 
 set_bbox (bbox :: is_bbox3) shape = {...shape; bbox: bbox};
@@ -1638,21 +1638,21 @@ set_bbox (bbox :: is_bbox3) shape = {...shape; bbox: bbox};
 show_bbox shape =
     let bb =
         if (shape.is_2d)
-            rect(shape.bbox[MIN,[X,Y]],shape.bbox[MAX,[X,Y]])
+            rect[shape.bbox[MIN,[X,Y]],shape.bbox[MAX,[X,Y]]]
         else
-            box(shape.bbox[MIN],shape.bbox[MAX]);
-    in union(
+            box[shape.bbox[MIN],shape.bbox[MAX]];
+    in union[
         bb >> colour (sRGB.grey .2),
         shape `difference` bb >> colour red,
         shape >> colour green `intersection` bb,
-    );
+    ];
 
 /// VALUE PICKERS ///
-slider(lo,hi) =
+slider[lo,hi] =
   { call = is_num;
     picker = {slider:[lo,hi]};
   };
-int_slider(lo,hi) =
+int_slider[lo,hi] =
   { call = is_num;
     picker = {int_slider:[lo,hi]};
   };

@@ -428,7 +428,7 @@ parse_pipeline(Scanner& scanner)
             auto pair = make<Comma_Phrase>();
             pair->args_.push_back({left, {}});
             pair->args_.push_back({right, {}});
-            auto arg = make<Paren_Phrase>(Token{}, pair, Token{});
+            auto arg = make<Bracket_Phrase>(Token{}, pair, Token{});
             left = make<Call_Phrase>(postfix, arg, tok, tok2);
             continue;
           }
