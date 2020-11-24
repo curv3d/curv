@@ -532,7 +532,7 @@ make_pattern(const Phrase& ph, Environ& env)
         }
         if (isa<Comma_Phrase>(parens->body_)) {
             env.analyser_.deprecate(
-                &File_Analyser::paren_list_deprecated_, 2,
+                &File_Analyser::paren_list_deprecated_, 1,
                 At_Phrase(ph, env),
                 "Pattern '(a,b,c)' is deprecated. Use '[a,b,c]' instead.");
             each_item(*parens->body_, [&](Phrase& item)->void {

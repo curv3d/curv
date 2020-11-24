@@ -1,15 +1,15 @@
 let
 r = 2;
 S = make_shape {
-    dist(x,y,z,t) = max(abs(x,y) - r);
+    dist[x,y,z,t] = max(abs[x,y] - r);
     is_2d = true;
 };
-x_axis = rect(inf,.05);
-y_axis = rect(.05,inf);
-axes = union(x_axis, y_axis);
+x_axis = rect[inf,.05];
+y_axis = rect[.05,inf];
+axes = union[x_axis, y_axis];
 
 in
-union(everything >> colour white,
-  S >> colour (1,.6,.6),
+union[everything >> colour white,
+  S >> colour [1,.6,.6],
   axes >> colour black
-)
+]

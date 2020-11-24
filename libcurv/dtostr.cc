@@ -3,6 +3,7 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/dtostr.h>
+#include <libcurv/num.h>
 #include <double-conversion/double-conversion.h>
 #include <cstring>
 #include <cmath>
@@ -79,7 +80,6 @@ void dtostr(double n, char* buf, dfmt::style style)
     //    Eg, "0.0001", not "1e-4".
 
     // parameters for the algorithm, see above
-    constexpr double max_exact_int = 9007199254740992.0; /*2^53*/
     constexpr int max_leading_zeros = 3;
 
     // First, try to output in decimal format. If successful, return early.

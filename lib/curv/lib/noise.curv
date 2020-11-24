@@ -23,7 +23,7 @@ rand1x1 n = do
 
 rand2x1 xy = do
     // after Alexis Naveros
-    local (x,y) = float_to_bool32 xy;
+    local [x,y] = float_to_bool32 xy;
     x := x `plus` (x `rshift` 11);
     x := x `xor` (x `lshift` 7);
     x := x `plus` y;
@@ -37,7 +37,7 @@ rand2x1 xy = do
 
 rand3x1 xyz = do
     // after Alexis Naveros
-    local (x,y,z) = float_to_bool32 xyz;
+    local [x,y,z] = float_to_bool32 xyz;
     x := x `plus` (x `rshift` 11);
     x := x `xor` (x `lshift` 7);
     x := x `plus` y;
@@ -51,9 +51,9 @@ rand3x1 xyz = do
     x := x `and` bits 0x007FFFFF `or` bits 0x3F800000;
     in bool32_to_float(x) - 1;
 
-rand4x1 (a,b,c,d) =
+rand4x1 [a,b,c,d] =
     // TODO: Optimize, in the style of rand3x1. Or using SIMD.
-    rand2x1(rand2x1(a,b),rand2x1(c,d));
+    rand2x1[rand2x1[a,b],rand2x1[c,d]];
 
 rand2x2 xy = do
     // Marc Olano, 2010, GPU Random Numbers via the Tiny Encryption Algorithm

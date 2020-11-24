@@ -427,7 +427,7 @@ TEST(curv, eval)
     //EXPECT_EQ(sconsole.str(), "1\n");
 
     // print action
-    SUCCESS("print \"$(17,42)\"", "");
+    SUCCESS("print \"$([17,42])\"", "");
     EXPECT_EQ(sconsole.str(), "[17,42]\n");
 
     // lexical errors

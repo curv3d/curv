@@ -862,7 +862,7 @@ Paren_Phrase::analyse(Environ& env, Interp terp) const
         return List_Expr::make(0, share(*this));
     }
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
-        env.analyser_.deprecate(&File_Analyser::paren_list_deprecated_, 2,
+        env.analyser_.deprecate(&File_Analyser::paren_list_deprecated_, 1,
             At_Phrase(*this, env),
             "'(a,b,c)' is deprecated. Use '[a,b,c]' instead.");
         auto& items = commas->args_;

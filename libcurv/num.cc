@@ -35,7 +35,7 @@ num_to_int(double num, int lo, int hi, const Context& cx)
 
 bool num_is_int(double num)
 {
-    if (std::isfinite(num)) {
+    if (std::abs(num) <= max_exact_int) {
         double intf;
         return modf(num, &intf) == 0.0;
     }

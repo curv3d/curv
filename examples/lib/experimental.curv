@@ -3,7 +3,7 @@
 // displace the boundaries of a shape using a 3D cosine wave
 cosine_warp shape =
     make_shape {
-        dist(x,y,z,t) = shape.dist(x,y,z,t) + cos x * cos y * cos z;
+        dist[x,y,z,t] = shape.dist[x,y,z,t] + cos x * cos y * cos z;
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
     };
@@ -11,21 +11,21 @@ cosine_warp shape =
 ripple shape =
     do assert(is_shape shape && shape.is_3d);
     in make_shape {
-        dist(x,y,z,t) =
-            let dz = cos(mag(x,y));
-            in shape.dist(x,y,z-dz,t);
-        bbox = [[shape.bbox[MIN,X], shape.bbox[MIN,Y], shape.bbox[MIN,Z]-1],
-                [shape.bbox[MAX,X], shape.bbox[MAX,Y], shape.bbox[MAX,Z]+1]];
+        dist[x,y,z,t] =
+            let dz = cos(mag[x,y]);
+            in shape.dist[x,y,z-dz,t];
+        bbox = [[shape.bbox@MIN@X, shape.bbox@MIN@Y, shape.bbox@MIN@Z-1],
+                [shape.bbox@MAX@X, shape.bbox@MAX@Y, shape.bbox@MAX@Z+1]];
         is_3d = true;
     };
 
 undulate shape =
     make_shape {
-        dist(x,y,z,t) =
+        dist[x,y,z,t] =
             let dx = cos y;
-            in shape.dist(x-dx,y,z,t);
-        bbox = [[shape.bbox[MIN,X]-1, shape.bbox[MIN,Y], shape.bbox[MIN,Z]],
-                [shape.bbox[MAX,X]+1, shape.bbox[MAX,Y], shape.bbox[MAX,Z]]];
+            in shape.dist[x-dx,y,z,t];
+        bbox = [[shape.bbox@MIN@X-1, shape.bbox@MIN@Y, shape.bbox@MIN@Z],
+                [shape.bbox@MAX@X+1, shape.bbox@MAX@Y, shape.bbox@MAX@Z]];
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
     };
@@ -33,15 +33,15 @@ undulate shape =
 pagoda shape =
     do assert(is_shape shape && shape.is_3d);
     in make_shape {
-        dist(x,y,z,t) =
+        dist[x,y,z,t] =
             let kz = cos z / 20 + 1;
-            in shape.dist(x/kz,y/kz,z,t)*kz;
-        bbox = [[shape.bbox[MIN,X]-1, shape.bbox[MIN,Y]-1, shape.bbox[MIN,Z]],
-                [shape.bbox[MAX,X]+1, shape.bbox[MAX,Y]+1, shape.bbox[MAX,Z]]];
+            in shape.dist[x/kz,y/kz,z,t]*kz;
+        bbox = [[shape.bbox@MIN@X-1, shape.bbox@MIN@Y-1, shape.bbox@MIN@Z],
+                [shape.bbox@MAX@X+1, shape.bbox@MAX@Y+1, shape.bbox@MAX@Z]];
         is_3d = true;
     };
 
-random xy = frac(sin(dot(xy, (12.9898,78.233)))*43758.5453123);
+random xy = frac(sin(dot[xy, [12.9898,78.233]])*43758.5453123);
 
 // Based on Morgan McGuire @morgan3d
 // https://www.shadertoy.com/view/4dS3Wd
@@ -51,15 +51,15 @@ noise xy =
 
         // Four corners in 2D of a tile
         a = random(i);
-        b = random(i + (1, 0));
-        c = random(i + (0, 1));
-        d = random(i + (1, 1));
+        b = random(i + [1, 0]);
+        c = random(i + [0, 1]);
+        d = random(i + [1, 1]);
 
         u = f * f * (3 - 2 * f);
 
-    in lerp(a, b, u[X]) + 
-        (c - a)* u[Y] * (1 - u[X]) + 
-        (d - b) * u[X] * u[Y];
+    in lerp[a, b, u@X] + 
+        (c - a)* u@Y * (1 - u@X) + 
+        (d - b) * u@X * u@Y;
 
 fbm xy =
     let shift = [100,100];
@@ -70,27 +70,27 @@ fbm xy =
     in do
         for (i in 1..5) (
             v := v + a * noise st;
-            st := cmul(rot, st) * 2 + shift;
+            st := cmul[rot, st] * 2 + shift;
             a := a * 0.5;
         );
     in v;
 
-smoke(x,y,z,t) =
-    let st = (x,y);
+smoke[x,y,z,t] =
+    let st = [x,y];
         q = [ fbm(st), fbm(st + 1) ];
         r = [ fbm(st + q + [1.7,9.2] + 0.150*t),
               fbm(st + q + [8.3,2.8] + 0.126*t) ];
         f = fbm(st + r);
-        c = lerp([0.101961,0.619608,0.666667],
+        c = lerp[[0.101961,0.619608,0.666667],
                  [0.666667,0.666667,0.498039],
-                 clamp((f*f)*4.0,0.0,1.0));
+                 clamp[(f*f)*4.0,0.0,1.0]];
     in do
-        c := lerp(c,
+        c := lerp[c,
                  [0,0,0.164706],
-                 clamp(mag q, 0, 1));
-        c := lerp(c,
+                 clamp[mag q, 0, 1]];
+        c := lerp[c,
                  [0.666667,1,1],
-                 clamp(r[X], 0, 1));
+                 clamp[r@X, 0, 1]];
     in (f*f*f+.6*f*f+.5*f)*c;
 
 } // EOF

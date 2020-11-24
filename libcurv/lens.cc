@@ -27,22 +27,38 @@ Value lens_get(Value source, Value lens, const At_Syntax& cx)
             throw Exception(cx, lens_error(lens, source, stringify(
                 "List index ",num," is not an integer")));
         }
-        auto list = source.maybe<List>();
-        if (list == nullptr) {
-            throw Exception(cx, lens_error(lens, source,
-                 "The lens (a list index) "
-                 "expects the source to be a list"));
+        if (auto list = source.maybe<List>()) {
+            if (list->empty()) {
+                throw Exception(cx, lens_error(lens, source,
+                    stringify("List index ",num," is out of range")));
+            }
+            if (num < 0.0 || num > double(list->size()-1)) {
+                throw Exception(cx, lens_error(lens, source,
+                    stringify("List index ",num,
+                        " is not in range 0..",list->size()-1)));
+            }
+            return list->at(size_t(num));
         }
-        if (list->empty()) {
-            throw Exception(cx, lens_error(lens, source,
-                stringify("List index ",num," is out of range")));
+        if (auto rx = source.maybe<Reactive_Value>()) {
+            if (rx->sctype_.is_list()) {
+                auto k = rx->sctype_.count();
+                if (num < 0.0 || num > double(k-1)) {
+                    throw Exception(cx, lens_error(lens, source,
+                        stringify("List index ",num,
+                            " is not in range 0..",k-1)));
+                }
+                return {make<Reactive_Expression>(
+                    rx->sctype_.elem_type(),
+                    make<Apply_Lens_Expr>(
+                        share(cx.syntax()),
+                        to_expr(source, cx.syntax()),
+                        to_expr(lens, cx.syntax())),
+                    cx)};
+            }
         }
-        if (num < 0.0 || num > double(list->size()-1)) {
-            throw Exception(cx, lens_error(lens, source,
-                stringify("List index ",num,
-                    " is not in range 0..",list->size()-1)));
-        }
-        return list->at(size_t(num));
+        throw Exception(cx, lens_error(lens, source,
+             "In source@lens, the lens is a list index, "
+             "but the source is not a list"));
     }
     else if (auto sym = maybe_symbol(lens)) {
         auto rec = source.maybe<const Record>();

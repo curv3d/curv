@@ -718,6 +718,14 @@ SC_Value Call_Expr::sc_eval(SC_Frame& f) const
     throw Exception(At_SC_Phrase(func_->syntax_, f),
         stringify("",val," is not an array or function"));
 }
+SC_Value Apply_Lens_Expr::sc_eval(SC_Frame& f) const
+{
+    SC_Value scval = sc_eval_op(f, *arg1_);
+    if (!scval.type.is_list())
+        throw Exception(At_SC_Phrase(arg1_->syntax_, f),
+            stringify("type ", scval.type, ": not an array"));
+    return sc_eval_index_expr(scval, *arg2_, f);
+}
 
 SC_Value Local_Data_Ref::sc_eval(SC_Frame& f) const
 {

@@ -1,28 +1,29 @@
 let
-    reflect(I,N) = I - 2.0 * dot(N, I) * N;
+    reflect [I,N] = I - 2.0 * dot[N, I] * N;
 in {
   ... cube;
   render: {
-    shader = {sf1(pos,nor,rd,col) =
-        let
-            ref = reflect( rd, nor );
-            lig = normalize(-0.4, 0.6, 0.7);
-            amb = clamp( 0.5+0.5*nor[Z], 0, 1 );
-            dif = clamp( dot( nor, lig ), 0, 1 );
-            bac = clamp( dot( nor, normalize(-lig[X],lig[Y],0)), 0, 1 )
-                * clamp(1-pos[Z], 0, 1);
-            dom = smoothstep( -0.1, 0.1, ref[Z] );
-            fre = clamp(1+dot(nor,rd), 0, 1) ^ 2;
-            spe = clamp(dot(ref, lig), 0, 1) ^ 16;
-            lin = 1.30*dif*(1.00,0.80,0.55)
-                + 2.00*spe*(1.00,0.90,0.70)*dif
-                + 0.40*amb*(0.40,0.60,1.00)
-                + 0.50*dom*(0.40,0.60,1.00)
-                + 0.50*bac*(0.35,0.35,0.35)
-                + 0.25*fre*(1.00,1.00,1.00);
-            iqcol = col * lin;
-        in
-            lerp(col, iqcol, 0.5);
+    shader = {
+        sf1 [pos,nor,rd,col] =
+            let
+                ref = reflect[rd, nor];
+                lig = normalize[-0.4, 0.6, 0.7];
+                amb = clamp[0.5 + 0.5*nor@Z, 0, 1];
+                dif = clamp[dot[nor, lig], 0, 1];
+                bac = clamp[dot[nor, normalize[-lig@X, lig@Y, 0]], 0, 1]
+                    * clamp[1-pos@Z, 0, 1];
+                dom = smoothstep[-0.1, 0.1, ref@Z];
+                fre = clamp[1+dot[nor,rd], 0, 1] ^ 2;
+                spe = clamp[dot[ref, lig], 0, 1] ^ 16;
+                lin = 1.30*dif*[1.00,0.80,0.55]
+                    + 2.00*spe*[1.00,0.90,0.70]*dif
+                    + 0.40*amb*[0.40,0.60,1.00]
+                    + 0.50*dom*[0.40,0.60,1.00]
+                    + 0.50*bac*[0.35,0.35,0.35]
+                    + 0.25*fre*[1.00,1.00,1.00];
+                iqcol = col * lin;
+            in
+                lerp[col, iqcol, 0.5];
     };
   };
 }

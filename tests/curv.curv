@@ -669,7 +669,7 @@ assert_error [
     |Lens: 0.5",
     {}@0.5 ];
 assert_error [
-    "The lens (a list index) expects the source to be a list
+    "In source@lens, the lens is a list index, but the source is not a list
     |Source: {}
     |Lens: 0",
     {}@0 ];
@@ -679,20 +679,20 @@ assert_error [
     |Lens: #foo",
     {}@#foo ];
 assert_error [
-    "List index 6.338253001141147e29 is not in range 0..2
+    "List index 9007199254740992 is not in range 0..2
     |Source: [1,2,3]
-    |Lens: 6.338253001141147e29",
-    [1,2,3]@(2^99) ];
+    |Lens: 9007199254740992",
+    [1,2,3]@(2^53) ];
 assert_error [
     "List index 0 is out of range
     |Source: []
     |Lens: 0",
     []@0 ];
 assert_error [
-    "List index 6.338253001141147e29 is out of range
+    "List index 9007199254740992 is out of range
     |Source: []
-    |Lens: 6.338253001141147e29",
-    []@(2^99) ];
+    |Lens: 9007199254740992",
+    []@(2^53) ];
 assert_error [
     "List index 3.141592653589793 is not an integer
     |Source: []

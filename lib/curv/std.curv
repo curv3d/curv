@@ -89,8 +89,8 @@ ensure pred (x :: pred) = x;
 // complex numbers: [RE,IM]
 RE=0;
 IM=1;
-cmul [z,w] = [z[RE]*w[RE] - z[IM]*w[IM], z[IM]*w[RE] + z[RE]*w[IM]];
-csqr z = [ z[RE]*z[RE] - z[IM]*z[IM], 2*z[RE]*z[IM] ];
+cmul [z,w] = [z@RE*w@RE - z@IM*w@IM, z@IM*w@RE + z@RE*w@IM];
+csqr z = [ z@RE*z@RE - z@IM*z@IM, 2*z@RE*z@IM ];
 
 ////////////////////
 // Linear Algebra //
@@ -98,7 +98,7 @@ csqr z = [ z[RE]*z[RE] - z[IM]*z[IM], 2*z[RE]*z[IM] ];
 is_vec2 x = is_list x && count x == 2 && is_num(x[0]) && is_num(x[1]);
 is_vec3 x = is_list x && count x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]);
 indices a = 0..<count a;
-cross[p,q] = [p[Y]*q[Z] - p[Z]*q[Y], p[Z]*q[X] - p[X]*q[Z], p[X]*q[Y] - p[Y]*q[X]];
+cross[p,q] = [p@Y*q@Z - p@Z*q@Y, p@Z*q@X - p@X*q@Z, p@X*q@Y - p@Y*q@X];
 idmatrix n = [for(i in 1..n) [for(j in 1..n) if(i==j) 1 else 0]];
 transpose a =
     if (a == []) a
@@ -139,7 +139,7 @@ is_shape x =
     defined(x.is_2d) && defined(x.is_3d) && defined(x.bbox)
     && defined(x.dist) && defined(x.colour);
 
-size shape = shape.bbox[MAX] - shape.bbox[MIN];
+size shape = shape.bbox@MAX - shape.bbox@MIN;
 
 MIN = 0;
 MAX = 1;
@@ -210,7 +210,7 @@ cone =
                         tip = q - [0, height];
                         mantleDir = normalize[height, radius];
                         mantle = dot[tip, mantleDir];
-                    in max[mantle, -q[Y]];
+                    in max[mantle, -q@Y];
                 bbox = [[-radius,-radius,0],[radius,radius,height]];
                 is_3d = true
             };
@@ -224,14 +224,14 @@ cone =
                         apex = q - [0, height];
                         mantleDir = normalize[height, radius];
                         mantle = dot[apex, mantleDir];
-                        projected = dot[apex, [mantleDir[Y], -mantleDir[X]]];
-                        d = max[mantle, -q[Y]];
+                        projected = dot[apex, [mantleDir@Y, -mantleDir@X]];
+                        d = max[mantle, -q@Y];
                     in do
                         // distance to apex
-                        if (q[Y] > height && projected < 0)
+                        if (q@Y > height && projected < 0)
                             d := max[d, mag(apex)];
                         // distance to base ring
-                        if (q[X] > radius && projected > mag[height, radius])
+                        if (q@X > radius && projected > mag[height, radius])
                             d := max[d, mag(q - [radius, 0])];
                     in d;
                 bbox = [[-radius,-radius,0],[radius,radius,height]];
@@ -245,7 +245,7 @@ capsule{d, from: a, to: b} =
         r = d / 2;
     in make_shape {
         dist p =
-            let pa = p[[X,Y,Z]] - a;
+            let pa = p@[X,Y,Z] - a;
                 h = clamp[dot[pa,ba] / dot[ba,ba], 0, 1];
             in mag(pa - ba*h) - r;
         bbox = [min[a-r,b-r], max[a+r,b+r]];
@@ -257,7 +257,7 @@ stroke{d, from: a, to: b} =
         ba = b - a;
     in make_shape {
         dist p =
-            let pa = p[[X,Y]] - a;
+            let pa = p@[X,Y] - a;
                 h = clamp[dot[pa,ba] / dot[ba,ba], 0, 1];
             in mag(pa - ba*h) - r;
         bbox = [[...min[a-r,b-r],0], [...max[a+r,b+r],0]];
@@ -277,12 +277,12 @@ perimeter_extrude perimeter cross_section =
     make_shape {
         dist[x,y,z,t] = cross_section.dist[ perimeter.dist[x,y,0,t], z, 0, t ];
         bbox = [
-            [ perimeter.bbox[MIN,X] - cross_section.bbox[MAX,X],
-              perimeter.bbox[MIN,Y] - cross_section.bbox[MAX,X],
-              cross_section.bbox[MIN,Y] ],
-            [ perimeter.bbox[MAX,X] + cross_section.bbox[MAX,X],
-              perimeter.bbox[MAX,Y] + cross_section.bbox[MAX,X],
-              cross_section.bbox[MAX,Y] ],
+            [ perimeter.bbox@MIN@X - cross_section.bbox@MAX@X,
+              perimeter.bbox@MIN@Y - cross_section.bbox@MAX@X,
+              cross_section.bbox@MIN@Y ],
+            [ perimeter.bbox@MAX@X + cross_section.bbox@MAX@X,
+              perimeter.bbox@MAX@Y + cross_section.bbox@MAX@X,
+              cross_section.bbox@MAX@Y ],
         ];
         is_3d = true;
     };
@@ -295,12 +295,12 @@ half_space =
     let impl[a,n] = // a is point on boundary, n is unit normal
         make_shape {
             dist[x,y,z,_] = dot[-n, a-[x,y,z]];
-            bbox = [ [ if (n[Y]==0 && n[Z]==0 && n[X]<0) a[X] else -inf,
-                       if (n[X]==0 && n[Z]==0 && n[Y]<0) a[Y] else -inf,
-                       if (n[X]==0 && n[Y]==0 && n[Z]<0) a[Z] else -inf, ],
-                     [ if (n[Y]==0 && n[Z]==0 && n[X]>0) a[X] else inf,
-                       if (n[X]==0 && n[Z]==0 && n[Y]>0) a[Y] else inf,
-                       if (n[X]==0 && n[Y]==0 && n[Z]>0) a[Z] else inf, ] ];
+            bbox = [ [ if (n@Y==0 && n@Z==0 && n@X<0) a@X else -inf,
+                       if (n@X==0 && n@Z==0 && n@Y<0) a@Y else -inf,
+                       if (n@X==0 && n@Y==0 && n@Z<0) a@Z else -inf, ],
+                     [ if (n@Y==0 && n@Z==0 && n@X>0) a@X else inf,
+                       if (n@X==0 && n@Z==0 && n@Y>0) a@Y else inf,
+                       if (n@X==0 && n@Y==0 && n@Z>0) a@Z else inf, ] ];
             is_3d = true;
         };
     in match [
@@ -313,11 +313,11 @@ half_plane =
     let impl[a,n] = // a is point on boundary, n is unit normal
         make_shape {
             dist[x,y,_,_] = dot[-n, a-[x,y]];
-            bbox = [ [ if (n[Y]==0 && n[X]<0) a[X] else -inf,
-                       if (n[X]==0 && n[Y]<0) a[Y] else -inf,
+            bbox = [ [ if (n@Y==0 && n@X<0) a@X else -inf,
+                       if (n@X==0 && n@Y<0) a@Y else -inf,
                        0, ],
-                     [ if (n[Y]==0 && n[X]>0) a[X] else inf,
-                       if (n[X]==0 && n[Y]>0) a[Y] else inf,
+                     [ if (n@Y==0 && n@X>0) a@X else inf,
+                       if (n@X==0 && n@Y>0) a@Y else inf,
                        0, ], ];
             is_2d = true;
         };
@@ -360,14 +360,14 @@ rect = {
             let r = b / 2;
             in make_shape {
                 dist[x,y,z,t] = max(abs[x,y] - r);
-                bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]];
+                bbox = [[-r@X,-r@Y,0],[r@X,r@Y,0]];
                 is_2d = true;
             };
         b :: is_bbox2 ->
-            let xmin = b[MIN,X];
-                ymin = b[MIN,Y];
-                xmax = b[MAX,X];
-                ymax = b[MAX,Y];
+            let xmin = b@MIN@X;
+                ymin = b@MIN@Y;
+                xmax = b@MAX@X;
+                ymax = b@MAX@Y;
             in intersection [
                 if (xmin > -inf) make_shape {
                     dist[x,y,z,t] = xmin - x;
@@ -401,12 +401,12 @@ rect = {
                 dist[x,y,z,t] =
                     let d = abs[x,y] - r;
                     in min[max d, 0] + mag(max[d,0]);
-                bbox = [[-r[X],-r[Y],0],[r[X],r[Y],0]];
+                bbox = [[-r@X,-r@Y,0],[r@X,r@Y,0]];
                 is_2d = true;
             };
         b :: is_bbox2 ->
-            let lo = b[MIN];
-                hi = b[MAX];
+            let lo = b@MIN;
+                hi = b@MAX;
                 outsideness[a,amin,amax] =
                     if (a < amin) amin - a
                     else if (a > amax) a - amax
@@ -414,8 +414,8 @@ rect = {
             in make_shape {
                 dist[x,y,z,t] =
                     let ind = max[max(lo-[x,y]), max([x,y]-hi)];
-                        outd = mag[outsideness[x,lo[X],hi[X]],
-                                   outsideness[y,lo[Y],hi[Y]]];
+                        outd = mag[outsideness[x,lo@X,hi@X],
+                                   outsideness[y,lo@Y,hi@Y]];
                     in if (ind <= 0) ind else outd;
                 bbox = [[...lo,0], [...hi,0]];
                 is_2d = true;
@@ -452,17 +452,17 @@ convex_polygon pts =
 polygon v = make_shape {
   dist p =
     do
-      local p = p[[X,Y]];
+      local p = p@[X,Y];
       local num = count v;
-      local d = dot[p-v[0],p-v[0]];
+      local d = dot[p-v@0, p-v@0];
       local s = 1;
       local j = num-1;
       for (i in 0..<num) (
-        local e = v[j] - v[i];
-        local w = p - v[i];
+        local e = v@j - v@i;
+        local w = p - v@i;
         local b = w - e*clamp[dot[w,e]/dot[e,e], 0, 1];
         d := min[d, dot[b,b]];
-        local cond = [p[Y]>=v[i,Y], p[Y]<v[j,Y], e[X]*w[Y]>e[Y]*w[X]];
+        local cond = [p@Y >= v@i@Y, p@Y < v@j@Y, e@X*w@Y > e@Y*w@X];
         if (and cond || and(not cond)) s := -s;
         j := i;
       );
@@ -482,8 +482,8 @@ box =
                     is_3d = true;
                 };
             b :: is_bbox3 ->
-                let lo = b[MIN];
-                    hi = b[MAX];
+                let lo = b@MIN;
+                    hi = b@MAX;
                 in make_shape {
                     dist[x,y,z,t] = max[max(lo-[x,y,z]), max([x,y,z]-hi)];
                     bbox = b;
@@ -503,8 +503,8 @@ box =
                     is_3d = true;
                 };
             b :: is_bbox3 ->
-                let lo = b[MIN];
-                    hi = b[MAX];
+                let lo = b@MIN;
+                    hi = b@MAX;
                     outsideness[a,amin,amax] =
                         if (a < amin) amin - a
                         else if (a > amax) a - amax
@@ -512,9 +512,9 @@ box =
                 in make_shape {
                     dist[x,y,z,t] =
                         let ind = max[max(lo-[x,y,z]), max([x,y,z]-hi)];
-                            outd = mag[outsideness[x,lo[X],hi[X]],
-                                       outsideness[y,lo[Y],hi[Y]],
-                                       outsideness[z,lo[Z],hi[Z]]];
+                            outd = mag[outsideness[x,lo@X,hi@X],
+                                       outsideness[y,lo@Y,hi@Y],
+                                       outsideness[z,lo@Z,hi@Z]];
                         in if (ind <= 0) ind else outd;
                     bbox = b;
                     is_3d = true;
@@ -562,10 +562,10 @@ tetrahedron =
             in make_shape {
                 dist p :
                     max [
-                        dot[p[[X,Y,Z]], n1],
-                        dot[p[[X,Y,Z]], n2],
-                        dot[p[[X,Y,Z]], n3],
-                        dot[p[[X,Y,Z]], n4],
+                        dot[p@[X,Y,Z], n1],
+                        dot[p@[X,Y,Z], n2],
+                        dot[p@[X,Y,Z], n3],
+                        dot[p@[X,Y,Z], n4],
                     ] - r,
                 is_3d : true,
                 bbox : sqrt(3) * [[-r,-r,-r], [r,r,r]],
@@ -627,10 +627,10 @@ octahedron =
             in make_shape {
                 dist p :
                     max [
-                        abs(dot[p[[X,Y,Z]], v0]),
-                        abs(dot[p[[X,Y,Z]], v1]),
-                        abs(dot[p[[X,Y,Z]], v2]),
-                        abs(dot[p[[X,Y,Z]], v3]),
+                        abs(dot[p@[X,Y,Z], v0]),
+                        abs(dot[p@[X,Y,Z], v1]),
+                        abs(dot[p@[X,Y,Z], v2]),
+                        abs(dot[p@[X,Y,Z], v3]),
                     ] - r,
                 is_3d : true,
                 bbox : circumratio * [[-r,-r,-r], [r,r,r]],
@@ -660,12 +660,12 @@ dodecahedron =
             in make_shape {
                 dist p :
                     max [
-                        abs(dot[p[[X,Y,Z]], v0]),
-                        abs(dot[p[[X,Y,Z]], v1]),
-                        abs(dot[p[[X,Y,Z]], v2]),
-                        abs(dot[p[[X,Y,Z]], v3]),
-                        abs(dot[p[[X,Y,Z]], v4]),
-                        abs(dot[p[[X,Y,Z]], v5]),
+                        abs(dot[p@[X,Y,Z], v0]),
+                        abs(dot[p@[X,Y,Z], v1]),
+                        abs(dot[p@[X,Y,Z], v2]),
+                        abs(dot[p@[X,Y,Z], v3]),
+                        abs(dot[p@[X,Y,Z], v4]),
+                        abs(dot[p@[X,Y,Z], v5]),
                     ] - r,
                 is_3d : true,
                 bbox : midratio * [[-r,-r,-r],[r,r,r]],
@@ -700,16 +700,16 @@ icosahedron =
             in make_shape {
                 dist p :
                     max [
-                        abs(dot[p[[X,Y,Z]], v0]),
-                        abs(dot[p[[X,Y,Z]], v1]),
-                        abs(dot[p[[X,Y,Z]], v2]),
-                        abs(dot[p[[X,Y,Z]], v3]),
-                        abs(dot[p[[X,Y,Z]], v4]),
-                        abs(dot[p[[X,Y,Z]], v5]),
-                        abs(dot[p[[X,Y,Z]], v6]),
-                        abs(dot[p[[X,Y,Z]], v7]),
-                        abs(dot[p[[X,Y,Z]], v8]),
-                        abs(dot[p[[X,Y,Z]], v9]),
+                        abs(dot[p@[X,Y,Z], v0]),
+                        abs(dot[p@[X,Y,Z], v1]),
+                        abs(dot[p@[X,Y,Z], v2]),
+                        abs(dot[p@[X,Y,Z], v3]),
+                        abs(dot[p@[X,Y,Z], v4]),
+                        abs(dot[p@[X,Y,Z], v5]),
+                        abs(dot[p@[X,Y,Z], v6]),
+                        abs(dot[p@[X,Y,Z], v7]),
+                        abs(dot[p@[X,Y,Z], v8]),
+                        abs(dot[p@[X,Y,Z], v9]),
                     ] - r,
                 is_3d : true,
                 bbox : midratio * [[-r,-r,-r], [r,r,r]],
@@ -753,7 +753,7 @@ _union2 [s1,s2] =
             let d1 = s1.dist p;
                 d2 = s2.dist p;
             in if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p,
-        bbox : [min[s1.bbox[MIN], s2.bbox[MIN]], max[s1.bbox[MAX], s2.bbox[MAX]]],
+        bbox : [min[s1.bbox@MIN, s2.bbox@MIN], max[s1.bbox@MAX, s2.bbox@MAX]],
         is_2d : s1.is_2d && s2.is_2d,
         is_3d : s1.is_3d && s2.is_3d,
     };
@@ -763,7 +763,7 @@ _intersection2 [s1,s2] =
     make_shape {
         dist p : max[s1.dist p, s2.dist p],
         colour : s1.colour,
-        bbox : [max[s1.bbox[MIN], s2.bbox[MIN]], min[s1.bbox[MAX], s2.bbox[MAX]]],
+        bbox : [max[s1.bbox@MIN, s2.bbox@MIN], min[s1.bbox@MAX, s2.bbox@MAX]],
         is_2d : s1.is_2d && s2.is_2d,
         is_3d : s1.is_3d && s2.is_3d,
     };
@@ -776,7 +776,7 @@ row = match [
     shapes -> row_impl[null, shapes];
 ] where (
     row_impl[d,shapes] =
-        let widths = [for (s in shapes) size s [X]];
+        let widths = [for (s in shapes) size s @X];
             gap = if (d==null) max widths / 4 else d;
             width = sum widths + (count shapes - 1)*gap;
             xdelta = [];
@@ -784,11 +784,11 @@ row = match [
             i = 0;
         in do 
             while (i < count shapes) (
-                xdelta := concat[xdelta, [x - shapes[i].bbox[MIN,X]]];
-                x := x + gap + size(shapes[i])[X];
+                xdelta := concat[xdelta, [x - shapes@i.bbox@MIN@X]];
+                x := x + gap + size(shapes@i)@X;
                 i := i + 1;
             );
-        in union[for (i in 0..<count shapes) shapes[i] >> move[xdelta[i],0,0]];
+        in union[for (i in 0..<count shapes) shapes@i >> move[xdelta@i,0,0]];
 );
 
 smooth k = {
@@ -799,8 +799,8 @@ smooth k = {
                 let d1 = s1.dist p;
                     d2 = s2.dist p;
                 in if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p,
-            bbox : [ min[s1.bbox[MIN], s2.bbox[MIN]] - k/4,
-                     max[s1.bbox[MAX], s2.bbox[MAX]] + k/4 ],
+            bbox : [ min[s1.bbox@MIN, s2.bbox@MIN] - k/4,
+                     max[s1.bbox@MAX, s2.bbox@MAX] + k/4 ],
             is_2d : s1.is_2d && s2.is_2d,
             is_3d : s1.is_3d && s2.is_3d,
         };
@@ -809,8 +809,8 @@ smooth k = {
         make_shape {
             dist p : smooth_max[s1.dist p, s2.dist p, k],
             colour : s1.colour,
-            bbox : [ max[s1.bbox[MIN], s2.bbox[MIN]],
-                     min[s1.bbox[MAX], s2.bbox[MAX]] ],
+            bbox : [ max[s1.bbox@MIN, s2.bbox@MIN],
+                     min[s1.bbox@MAX, s2.bbox@MAX] ],
             is_2d : s1.is_2d && s2.is_2d,
             is_3d : s1.is_3d && s2.is_3d,
         };
@@ -841,8 +841,8 @@ chamfer r = {
                 let d1 = s1.dist p;
                     d2 = s2.dist p;
                 in if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p;
-            bbox = [ min[s1.bbox[MIN], s2.bbox[MIN]],
-                     max[s1.bbox[MAX], s2.bbox[MAX]] ];
+            bbox = [ min[s1.bbox@MIN, s2.bbox@MIN],
+                     max[s1.bbox@MAX, s2.bbox@MAX] ];
             is_2d = s1.is_2d && s2.is_2d;
             is_3d = s1.is_3d && s2.is_3d;
         };
@@ -854,8 +854,8 @@ chamfer r = {
                     b = s2.dist p;
                 in chamfer_max[a,b,r];
             colour = s1.colour;
-            bbox = [ max[s1.bbox[MIN], s2.bbox[MIN]],
-                     min[s1.bbox[MAX], s2.bbox[MAX]] ];
+            bbox = [ max[s1.bbox@MIN, s2.bbox@MIN],
+                     min[s1.bbox@MAX, s2.bbox@MAX] ];
             is_2d = s1.is_2d && s2.is_2d;
             is_3d = s1.is_3d && s2.is_3d;
         };
@@ -874,15 +874,15 @@ chamfer r = {
 
 move = translate;
 translate _delta shape =
-    let delta = if (count _delta == 2) [_delta[X],_delta[Y],0] else _delta;
+    let delta = if (count _delta == 2) [_delta@X,_delta@Y,0] else _delta;
     in do
-        if (shape.is_2d) assert(delta[Z] == 0);
+        if (shape.is_2d) assert(delta@Z == 0);
     in make_shape {
         // TODO: dist[x,y,z,t] : shape.dist[...[x,y,z]-delta, t],
-        // TODO: dist p : shape.dist[...p[[X,Y,Z]]-delta, p[T]],
-        dist p : shape.dist[p[X]-delta[X], p[Y]-delta[Y], p[Z]-delta[Z], p[T]],
-        colour p : shape.colour[p[X]-delta[X],p[Y]-delta[Y],p[Z]-delta[Z],p[T]],
-        bbox : [shape.bbox[MIN]+delta, shape.bbox[MAX]+delta],
+        // TODO: dist p : shape.dist[...p@[X,Y,Z]-delta, p@T],
+        dist p : shape.dist[p@X-delta@X, p@Y-delta@Y, p@Z-delta@Z, p@T],
+        colour p : shape.colour[p@X-delta@X,p@Y-delta@Y,p@Z-delta@Z,p@T],
+        bbox : [shape.bbox@MIN+delta, shape.bbox@MAX+delta],
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
     };
@@ -890,10 +890,10 @@ translate _delta shape =
 // Isotropic scale operation, preserves structure of the distance field.
 scale (s :: is_num) shape =
     make_shape {
-        // TODO: dist p : shape.dist[...p[[X,Y,Z]] / s, p[T]] * s,
+        // TODO: dist p : shape.dist[...p@[X,Y,Z] / s, p@T] * s,
         dist[x,y,z,t] : shape.dist[x/s, y/s, z/s, t] * s,
         colour[x,y,z,t] : shape.colour[x/s, y/s, z/s, t],
-        bbox : [s*shape.bbox[MIN], s*shape.bbox[MAX]],
+        bbox : [s*shape.bbox@MIN, s*shape.bbox@MAX],
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
     };
@@ -904,64 +904,64 @@ stretch _s shape =
             else if (is_vec2 _s) [..._s, 1]
             else do assert(is_vec3(_s) && shape.is_3d) in _s;
     in make_shape {
-        // TODO: dist p : shape.dist[...p[[X,Y,Z]] / s, p[T]] * min(s),
-        dist[x,y,z,t] : shape.dist[x/s[X], y/s[Y], z/s[Z], t] * min(s),
-        colour[x,y,z,t] : shape.colour[x/s[X], y/s[Y], z/s[Z], t],
-        bbox : [s*shape.bbox[MIN], s*shape.bbox[MAX]],
+        // TODO: dist p : shape.dist[...p@[X,Y,Z] / s, p@T] * min(s),
+        dist[x,y,z,t] : shape.dist[x/s@X, y/s@Y, z/s@Z, t] * min(s),
+        colour[x,y,z,t] : shape.colour[x/s@X, y/s@Y, z/s@Z, t],
+        bbox : [s*shape.bbox@MIN, s*shape.bbox@MAX],
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
     };
 
 warp_domain_xy warp shape =
     let bv = map (warp.function) [
-            [shape.bbox[MIN,X], shape.bbox[MIN,Y]],
-            [shape.bbox[MAX,X], shape.bbox[MIN,Y]],
-            [shape.bbox[MAX,X], shape.bbox[MAX,Y]],
-            [shape.bbox[MIN,X], shape.bbox[MAX,Y]],
+            [shape.bbox@MIN@X, shape.bbox@MIN@Y],
+            [shape.bbox@MAX@X, shape.bbox@MIN@Y],
+            [shape.bbox@MAX@X, shape.bbox@MAX@Y],
+            [shape.bbox@MIN@X, shape.bbox@MAX@Y],
         ];
     in make_shape {
         dist[x,y,z,t] =
             let p = warp.inverse[x,y];
-            in warp.fix_distance[x,y,shape.dist[p[X], p[Y], z, t]];
+            in warp.fix_distance[x,y,shape.dist[p@X, p@Y, z, t]];
         colour[x,y,z,t] =
             let p = warp.inverse[x,y];
-            in shape.colour[p[X], p[Y], z, t];
+            in shape.colour[p@X, p@Y, z, t];
         bbox = [
-            [ ...min bv, shape.bbox[MIN,Z] ],
-            [ ...max bv, shape.bbox[MAX,Z] ],
+            [ ...min bv, shape.bbox@MIN@Z ],
+            [ ...max bv, shape.bbox@MAX@Z ],
         ];
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
     };
 
 // rotate angle shape -- 2D rotation around the Z axis
-// rotate [angle,axis] shape -- 3D rotation around specified axis
+// rotate {angle=,axis=} shape -- 3D rotation around specified axis
 rotate arg shape =
     arg >> match [
     a :: is_num ->
         let // 2D rotation around the Z axis
             rot2[a,p] = cmul[p, cis a];
-            b = if (shape.bbox[MIN,X] == -inf || shape.bbox[MIN,Y] == -inf
-                    || shape.bbox[MAX,X] == inf || shape.bbox[MAX,Y] == inf)
+            b = if (shape.bbox@MIN@X == -inf || shape.bbox@MIN@Y == -inf
+                    || shape.bbox@MAX@X == inf || shape.bbox@MAX@Y == inf)
                 [[-inf,-inf], [inf,inf]]
             else
                 let bv = map (p->rot2[a,p]) [
-                        [shape.bbox[MIN,X], shape.bbox[MIN,Y]],
-                        [shape.bbox[MAX,X], shape.bbox[MIN,Y]],
-                        [shape.bbox[MAX,X], shape.bbox[MAX,Y]],
-                        [shape.bbox[MIN,X], shape.bbox[MAX,Y]],
+                        [shape.bbox@MIN@X, shape.bbox@MIN@Y],
+                        [shape.bbox@MAX@X, shape.bbox@MIN@Y],
+                        [shape.bbox@MAX@X, shape.bbox@MAX@Y],
+                        [shape.bbox@MIN@X, shape.bbox@MAX@Y],
                     ];
                 in [min bv, max bv];
         in make_shape {
             dist[x,y,z,t] :
                 let xy = rot2[-a,[x,y]];
-                in shape.dist[xy[X],xy[Y],z,t],
+                in shape.dist[xy@X,xy@Y,z,t],
             colour[x,y,z,t] :
                 let xy = rot2[-a,[x,y]];
-                in shape.colour[xy[X],xy[Y],z,t],
+                in shape.colour[xy@X,xy@Y,z,t],
             bbox : [
-                [ b[MIN,X], b[MIN,Y], shape.bbox[MIN,Z] ],
-                [ b[MAX,X], b[MAX,Y], shape.bbox[MAX,Z] ],
+                [ b@MIN@X, b@MIN@Y, shape.bbox@MIN@Z ],
+                [ b@MAX@X, b@MAX@Y, shape.bbox@MAX@Z ],
             ],
             is_2d : shape.is_2d,
             is_3d : shape.is_3d,
@@ -975,33 +975,33 @@ rotate arg shape =
                     p * cos(a)
                     - cross[axis, p] * sin(a)
                     + axis * dot[axis, p * (1 - cos a)];
-            b = if (shape.bbox[MIN,X] == -inf || shape.bbox[MIN,Y] == -inf
-                    || shape.bbox[MIN,Z] == -inf
-                    || shape.bbox[MAX,X] == inf || shape.bbox[MAX,Y] == inf
-                    || shape.bbox[MAX,Z] == inf
+            b = if (shape.bbox@MIN@X == -inf || shape.bbox@MIN@Y == -inf
+                    || shape.bbox@MIN@Z == -inf
+                    || shape.bbox@MAX@X == inf || shape.bbox@MAX@Y == inf
+                    || shape.bbox@MAX@Z == inf
                 )
                     shape.bbox
                 else
                     let bb = shape.bbox;
                         bv = map (p->rot3[-angle,axis,p]) [
-                            [bb[MIN,X], bb[MIN,Y], bb[MIN,Z]],
-                            [bb[MAX,X], bb[MIN,Y], bb[MIN,Z]],
-                            [bb[MAX,X], bb[MAX,Y], bb[MIN,Z]],
-                            [bb[MIN,X], bb[MAX,Y], bb[MIN,Z]],
-                            [bb[MIN,X], bb[MIN,Y], bb[MAX,Z]],
-                            [bb[MAX,X], bb[MIN,Y], bb[MAX,Z]],
-                            [bb[MAX,X], bb[MAX,Y], bb[MAX,Z]],
-                            [bb[MIN,X], bb[MAX,Y], bb[MAX,Z]],
+                            [bb@MIN@X, bb@MIN@Y, bb@MIN@Z],
+                            [bb@MAX@X, bb@MIN@Y, bb@MIN@Z],
+                            [bb@MAX@X, bb@MAX@Y, bb@MIN@Z],
+                            [bb@MIN@X, bb@MAX@Y, bb@MIN@Z],
+                            [bb@MIN@X, bb@MIN@Y, bb@MAX@Z],
+                            [bb@MAX@X, bb@MIN@Y, bb@MAX@Z],
+                            [bb@MAX@X, bb@MAX@Y, bb@MAX@Z],
+                            [bb@MIN@X, bb@MAX@Y, bb@MAX@Z],
                         ];
                     in [ min bv, max bv ];
         in make_shape {
-            //TODO: dist p : shape.dist[...rot3[angle,axis,p[[X,Y,Z]]],p[T]],
+            //TODO: dist p : shape.dist[...rot3[angle,axis,p@[X,Y,Z]],p@T],
             dist[x,y,z,t] :
                 let q = rot3[angle, axis, [x,y,z]];
-                in shape.dist[q[X],q[Y],q[Z],t],
+                in shape.dist[q@X,q@Y,q@Z,t],
             colour[x,y,z,t] :
                 let q = rot3[angle, axis, [x,y,z]];
-                in shape.colour[q[X],q[Y],q[Z],t],
+                in shape.colour[q@X,q@Y,q@Z,t],
             bbox : b,
             is_3d : true,
         };
@@ -1012,8 +1012,8 @@ reflect_x shape =
         dist[x,y,z,t] = shape.dist[-x,y,z,t];
         colour[x,y,z,t] = shape.colour[-x,y,z,t];
         bbox = [
-            [-shape.bbox[MAX,X], shape.bbox[MIN,Y], shape.bbox[MIN,Z]],
-            [-shape.bbox[MIN,X], shape.bbox[MAX,Y], shape.bbox[MAX,Z]],
+            [-shape.bbox@MAX@X, shape.bbox@MIN@Y, shape.bbox@MIN@Z],
+            [-shape.bbox@MIN@X, shape.bbox@MAX@Y, shape.bbox@MAX@Z],
         ];
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
@@ -1023,8 +1023,8 @@ reflect_y shape =
         dist[x,y,z,t] = shape.dist[x,-y,z,t];
         colour[x,y,z,t] = shape.colour[x,-y,z,t];
         bbox = [
-            [shape.bbox[MIN,X], -shape.bbox[MAX,Y], shape.bbox[MIN,Z]],
-            [shape.bbox[MAX,X], -shape.bbox[MIN,Y], shape.bbox[MAX,Z]],
+            [shape.bbox@MIN@X, -shape.bbox@MAX@Y, shape.bbox@MIN@Z],
+            [shape.bbox@MAX@X, -shape.bbox@MIN@Y, shape.bbox@MAX@Z],
         ];
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
@@ -1035,8 +1035,8 @@ reflect_z shape =
         dist[x,y,z,t] = shape.dist[x,y,-z,t];
         colour[x,y,z,t] = shape.colour[x,y,-z,t];
         bbox = [
-            [shape.bbox[MIN,X], shape.bbox[MIN,Y], -shape.bbox[MAX,Z]],
-            [shape.bbox[MAX,X], shape.bbox[MAX,Y], -shape.bbox[MIN,Z]],
+            [shape.bbox@MIN@X, shape.bbox@MIN@Y, -shape.bbox@MAX@Z],
+            [shape.bbox@MAX@X, shape.bbox@MAX@Y, -shape.bbox@MIN@Z],
         ];
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
@@ -1046,8 +1046,8 @@ reflect_xy shape = // reflect shape across plane X=Y
         dist[x,y,z,t] = shape.dist[y,x,z,t];
         colour[x,y,z,t] = shape.colour[y,x,z,t];
         bbox = [
-            [shape.bbox[MIN,Y], shape.bbox[MIN,X], shape.bbox[MIN,Z]],
-            [shape.bbox[MAX,Y], shape.bbox[MAX,X], shape.bbox[MAX,Z]],
+            [shape.bbox@MIN@Y, shape.bbox@MIN@X, shape.bbox@MIN@Z],
+            [shape.bbox@MAX@Y, shape.bbox@MAX@X, shape.bbox@MAX@Z],
         ];
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
@@ -1058,8 +1058,8 @@ reflect_xz shape = // reflect shape across plane X=Z
         dist[x,y,z,t] = shape.dist[z,y,x,t];
         colour[x,y,z,t] = shape.colour[z,y,x,t];
         bbox = [
-            [shape.bbox[MIN,Z], shape.bbox[MIN,Y], shape.bbox[MIN,X]],
-            [shape.bbox[MAX,Z], shape.bbox[MAX,Y], shape.bbox[MAX,X]],
+            [shape.bbox@MIN@Z, shape.bbox@MIN@Y, shape.bbox@MIN@X],
+            [shape.bbox@MAX@Z, shape.bbox@MAX@Y, shape.bbox@MAX@X],
         ];
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
@@ -1070,8 +1070,8 @@ reflect_yz shape = // reflect shape across plane Y=Z
         dist[x,y,z,t] = shape.dist[x,z,y,t];
         colour[x,y,z,t] = shape.colour[x,z,y,t];
         bbox = [
-            [shape.bbox[MIN,X], shape.bbox[MIN,Z], shape.bbox[MIN,Y]],
-            [shape.bbox[MAX,X], shape.bbox[MAX,Z], shape.bbox[MAX,Y]],
+            [shape.bbox@MIN@X, shape.bbox@MIN@Z, shape.bbox@MIN@Y],
+            [shape.bbox@MAX@X, shape.bbox@MAX@Z, shape.bbox@MAX@Y],
         ];
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
@@ -1156,7 +1156,7 @@ swirl{strength, d} shape =
             let m = mag[x,y];
                 phi = strength * e^(-m/r) + phase[x,y];
                 xy = m * cis phi;
-            in [xy[X],xy[Y],z,t];
+            in [xy@X,xy@Y,z,t];
     in make_shape {
         dist p = shape.dist(f p);
         colour p = shape.colour(f p);
@@ -1172,31 +1172,31 @@ at p t shape = shape >> move(-p) >> t >> move p;
 slice = slice_xy;
 slice_xy shape =
     make_shape {
-        dist p : shape.dist[p[X],p[Y],0,p[T]],
-        colour p : shape.colour[p[X],p[Y],0,p[T]],
+        dist p : shape.dist[p@X,p@Y,0,p@T],
+        colour p : shape.colour[p@X,p@Y,0,p@T],
         bbox : [
-            [shape.bbox[MIN,X],shape.bbox[MIN,Y],0],
-            [shape.bbox[MAX,X],shape.bbox[MAX,Y],0],
+            [shape.bbox@MIN@X, shape.bbox@MIN@Y, 0],
+            [shape.bbox@MAX@X, shape.bbox@MAX@Y, 0],
         ],
         is_2d : true,
     };
 slice_xz shape =
     make_shape {
-        dist p : shape.dist[p[X],0,p[Y],p[T]],
-        colour p : shape.colour[p[X],0,p[Y],p[T]],
+        dist p : shape.dist[p@X,0,p@Y,p@T],
+        colour p : shape.colour[p@X,0,p@Y,p@T],
         bbox : [
-            [shape.bbox[MIN,X],shape.bbox[MIN,Z],0],
-            [shape.bbox[MAX,X],shape.bbox[MAX,Z],0],
+            [shape.bbox@MIN@X, shape.bbox@MIN@Z, 0],
+            [shape.bbox@MAX@X, shape.bbox@MAX@Z, 0],
         ],
         is_2d : true,
     };
 slice_yz shape =
     make_shape {
-        dist p : shape.dist[0,p[X],p[Y],p[T]],
-        colour p : shape.colour[0,p[X],p[Y],p[T]],
+        dist p : shape.dist[0,p@X,p@Y,p@T],
+        colour p : shape.colour[0,p@X,p@Y,p@T],
         bbox : [
-            [shape.bbox[MIN,Y],shape.bbox[MIN,Z],0],
-            [shape.bbox[MAX,Y],shape.bbox[MAX,Z],0],
+            [shape.bbox@MIN@Y, shape.bbox@MIN@Z, 0],
+            [shape.bbox@MAX@Y, shape.bbox@MAX@Z, 0],
         ],
         is_2d : true,
     };
@@ -1213,11 +1213,11 @@ extrude = {
     mitred d shape =
         let h = d / 2;
         in make_shape {
-            dist p : max[abs(p[Z]) - h, shape.dist[p[X],p[Y],0,p[T]]],
-            colour p : shape.colour[p[X],p[Y],0,p[T]],
+            dist p : max[abs(p@Z) - h, shape.dist[p@X,p@Y,0,p@T]],
+            colour p : shape.colour[p@X,p@Y,0,p@T],
             bbox : [
-                [shape.bbox[MIN,X],shape.bbox[MIN,Y],-h],
-                [shape.bbox[MAX,X],shape.bbox[MAX,Y],+h],
+                [shape.bbox@MIN@X, shape.bbox@MIN@Y, -h],
+                [shape.bbox@MAX@X, shape.bbox@MAX@Y, +h],
             ],
             is_3d : true,
         };
@@ -1225,13 +1225,13 @@ extrude = {
         let h = d / 2;
         in make_shape {
             dist p :
-                let dz = abs(p[Z]) - h;
-                    dxy = shape.dist[p[X],p[Y],0,p[T]];
+                let dz = abs(p@Z) - h;
+                    dxy = shape.dist[p@X,p@Y,0,p@T];
                 in mag(max[[dz,dxy],0]) + min[max[dz,dxy], 0],
-            colour p : shape.colour[p[X],p[Y],0,p[T]],
+            colour p : shape.colour[p@X,p@Y,0,p@T],
             bbox : [
-                [shape.bbox[MIN,X],shape.bbox[MIN,Y],-h],
-                [shape.bbox[MAX,X],shape.bbox[MAX,Y],+h],
+                [shape.bbox@MIN@X, shape.bbox@MIN@Y, -h],
+                [shape.bbox@MAX@X, shape.bbox@MAX@Y, +h],
             ],
             is_3d : true,
         };
@@ -1266,8 +1266,8 @@ repeat_x d shape =
         dist[x,y,z,t] : shape.dist[mod[x + r, d] - r, y, z, t],
         colour[x,y,z,t] : shape.colour[mod[x + r, d] - r, y, z, t],
         bbox : [
-            [-inf, shape.bbox[MIN,Y], shape.bbox[MIN,Z]],
-            [+inf, shape.bbox[MAX,Y], shape.bbox[MAX,Z]],
+            [-inf, shape.bbox@MIN@Y, shape.bbox@MIN@Z],
+            [+inf, shape.bbox@MAX@Y, shape.bbox@MAX@Z],
         ],
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
@@ -1278,17 +1278,17 @@ repeat_xy d shape =
     in make_shape {
         dist[x,y,z,t] =
             shape.dist[
-                mod[x + r[X], 2*r[X]] - r[X],
-                mod[y + r[Y], 2*r[Y]] - r[Y],
+                mod[x + r@X, 2*r@X] - r@X,
+                mod[y + r@Y, 2*r@Y] - r@Y,
                 z, t];
         colour[x,y,z,t] =
             shape.colour[
-                mod[x + r[X], 2*r[X]] - r[X],
-                mod[y + r[Y], 2*r[Y]] - r[Y],
+                mod[x + r@X, 2*r@X] - r@X,
+                mod[y + r@Y, 2*r@Y] - r@Y,
                 z, t];
         bbox = [
-            [-inf, -inf, shape.bbox[MIN,Z]],
-            [+inf, +inf, shape.bbox[MAX,Z]],
+            [-inf, -inf, shape.bbox@MIN@Z],
+            [+inf, +inf, shape.bbox@MAX@Z],
         ];
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
@@ -1299,15 +1299,15 @@ repeat_xyz d shape =
     in make_shape {
         dist [x,y,z,t] =
             shape.dist[
-                mod[x + r[X], 2*r[X]] - r[X],
-                mod[y + r[Y], 2*r[Y]] - r[Y],
-                mod[z + r[Z], 2*r[Z]] - r[Z],
+                mod[x + r@X, 2*r@X] - r@X,
+                mod[y + r@Y, 2*r@Y] - r@Y,
+                mod[z + r@Z, 2*r@Z] - r@Z,
                 t];
         colour [x,y,z,t] =
             shape.colour[
-                mod[x + r[X], 2*r[X]] - r[X],
-                mod[y + r[Y], 2*r[Y]] - r[Y],
-                mod[z + r[Z], 2*r[Z]] - r[Z],
+                mod[x + r@X, 2*r@X] - r@X,
+                mod[y + r@Y, 2*r@Y] - r@Y,
+                mod[z + r@Z, 2*r@Z] - r@Z,
                 t];
         bbox = [
             [-inf, -inf, -inf],
@@ -1322,8 +1322,8 @@ repeat_mirror_x shape =
         dist[x,y,z,t] : shape.dist[abs x, y, z, t],
         colour[x,y,z,t] : shape.colour[abs x, y, z, t],
         bbox : [
-            [-shape.bbox[MAX,X], shape.bbox[MIN,Y], shape.bbox[MIN,Z]],
-            shape.bbox[MAX],
+            [-shape.bbox@MAX@X, shape.bbox@MIN@Y, shape.bbox@MIN@Z],
+            shape.bbox@MAX,
         ],
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
@@ -1331,7 +1331,7 @@ repeat_mirror_x shape =
 
 repeat_radial reps shape =
     let angle = tau/reps;
-        inradius = -shape.bbox[MIN,Y];
+        inradius = -shape.bbox@MIN@Y;
         circumradius = inradius / cos(angle/2);
         max_x =
             if (mod[reps,4]==0)
@@ -1346,7 +1346,7 @@ repeat_radial reps shape =
                 r = mag[x,y];
                 a2 = mod[a,angle] - ashift;
                 xy = cis(a2) * r;
-            in [xy[X], xy[Y], z, t];
+            in [xy@X, xy@Y, z, t];
     in make_shape {
         dist p = shape.dist(f p);
         colour p = shape.colour(f p);
@@ -1354,10 +1354,10 @@ repeat_radial reps shape =
         bbox = [
             [ -max_x,
               -inradius,
-              shape.bbox[MIN,Z] ],
+              shape.bbox@MIN@Z ],
             [ max_x,
               if (mod[reps,2]==0) inradius else circumradius,
-              shape.bbox[MAX,Z] ]
+              shape.bbox@MAX@Z ]
         ];
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
@@ -1455,19 +1455,19 @@ gyroid =
 twist tr shape =
     let b = shape.bbox;
         r = max(map mag [
-                [b[MIN,X], b[MIN,Y]],
-                [b[MAX,X], b[MIN,Y]],
-                [b[MIN,X], b[MAX,Y]],
-                [b[MAX,X], b[MAX,Y]],
+                [b@MIN@X, b@MIN@Y],
+                [b@MAX@X, b@MIN@Y],
+                [b@MIN@X, b@MAX@Y],
+                [b@MAX@X, b@MAX@Y],
             ]);
     in make_shape {
         dist p :
-            let xy = cmul[p[[X,Y]], cis(p[Z]*-tr)];
-            in shape.dist[xy[X], xy[Y], p[Z], p[T]],
+            let xy = cmul[p@[X,Y], cis(p@Z*-tr)];
+            in shape.dist[xy@X, xy@Y, p@Z, p@T],
         colour p :
-            let xy = cmul[p[[X,Y]], cis(p[Z]*-tr)];
-            in shape.colour[xy[X], xy[Y], p[Z], p[T]],
-        bbox : [[-r,-r,b[MIN,Z]],[r,r,b[MAX,Z]]],
+            let xy = cmul[p@[X,Y], cis(p@Z*-tr)];
+            in shape.colour[xy@X, xy@Y, p@Z, p@T],
+        bbox : [[-r,-r,b@MIN@Z],[r,r,b@MAX@Z]],
         is_3d : true,
     };
 
@@ -1476,24 +1476,24 @@ twist tr shape =
 // The angle defaults to `tau`/`360*deg`.
 // TODO: bbox is larger than necessary.
 bend {d = null, angle: a = tau} shape =
-    let width = shape.bbox[MAX,X] - shape.bbox[MIN,X];
+    let width = shape.bbox@MAX@X - shape.bbox@MIN@X;
         rx = width / 2 / (a/tau);
         ry = if (d==null) width/tau else d/2;
         offset = [
-            (shape.bbox[MAX,X] + shape.bbox[MIN,X]) / 2,
-            shape.bbox[MAX,Y] + ry,
+            (shape.bbox@MAX@X + shape.bbox@MIN@X) / 2,
+            shape.bbox@MAX@Y + ry,
         ];
         f[x,y,z,t] =
-            let nx = (mod[phase[x,y]/pi+1.5,2]-1)*rx+offset[X];
-                ny = offset[Y] - mag[x,y];
+            let nx = (mod[phase[x,y]/pi+1.5,2]-1)*rx+offset@X;
+                ny = offset@Y - mag[x,y];
             in [nx,ny,z,t];
-        ymax = shape.bbox[MAX,Y] - shape.bbox[MIN,Y] + ry;
+        ymax = shape.bbox@MAX@Y - shape.bbox@MIN@Y + ry;
     in make_shape {
         dist p = shape.dist(f p);
         colour p = shape.colour(f p);
         bbox = [
-            [-ymax, -ymax, shape.bbox[MIN,Z]],
-            [+ymax, +ymax, shape.bbox[MAX,Z]],
+            [-ymax, -ymax, shape.bbox@MIN@Z],
+            [+ymax, +ymax, shape.bbox@MAX@Z],
         ];
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
@@ -1530,7 +1530,7 @@ offset r shape =
     make_shape {
         dist p : shape.dist p - r,
         colour p : shape.colour p,
-        bbox : [shape.bbox[MIN]-r, shape.bbox[MAX]+r],
+        bbox : [shape.bbox@MIN-r, shape.bbox@MAX+r],
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
     };
@@ -1544,7 +1544,7 @@ shell d shape =
     in make_shape {
         dist p : abs(shape.dist p) - r,
         colour : shape.colour,
-        bbox : [shape.bbox[MIN] - r, shape.bbox[MAX] + r],
+        bbox : [shape.bbox@MIN - r, shape.bbox@MAX + r],
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,
     };
@@ -1574,11 +1574,11 @@ show_gradient [j,k] shape =
         dist[x,y,z,t] : abs(z),
         colour p :
             let eps = 0.01;
-                d = shape.dist[p[X],p[Y],0,p[T]];
-                up = shape.dist[p[X],p[Y]+eps,0,p[T]];
-                down = shape.dist[p[X],p[Y]-eps,0,p[T]];
-                left = shape.dist[p[X]-eps,p[Y],0,p[T]];
-                right = shape.dist[p[X]+eps,p[Y],0,p[T]];
+                d = shape.dist[p@X,p@Y,0,p@T];
+                up = shape.dist[p@X,p@Y+eps,0,p@T];
+                down = shape.dist[p@X,p@Y-eps,0,p@T];
+                left = shape.dist[p@X-eps,p@Y,0,p@T];
+                right = shape.dist[p@X+eps,p@Y,0,p@T];
                 g = max[abs(d-up),abs(d-down),abs(d-left),abs(d-right)] / eps;
             in if (g <= j)
                 [0,0,0]
@@ -1596,10 +1596,10 @@ show_dist shape =
         colour p :
             let eps = 0.01;
                 d = shape.dist p;
-                up = shape.dist[p[X],p[Y]+eps,0,p[T]];
-                down = shape.dist[p[X],p[Y]-eps,0,p[T]];
-                left = shape.dist[p[X]-eps,p[Y],0,p[T]];
-                right = shape.dist[p[X]+eps,p[Y],0,p[T]];
+                up = shape.dist[p@X,p@Y+eps,0,p@T];
+                down = shape.dist[p@X,p@Y-eps,0,p@T];
+                left = shape.dist[p@X-eps,p@Y,0,p@T];
+                right = shape.dist[p@X+eps,p@Y,0,p@T];
                 g = max[abs(d-up),abs(d-down),abs(d-left),abs(d-right)] / eps;
                 c = if (d >= 0) ceil(d)-d else floor(d)-d;
             in if (d == d)
@@ -1638,9 +1638,9 @@ set_bbox (bbox :: is_bbox3) shape = {...shape; bbox: bbox};
 show_bbox shape =
     let bb =
         if (shape.is_2d)
-            rect[shape.bbox[MIN,[X,Y]],shape.bbox[MAX,[X,Y]]]
+            rect[shape.bbox@MIN@[X,Y], shape.bbox@MAX@[X,Y]]
         else
-            box[shape.bbox[MIN],shape.bbox[MAX]];
+            box[shape.bbox@MIN, shape.bbox@MAX];
     in union[
         bb >> colour (sRGB.grey .2),
         shape `difference` bb >> colour red,

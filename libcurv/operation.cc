@@ -23,6 +23,10 @@ void Call_Expr::print(std::ostream& out) const
 {
     out << *func_ << " " << *arg_;
 }
+void Apply_Lens_Expr::print(std::ostream& out) const
+{
+    out << *arg1_ << "@" << *arg2_;
+}
 void List_Expr_Base::print(std::ostream& out) const
 {
     out << "[";

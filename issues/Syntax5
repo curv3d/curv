@@ -1,0 +1,82 @@
+Syntax changes and standard coding style for Curv 0.5
+=====================================================
+* () as an empty list is deprecated, use [].
+* (a,b,c) as a list is deprecated, use [a,b,c].
+* array[index] will be deprecated; use array@index.
+* Consider adding the `func` keyword.
+* A curv-fmt program that enforces standardized spacing for expressions?
+  Thinking about good style, and how rigid the standard should be.
+* Definitions are separated by commas? Enforced by the style guide?
+  That means if you avoid the imperative dialect, then there are no semicolons.
+  ("Semicolon is the imperative sequencing operator.")
+  Currently, I am using semicolons for separators in 'big' constructs like a
+  top-level module, or a multi-line let.
+
+f[x,y] function call looks like array indexing, and is confusible
+with actual array indexing using the a[i,j] syntax.
+* Switch to the a@i@j array indexing syntax.
+  WAIT: Precedence of the @ operator is undecided. Finish Modular Programming.
+* Switch to Elm/Haskell coding style for function calls: `f [x,y]`
+  BUT: Consider the general syntax for postfix/term phrases.
+  Space before `.`? Space before `@`?
+* `f[x,y] = x + y` looks a lot like an assignment statement for updating
+  a matrix. Introduce the `func` keyword, which is needed anyway for
+  named functions bound to a combinator expression.
+    func f [x, y] = x + y
+  WAIT: Finish the Modular Programming design.
+
+## The Dot Operator
+On one hand, the current syntax uses equal precedence for the juxta operator
+and the dot operator. It is originally derived from C postfix expressions,
+where postfix.member and postfix[index] are chained, for traversing a data
+structure. It continues to make sense for Modular Programming, where a
+term (a traversal of the module tree) is a chain of .member and functor call
+expressions. It is also leveraged in the existing shape library API,
+in cases like
+    smooth 1 .union [s1, s2]
+
+If we combine the Elm/Haskell convention of always writing an explicit space
+between function and argument with chaining of juxta and dot operators,
+then `term .member` would be preferred coding style. And `term @lens`.
+
+BUT: There is an ancient and engrained tradition that you must always write
+`term.member` with no spaces. The dot is not seen as an infix operator: it
+is seen as part of the name.
+
+Functional languages (ML descendents):
+ * Haskell: `Module.member` vs `f . g`
+ * Elm: `record.member` vs `map .member recordlist`
+ * O'Caml: `f x` vs `record.member`
+In these languages, dot has higher precedence than juxta.
+
+C descendents:
+ * f(x) and record.member, same precedence, no spaces.
+
+Curv doesn't match either tradition. A suggestion for the curv format program:
+ * The juxta operator is written using a space.
+ * The at operator is preceded by a space. `m @x @y` is more legible
+   than `m@x@y`.
+ * Use a.b.c for terms containing dot operators but not juxta or at operators.
+ * In a term containing juxta or at operators, dot is preceded by space.
+     a.b.c
+     a .b .c @x q [w,z]
+
+Reality check: there needs to be a place to put spaces so that a long term
+can be broken up over multiple lines. That place is:
+    f x
+    record .member
+    source @lens
+To the extent that they make this impossible, Haskell and Elm are wrong.
+
+Whether the space should be mandatory is another issue.
+At this point, I'd consider giving the writer a choice over tight and loose
+style, and not force one style in the formatter.
+
+The Elm style seems too rigid. Why is
+    pi =
+        3.1416
+better than
+    pi = 3.1416
+? I prefer the latter, because it's short enough that the latter is clearer.
+If the definition is multi-line, only then do I switch to the Elm style of
+beginning the definiens on a new line.

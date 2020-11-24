@@ -413,8 +413,8 @@ struct Apply_Lens_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
-    //virtual SC_Value sc_eval(SC_Frame&) const override;
-    //virtual void print(std::ostream& out) const override;
+    virtual SC_Value sc_eval(SC_Frame&) const override;
+    virtual void print(std::ostream& out) const override;
 };
 struct Range_Expr : public Just_Expression
 {
