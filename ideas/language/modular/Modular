@@ -1,0 +1,205 @@
+Modular Programming
+===================
+Modular Programming is an approach to organizing the large scale
+structure of programs, quite different from Object Oriented Programming.
+
+The philosophy of modular programming was set out by Parnas in
+"On the Criteria To Be Used in Decomposing Systems into Modules", 1972.
+It was developed into a set of programming language features in Modula 2 (1980)
+which were perfected in the SML module system (1984). Curv reinterprets these
+ideas in the context of a dynamically typed, pure functional language, adding
+modular support for run-time polymorphism using a mechanism inspired by the
+Common Lisp Object System and Haskell.
+
+Niklaus Wirth, 1980. "Modula-2".
+https://www.modula2.org/downloads//wirth-modula2/Wirth_Modula2.pdf
+
+David B. MacQueen, 1984. "Modules for Standard ML."
+
+What is a module?
+-----------------
+A module `M` is a coherent set of named objects (functions, variables, types,
+and other modules). A module has an interface, which tells you how to use
+its members without being concerned with their implementation. The members
+of a module are referenced using dot notation: `M.x`.
+
+In modular programming, the criterion for decomposing a system into modules
+is *information hiding*. A module encapsulates a design decision, and hides
+the implementation of that design decision behind an abstract interface. There
+should be high cohesion within modules, and loose coupling between modules.
+
+What is information hiding?
+ * A module may have private members, which are visible to code inside the
+   module, but which are hidden to clients of the module.
+ * When a module exports a type T, the representation of T can be made
+   private, so that it is visible to code inside the module, but hidden to
+   clients of the module. Only operations on type T exported by the module
+   can be used to operate on values of type T. This is type abstraction.
+ * When a module exports another module M, the interface to M as seen by
+   clients of the module can be made more abstract, by hiding some members
+   of M, and making some types exported by M abstract.
+
+In SML, all of these kinds of information hiding are implemented by a single
+mechanism, Signatures.
+
+A Signature is the type of a module. It describes the interface
+exported by a module. Signatures allow us to separate the specification
+of a module from its implementation.
+
+A Signature is a list of declarations (name/type pairs). Types are handled
+specially. Within a signature,
+ * An opaque type declaration `type T` declares that the module exports an
+   abstract type T, hiding its representation.
+ * A transparent type declaration like `type T = int` declares that the
+   module exports a type T, revealing its representation.
+
+To hide information in a module, you declare the module
+with a signature ascription.
+
+Patterns of Use
+---------------
+Modules are a simple and powerful tool for structuring code,
+supporting a wide range of design patterns.
+
+In OOP, the type of an object (its class) is conflated with a module
+(also a class). This distorts the large scale organization of a system
+by inhibiting you from decomposing the system into modules in the most
+effective way, as described by Parnas.
+
+In Modular Programming, types and modules are distinct. A module that
+represents an abstract data type (an ADT module) exports a type together
+with a set of operations on that type. Inside the module, the operations
+have access to the type's internal representation, but that can be hidden
+from users of the module.
+
+In a pure functional language like Curv, an ADT module is a single-sorted
+algebra. We use Algebra Directed Design to design the operations, considering
+the algebraic laws that they obey. These algebraic laws are part of the
+interface or signature of a module, but I don't yet know how to formalize
+this. Conventional type systems don't help.
+
+A module can also implement two or more related data types, together with
+operations over those types. The implementations of these operations, inside
+the module, have access to the internal representation of each data type.
+This is a multi-sorted algebra, and even though this structure
+arises naturally in many situations, you can't naturally model it in OOP:
+a class cannot export multiple types, because a class *is* a single type.
+
+A system is organized as a collection of nested modules.
+Module names form a hierarchical namespace.
+ * In traditional compiled languages, with source code represented as text
+   files, modules are the unit of compilation.
+ * In modern languages with a package manager, a package (the unit of
+   software distribution over the internet) is a module combined with
+   package metadata.
+ * A curated database of popular packages, organized in a hierarchy,
+   is also a module. A package database doesn't use information hiding.
+   The intra-module cohesion comes from the curation, plus classifying
+   the packages hierarchically (each node in the classification hierarchy
+   is a module).
+
+Module Composition
+------------------
+You can compose modules with other modules to construct new modules.
+A *functor* is a function that takes module arguments, and returns
+another module. Since functors can be curried, a functor can also return
+another functor.
+
+Functors have echoes in the features of some popular OOP languages. C++
+has templates. Java has generics. However, note that in modular programming,
+functors are parameterized by modules, not types, and the result is a module,
+not a type. A functor that maps one or more ADT modules onto another ADT
+module is the analogue of a generic class or a generic type in other languages,
+but that is a special case of a more general mechanism.
+
+Missing Features
+----------------
+
+### Overloaded Functions
+
+The SML module system does not support overloaded generic functions
+(eg, as found in Haskell using type classes). What you can do instead
+is to put the generic function into a functor, which is parameterized
+by an ADT module describing the type of value being operated on.
+This is more verbose. It is also more flexible. However, the convenient syntax
+of type classes in Haskell is likely an important factor in Haskell's
+popularity relative to SML and its descendents.
+
+To use type classes in Haskell, you define a type class (which is basically
+the same as an ADT module signature), then you define instances of that
+type class specialized for different types (which are basically the same
+as ADT modules conforming to the signature). The extra feature in Haskell
+is that you can directly invoke functions defined in the type class,
+and the type system is used to infer which implementation to use.
+
+An SML style module system could be extended to support the behaviour of
+Haskell type classes, while still allowing the type class entity to be used
+as a signature, and while allowing the type class instance entities to be used
+as modules (because that would preserve the flexibility of modular programming
+that is missing in Haskell). I don't know of prior art.
+
+### Heterogenous Collections
+
+Although Haskell type classes support a form of run-time polymorphism,
+they do not support the ability to create an array of objects of heterogenous
+types, which all support the same protocol. This is something that is
+supported by OOP.
+
+In the past, this deficiency has been fixed by bolting a class-based OOP
+system onto a modular language. That is what Modula-3 did (as a successor
+to Modula-2), and that's what O'CAML did (as a successor to SML). I think
+that OOP is a poor fit to modular programming: I don't want to decide, for
+each user defined type, whether it should be implemented as a class (with the
+operations inside the value) or as an ADT module (with the operations outside
+the value). I want a *confluent* design for data abstraction, where similar
+requirements lead to similar solutions.
+
+### Recovering the Abstract Constructor
+
+In Haskell, a data declaration defines one or more constructor names for
+a concrete data type, where the internal representation is directly exposed
+to clients.
+
+Consider an abstract data type, with abstract constructors whose names and
+arguments do not mirror the internal representation. The requirement here
+is to support pattern matching on abstract constructors, and to serialize
+instances of the type using abstract constructor expressions.
+
+To do this, you need to be able to recover the abstract constructor expression
+from an instance of the type.
+
+Nominal Types
+-------------
+We need "nominal types" to hide the representation of a type.
+We need the ability to construct new types, so that an abstract type exported
+by a module is distinct from its representation.
+
+In some languages with nominal types, the compiler or runtime uses hidden state
+to generate a globally unique identifier for each nominal type definition. But,
+ * Generating a type identity using external state is a side effect, and
+   violates referential transparency.
+ * It breaks down in a distributed system where typed data is shared across
+   address spaces.
+For a more in depth analysis, see: "How the language got its spots",
+in "Systems Programming in Modula 3".
+
+The two issues are related: to fix the distributed semantics problem, we
+need referential transparency. We need to construct globally unique type names
+that are synchronized between different address spaces running programs
+compiled from the same source code. An abstract type identity must be
+constructed entirely from information derived from the source code, in a
+manner that is invariant to program transformations (ie, doesn't violate the
+algebra of programs).
+
+The general solution is: an abstract type identity is constructed from the
+type identity of the representation type, combined with a "brand", which is
+a type name supplied by the programmer. In a modular language, an obvious
+solution is to use the fully qualified module pathname of the type as the brand.
+
+Curv Module API
+---------------
+In Curv, unlike most modular languages, modules are first class values.
+Modules are records with extra structure,
+functors are functions with extra structure,
+and signatures are Record types with extra structure.
+

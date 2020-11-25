@@ -1,0 +1,135 @@
+Modular Data Abstraction
+========================
+Curv is primarily an instrument of human reason: a notation for communicating
+ideas. Which also happens to be executable.
+
+## algebra directed design
+An ADT is an algebra over a set of immutable values. The algebraic theory
+of an ADT specifies the syntax of constructors and operations, and specifies
+equational laws that give semantics to that syntax.
+
+## modular design
+The ADT framework is an extension of Modular Programming. Algebras are
+represented by modules, algebraic theories are represented by signatures.
+
+## type identity is referentially transparent
+
+## abstract values print as constructor expressions
+An ADT instance prints as a constructor expression.
+* Because this is higher level and easier to understand. A value is described
+  by the interface used to construct it, rather than by dumping the
+  internal representation, which might be a lot harder to understand.
+* Because this is abstract and representation independent.
+  These "printed representations" are used to persist a value and
+  reconstruct it later. The persistent representation is independent of
+  the internal representation, so it continues to work if the representation
+  changes.
+
+## primitive constructors
+The constructors that appear in these printed constructor expressions
+are called "primitive constructors". A "non-primitive constructor" is
+just a function that directly or indirectly calls a primitive constructor
+to construct an instance of a given ADT. Why not just call this a "function"?
+I guess because an algebraic theory can specify a constructor, and it doesn't
+have to be implemented as a primitive constructor.
+
+## pattern matching
+Pattern matching is supported for abstract values.
+You can pattern match on a primitive constructor.
+
+## confluent
+
+Concrete vs Abstract ADTs (Algebras and Theories)
+-------------------------------------------------
+A closed ADT, or concrete ADT, has a fixed set of primitive constructors,
+and a single internal representation. A concrete ADT is called an Algebra,
+and it is a kind of module, which is a first class value.
+
+Operations on an Algebra instance are functions, which are invoked using
+a function call: 'Module.fun arg'. Algebra instances appear as one or more
+arguments. This is quite different from the OOP syntax of 'sending a message
+to an object' or 'calling a member function'. Unlike OOP, there is no problem
+modelling binary operations.
+
+There's no problem defining new operations for an Algebra, as they are just
+functions. You don't have to modify the algebra's source code. These functions
+don't have to reside in the Algebra's module, they can be placed in other
+modules created by other authors. The syntax for invoking the operation does
+not change.
+
+An open ADT, or abstract ADT, allows new constructors to be added, and new
+operations to be defined. This solves the Expression Problem. An abstract ADT
+is called a Theory, and it is a kind of signature, which is a first class value.
+
+The values for a Theory are provided by one or more Algebras.
+
+A Theory may optionally specify a set of abstract constructors -- eg,
+construct the identity for a particular monoid operation. Each participating
+Algebra must implement these abstract constructors.
+
+The author of an Algebra can directly specify which Theories it implements,
+and provide implementations for those Theories inside the Algebra.
+However, an implementation of a Theory may be written for an existing Algebra
+without modifying the code for that Algebra. It's just another module.
+In fact, multiple implementations can be written, each with different names.
+However, if there are multiple implementations, then you have to specify which
+one you are using in a given context, eg by passing it as an explicit argument
+to a functor.
+
+Overloading
+-----------
+There are two ways to use a theory.
+ 1. You can directly invoke constructors and operations from an algebra
+    that implements the theory. To do this, you need to have access to
+    the module M containing the implementation, and you write M.ctor
+    or M.oper to invoke a given constructor or operation. This module could,
+    for example, be passed as an argument, so that your code is generic
+    across multiple implementations of the theory.
+ 2. The operations in a theory can be overloaded. You can call an overloaded
+    operation directly from the theory value (a signature), and this overloaded
+    function will dynamically dispatch to the appropriate implementation,
+    based on the argument types. The mechanics are similar to multiple
+    dispatch in generic functions in CLOS.
+    
+Overloading makes it possible to construct heterogenous collections of
+values from different Algebras that all implement the same Theory.
+
+Overloading doesn't give you direct access to abstract constructors,
+unlike the "generic function" case where you have an Algebra argument.
+You need a value first. Given a value (an instance of some Algebra, not
+known statically), and given a theory that the value's Algebra implements,
+you can access the Algebra value, and access constructors through that.
+But you need a value first, and that isn't always available. An example
+would be the overloaded generic 'max' function, which returns the maximum
+of a list of Ordered values. In the case of 'max[]', we would like to return
+the smallest value in the Algebra, if it exists, but we don't know which
+Algebra to use, because the argument list is empty. I think Haskell's type
+system handles this statically via type inference, but Curv doesn't because
+it works dynamically. On the other hand, Haskell cannot match Curv's support
+for heterogenous collections.
+
+With CLOS inspired overloading, there is a single global overloading map.
+
+In order to make overloading happen, you need to explicitly specify it,
+using an 'overload' declaration, that binds a specific Algebra to a specific
+Theory using a specific implementation, in the global overloading map.
+ * To avoid conflicts, this can only be done in the package that defines
+   the theory, or in the package that defines the algebra, and the same
+   Algebra/Theory binding can only occur once within a given package.
+ * To overcome this limitation, and overload from within a third party
+   package, you must define a wrapper algebra around an existing algebra,
+   which will have the same semantics but a different name and type identity.
+   This is similar to working with type classes in Haskell.
+
+Modular Overloading
+-------------------
+Are there alternatives to a global overloading map which are more local
+and/or more modular? Obviously the SML-derived functor programming style
+is modular and local, but...
+
+A topic for future research.
+* dynamic scoping in Haskell type classes
+* that Smalltalk module system
+* that Ruby module system
+* per-module tables something something in "Systems Programming with Modula-3",
+  "How the Language Got Its Spots", "Type Identity".
