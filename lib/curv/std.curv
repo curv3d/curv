@@ -49,11 +49,10 @@ reduce [zero, f] list =
     if (list == [])
         zero
     else
-        let
-            r = list[0];
-        in do
+        do
+            local r = list@0;
             for (i in 1..<count list)
-                r := f[r, list[i]];
+                r := f[r, list@i];
         in r;
 //sum = reduce[0, [x,y]->x+y];
 product = reduce[1, [x,y]->x*y];
@@ -61,16 +60,15 @@ sort a =
     if (a == [])
         []
     else
-        let first = a[0];
+        let first = a@0;
             rest = a[1..<count a];
         in [...sort[for (e in rest) if (e < first) e],
             first,
             ...sort[for (e in rest) if (e >= first) e]];
 contains [list, x] =
-    let
-        i = 0;
-    in do
-        while (i < count list && list[i] != x)
+    do
+        local i = 0;
+        while (i < count list && list@i != x)
             i := i + 1;
     in i < count list;
 
@@ -95,14 +93,14 @@ csqr z = [ z@RE*z@RE - z@IM*z@IM, 2*z@RE*z@IM ];
 ////////////////////
 // Linear Algebra //
 ////////////////////
-is_vec2 x = is_list x && count x == 2 && is_num(x[0]) && is_num(x[1]);
-is_vec3 x = is_list x && count x == 3 && is_num(x[0]) && is_num(x[1]) && is_num(x[2]);
+is_vec2 x = is_list x && count x == 2 && is_num(x@0) && is_num(x@1);
+is_vec3 x = is_list x && count x == 3 && is_num(x@0) && is_num(x@1) && is_num(x@2);
 indices a = 0..<count a;
 cross[p,q] = [p@Y*q@Z - p@Z*q@Y, p@Z*q@X - p@X*q@Z, p@X*q@Y - p@Y*q@X];
 idmatrix n = [for(i in 1..n) [for(j in 1..n) if(i==j) 1 else 0]];
 transpose a =
     if (a == []) a
-    else [for (i in indices(a[0])) [for (j in indices a) a[j,i]]];
+    else [for (i in indices(a@0)) [for (j in indices a) a@j@i]];
 normalize v = v / mag v;
 
 // convert phase angle to unit vector
@@ -277,12 +275,12 @@ perimeter_extrude perimeter cross_section =
     make_shape {
         dist[x,y,z,t] = cross_section.dist[ perimeter.dist[x,y,0,t], z, 0, t ];
         bbox = [
-            [ perimeter.bbox@MIN@X - cross_section.bbox@MAX@X,
-              perimeter.bbox@MIN@Y - cross_section.bbox@MAX@X,
-              cross_section.bbox@MIN@Y ],
-            [ perimeter.bbox@MAX@X + cross_section.bbox@MAX@X,
-              perimeter.bbox@MAX@Y + cross_section.bbox@MAX@X,
-              cross_section.bbox@MAX@Y ],
+            [ perimeter.bbox.[MIN,X] - cross_section.bbox.[MAX,X],
+              perimeter.bbox.[MIN,Y] - cross_section.bbox.[MAX,X],
+              cross_section.bbox.[MIN,Y] ],
+            [ perimeter.bbox.[MAX,X] + cross_section.bbox.[MAX,X],
+              perimeter.bbox.[MAX,Y] + cross_section.bbox.[MAX,X],
+              cross_section.bbox.[MAX,Y] ],
         ];
         is_3d = true;
     };
@@ -364,10 +362,10 @@ rect = {
                 is_2d = true;
             };
         b :: is_bbox2 ->
-            let xmin = b@MIN@X;
-                ymin = b@MIN@Y;
-                xmax = b@MAX@X;
-                ymax = b@MAX@Y;
+            let xmin = b.[MIN,X];
+                ymin = b.[MIN,Y];
+                xmax = b.[MAX,X];
+                ymax = b.[MAX,Y];
             in intersection [
                 if (xmin > -inf) make_shape {
                     dist[x,y,z,t] = xmin - x;
@@ -784,7 +782,7 @@ row = match [
             i = 0;
         in do 
             while (i < count shapes) (
-                xdelta := concat[xdelta, [x - shapes@i.bbox@MIN@X]];
+                xdelta := concat[xdelta, [x - shapes.[i].bbox.[MIN,X]]];
                 x := x + gap + size(shapes@i)@X;
                 i := i + 1;
             );
@@ -1396,9 +1394,9 @@ sRGB = {
     call c = c^2.2;
     hue h = HSV[h,1,1];
     grey i = call[i,i,i];
-    HSV c =
-        let m = abs(mod[c[0] + [1,2/3,1/3], 1] * 6 - 3);
-        in call(c[2] * lerp[1, clamp[m - 1, 0, 1], c[1]]);
+    HSV [h,s,v] =
+        let m = abs(mod[h + [1,2/3,1/3], 1] * 6 - 3);
+        in call(v * lerp[1, clamp[m - 1, 0, 1], s]);
 };
 
 webRGB[r,g,b] = sRGB[r/255, g/255, b/255];

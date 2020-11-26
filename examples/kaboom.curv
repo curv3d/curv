@@ -13,15 +13,15 @@ let
         let p = floor xyz;
             f = frac xyz;
             f2 = f*f*(3-2*f);
-            n = p[X] + p[Y]*57 + 113*p[Z];
+            n = p@X + p@Y*57 + 113*p@Z;
         in
-        lerp[lerp[lerp[hash(n+  0), hash(n+  1), f[X]],
-                  lerp[hash(n+ 57), hash(n+ 58), f[X]],
-                  f[Y]],
-             lerp[lerp[hash(n+113), hash(n+114), f[X]],
-                  lerp[hash(n+170), hash(n+171), f[X]],
-                  f[Y]],
-             f[Z]];
+        lerp[lerp[lerp[hash(n+  0), hash(n+  1), f@X],
+                  lerp[hash(n+ 57), hash(n+ 58), f@X],
+                  f@Y],
+             lerp[lerp[hash(n+113), hash(n+114), f@X],
+                  lerp[hash(n+170), hash(n+171), f@X],
+                  f@Y],
+             f@Z];
 
     rot v =
         [ dot[v, [0.0, 0.8, 0.6]],

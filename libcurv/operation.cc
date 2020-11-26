@@ -27,6 +27,10 @@ void Apply_Lens_Expr::print(std::ostream& out) const
 {
     out << *arg1_ << "@" << *arg2_;
 }
+void Slice_Expr::print(std::ostream& out) const
+{
+    out << *arg1_ << "." << *arg2_;
+}
 void List_Expr_Base::print(std::ostream& out) const
 {
     out << "[";

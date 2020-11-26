@@ -1,8 +1,22 @@
 Syntax changes and standard coding style for Curv 0.5
 =====================================================
-* () as an empty list is deprecated, use [].
-* (a,b,c) as a list is deprecated, use [a,b,c].
-* array[index] will be deprecated; use array@index.
+- () as an empty list is deprecated, use [].
+  It is incompatible with () as the empty statement.
+- (a,b,c) as a list is deprecated, use [a,b,c].
+  It is incompatible with (a,b,c) as a statement and , as a first class
+  expression sequencing operator.
+* slice operator: collection.[i,j,k]
+* deprecate array[i,j]; use array.[i,j] instead.
+  * This syntax is incompatible with lenses as functions,
+    because [lens1,lens2] is a lens.
+  * This syntax can't be used for lens application because it doesn't work
+    with records.
+  * The new syntax allows indexing a record with a symbol, replacing
+    the old record."string" syntax.
+* low precedence collection@index operator
+* deprecate record."string"; use record@symbol or record.[symbol] instead.
+* id:expr is sugar for [#id,expr].
+* Deprecate {"foo":1}. Use {[#foo, 1]} instead.
 * Consider adding the `func` keyword.
 * A curv-fmt program that enforces standardized spacing for expressions?
   Thinking about good style, and how rigid the standard should be.
@@ -13,7 +27,8 @@ Syntax changes and standard coding style for Curv 0.5
   top-level module, or a multi-line let.
 
 f[x,y] function call looks like array indexing, and is confusible
-with actual array indexing using the a[i,j] syntax.
+with actual array indexing using the a[i,j] syntax. a[i] array indexing
+is incompatible with lenses.
 * Switch to the a@i@j array indexing syntax.
   WAIT: Precedence of the @ operator is undecided. Finish Modular Programming.
 * Switch to Elm/Haskell coding style for function calls: `f [x,y]`
@@ -24,6 +39,64 @@ with actual array indexing using the a[i,j] syntax.
   named functions bound to a combinator expression.
     func f [x, y] = x + y
   WAIT: Finish the Modular Programming design.
+
+## @_@_ vs .[_,_]
+In many cases, a@i is more legible, in context, than a[i].
+I prefer p@[X,Y,Z] to p[[X,Y,Z]].
+
+However, there are some contexts where the syntax doesn't seem ideal.
+    bbox[MIN,X]        vs bbox@MIN@X
+                       vs bbox @MIN @X
+    array[p@Z+1,p@Z+2] vs array@(p@Z+1)@(p@Z+2)
+                       vs array @(p@Z+1) @(p@Z+2)
+I have elsewhere proposed to add the syntax
+    collection.[i,j]
+as a 'slice' syntax, equivalent to `collection@(slice[i,j])`.
+It works on both arrays and records. So, now consider:
+    bbox.[MIN,X]        vs bbox@MIN@X
+    array.[p@Z+1,p@Z+2] vs array@(p@Z+1)@(p@Z+2)
+                        vs array.[p.[Z]+1,p.[Z]+2]
+Note F# uses array.[i] for array indexing. It's the closest we can get to
+traditional syntax without conflicting with function calls.
+
+Adding two syntaxes for the same thing feels like going backwards, in a ways,
+since I am in the process of eliminating the dual syntax of (a,b) vs [a,b].
+In this latter case, (a,b) and [a,b] have the same legibility, but in the
+case of a.[i] vs a@i, I want to use a mix of both syntaxes to maximize
+readability. In the case of 'f x' vs 'x >> f', the need for both is crystal
+clear. Maybe this proposal is more like the two function call syntaxes.
+
+@ is terser and more chainable if the lens is an identifier or [...].
+Otherwise, if the lens is not a primary expression, it needs to be
+parenthesized, so now your choice is between a@(...) and a.[...].
+Both have the same legibility; a.[...] is slightly better. So the @ operator
+has a limited range of applicability.
+
+I could lower the precedence of @ so that @<term> needs no parens.
+(But higher precedence than arithmetic.)
+    foo @ slice[i,j,k]
+    include lib.foo @ just[#bar,#baz]
+And you use .[lens] inside a term.
+
+Now, when you are chaining with @ to traverse a data structure,
+you must use '@#foo' instead of '.foo'. I previously called this a weakness.
+Here's a chain from std.curv:
+    shapes@i.bbox@MIN@X
+Oops, that now must be rewritten as one of
+    shapes@i@#bbox@MIN@X
+    shapes.[i].bbox.[MIN,X]   <-- this is pretty good
+Okay, I prefer a.[i] for term chaining with .id
+
+I will document a.[i] in Lists and r.[k] in Records,
+and then document low-precedence @ in Collections & Lenses as a lens operator.
+The deprecation for a[i] will suggest a.[i] as replacement.
+
+Looking back at past proposals:
+ * collection@key, works for dictionaries as well (so 'key' is not a lens).
+   This conflicts with vec@[X,Y,Z] and collection@lens in general.
+   The Scalar Map proposal eliminates this problem.
+ * I have considered C@ as a curried form of C@K to convert a collection
+   to a function over key values. Eg, map(C@).
 
 ## The Dot Operator
 On one hand, the current syntax uses equal precedence for the juxta operator

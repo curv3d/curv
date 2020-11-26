@@ -7,33 +7,33 @@
 a_twist f shape =
     let b = shape.bbox;
         r = max(map mag [
-                [b[MIN,X], b[MIN,Y]],
-                [b[MAX,X], b[MIN,Y]],
-                [b[MIN,X], b[MAX,Y]],
-                [b[MAX,X], b[MAX,Y]],
+                [b.[MIN,X], b.[MIN,Y]],
+                [b.[MAX,X], b.[MIN,Y]],
+                [b.[MIN,X], b.[MAX,Y]],
+                [b.[MAX,X], b.[MAX,Y]],
             ]);
     in make_shape {
         dist [x,y,z,t] =
             let xy = cmul[[x,y], cis(z * -f t)];
-            in shape.dist[xy[X], xy[Y], z, t],
+            in shape.dist[xy@X, xy@Y, z, t],
         colour [x,y,z,t] =
             let xy = cmul[[x,y], cis(z * -f t)];
-            in shape.colour[xy[X], xy[Y], z, t],
-        bbox = [[-r,-r,b[MIN,Z]],[r,r,b[MAX,Z]]],
+            in shape.colour[xy@X, xy@Y, z, t],
+        bbox = [[-r,-r,b.[MIN,Z]], [r,r,b.[MAX,Z]]],
         is_3d = true,
     };
 
 // Animate a shape by moving it around.
-//  f maps time onto a translation offset (x,y,z)
-//  bbox is the minimum and maximum offset values
+//  f maps time onto a translation offset [x,y,z].
+//  bbox is the minimum and maximum offset values.
 a_move {f,bbox} shape =
     make_shape {
         dist [x,y,z,t] :
             let offset = f t;
-            in shape.dist [x-offset[X],y-offset[Y],z-offset[Z],t],
+            in shape.dist [x-offset@X,y-offset@Y,z-offset@Z,t],
         colour [x,y,z,t] :
             let offset = f t;
-            in shape.colour [x-offset[X],y-offset[Y],z-offset[Z],t],
+            in shape.colour [x-offset@X,y-offset@Y,z-offset@Z,t],
         bbox : shape.bbox + bbox,
         is_2d : shape.is_2d,
         is_3d : shape.is_3d,

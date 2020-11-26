@@ -679,6 +679,12 @@ Shared<Meaning> Dot_Phrase::analyse(Environ& env, Interp) const
             analyse_op(*left_, env),
             Symbol_Expr{str_expr});
     }
+    if (auto brackets = cast<const Bracket_Phrase>(right_)) {
+        return make<Slice_Expr>(
+            share(*this),
+            analyse_op(*left_, env),
+            analyse_op(*right_, env));
+    }
     throw Exception(At_Phrase(*right_, env),
         "invalid expression after '.'");
 }

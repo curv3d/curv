@@ -726,6 +726,32 @@ SC_Value Apply_Lens_Expr::sc_eval(SC_Frame& f) const
             stringify("type ", scval.type, ": not an array"));
     return sc_eval_index_expr(scval, *arg2_, f);
 }
+SC_Value Slice_Expr::sc_eval(SC_Frame& f) const
+{
+    SC_Value scval;
+    if (sc_try_eval(*arg1_, f, scval)) {
+        if (!scval.type.is_list())
+            throw Exception(At_SC_Phrase(arg1_->syntax_, f),
+                stringify("type ", scval.type, ": not an array"));
+        auto list = cast<List_Expr>(arg2_);
+        if (list == nullptr)
+            throw Exception(At_SC_Phrase(arg2_->syntax_, f),
+                "expected '[index]' expression");
+        if (list->size() == 1)
+            return sc_eval_index_expr(scval, *list->at(0), f);
+        if (list->size() == 2)
+            return sc_eval_index2_expr(scval, *list->at(0), *list->at(1), f,
+                At_SC_Phrase(arg2_->syntax_, f));
+        if (list->size() == 3)
+            return sc_eval_index3_expr(scval,
+                *list->at(0), *list->at(1), *list->at(2),
+                f, At_SC_Phrase(arg2_->syntax_, f));
+        throw Exception(At_SC_Phrase(arg2_->syntax_, f),
+            stringify("index list has ",list->size()," components: "
+                "only 1..3 supported"));
+    }
+    throw Exception(At_SC_Phrase(arg1_->syntax_, f), "not an array");
+}
 
 SC_Value Local_Data_Ref::sc_eval(SC_Frame& f) const
 {

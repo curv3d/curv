@@ -433,6 +433,14 @@ Value Apply_Lens_Expr::eval(Frame& f) const
 {
     return lens_get(arg1_->eval(f), arg2_->eval(f), At_Phrase(*syntax_, f));
 }
+Value Slice_Expr::eval(Frame& f) const
+{
+    Index_State state(syntax_, f);
+    Value source = arg1_->eval(f);
+    Value indices = arg2_->eval(f);
+    auto path = indices.to<List>(state.icx);
+    return value_at_path(source, path->begin(), path->end(), state);
+}
 
 Value
 call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f)
