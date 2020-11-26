@@ -48,3 +48,9 @@ Can the Bananas/Lenses/Barbed Wire paper suggest a vocabulary of primitive
 combinators that model failure and provide the expressive power I need?
 
 An advanced set of pattern matching primitives?
+
+`explicit_failure f` is a combinator.
+The input function `f` returns either {result: val} or {error: message}.
+The output function returns `val` in the result case, or fails with `message`
+in the `error` case. If `f` fails, the output function fails.
+TODO: better name.

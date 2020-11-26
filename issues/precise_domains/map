@@ -1,0 +1,17 @@
+`map F list` should fail if F fails on any element of list
+
+How can we implement `map` in Curv so it has these failure semantics?
+
+There's no imperative style for function failure.
+So we need to use parameter patterns and/or tacit programming.
+
+map is recursive, so to use parameter patterns requires transform patterns.
+Something like this:
+
+map F = match[
+            [] -> [],
+            [a <: F, ...b <: map F] -> concat[[a],b]
+        ];
+
+Tacit programming is tough because I'd need to define map using combinators
+more primitive than map.
