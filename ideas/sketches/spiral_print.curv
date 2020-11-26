@@ -1,0 +1,47 @@
+// The 'spiral_print' challenge went viral. The go version is horrific.
+// Here it is in Curv.
+let spiralize m =
+      if (m == []) m
+      else concat[m[0], spiralize(reverse(transpose(m[1..<count m])))],
+in spiralize [[1,2,3], [8,9,4], [7,6,5]]
+
+/*
+let spiralize = match [
+        [] -> [],
+        [a,...b] -> a ++ spiralize(reverse(transpose b)) ]
+in spiralize [[1,2,3], [8,9,4], [7,6,5]]
+
+// m[1..<count m]
+// m[1..last]
+// m[1..]
+
+let spiral_print m =
+      if (m == []) m else m[0] ++ spiral_print(reverse(transpose(m[1..])))
+in spiral_print [[1,2,3], [8,9,4], [7,6,5]]
+
+/// algol68 blocks
+spiral_print m =
+    if (m == []) m else m[0] ++ spiral_print(reverse(transpose(m[1..last])));
+spiral_print [[1,2,3], [8,9,4], [7,6,5]]
+
+/// a@i not a[i]
+spiral_print m =
+    if (m == []) m else m@0 ++ spiral_print(reverse(transpose(m@(1..))));
+spiral_print [[1,2,3], [8,9,4], [7,6,5]]
+
+/// alpha mixfix
+spiral_print m =
+    if (m == []) then
+        (m)
+    else
+        (m@0 ++ spiral_print(reverse(transpose(m@(1..last)))));
+spiral_print [[1,2,3], [8,9,4], [7,6,5]]
+
+/// UPPER mixfix
+spiral_print m =
+    IF m == [] THEN
+        m
+    ELSE
+        m@0 ++ spiral_print(reverse(transpose(m@(1..last))));
+spiral_print [[1,2,3], [8,9,4], [7,6,5]]
+*/

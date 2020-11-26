@@ -1,0 +1,178 @@
+const MAX_SHADOW_DROP = 5.0
+const MAX_BLUR_RADIUS = .9
+
+function n(a){
+    var c=0;
+    return function(){return c<a.length?{done:!1,value:a[c++]}:{done:!0}}
+}
+function p(a){return Error(a)}
+p.prototype=Object.create(Error.prototype);
+function q(a,c,e){
+    this.a=a;
+    this.b=a.createTexture();
+    a.bindTexture(a.TEXTURE_2D,this.b);
+    a.texImage2D(a.TEXTURE_2D,0,a.RGBA16F,c,e,0,a.RGBA,a.FLOAT,null);
+    a.texParameteri(a.TEXTURE_2D,a.TEXTURE_MIN_FILTER,a.LINEAR);
+    a.texParameteri(a.TEXTURE_2D,a.TEXTURE_MAG_FILTER,a.LINEAR);
+    a.texParameteri(a.TEXTURE_2D,a.TEXTURE_WRAP_S,a.CLAMP_TO_EDGE);
+    a.texParameteri(a.TEXTURE_2D,a.TEXTURE_WRAP_T,a.CLAMP_TO_EDGE);
+    this.c=a.createFramebuffer();
+    a.bindFramebuffer(a.FRAMEBUFFER,this.c);
+    a.framebufferTexture2D(a.FRAMEBUFFER,
+        a.COLOR_ATTACHMENT0,a.TEXTURE_2D,this.b,0)
+}
+q.prototype.release=function(){
+    this.a.bindFramebuffer(this.a.FRAMEBUFFER,this.c);
+    this.a.deleteTexture(this.b);
+    this.a.bindFramebuffer(this.a.FRAMEBUFFER,null);
+    this.a.deleteFramebuffer(this.c)
+};
+function r(a,c,e){
+    c=a.createShader(c);
+    a.shaderSource(c,e);
+    a.compileShader(c);
+    if(!a.getShaderParameter(c,a.COMPILE_STATUS)){
+        var f=String(a.getShaderInfoLog(c));
+        console.log(f,e);
+        a.deleteShader(c);
+        return f
+    }
+    return c
+}
+function t(a,c){
+    var e=r(a,a.VERTEX_SHADER,"#version 300 es\nin vec2 V;out vec2 O;void main(){O=V;gl_Position=vec4(V,0.,1.);}");
+    c=r(a,a.FRAGMENT_SHADER,c);
+    var f=a.createProgram();
+    a.attachShader(f,e);
+    a.attachShader(f,c);
+    a.linkProgram(f);
+    return f
+}
+function w(a){
+    var c=a.createBuffer();
+    a.bindBuffer(a.ARRAY_BUFFER,c);
+    a.bufferData(a.ARRAY_BUFFER,new Float32Array([-1,1,1,1,-1,-1,1,-1]),a.STATIC_DRAW);
+    return c
+}
+function x(a,c,e){
+    var f=new q(a,c,e);
+    a=new q(a,c,e);
+    return[f,a]
+}
+window.LoopbackCanvas=function(a,c){
+    function e(){
+        u=performance.now()/1E3;
+        if(d.width!==d.clientWidth||d.height!==d.clientHeight){
+            d.width=d.clientWidth;
+            d.height=d.clientHeight;
+            b.viewport(0,0,b.canvas.width,b.canvas.height);
+            var g=k;
+            var l="undefined"!=typeof Symbol&&Symbol.iterator&&g[Symbol.iterator];
+            g=l?l.call(g):{next:n(g)};
+            for(l=g.next();!l.done;l=g.next())
+                l.value.release();
+            k=x(b,d.width,d.height);
+            f()
+        }
+        b.useProgram(h);
+        b.uniform1f(y,u);
+        b.uniform1i(z,v);
+        b.bindFramebuffer(b.FRAMEBUFFER,k[0].c);
+        b.bindTexture(b.TEXTURE_2D, k[1].b);
+        b.drawArrays(b.TRIANGLE_STRIP,0,4);
+        b.useProgram(m);
+        b.bindFramebuffer(b.FRAMEBUFFER,null);
+        b.bindTexture(b.TEXTURE_2D,k[0].b);
+        b.drawArrays(b.TRIANGLE_STRIP,0,4);
+        k.reverse();
+        v++;
+        requestAnimationFrame(e)
+    }
+    function f(){
+        var g=Math.min(d.width,d.height);
+        b.useProgram(h);
+        b.uniform2f(A,d.width,d.height);
+        b.uniform1f(B,g);
+        b.useProgram(m);
+        b.uniform2f(C,d.width,d.height);
+        b.uniform1f(D,g)
+    }
+    var d=document.getElementById(a);
+    a=document.getElementById(c).text.trim();
+    d.width=d.clientWidth;
+    d.height=d.clientHeight;
+    var b=d.getContext("webgl2");
+    if(!b)
+        throw new p("webgl2 context not supported on supplied canvas element: "+d);
+    if(!b.getExtension("EXT_color_buffer_float"))
+        throw new p("EXT_color_buffer_float is required but not supported here");
+    var k=x(b,d.width,d.height),
+        h=t(b,a),
+        m=t(b,"#version 300 es\nprecision lowp float;uniform sampler2D T;uniform vec2 R;out vec4 O;void main(){O=texture(T,gl_FragCoord.xy/R);}");
+    b.useProgram(h);
+    a=b.getAttribLocation(h,"V");
+    c=w(b);
+    b.bindBuffer(b.ARRAY_BUFFER,c);
+    b.vertexAttribPointer(a, 2,b.FLOAT,!1,0,0);
+    b.enableVertexAttribArray(a);
+    b.viewport(0,0,b.canvas.width,b.canvas.height);
+    var A=b.getUniformLocation(h,"R"),
+        B=b.getUniformLocation(h,"D"),
+        y=b.getUniformLocation(h,"T"),
+        z=b.getUniformLocation(h,"F");
+    b.useProgram(m);
+    var C=b.getUniformLocation(m,"R"),
+        D=b.getUniformLocation(m,"D");
+    f();
+    var v=0,u=0;
+    e()
+};
+window.WebglLoopbackException=p;
+
+    function addScript(src, callback, errorCallback, crossorigin) {
+      var script = document.createElement("script");
+      if (callback) {
+        script.onload = callback;
+      }
+      if (errorCallback) {
+        script.onerror = errorCallback;
+      }
+      if (crossorigin) {
+        script.setAttribute("crossorigin", crossorigin);
+      }
+      script.setAttribute("src", src);
+      script.async = true;
+      document.head.appendChild(script);
+    }
+
+    const root = document.documentElement;
+
+    function handleMove(event) {
+      let x = (event.clientX - .5 * innerWidth) / innerWidth
+      let y = (event.clientY - .5 * innerHeight) / innerWidth
+      let distance = Math.sqrt((x * x) + (y * y));
+      root.style.setProperty("--shadow-x", (x * -MAX_SHADOW_DROP) + "vw");
+      root.style.setProperty("--shadow-y", (y * -MAX_SHADOW_DROP) + "vw");
+      root.style.setProperty("--shadow-blur-radius", ((distance * MAX_BLUR_RADIUS) + "vw"));
+    }
+    document.addEventListener("mousemove", handleMove, false);
+    // TODO it should be ,false
+
+    const enableLazy = (element) => {
+      element.loading = "lazy";
+      element.onload = () => element.classList.add("loaded");
+    }
+    document.addEventListener("DOMContentLoaded", e => {
+      for (var i = 0; i < document.images.length; i++) {
+        enableLazy(document.images[i]);
+      }
+      document.querySelectorAll("iframe").forEach(iframe => {
+        enableLazy(iframe);
+      });
+    }); // TODO it should be ,false
+
+    window.addEventListener("load", e => {
+      new LoopbackCanvas("loopback-background", "loopback-shader");
+      addScript("modules/main/main.js");
+    }); // TODO it should be ,false
+

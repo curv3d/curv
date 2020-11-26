@@ -10,3 +10,5 @@ union [
     >> translate [40,0,0]
     >> rotate {angle: i*(tau/num), axis: Z_axis}
 ]
+//This replaces the huge GLSL 'colour' function.
+//>> colour red
