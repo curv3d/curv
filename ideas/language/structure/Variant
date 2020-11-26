@@ -73,3 +73,26 @@ In a GUI, it might be good to present the cube parameters like this:
     size :: scale_picker = 2;
     field :: variant_picker[#exact, #mitred] = #exact;
     blend :: blend_picker = sharp;
+
+Variant Constructor
+-------------------
+A hypothetical kind of value that can be invoked either like this:
+    foo #a
+    foo {b: 1}
+or equivalently like this:
+    foo.a
+    foo.b 1
+
+Modular Sum Types
+-----------------
+The Modular Programming spec supports data abstraction by bundling a type
+together with its constructors and operations in a module. The type's
+representation is only visible within that module.
+
+Given a modular sum type Foo under this proposal, how is it constructed?
+ 1. A single constructor that takes a variant argument:
+        Foo #a
+        Foo {b: 1}
+ 2. One constructor for each alternative:
+        Foo.a
+        Foo.b 1

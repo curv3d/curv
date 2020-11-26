@@ -6,29 +6,36 @@ If a Curv coding style prescribes when to use one vs the other, what would
 it prescribe? (The rules should be context free, so they can be automated
 by a curvfmt program.)
 
-The classic Curv semantics for the ; operator are messed up in the unreleased
-master branch, because 'let' no longer accepts an arbitrary definition
-as its first argument. This is because I rebelled against the original
-design of allowing statements and recursive definitions to be combined
-in a compound recursive definition, using the ; operator. I didn't want
-statements in the head of a 'let': I didn't want to document that: I wanted
-a more clear distinction between 'let' and 'do'.
+My current choice is theory 4, which can be reached from Curv 0.4 by a
+reasonable upgrade process and not too much breakage. Documentation and
+standard formatting style is resolved. Theory 4 can be tighted to yield
+theories 1 and 3.
 
-Now I must decide how semicolon should work, taking into account:
- * need for embedded debug/assert statements in a module
- * the fact that semicolon is currently an operator, and that you can type
-   'stmt;stmt' or 'defn;defn' at top level in the REPL.
+Resolved issues (DONE):
+ * You can't mix statements and definitions (eg, in a `let` head or a module).
+ * We now have `test` definitions for embedding unit tests in a module.
+ * The empty phrase doubles as a null statement and a null definition.
+   () works as a null definition (but not yet as a null statement).
+ * `let` accepts an arbitrary (nested, parenthesized) definition in the head.
+ * `local` accepts an arbitrary (nested, parenthesized) definition argument.
+ * Recursive definitions can be combined using either `,` or `;`.
+ * Parenthesizing a phrase doesn't change its meaning.
+    * Except for () in statement context.
+ * () in expression context is deprecated.
+ * (a,b,c) as a list expression is deprecated at level 2.
+ * Theory 1 (use semicolon everywhere) now works, modulo () in stmt context.
+ * Theory 3 (use comma for compound definitions, semicolon for compound
+   statements) now works, modulo () in stmt context.
 
-STATUS:
-All of the suggested syntax extensions are implemented.
-Theories 1 and 2 may be used as coding styles.
- 1. Use semicolon everywhere.
- 2. Use comma for compound definitions, semicolon for compound statements.
-Theory 3 still has issues, is somewhat useable.
-We don't enforce a style, and I don't know which to promote as the standard.
+Unresolved issues:
+ * () should work as a null statement in stmt context -- all theories.
+ * 'id:expr' is an expression
+ * 'expr1,expr2,expr3' should be a statement in statement context -- theory 4.
+ * () as a list in expr context should be removed.
+ * (expr1,expr2,expr3) as a list in expr context should be removed.
 
-0. Embedded Tests (Done)
-------------------------
+Test Definitions (Done)
+-----------------------
 In old Curv, you just embed statements in a compound definition,
 mixed with the definitions. But I didn't like the syntax. I felt it was
 confusing.
@@ -70,8 +77,8 @@ thus its specification is simpler. There is no guaranteed relative order of
 evaluation of a set of test definitions within a compound recursive
 definition (which is part of what makes ';' simpler).
 
-Nested Definitions?
--------------------
+Nested Definitions (Done)
+-------------------------
 In classic Curv, any phrase with a semantic meaning can be parenthesized.
 Therefore a definition can be parenthesized, and a compound definition
 (constructed with the semicolon operator) can be parenthesized.
@@ -124,7 +131,7 @@ compound definition.
     { definition }              // module
     let definition in phrase    // let phrase
 
-As in Theory 0, you can't mix statements and definitions.
+You can't mix statements and definitions.
 
 In the REPL, you can type 'stmt;stmt' as a compound statement,
 or you can type 'defn;defn' as a compound recursive definition,
@@ -143,8 +150,8 @@ The problem is that it looks weird, compared to conventional languages.
    'let a=1; b=2 in ...' is okay.
    'do stmt1; stmt2 in ...' is okay. (Many imperative languages use semicolon.)
 
-Theory 1a: comma and semicolon are interchangeable
---------------------------------------------------
+Theory 2: comma and semicolon are interchangeable
+-------------------------------------------------
 At least it's an easy rule to remember.
 
 The deprecated syntax (a,b,c) for constructing a list must be removed.
@@ -159,13 +166,14 @@ or a compound statement.
 This doesn't provide any guidance on coding style. When does `curvfmt`
 use commas and when does it use semicolons?
 
-Theory 2: comma and semicolon operators
+Theory 3: comma and semicolon operators
 ---------------------------------------
 We introduce a principled semantic distinction between , and ;
 
 Since ; is overloaded, why not use different operators for those two cases?
   ; is imperative sequencing: it joins statements into a compound statement.
     It is non-commutative (but associative).
+    It is right associative when local definitions are taken into account.
   , joins recursive definitions into a compound definition.
     It is both commutative and associative.
 
@@ -193,9 +201,44 @@ and that *is* mainstream syntax (as opposed to 'local (a=1; b=2)').
 Possible use case:
     local (x=y, y=x);
 
-Theory 3: ,/; mean unspecified/sequential order of evaluation
+Theory 4: ,/; mean unspecified/sequential order of evaluation
 -------------------------------------------------------------
-This is an extension of Theory 2, with more meanings for comma, and more
+This is an extension of Theory 3, preserving the algebraic laws for
+comma and semicolon, and adding more contexts where comma works
+for better support of "mainstream syntax".
+
+Comma still has an independent, standalone meaning (like theory 3).
+  expr1, expr2, expr3
+is now equivalent to
+  expr1; expr2; expr3
+and 'a:b' is an expression, sugar for '[#a,b]'.
+Unlike the more general ; statement list case, a list of expressions
+has an unspecified order of evaluation, due to the absence of assignment
+statements, and comma is fully associative, due to the absence of local
+definitions.
+
+So now the following "mainstream syntax" becomes legal:
+    [a,b,c]
+    {a:1,b:2}
+If you see a comma list in a statement context, you know that all of the
+items are expressions. In the case of a list constructor, the # of item
+phrases == the number of elements in the constructed list.
+
+We use commas when printing list and record literals.
+
+The Curv formatter converts to commas when all items in a list or record
+literal is an expression, otherwise it uses semicolons.
+
+In the documentation, we document [expr1,expr2] in List, we document
+{expr1,expr2} in Record (along with {def1,def2}), and the ; syntax
+and the ... operator are documented in Comprehensions as advanced features.
+
+Theory 5
+--------
+An extension of Theory 4. It's a bit of a mess, and comma no longer has
+an independent meaning for statement lists. Comma becomes ad-hoc syntax.
+
+This is an extension of Theory 4, with more meanings for comma, and more
 conventional syntax. Comma now means "unspecified evaluation order".
 
 do a; b; c in expr   -- statements must be executed in order
@@ -206,13 +249,21 @@ do a; b; c in expr   -- statements must be executed in order
 {a=1,b=2}            -- order independent definitions
 let a=1, b=2 in ph   -- order independent definitions
 
-In this theory,
- * Comma is not commutative in all contexts. Instead, the order
-   of evaluation of the arguments is not fixed to be sequential.
- * Semicolon is the imperative sequencing operator.
-   Side effects in earlier statements affect the output of later statements.
- * A new feature is added. {a:1,b:2,a:3} aborts due to a duplicate definition.
-   This contrasts with the override semantics of {a:1;b:2;a:3}.
+Comma:
+ * Comma is a monoid in all contexts (defn list; list and record item list).
+   It is associative: (a,b),c <=> a,(b,c)
+   () is the identity.
+ * Comma is commutative in a definition list or record item list.
+ * Evaluation order doesn't matter for items in a comma list.
+
+Semicolon is the imperative sequencing operator.
+Side effects in earlier statements affect the output of later statements.
+ * Semicolon is right associative.
+   a;b;c is equivalent to a;(b;c).
+   localdef;(stmt;stmt) is not equivalent to (localdef;stmt);stmt.
+
+A new feature is added. {a:1,b:2,a:3} aborts due to a duplicate definition.
+This contrasts with the override semantics of {a:1;b:2;a:3}.
 
 The comma operator can be overloaded for definition and statement compounds.
  * (def1,def2) is a definition. Nesting doesn't change things, and comma is
@@ -224,8 +275,13 @@ The comma operator can be overloaded for definition and statement compounds.
    and the null statement, depending on context). So comma is a monoid.
 Can't make this change right now because it breaks backward compatibility.
 
-ISSUE: If I define comma as a compound statement constructor, then what happens
-when comma- and semicolon- compound statements are nested?
+ISSUE: What are the semantics of comma as a compound statement constructor?
+ * Is 'a,b,c' meaningful at top level when items are not definitions?
+ * What happens when comma- and semicolon- compound statements are nested?
+ * This problem is caused by the new semantics of {a:1,b:2,a:3} reporting
+   a duplicate definition. What does 'a:1,b:2,a:3' mean in isolation?
+   The problem is compounded by the proposal to make 'a:1' an expression:
+   syntactic sugar for [#a,1].
 
 ISSUE: Alternatively, in addition to constructing compound definitions,
 comma is an ad-hoc notation that can occur at the top level of a list or record

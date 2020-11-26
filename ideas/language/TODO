@@ -11,8 +11,8 @@ Array Programming:
 * '[a,...b]' is a pattern
 
 Imperative Programming:
-* V[[X,Y]] := vec2 in Curv, SubCurv
-* M[i,j] := a
+* V@[X,Y] := vec2 in Curv, SubCurv
+* M.[i,j] := a
 * a +:= b, a `max`:= b
 
 Replace foo."bar" syntax.
@@ -28,9 +28,10 @@ New idea: Replace {"foo":bar} with {[#foo,bar]}.
  * `id : expr` is sugar for `[#id, expr]`.
  * `{a:1,b:2}` is sugar for `{[#a,1],[#b,2]}`.
  * `...R` (with R a record) generates symbol/value pairs.
- * `items R` converts record R to a list of symbol/value pairs [[Collections]].
+ * `items R` converts record R to a list of symbol/value pairs [[Collections]],
+   identical to `[...R]`.
  * `{...items R}` is the inverse operation.
- * No strong need for {pattern : value} syntax.
+ * No strong need for {pattern : value} syntax, which doesn't fit this proposal.
 WAIT: any interaction with tagged/branded values?
 
 High:

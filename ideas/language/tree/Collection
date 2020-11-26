@@ -89,6 +89,36 @@ Add two new lenses that work on lists and dictionaries:
         the order of elements is changed.
 Then define `reverse = swizzle(last..0)`.
 
+Scalar Maps
+-----------
+Scalar Maps are a simplified alternative to dictionaries.
+
+A Scalar Map is indexed by scalar keys ordered by the <= operator. The keys
+may be numbers, symbols or characters (all keys in a given smap have the same
+type). The order of items in a Scalar Map is given by the sort order of the
+keys (like records), rather than by the insertion order (like dictionaries).
+
+Scalar Maps eliminate complexity from the Collection proposal.
+ * The extra complexity of a dictionary with symbol keys, as compared to
+   a record, goes away. The two concepts are unified.
+ * Can use {item,item,...} to construct a scalar map.
+ * Keys are disjoint from non-key lenses, which simplifies the lens language.
+   smap.[key] indexes a scalar map.
+
+The main application for scalar maps is sparse arrays (indexed by an integer).
+If you want a sparse array indexed by a list of integers, then you use
+nested scalar maps (same as the construction of multidimensional arrays
+from nested lists). The same syntax, a.[i], is used to index a list and
+a sparse array. My intention is that scalar maps can be implemented efficiently
+on a GPU, using the TaiChi primitives. (TaiChi has sparse arrays.)
+
+A scalar map with symbol keys is a record. 'id:expr' is sugar for '[#id,expr]',
+and records/smaps are constructed using {[key1,elem1],[key2,elem2],...}.
+As an extension, {#foo, #bar} constructs the record {foo:#foo,bar:#bar},
+which is useful as a lens:
+    include file("mymodule.curv") @ {#foo,#bar}
+(WAIT: Unifying scalar maps with records may conflict with modules.)
+
 Sets
 ----
 If I add Sets [|x,y,z|], then they will be ordered by insertion order,

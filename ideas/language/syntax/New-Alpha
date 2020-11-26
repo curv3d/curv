@@ -90,10 +90,16 @@ An idea from Tulip on the precedence of the -> operator:
   a >> b -> c >> f b
 groups as
   a >> (b -> c >> f b)
-Rationale: you are typing a pipeline left to right, you need to grab a value
-and use it later on.
-Downside: left operand of -> is now a term, not a pipeline. Requires more
-parens in `match` expressions: match[(x::Num)->x+1,...].
+Rationale:
+  You are typing a pipeline left to right, you need to grab a value
+  and use it later on.
+Downside:
+  Left operand of -> is now a term, not a pipeline. Requires more
+  parens in `match` expressions: match[(x::Num)->x+1,...].
+  But if I want multi-argument lambdas to have the syntax
+    primary primary primary -> expr
+  for consistency with short-cut function definitions (more like Haskell),
+  then it's okay.
 
 Only one prefix operator symbol, '-', because it's traditional.
 For other operations, use function call syntax.

@@ -6,15 +6,15 @@ Variable binding patterns:
     which fails if `is type arg` is false, otherwise matches pat.
   * `pat <: func` is a transform pattern. Apply `func` to the argument.
     Fail if `func arg` fails. Otherwise match `func arg` against pat.
-    Pronouce '<:' as 'from'. Alt names: ':<<'.
+    Pronounce '<:' as 'from'. Alt syntax: ':<<'.
   * `pat when cond` matches pat, then evaluates cond with pat's bindings,
     and fails if cond is false. Alt. syntax: `pat if cond` (like Python, Rust)
     O'Caml uses 'when'.
-  * DEPRECATED:
-    `pat :: If predicate` is a unary predicate assertion pattern:
-    `If` converts a predicate to a type. Upgrade path from Curv 0.4.
-    Alt. syntax: `x :: If pred` becomes `x if pred x`.
-    This is equivalent to `pat <: ensure predicate`.
+  * Since `pat :: predicate` no longer works, what's the replacement? Ideas:
+    - `pat ?: predicate`. Alt syntax `:?`.
+    * `pat <: ensure predicate`.
+    - `foo when predicate foo`.
+    - `pat :: If predicate`. Not happy with this.
   Variable names line up on the left.
   :: and <: are left associative, same precedence, chainable. In a chain,
   the argument value flows left to right until it is matched by the pattern.
@@ -191,7 +191,7 @@ New Pattern Types:
     cast1, then we match against pat.
     :: and <: are fully chainable. Eg, pat <: cast1 <: cast2 :: pred
     The arrows show the direction of data flow.
-  * Alt syntax :< or :<<, since <: means is-subtype-of in some contexts.
+  * Alt syntax :<<, since <: means is-subtype-of in some contexts.
 * Variations of predicate patterns:
   * 'pat == expr', 'pat != expr', 'pat < expr', ... -- relational op predicates
   * 'pat `elem` listexpr' -- range patterns, like 'x `elem` 1..10'.
