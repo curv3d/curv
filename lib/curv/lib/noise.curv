@@ -61,25 +61,25 @@ rand2x2 xy = do
     // https://umbcgaim.wordpress.com/2010/07/01/gpu-random-numbers/
     local v = float_to_bool32 xy;
     // two rounds of TEA hashing
-    v[X] := v[X] `plus` xor[
-                v[Y] `lshift` 4 `plus` bits 0xA341316C,
-                v[Y] `plus` bits 0x9E3779B9,
-                v[Y] `rshift` 5 `plus` bits 0xC8013EA4
+    v@X := v@X `plus` xor[
+                v@Y `lshift` 4 `plus` bits 0xA341316C,
+                v@Y `plus` bits 0x9E3779B9,
+                v@Y `rshift` 5 `plus` bits 0xC8013EA4
             ];
-    v[Y] := v[Y] `plus` xor[
-                v[X] `lshift` 4 `plus` bits 0xAD90777D,
-                v[X] `plus` bits 0x9E3779B9,
-                v[X] `rshift` 5 `plus` bits 0x7E95761E
+    v@Y := v@Y `plus` xor[
+                v@X `lshift` 4 `plus` bits 0xAD90777D,
+                v@X `plus` bits 0x9E3779B9,
+                v@X `rshift` 5 `plus` bits 0x7E95761E
             ];
-    v[X] := v[X] `plus` xor[
-                v[Y] `lshift` 4 `plus` bits 0xA341316C,
-                v[Y] `plus` bits 0x3C6EF372,
-                v[Y] `rshift` 5 `plus` bits 0xC8013EA4
+    v@X := v@X `plus` xor[
+                v@Y `lshift` 4 `plus` bits 0xA341316C,
+                v@Y `plus` bits 0x3C6EF372,
+                v@Y `rshift` 5 `plus` bits 0xC8013EA4
             ];
-    v[Y] := v[Y] `plus` xor[
-                v[X] `lshift` 4 `plus` bits 0xAD90777D,
-                v[X] `plus` bits 0x3C6EF372,
-                v[X] `rshift` 5 `plus` bits 0x7E95761E
+    v@Y := v@Y `plus` xor[
+                v@X `lshift` 4 `plus` bits 0xAD90777D,
+                v@X `plus` bits 0x3C6EF372,
+                v@X `rshift` 5 `plus` bits 0x7E95761E
             ];
     // Normalize to the range 1.0 <= v < 2.0:
     v := v `and` [bits 0x007FFFFF,  // strip sign bit and exponent

@@ -1028,7 +1028,7 @@ struct Lens_Locative : public Boxed_Locative
     {}
 
     virtual Value* reference(Frame&,bool) const override;
-    //virtual void sc_print(SC_Frame& f) const override;
+    virtual void sc_print(SC_Frame& f) const override;
 };
 
 // 'locative := expression'

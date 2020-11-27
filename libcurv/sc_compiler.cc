@@ -525,6 +525,17 @@ Indexed_Locative::sc_print(SC_Frame& f) const
     i = ival.to_int(0, 3, At_SC_Phrase(index_->syntax_, f));
     f.sc_.out() << '[' << i << ']';
 }
+void
+Lens_Locative::sc_print(SC_Frame& f) const
+{
+    // TODO: ensure that base_ is a vector
+    base_->sc_print(f);
+    // i = sc_eval_index_expr() might work if we had an SC_Value for base_
+    // TODO: restrict range of i based on size of vector
+    Value ival = sc_constify(*lens_, f);
+    int i = ival.to_int(0, 3, At_SC_Phrase(lens_->syntax_, f));
+    f.sc_.out() << '[' << i << ']';
+}
 
 void
 Locative::sc_print(SC_Frame& f) const
@@ -728,29 +739,26 @@ SC_Value Apply_Lens_Expr::sc_eval(SC_Frame& f) const
 }
 SC_Value Slice_Expr::sc_eval(SC_Frame& f) const
 {
-    SC_Value scval;
-    if (sc_try_eval(*arg1_, f, scval)) {
-        if (!scval.type.is_list())
-            throw Exception(At_SC_Phrase(arg1_->syntax_, f),
-                stringify("type ", scval.type, ": not an array"));
-        auto list = cast<List_Expr>(arg2_);
-        if (list == nullptr)
-            throw Exception(At_SC_Phrase(arg2_->syntax_, f),
-                "expected '[index]' expression");
-        if (list->size() == 1)
-            return sc_eval_index_expr(scval, *list->at(0), f);
-        if (list->size() == 2)
-            return sc_eval_index2_expr(scval, *list->at(0), *list->at(1), f,
-                At_SC_Phrase(arg2_->syntax_, f));
-        if (list->size() == 3)
-            return sc_eval_index3_expr(scval,
-                *list->at(0), *list->at(1), *list->at(2),
-                f, At_SC_Phrase(arg2_->syntax_, f));
+    SC_Value scval = sc_eval_op(f, *arg1_);
+    if (!scval.type.is_list())
+        throw Exception(At_SC_Phrase(arg1_->syntax_, f),
+            stringify("type ", scval.type, ": not an array"));
+    auto list = cast<List_Expr>(arg2_);
+    if (list == nullptr)
         throw Exception(At_SC_Phrase(arg2_->syntax_, f),
-            stringify("index list has ",list->size()," components: "
-                "only 1..3 supported"));
-    }
-    throw Exception(At_SC_Phrase(arg1_->syntax_, f), "not an array");
+            "expected '[index]' expression");
+    if (list->size() == 1)
+        return sc_eval_index_expr(scval, *list->at(0), f);
+    if (list->size() == 2)
+        return sc_eval_index2_expr(scval, *list->at(0), *list->at(1), f,
+            At_SC_Phrase(arg2_->syntax_, f));
+    if (list->size() == 3)
+        return sc_eval_index3_expr(scval,
+            *list->at(0), *list->at(1), *list->at(2),
+            f, At_SC_Phrase(arg2_->syntax_, f));
+    throw Exception(At_SC_Phrase(arg2_->syntax_, f),
+        stringify("index list has ",list->size()," components: "
+            "only 1..3 supported"));
 }
 
 SC_Value Local_Data_Ref::sc_eval(SC_Frame& f) const

@@ -738,6 +738,10 @@ analyse_locative(Shared<const Phrase> ph, Environ& env, Interp terp)
             auto str_expr = string->analyse_string(env);
             return base->get_field(env, ph, Symbol_Expr{str_expr});
         }
+        if (auto brackets = cast<const Bracket_Phrase>(dot->right_)) {
+            auto index = analyse_op(*dot->right_, env);
+            return base->get_element(env, ph, index);
+        }
         throw Exception(At_Phrase(*dot->right_, env),
             "invalid expression after '.'");
     }
