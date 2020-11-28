@@ -55,6 +55,12 @@ Value get_value_at_slice(
     return get_value_at_index(value, slice[0], slice+1, endslice, cx);
 }
 
+Value get_value_at_boxed_slice(Value value, Value slice, const At_Syntax& cx)
+{
+    auto list = slice.to<const List>(cx);
+    return get_value_at_slice(value, list->begin(), list->end(), cx);
+}
+
 Value get_value_at_index(
     Value value, Value index,
     const Value* slice, const Value* endslice,

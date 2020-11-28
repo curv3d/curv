@@ -18,5 +18,8 @@ Value get_value_at_index(
     const Value* slice, const Value* endslice,
     const At_Syntax& cx);
 
+// The 'slice' argument is unboxed to a list of index values.
+Value get_value_at_boxed_slice(Value value, Value slice, const At_Syntax& cx);
+
 } // namespace curv
 #endif // header guard

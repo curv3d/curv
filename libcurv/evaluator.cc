@@ -436,9 +436,9 @@ Value Index_Expr::eval(Frame& f) const
 }
 Value Slice_Expr::eval(Frame& f) const
 {
-    Value source = arg1_->eval(f);
-    Value indices = arg2_->eval(f);
-    return value_at(source, indices, syntax_, f);
+    Value value = arg1_->eval(f);
+    Value slice = arg2_->eval(f);
+    return get_value_at_boxed_slice(value, slice, At_Phrase(*syntax_, f));
 }
 
 Value
