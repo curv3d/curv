@@ -429,17 +429,16 @@ Value value_at(Value list, Value index, Shared<const Phrase> callph, Frame& f)
     auto path = index.to<List>(state.icx);
     return value_at_path(list, path->begin(), path->end(), state);
 }
-Value Apply_Lens_Expr::eval(Frame& f) const
+Value Index_Expr::eval(Frame& f) const
 {
-    return lens_get(arg1_->eval(f), arg2_->eval(f), At_Phrase(*syntax_, f));
+    return get_value_at_index(arg1_->eval(f), arg2_->eval(f),
+        nullptr, nullptr, At_Phrase(*syntax_, f));
 }
 Value Slice_Expr::eval(Frame& f) const
 {
-    Index_State state(syntax_, f);
     Value source = arg1_->eval(f);
     Value indices = arg2_->eval(f);
-    auto path = indices.to<List>(state.icx);
-    return value_at_path(source, path->begin(), path->end(), state);
+    return value_at(source, indices, syntax_, f);
 }
 
 Value

@@ -658,7 +658,7 @@ Binary_Phrase::analyse(Environ& env, Interp) const
 
 Shared<Meaning> Apply_Lens_Phrase::analyse(Environ& env, Interp) const
 {
-    return make<Apply_Lens_Expr>(
+    return make<Index_Expr>(
         share(*this),
         analyse_op(*arg_, env),
         analyse_op(*function_, env));

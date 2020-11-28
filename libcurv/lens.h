@@ -10,7 +10,13 @@
 
 namespace curv {
 
-Value lens_get(Value val, Value lens, const At_Syntax& cx);
+// If slice is null, this is value@index.
+// If slice is non-null, this is value.[index,...restofslice]
+// where restofslice is described by the C++ range slice,endslice.
+Value get_value_at_index(
+    Value value, Value index,
+    const Value* slice, const Value* endslice,
+    const At_Syntax& cx);
 
 } // namespace curv
 #endif // header guard

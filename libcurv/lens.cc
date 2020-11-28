@@ -14,258 +14,149 @@
 
 namespace curv {
 
-Shared<const String> lens_error(Value lens, Value source, const String_Ref &msg)
+Shared<const String> index_error(
+    const String_Ref &synopsis,
+    Value value, Value index,
+    const Value* slice, const Value* endslice)
 {
-    return stringify(msg, "\nSource: ", source, "\nLens: ", lens);
+    String_Builder msg;
+
+    msg << synopsis << "\n"
+        << "value: " << value;
+    if (auto rx = value.maybe<Reactive_Value>())
+        msg << " (type " << rx->sctype_ << ")";
+    msg << "\n";
+
+    if (slice) {
+        msg << "slice: .[" << index;
+        while (slice < endslice) {
+            msg << "," << *slice;
+            ++slice;
+        }
+        msg << "]";
+    } else {
+        msg << "index: " << index;
+    }
+    return msg.get_string();
 }
 
-Value lens_get(Value source, Value lens, const At_Syntax& cx)
+const Phrase& index_value_phrase(const At_Syntax& cx)
 {
-    if (lens.is_num()) {
-        double num = lens.to_num_unsafe();
+    // TODO: more precise
+    return cx.syntax();
+}
+
+Value get_value_at_slice(
+    Value value, const Value* slice, const Value* endslice,
+    const At_Syntax& cx)
+{
+    if (slice == endslice)
+        return value;
+    return get_value_at_index(value, slice[0], slice+1, endslice, cx);
+}
+
+Value get_value_at_index(
+    Value value, Value index,
+    const Value* slice, const Value* endslice,
+    const At_Syntax& cx)
+{
+    if (index.is_num()) {
+        double num = index.to_num_unsafe();
         if (!num_is_int(num)) {
-            throw Exception(cx, lens_error(lens, source, stringify(
-                "List index ",num," is not an integer")));
+            throw Exception(cx, index_error(
+                "Numeric index is not an integer",
+                value, index, slice, endslice));
         }
-        if (auto list = source.maybe<List>()) {
+        if (auto list = value.maybe<List>()) {
             if (list->empty()) {
-                throw Exception(cx, lens_error(lens, source,
-                    stringify("List index ",num," is out of range")));
+                throw Exception(cx, index_error(
+                    "List index is out of range",
+                    value, index, slice, endslice));
             }
             if (num < 0.0 || num > double(list->size()-1)) {
-                throw Exception(cx, lens_error(lens, source,
-                    stringify("List index ",num,
-                        " is not in range 0..",list->size()-1)));
+                throw Exception(cx, index_error(
+                    stringify("List index is not in range 0..",list->size()-1),
+                    value, index, slice, endslice));
             }
-            return list->at(size_t(num));
+            auto r = list->at(size_t(num));
+            return get_value_at_slice(r, slice, endslice, cx);
         }
-        if (auto rx = source.maybe<Reactive_Value>()) {
+        if (auto rx = value.maybe<Reactive_Value>()) {
             if (rx->sctype_.is_list()) {
                 auto k = rx->sctype_.count();
                 if (num < 0.0 || num > double(k-1)) {
-                    throw Exception(cx, lens_error(lens, source,
-                        stringify("List index ",num,
-                            " is not in range 0..",k-1)));
+                    throw Exception(cx, index_error(
+                        stringify("List index is not in range 0..",k-1),
+                        value, index, slice, endslice));
                 }
-                return {make<Reactive_Expression>(
+                auto r = make<Reactive_Expression>(
                     rx->sctype_.elem_type(),
-                    make<Apply_Lens_Expr>(
+                    make<Index_Expr>(
                         share(cx.syntax()),
-                        to_expr(source, cx.syntax()),
-                        to_expr(lens, cx.syntax())),
-                    cx)};
+                        to_expr(value, cx.syntax()),
+                        to_expr(index, cx.syntax())),
+                    cx);
+                return get_value_at_slice(Value{r}, slice, endslice, cx);
             }
         }
-        throw Exception(cx, lens_error(lens, source,
-             "In source@lens, the lens is a list index, "
-             "but the source is not a list"));
+        throw Exception(cx, index_error(
+            "Integer index into a non-list value",
+            value, index, slice, endslice));
     }
-    else if (auto sym = maybe_symbol(lens)) {
-        auto rec = source.maybe<const Record>();
+    if (auto sym = maybe_symbol(index)) {
+        auto rec = value.maybe<const Record>();
         if (rec == nullptr) {
-            throw Exception(cx, lens_error(lens, source,
-                 "The lens (a field name) "
-                 "expects the source to be a record"));
+            throw Exception(cx, index_error(
+                "Symbol index into a non-record value",
+                value, index, slice, endslice));
         }
         auto elem = rec->find_field(sym, cx);
         if (elem.is_missing()) {
-            throw Exception(cx, lens_error(lens, source, stringify(
-                "Field ",sym," is not defined in the source record")));
+            throw Exception(cx, index_error(
+                "Symbol index not defined in the record value",
+                value, index, slice, endslice));
         }
-        return elem;
+        return get_value_at_slice(elem, slice, endslice, cx);
     }
-    else if (auto list = lens.maybe<List>()) {
+    if (auto list = index.maybe<List>()) {
         Shared<List> result = List::make(list->size());
         for (unsigned i = 0; i < list->size(); ++i)
-            result->at(i) = lens_get(source, list->at(i), cx);
+            result->at(i) =
+                get_value_at_index(value, list->at(i), slice, endslice, cx);
         return {result};
     }
-    else if (auto func = maybe_function(lens, cx)) {
+    if (auto func = maybe_function(index, cx)) {
         std::unique_ptr<Frame> f2 =
             Frame::make(func->nslots_, cx.system(), cx.frame(),
                 share(cx.syntax()), nullptr);
         f2->func_ = func;
-        func->tail_call(source, f2);
-        return tail_eval_frame(std::move(f2));
+        auto r = func->call(value, Fail::hard, *f2);
+        f2 = nullptr;
+        return get_value_at_slice(r, slice, endslice, cx);
     }
-    throw Exception(cx, stringify(lens," is not a lens"));
-}
-
-#if 0
-Value slice_get(Value source,
-    const Value* path, const Value* endpath, const At_Syntax& cx);
-Value list_slice_get(const List& source,
-    const Value* path, const Value* endpath, const At_Syntax& cx)
-{
-}
-Value slice_get(Value source,
-    const Value* path, const Value* endpath, const At_Syntax& cx)
-{
-    if (path == endpath) return source;
-    Value index = path[0];
-    if (auto list = source.maybe<List>()) {
-        return list_at_path(*list, index, path+1, endpath, state);
-    }
-    else if (auto string = source.maybe<String>()) {
-        if (path+1 == endpath) {
-            // TODO: this code only works for ASCII strings.
-            if (index.is_num()) {
-                int i = index.to_int(0, int(string->size()-1), state.icx);
-                return {make_string(string->data()+i, 1)};
-            }
-            else if (auto indices = index.maybe<List>()) {
-                String_Builder sb;
-                for (auto ival : *indices) {
-                    int i = ival.to_int(0, int(string->size()-1), state.icx);
-                    sb << string->at(i);
-                }
-                return {sb.get_string()};
-            }
-            // reactive index not supported because String is not in SubCurv
-        }
-    }
-    else if (auto rx = source.maybe<Reactive_Value>()) {
-        // TODO: what to do for pathsize > 1? punt for now.
-        if (path+1 == endpath && is_num(index)) {
-            auto iph = state.iph();
-            auto lph = state.lph();
-            Shared<List_Expr> ix = List_Expr::make({to_expr(index,*iph)}, iph);
-            ix->init();
-            return {make<Reactive_Expression>(
-                rx->sctype_.elem_type(),
-                make<Call_Expr>(state.ph(), to_expr(source,*lph), ix),
-                state.cx)};
-        }
-    }
-    throw Exception(state.cx, state.err(source, index, path+1, endpath));
-}
-#endif
-#if 0
-struct Index_State
-{
-    Shared<const Phrase> callph_;
-    At_Phrase cx;
-    At_Phrase icx;
-
-    Index_State(
-        Shared<const Phrase> callph,
-        Frame& f)
-    :
-        callph_(callph),
-        cx(*callph, f),
-        icx(*arg_part(callph), f)
-    {}
-
-    Shared<const Phrase> ph() { return callph_; }
-    Shared<const Phrase> iph() { return arg_part(callph_); }
-    Shared<const Phrase> lph() { return func_part(callph_); }
-
-    Shared<const String> err(Value list, Value index,
-        const Value* path, const Value* endpath)
-    {
-        String_Builder msg;
-        msg << "indexing error\n";
-        msg << "left side: " << list;
-        if (auto rx = list.maybe<Reactive_Value>())
-            msg << " (type " << rx->sctype_ << ")";
-        msg << "\nright side: [" << index;
-        while (path < endpath) {
-            msg << "," << *path;
-            ++path;
-        }
-        msg << "]";
-        return msg.get_string();
-    }
-};
-Value value_at_path(Value, const Value*, const Value*, Index_State&);
-Value list_at_path(const List& list, Value index,
-    const Value* path, const Value* endpath, Index_State& state)
-{
-    if (index.is_num()) {
-        int i = index.to_int(0, int(list.size()-1), state.icx);
-        return value_at_path(list.at(i), path, endpath, state);
-    }
-    else if (auto indices = index.maybe<List>()) {
-        Shared<List> result = List::make(indices->size());
-        int j = 0;
-        for (auto ival : *indices)
-            (*result)[j++] = list_at_path(list, ival, path, endpath, state);
-        return {result};
-    }
-    else if (auto ri = index.maybe<Reactive_Value>()) {
+    if (auto ri = index.maybe<Reactive_Value>()) {
         if (ri->sctype_.is_num()) {
-            Value val = {share(list)};
-            auto type = sc_type_of(val);
+            auto type = sc_type_of(value);
             if (type.is_list()) {
-                Shared<List_Expr> index =
-                    List_Expr::make({ri->expr()}, state.iph());
-                index->init();
-                Value rx = {make<Reactive_Expression>(
+                auto r = make<Reactive_Expression>(
                     type.elem_type(),
-                    make<Call_Expr>(
-                        state.ph(),
-                        make<Constant>(state.lph(), val),
-                        index),
-                    state.cx)};
-                return value_at_path(rx, path+1, endpath, state);
+                    make<Index_Expr>(
+                        share(cx.syntax()),
+                        to_expr(value, index_value_phrase(cx)),
+                        ri->expr()),
+                    cx);
+                return get_value_at_slice(Value{r}, slice, endslice, cx);
             }
+        } else if (ri->sctype_.is_list()) {
+            // TODO
+            // The only thing I need is the result type of value@index
+            // and then it's the same code as above. Wait til SubCurv supports
+            // this then use the function that computes the result type.
         }
-        /* TODO: add general support for A[[i,j,k]] to SubCurv
-        else if (ri->sc_type_.is_num_vec()) {
-            ...
-        }
-        */
     }
-    throw Exception(state.cx, state.err({share(list)}, index, path, endpath));
+    throw Exception(cx, index_error(
+        "Invalid index",
+        value, index, slice, endslice));
 }
-Value value_at_path(Value val, const Value* path, const Value* endpath,
-    Index_State& state)
-{
-    if (path == endpath) return val;
-    Value index = path[0];
-    if (auto list = val.maybe<List>()) {
-        return list_at_path(*list, index, path+1, endpath, state);
-    }
-    else if (auto string = val.maybe<String>()) {
-        if (path+1 == endpath) {
-            // TODO: this code only works for ASCII strings.
-            if (index.is_num()) {
-                int i = index.to_int(0, int(string->size()-1), state.icx);
-                return {make_string(string->data()+i, 1)};
-            }
-            else if (auto indices = index.maybe<List>()) {
-                String_Builder sb;
-                for (auto ival : *indices) {
-                    int i = ival.to_int(0, int(string->size()-1), state.icx);
-                    sb << string->at(i);
-                }
-                return {sb.get_string()};
-            }
-            // reactive index not supported because String is not in SubCurv
-        }
-    }
-    else if (auto rx = val.maybe<Reactive_Value>()) {
-        // TODO: what to do for pathsize > 1? punt for now.
-        if (path+1 == endpath && is_num(index)) {
-            auto iph = state.iph();
-            auto lph = state.lph();
-            Shared<List_Expr> ix = List_Expr::make({to_expr(index,*iph)}, iph);
-            ix->init();
-            return {make<Reactive_Expression>(
-                rx->sctype_.elem_type(),
-                make<Call_Expr>(state.ph(), to_expr(val,*lph), ix),
-                state.cx)};
-        }
-    }
-    throw Exception(state.cx, state.err(val, index, path+1, endpath));
-}
-Value value_at(Value list, Value index, Shared<const Phrase> callph, Frame& f)
-{
-    Index_State state(callph, f);
-    // TODO: support reactive index
-    auto path = index.to<List>(state.icx);
-    return value_at_path(list, path->begin(), path->end(), state);
-}
-#endif
 
 } // namespace curv
