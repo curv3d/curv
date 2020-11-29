@@ -87,6 +87,21 @@ Value get_value_at_index(
             auto r = list->at(size_t(num));
             return get_value_at_slice(r, slice, endslice, cx);
         }
+        if (auto string = value.maybe<String>()) {
+            unsigned len = string->size();
+            if (len == 0) {
+                throw Exception(cx, index_error(
+                    "String index is out of range",
+                    value, index, slice, endslice));
+            }
+            if (num < 0.0 || num > double(len-1)) {
+                throw Exception(cx, index_error(
+                    stringify("String index is not in range 0..",len-1),
+                    value, index, slice, endslice));
+            }
+            auto r = Value{make_string(string->data()+size_t(num),1)};
+            return get_value_at_slice(r, slice, endslice, cx);
+        }
         if (auto rx = value.maybe<Reactive_Value>()) {
             if (rx->sctype_.is_list()) {
                 auto k = rx->sctype_.count();
@@ -125,6 +140,17 @@ Value get_value_at_index(
         return get_value_at_slice(elem, slice, endslice, cx);
     }
     if (auto list = index.maybe<List>()) {
+        auto string = value.maybe<String>();
+        if (string && slice==endslice) {
+            String_Builder sb;
+            for (auto ival : *list) {
+                int i = ival.to_int(0, int(string->size()-1), cx);
+                sb << string->at(i);
+            }
+            return {sb.get_string()};
+        }
+        // More complicated string slicing cases will produce weird results.
+        // TODO: This is fixed once a string is a list of characters.
         Shared<List> result = List::make(list->size());
         for (unsigned i = 0; i < list->size(); ++i)
             result->at(i) =

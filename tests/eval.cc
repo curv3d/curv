@@ -312,9 +312,11 @@ TEST(curv, eval)
     // list index operator L[i,j,k]
     SUCCESS("[1,2,3][1]","2");
     FAILALL("[1,2,3][1.1]",
-        "1.1 is not an integer\n"
+        "Numeric index is not an integer\n"
+        "value: [1,2,3]\n"
+        "slice: .[1.1]\n"
         "1| [1,2,3][1.1]\n"
-        "          ^^^^^");
+        "   ^^^^^^^^^^^^");
     SUCCESS("(0..10)[3..1 by -1]", "[3,2,1]");
     SUCCESS("[false,true][[[0,1],[1,0]]]", "[[#false,#true],[#true,#false]]");
     SUCCESS("let a=[[1,2,3],[4,5,6],[7,8,9]] in a[[0,1],[1,2]]",
