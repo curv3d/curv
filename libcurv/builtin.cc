@@ -914,6 +914,16 @@ struct Fields_Function : public Tuple_Function
     }
 };
 
+struct Symbol_Function : public Function
+{
+    using Function::Function;
+    virtual Value call(Value arg, Fail fl, Frame& fr) const override
+    {
+        TRY_DEF(string, arg.to<String>(fl, At_Arg(*this, fr)));
+        auto symbol = make_symbol(string->data(), string->size());
+        return symbol.to_value();
+    }
+};
 struct Strcat_Function : public Tuple_Function
 {
     Strcat_Function(const char* nm) : Tuple_Function(1,nm) {}
@@ -1427,6 +1437,7 @@ builtin_namespace()
     FUNCTION("mag", Mag_Function),
     FUNCTION("count", Count_Function),
     FUNCTION("fields", Fields_Function),
+    FUNCTION("symbol", Symbol_Function),
     FUNCTION("strcat", Strcat_Function),
     FUNCTION("repr", Repr_Function),
     FUNCTION("decode", Decode_Function),

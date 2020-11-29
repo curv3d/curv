@@ -763,5 +763,7 @@ assert_error [
 let f = match[ensure is_num, _->#null]
 in assert(f 42 == 42 && f true == #null);
 
+assert(symbol "" == #'' && symbol "true" == true && symbol "foo" == #foo);
+
 // script return value:
 in null

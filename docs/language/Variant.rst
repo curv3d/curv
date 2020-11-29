@@ -71,7 +71,13 @@ Symbol API
 ----------
 Symbol names may contain spaces and punctuation characters other than ``_``.
 The syntax is ``#'hello world!'``.
-In other words, you precede a quoted identifier with a ``#`` to construct a quoted symbol.
-The use case for this will arise once symbol names appear as labels in the value picker GUI.
+In other words, you precede a quoted identifier with a ``#`` to construct a
+quoted symbol. The use case for this will arise once symbol names appear as
+labels in the value picker GUI.
 
-The function ``is_symbol x`` is a predicate that returns ``#true`` if ``x`` is a symbol.
+The function ``is_symbol x`` is a predicate that returns ``#true``
+if ``x`` is a symbol.
+
+The function ``symbol str`` converts a string argument to a symbol.
+As a special case, consider that ``symbol "true"`` and ``symbol "false"``
+construct the boolean values.
