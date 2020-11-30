@@ -26,6 +26,20 @@ private:
     String_or_Symbol(const String_or_Symbol&) = delete;
     String_or_Symbol(String_or_Symbol&&) = delete;
     String_or_Symbol& operator=(const String_or_Symbol&) = delete;
+
+    friend Value to_char(Value, Fail, const Context&);
+    template <class STRING>
+    static Shared<STRING>
+    make(int ty, size_t len)
+    {
+        void* raw = malloc(sizeof(STRING) + len);
+        if (raw == nullptr)
+            throw std::bad_alloc();
+        STRING* s = new(raw) STRING(ty);
+        s->data_[len] = '\0';
+        s->size_ = len;
+        return Shared<STRING>{s};
+    }
 public:
     String_or_Symbol(int t) : Ref_Value(t) {}
     template <class STRING>

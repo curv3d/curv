@@ -922,27 +922,44 @@ struct Fields_Function : public Tuple_Function
     }
 };
 
+Value to_char(Value arg, Fail fl, const Context& cx)
+{
+    // Convert int to char. So much code! Because: dynamic typing,
+    // 2 kinds of failure, vectorization, strings are lists + 2 list reprs.
+    if (arg.is_num()) {
+        int code;
+        if (!num_to_int(arg.to_num_unsafe(), code, 1, 127, fl, cx))
+            return missing;
+        return Value{char(code)};
+    }
+    else if (auto list = arg.maybe<List>()) {
+        // List values use a single canonical representation.
+        // A non-empty list of only chars is a String, otherwise a List.
+        if (list->empty()) return arg;
+        Shared<String> s =
+            String::make<String>(Ref_Value::ty_string, list->size());
+        for (unsigned i = 0; i < list->size(); ++i) {
+            TRY_DEF(val, to_char(list->at(i), fl, cx));
+            if (val.is_char())
+                s->data_[i] = val.to_char_unsafe();
+            else {
+                Shared<List> result = List::make(list->size());
+                for (unsigned j = 0; j < i; ++j)
+                    result->at(j) = Value(s->at(j));
+                result->at(i) = val;
+                for (unsigned k = i+1; k < list->size(); ++k)
+                    result->at(i) = to_char(list->at(i), fl, cx);
+                return {result};
+            }
+        }
+        return {s};
+    }
+    else
+        FAIL(fl, missing, cx, stringify(arg, " is not an integer or list"));
+}
 struct Char_Function : public Function
 {
     using Function::Function;
-    static Value to_char(Value arg, Fail fl, const Context& cx)
-    {
-        if (arg.is_num()) {
-            int code;
-            if (!num_to_int(arg.to_num_unsafe(), code, 1, 127, fl, cx))
-                return missing;
-            return Value{char(code)};
-        }
-        else if (auto list = arg.maybe<List>()) {
-            // TODO: Build a String or a List, based on the data.
-            Shared<List> result = List::make(list->size());
-            for (unsigned i = 0; i < list->size(); ++i)
-                result->at(i) = to_char(list->at(i), fl, cx);
-            return {result};
-        }
-        else
-            FAIL(fl, missing, cx, stringify(arg, " is not an integer or list"));
-    }
     virtual Value call(Value arg, Fail fl, Frame& fr) const override
     {
         return to_char(arg, fl, At_Arg(*this, fr));
