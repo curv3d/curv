@@ -101,10 +101,29 @@ Ternary List_Base::equal(const List_Base& list, const Context& cx) const
     return result;
 }
 
-auto List_Builder::get_list()
--> Shared<List>
+void List_Builder::push_back(Value val)
 {
-    return List::make_elements(*this);
+    if (in_string_) {
+        if (val.is_char()) {
+            string_.push_back(val.to_char_unsafe());
+            return;
+        }
+        for (auto c : string_)
+            list_.push_back({c});
+        in_string_ = false;
+    }
+    list_.push_back(val);
+}
+
+Value List_Builder::get_value()
+{
+    if (in_string_) {
+        if (string_.empty())
+            return {List::make(0)};
+        return {make_string(string_)};
+    }
+    Shared<List> result = List::make_elements(list_);
+    return {result};
 }
 
 Shared<List> List_Base::clone() const

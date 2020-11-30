@@ -768,6 +768,7 @@ let c=char 42 in (
     assert(is_char c && repr c == "char 42");
     assert(char[] == [] && char[97] == "a");
     assert("" == [] && repr "" == "[]");
+    assert([char 97] == "a" && repr[char 97] == "$=a$=");
 );
 
 // script return value:

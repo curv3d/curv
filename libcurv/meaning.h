@@ -453,7 +453,7 @@ struct List_Expr_Base : public Just_Expression
 
     void init(); // call after construction & initialization of array elements
     virtual Value eval(Frame&) const override;
-    Shared<List> eval_list(Frame&) const;
+    Value eval_list(Frame&) const;
     virtual SC_Value sc_eval(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;

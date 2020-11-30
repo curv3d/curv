@@ -402,7 +402,7 @@ Call_Expr::tail_eval(std::unique_ptr<Frame>& f) const
     tail_call_func(func_->eval(*f), arg_->eval(*f), syntax_, f);
 }
 
-Shared<List>
+Value
 List_Expr_Base::eval_list(Frame& f) const
 {
     // TODO: if the # of elements generated is known at compile time,
@@ -411,13 +411,13 @@ List_Expr_Base::eval_list(Frame& f) const
     List_Executor lex(lb);
     for (size_t i = 0; i < this->size(); ++i)
         (*this)[i]->exec(f, lex);
-    return lb.get_list();
+    return lb.get_value();
 }
 
 Value
 List_Expr_Base::eval(Frame& f) const
 {
-    return {eval_list(f)};
+    return eval_list(f);
 }
 
 void
@@ -686,7 +686,7 @@ Range_Expr::eval(Frame& f) const
         unsigned count = (unsigned) countd;
         for (unsigned i = 0; i < count; ++i)
             lb.push_back(Value{first + step*i});
-        return {lb.get_list()};
+        return lb.get_value();
     }
 
     // Fast path failed (assuming Num arguments).

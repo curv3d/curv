@@ -1021,7 +1021,7 @@ struct Encode_Function : public Tuple_Function
         TRY_DEF(str, value_to_string(f[0], fl, cx));
         for (size_t i = 0; i < str->size(); ++i)
             lb.push_back({(double)(int)str->at(i)});
-        return {lb.get_list()};
+        return lb.get_value();
     }
 };
 

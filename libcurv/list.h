@@ -8,6 +8,7 @@
 #include <libcurv/value.h>
 #include <libcurv/tail_array.h>
 #include <libcurv/array_mixin.h>
+#include <string>
 #include <vector>
 
 namespace curv {
@@ -56,13 +57,21 @@ inline Shared<List> make_list(size_t size)
     return {std::move(list)};
 }
 
-/// Factory class for building a curv::List.
-struct List_Builder : public std::vector<Value>
+// Factory class for making a Curv list value,
+// which is interally represented as a curv::List or curv::String.
+// Each Curv list value has a single canonical representation:
+//  * an empty list is a curv::List
+//  * a non-empty list containing only characters is a curv::String
+//  * otherwise, a curv::List
+struct List_Builder
 {
-    // An optimized version of this class would use a curv::List
-    // as the internal buffer.
-
-    Shared<List> get_list();
+private:
+    bool in_string_ = true;
+    std::string string_;
+    std::vector<Value> list_;
+public:
+    void push_back(Value);
+    Value get_value();
 };
 
 } // namespace curv
