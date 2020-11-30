@@ -771,7 +771,7 @@ String_Expr_Base::eval(Frame& f) const
     String_Builder sb;
     for (auto seg : *this)
         seg->generate(f, sb);
-    return {sb.get_string()};
+    return sb.get_value();
 }
 Symbol_Ref
 String_Expr_Base::eval_symbol(Frame& f) const

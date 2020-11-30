@@ -3,18 +3,26 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/string.h>
+#include <libcurv/list.h>
+#include <libcurv/exception.h>
 
 namespace curv {
 
 bool is_string(Value val)
 {
-    return val.maybe<String>() != nullptr;
+    if (val.maybe<String>() != nullptr) return true;
+    auto list = val.maybe<List>();
+    return (list && list->empty());
 }
 
 Shared<const String>
 value_to_string(Value val, Fail fl, const Context& cx)
 {
-    return val.to<const String>(fl, cx);
+    auto str = val.maybe<const String>();
+    if (str) return str;
+    auto list = val.maybe<const List>();
+    if (list && list->empty()) return make_string(size_t(0));
+    FAIL(fl, nullptr, cx, stringify(val," is not a string"));
 }
 
 Shared<const String>
@@ -24,6 +32,12 @@ maybe_string(Value val, const Context& cx)
 }
 
 const char String::name[] = "string";
+
+Shared<String>
+make_string(size_t len)
+{
+    return String::make<String>(Ref_Value::ty_string, len);
+}
 
 Shared<String>
 make_string(const char* str, size_t len)
@@ -46,6 +60,13 @@ String_Builder::get_string()
 {
     auto s = str(); // copies the data
     return make_string(s.data(), s.size()); // copies the data again
+}
+Value
+String_Builder::get_value()
+{
+    auto s = str(); // copies the data
+    if (s.empty()) return {List::make(0)};
+    return {make_string(s.data(), s.size())}; // copies the data again
 }
 
 void

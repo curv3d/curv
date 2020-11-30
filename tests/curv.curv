@@ -767,6 +767,7 @@ assert(symbol "" == #'' && symbol "true" == true && symbol "foo" == #foo);
 let c=char 42 in (
     assert(is_char c && repr c == "char 42");
     assert(char[] == [] && char[97] == "a");
+    assert("" == [] && repr "" == "[]");
 );
 
 // script return value:

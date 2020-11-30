@@ -4,7 +4,7 @@ String TODO:
     If all list elements are chars, use String repr.
     - 'char' function: construct a String or List in vector case, based on data.
     * [char 97] == "a"
-* [] and "" are the same. Both are an empty curv::List.
+- [] and "" are the same. Both are an empty curv::List.
 
 String brainstorming:
 * Rename 'symbol' and 'char' to 'to_symbol' and 'to_char', for consistency

@@ -936,12 +936,11 @@ Value to_char(Value arg, Fail fl, const Context& cx)
         // List values use a single canonical representation.
         // A non-empty list of only chars is a String, otherwise a List.
         if (list->empty()) return arg;
-        Shared<String> s =
-            String::make<String>(Ref_Value::ty_string, list->size());
+        Shared<String> s = make_string(list->size());
         for (unsigned i = 0; i < list->size(); ++i) {
             TRY_DEF(val, to_char(list->at(i), fl, cx));
             if (val.is_char())
-                s->data_[i] = val.to_char_unsafe();
+                s->at(i) = val.to_char_unsafe();
             else {
                 Shared<List> result = List::make(list->size());
                 for (unsigned j = 0; j < i; ++j)
@@ -970,7 +969,7 @@ struct Symbol_Function : public Function
     using Function::Function;
     virtual Value call(Value arg, Fail fl, Frame& fr) const override
     {
-        TRY_DEF(string, arg.to<String>(fl, At_Arg(*this, fr)));
+        TRY_DEF(string, value_to_string(arg, fl, At_Arg(*this, fr)));
         auto symbol = make_symbol(string->data(), string->size());
         return symbol.to_value();
     }

@@ -13,8 +13,6 @@
 
 namespace curv {
 
-bool is_string(Value);
-
 /// Representation of strings and symbols in the Curv runtime.
 ///
 /// This is a variable length object: the size and the character array
@@ -26,8 +24,8 @@ private:
     String_or_Symbol(const String_or_Symbol&) = delete;
     String_or_Symbol(String_or_Symbol&&) = delete;
     String_or_Symbol& operator=(const String_or_Symbol&) = delete;
-
-    friend Value to_char(Value, Fail, const Context&);
+protected:
+    String_or_Symbol(int t) : Ref_Value(t) {}
     template <class STRING>
     static Shared<STRING>
     make(int ty, size_t len)
@@ -40,8 +38,6 @@ private:
         s->size_ = len;
         return Shared<STRING>{s};
     }
-public:
-    String_or_Symbol(int t) : Ref_Value(t) {}
     template <class STRING>
     static Shared<STRING>
     make(int ty, const char* str, size_t len)
@@ -65,6 +61,7 @@ public:
     bool empty() const { return size_ == 0; }
     char operator[](size_t i) const { return data_[i]; }
     char at(size_t i) const { return data_[i]; }
+    char& at(size_t i) { return data_[i]; }
     const char* data() const { return data_; }
     const char* c_str() const { return data_; }
     const char* begin() const { return data_; }
@@ -79,6 +76,7 @@ struct String : public String_or_Symbol
 {
     using String_or_Symbol::String_or_Symbol;
     friend Shared<String> make_string(const char*, size_t);
+    friend Shared<String> make_string(size_t);
     virtual void print_repr(std::ostream&) const;
     static const char name[];
 };
@@ -99,15 +97,19 @@ operator<<(std::ostream& out, Shared<const String> str)
     return out;
 }
 
+bool is_string(Value);
+
 // Make a curv::String from an array of characters
 Shared<String> make_string(const char* str, size_t len);
+
+// Make an uninitialized curv::String
+Shared<String> make_string(size_t len);
 
 // Make a curv::String from a character Range
 inline Shared<String> make_string(Range<const char*> r)
 {
     return make_string(r.begin(), r.size());
 }
-
 
 // Make a curv::String from a C string
 //
@@ -116,9 +118,8 @@ inline Shared<String> make_string(Range<const char*> r)
 // In particular, `make_string(path.c_str())` is not enough and fails
 // compilation on Windows as `path.c_str()` will return a wchar_t* string.
 //
-// If you really have a pure wchar_t* string (this should only happen on Windows,
-// e.g. from Windows API), do the following:
-//
+// If you really have a pure wchar_t* string (this should only happen on
+// Windows, e.g. from Windows API), do the following:
 //    1. add `#ifdef _WIN32 #include <libcurv/win32.h> #endif`,
 //    2. and use `make_string(wstr_to_string(my_str).c_str())`.
 inline Shared<String>
@@ -128,8 +129,6 @@ make_string(const char*str)
 }
 
 // Deleted overload, use other overloads!
-//
-
 //
 // Rationale for explicit deletion: without deletion, calling
 // make_string(wchar_t*) would use the `make_string(Value);` overload --
@@ -185,6 +184,7 @@ struct String_Builder : public std::stringstream
     // as the internal string buffer.
 
     Shared<String> get_string();
+    Value get_value();
 
     // variadic function that appends each argument to the string buffer
     template<typename First, typename... Rest>
