@@ -106,6 +106,14 @@ struct Is_Bool_Function : public Function
         return {is_bool(arg)};
     }
 };
+struct Is_Char_Function : public Function
+{
+    using Function::Function;
+    Value call(Value arg, Fail, Frame&) const override
+    {
+        return {arg.is_char()};
+    }
+};
 struct Is_Symbol_Function : public Function
 {
     using Function::Function;
@@ -914,6 +922,32 @@ struct Fields_Function : public Tuple_Function
     }
 };
 
+struct Char_Function : public Function
+{
+    using Function::Function;
+    static Value to_char(Value arg, Fail fl, const Context& cx)
+    {
+        if (arg.is_num()) {
+            int code;
+            if (!num_to_int(arg.to_num_unsafe(), code, 1, 127, fl, cx))
+                return missing;
+            return Value{char(code)};
+        }
+        else if (auto list = arg.maybe<List>()) {
+            // TODO: Build a String or a List, based on the data.
+            Shared<List> result = List::make(list->size());
+            for (unsigned i = 0; i < list->size(); ++i)
+                result->at(i) = to_char(list->at(i), fl, cx);
+            return {result};
+        }
+        else
+            FAIL(fl, missing, cx, stringify(arg, " is not an integer or list"));
+    }
+    virtual Value call(Value arg, Fail fl, Frame& fr) const override
+    {
+        return to_char(arg, fl, At_Arg(*this, fr));
+    }
+};
 struct Symbol_Function : public Function
 {
     using Function::Function;
@@ -1386,6 +1420,7 @@ builtin_namespace()
     {make_symbol("time"), make<Builtin_Time>()},
 
     FUNCTION("is_bool", Is_Bool_Function),
+    FUNCTION("is_char", Is_Char_Function),
     FUNCTION("is_symbol", Is_Symbol_Function),
     FUNCTION("is_num", Is_Num_Function),
     FUNCTION("is_string", Is_String_Function),
@@ -1437,6 +1472,7 @@ builtin_namespace()
     FUNCTION("mag", Mag_Function),
     FUNCTION("count", Count_Function),
     FUNCTION("fields", Fields_Function),
+    FUNCTION("char", Char_Function),
     FUNCTION("symbol", Symbol_Function),
     FUNCTION("strcat", Strcat_Function),
     FUNCTION("repr", Repr_Function),

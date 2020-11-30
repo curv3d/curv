@@ -25,6 +25,14 @@ Value::to_bool(const Context& cx) const
     throw Exception(cx, stringify(*this, " is not a boolean"));
 }
 
+char
+Value::to_char(const Context& cx) const
+{
+    if (is_char())
+        return to_char_unsafe();
+    throw Exception(cx, stringify(*this, " is not a character"));
+}
+
 double
 Value::to_num(const Context& cx) const
 {
@@ -76,6 +84,8 @@ const
         out << "<missing>";
     } else if (is_bool()) {
         out << (to_bool_unsafe() ? "#true" : "#false");
+    } else if (is_char()) {
+        out << "char " << unsigned(to_char_unsafe());
     } else if (is_num()) {
         out << dfmt(to_num_unsafe());
     } else if (is_ref()) {
@@ -93,6 +103,8 @@ const
         out << "<missing>";
     } else if (is_bool()) {
         out << (to_bool_unsafe() ? "true" : "false");
+    } else if (is_char()) {
+        out << to_char_unsafe();
     } else if (is_num()) {
         out << dfmt(to_num_unsafe());
     } else if (is_ref()) {
@@ -126,7 +138,7 @@ Ternary Value::equal(Value v, const Context& cx) const
         return Ternary(number_ == v.number_);
 
     if (!is_ref()) {
-        // `*this` is a non-numeric immediate value: boolean or missing.
+        // `*this` is a non-numeric immediate value: bool, char or missing.
         return Ternary(bits_ == v.bits_);
     }
 

@@ -80,9 +80,9 @@ struct Ref_Value : public Shared_Base
 /// with the data stored in the low order 48 bits of the NaN. This is called
 /// "NaN boxing", a technique also used by LuaJIT and JavaScriptCore.
 ///
-/// Boolean and Number values are "immediate" values, stored entirely
-/// in the 64 bit pattern of a Value. There are 3 special immediate values
-/// which aren't numbers: missing, false and true.
+/// "Immediate" values are stored entirely in the 64 bit pattern of a Value.
+/// These are numbers, booleans, characters, and the "missing" pseudovalue
+/// that denotes the absence of a value within libcurv APIs.
 ///
 /// String, List, Record and Function values are "reference" values:
 /// a Ref_Value* pointer is stored in the low order 48 bits of the Value.
@@ -126,6 +126,12 @@ private:
     static constexpr uint64_t k_boolbits = k_nanbits|2;
     static constexpr uint64_t k_boolmask = 0xFFFF'FFFF'FFFF'FFFE;
 
+    /// In a character, the low order two bits are 01.
+    /// The 8 bits adjacent to this are the character value.
+    static constexpr uint64_t k_charbits = k_nanbits|1;
+    static constexpr uint64_t k_charmask = 0xFFFF'FFFF'FFFF'FC03;
+    static constexpr unsigned k_charoffset = 2;
+
     // Note: the corresponding public constructor takes a Shared argument.
     inline Value(const Ref_Value* r)
     {
@@ -166,7 +172,7 @@ public:
     {
         return (bits_ & k_boolmask) == k_boolbits;
     }
-    /// Convert a boolean value to `bool`.
+    /// Convert a boxed boolean Value to `bool`.
     ///
     /// Only defined if is_bool() is true.
     inline bool to_bool_unsafe() const noexcept
@@ -175,6 +181,27 @@ public:
     }
     /// Convert a Value to `bool`, throw an exception if wrong type.
     bool to_bool(const Context&) const;
+
+    /**************
+     * characters *
+     **************/
+    /// Construct a character value.
+    inline constexpr Value(char c)
+    : bits_{k_charbits|(uint64_t((unsigned char)c) << k_charoffset)}
+    {}
+    /// True if the value is a character.
+    inline bool is_char() const noexcept
+    {
+        return (bits_ & k_charmask) == k_charbits;
+    }
+    /// Convert a boxed character Value to type 'char'.
+    /// Only defined if is_char() is true.
+    inline char to_char_unsafe() const noexcept
+    {
+        return char(bits_ >> k_charoffset);
+    }
+    /// Convert a Value to `char`, throw an exception if wrong type.
+    char to_char(const Context&) const;
 
     /// Construct a number value.
     ///
@@ -238,9 +265,11 @@ public:
         // exponent than this, so will test < +inf as an integer bit pattern.
         // The positive NaNs have the largest signed integer magnitude,
         // and all non-numeric values are encoded as positive NaNs.
-        // The 3 special immediate values (null, false and true)
+        // The 3 special immediate values (missing, false and true)
         // are encoded like pointer values in the range 0...3.
-        return signed_bits_ > (int64_t)(k_nanbits|3);
+        return signed_bits_ > (int64_t)(k_nanbits|3)
+            && (bits_ & 3) == 0;
+        // TODO: the second test rules out characters; make this faster.
     }
 
     /// Convert a reference value to `Ref_Value&`.

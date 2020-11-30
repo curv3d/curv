@@ -1,3 +1,17 @@
+String TODO:
+* 'char' function: construct a String or List in vector case, based on data.
+
+String brainstorming:
+* Rename 'symbol' and 'char' to 'to_symbol' and 'to_char', for consistency
+  with other *_to_* functions?
+  * This means characters print as 'to_char 42' instead of as 'char 42'.
+    This extra verbosity is annoying.
+* Maybe use 'chr' like BASIC, PHP, Python? Then allow 1-character symbols
+  as arguments to 'chr'. Then print characters like this:
+    chr#a    chr#'*'  chr 10
+    char 97  char 42  char 10
+    "a"@0    "*"@0
+
 Update Array documentation: definition of ranked array, ranked function.
 
 * `list[i1,i2,...]` support reactive args

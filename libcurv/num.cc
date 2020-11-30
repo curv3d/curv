@@ -33,6 +33,22 @@ num_to_int(double num, int lo, int hi, const Context& cx)
     return int(intf);
 }
 
+bool
+num_to_int(double num, int& out, int lo, int hi, Fail fl, const Context& cx)
+{
+    double intf;
+    double frac = modf(num, &intf);
+    if (frac != 0.0) {
+        FAIL(fl, false, cx, stringify(num, " is not an integer"));
+    }
+    if (intf < double(lo) || intf > double(hi)) {
+        FAIL(fl, false, cx, stringify(
+            intf, " is not in the range ",lo,"..",hi));
+    }
+    out = int(intf);
+    return true;
+}
+
 bool num_is_int(double num)
 {
     if (std::abs(num) <= max_exact_int) {

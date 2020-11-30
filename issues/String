@@ -1,5 +1,5 @@
 A string is a list of zero or more characters.
-
+==============================================
 Rationale: Better, more consistent semantics & program algebra.
 Now it is possible for a list comprehension to iterate over the characters
 in a string, and to return a string, using a simple dynamic type system,
@@ -7,18 +7,22 @@ instead of using a complex static type system. We can now have general
 polymorphic operations over strings and lists.
 
 Add a "character" data type.
- * `is_char val` is a predicate.
- * `char n` converts the code point n to a character value. (Vectorized.)
+ - new immediate Value type
+ - `is_char val` is a predicate.
+ - `char n` converts the code point n to a character value. (Vectorized.)
  * `ucode c` converts the character c to a code point integer. (Vectorized.)
  * deprecate `encode` and `decode`
- * a character prints as: "A"[0] => char 65
+ - a character prints as: "A"[0] => char 65
+ ~ `char 65` is a pattern? Made more sense when `char #A` was part of design.
+   Also, "A" is not a pattern.
  * characters are ordered: see the Ordered issue.
+
+Fix get_value_from_index so that general String indexing now works.
 
 Additional operations:
  * a++b infix concat operator
  * `string` converts an arbitrary value to a string (using print_string format).
  * `strcat(L)` is deprecated; replaced by `concat(map string L)`.
- * symbol("foo") => #foo
 
 A character string literal "abc" is semantically a list of characters.
 By definition, a string is a list of zero or more character values.
@@ -34,6 +38,21 @@ Therefore [] is the empty string.
    equal["foo","fob"] => [#true,#true,#false]
  * "abc"[[0,[1,2]]] == "abc"@[0,[1,2]] == "a"++["bc"]
  * do local a = "abc"; a[0] := 42 in a==[42]++"bc"
+
+Brainstorming:
+  "foo$(x)bar" is now equivalent to "foo"++[x]++"bar"?
+  Embeds the value directly as a list element.
+  Why? A future GUI REPL embeds arbitrary values in the debug log,
+  which can be inspected and browsed.
+  We can use $(x,y,z) and $(...vec) to embed multiple elements.
+  Use "foo${repr x}bar" for the previous semantics.
+  BUT: doesn't work for 'print "x=$(x)"' debugging if x is a char.
+
+Add a `format` function like Python and many other modern languages.
+
+JSON export sends Curv "" -> JSON [] and Curv #'' -> JSON "".
+JSON import doesn't exist, but it would send JSON "" -> Curv #''.
+So there is a bijection between JSON and a Curv value subset.
 
 Internally we'll retain the curv::String data type.
 
