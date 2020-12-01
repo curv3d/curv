@@ -85,7 +85,11 @@ const
     } else if (is_bool()) {
         out << (to_bool_unsafe() ? "#true" : "#false");
     } else if (is_char()) {
-        out << "char " << unsigned(to_char_unsafe());
+        char c = to_char_unsafe();
+        if (c >= ' ' && c <= '~' && c != '\'')
+            out << "char#'" << c << "'";
+        else
+            out << "char " << unsigned(c);
     } else if (is_num()) {
         out << dfmt(to_num_unsafe());
     } else if (is_ref()) {

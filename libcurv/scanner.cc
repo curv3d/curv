@@ -290,20 +290,6 @@ quoted_identifier:
                 ++p;
                 goto success;
             }
-            if (*p == '$') {
-                ++p;
-                if (p < last && (*p == '-' || *p == '.')) {
-                    ++p;
-                    continue;
-                }
-                ++p;
-                tok.first_ = p - 2 - first;
-                tok.last_ = p - first;
-                tok.kind_ = Token::k_bad_token;
-                ptr_ = p;
-                throw Exception(At_Token(tok, *this),
-                    "illegal escape sequence in quoted identifier");
-            }
             if (*p >= ' ' && *p <= '~') {
                 ++p;
                 continue;

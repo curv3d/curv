@@ -922,15 +922,22 @@ struct Fields_Function : public Tuple_Function
     }
 };
 
+// Construct a character from an integer or a symbol of length 1.
+// Vectorized.
 Value to_char(Value arg, Fail fl, const Context& cx)
 {
-    // Convert int to char. So much code! Because: dynamic typing,
-    // 2 kinds of failure, vectorization, strings are lists + 2 list reprs.
     if (arg.is_num()) {
         int code;
         if (!num_to_int(arg.to_num_unsafe(), code, 1, 127, fl, cx))
             return missing;
         return Value{char(code)};
+    }
+    else if (auto sym = maybe_symbol(arg)) {
+        if (sym.size() != 1) {
+            FAIL(fl, missing, cx,
+                stringify(arg, " is not a symbol of length 1"));
+        }
+        return Value{*sym.c_str()};
     }
     else if (auto list = arg.maybe<List>()) {
         // List values use a single canonical representation.
@@ -953,8 +960,10 @@ Value to_char(Value arg, Fail fl, const Context& cx)
         }
         return {s};
     }
-    else
-        FAIL(fl, missing, cx, stringify(arg, " is not an integer or list"));
+    else {
+        FAIL(fl, missing, cx,
+            stringify(arg, " is not an integer, symbol, or list of these"));
+    }
 }
 struct Char_Function : public Function
 {

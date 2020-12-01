@@ -764,16 +764,15 @@ let f = match[ensure is_num, _->#null]
 in assert(f 42 == 42 && f true == #null);
 
 assert(symbol "" == #'' && symbol "true" == true && symbol "foo" == #foo);
-let c=char 42 in (
-    assert(is_char c && repr c == "char 42");
-    assert(char[] == [] && char[97] == "a");
-    assert("" == [] && repr "" == "[]");
-    assert([char 97] == "a" && repr[char 97] == "$=a$=");
-    assert(is_string[] && is_string[char 97]);
-    assert(concat["ab","cd"] == "abcd");
-    assert(concat["a",[1]] == [char 97,1]);
-    assert([for (c in "abc") c] == "abc");
-);
+let c=char 42 in assert(is_char c && repr c == "char#'*'");
+assert(char 36 == char#'$');
+assert(char[] == [] && char[97] == "a");
+assert("" == [] && repr "" == "[]");
+assert([char 97] == "a" && repr[char 97] == "$=a$=");
+assert(is_string[] && is_string[char 97]);
+assert(concat["ab","cd"] == "abcd");
+assert(concat["a",[1]] == [char 97,1]);
+assert([for (c in "abc") c] == "abc");
 
 // script return value:
 in null

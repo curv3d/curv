@@ -52,11 +52,15 @@ Symbol_Ref token_to_symbol(Range<const char*> str)
         assert(str[str.size()-1] == '\'');
         String_Builder sb;
         for (const char* p = &str[1]; *p != '\''; ++p) {
-            if (*p == '$') {
-                ++p;
-                if (*p == '-')
+            if (p[0] == '$') {
+                if (p[1] == '-') {
+                    ++p;
                     sb << '\'';
-                else if (*p == '.')
+                }
+                else if (p[1] == '.') {
+                    ++p;
+                    sb << '$';
+                } else
                     sb << '$';
             } else
                 sb << *p;
