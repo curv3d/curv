@@ -40,8 +40,9 @@ String/Quoted Identifier Escape Sequences
       will be weird.
     * Use "'"@0
 
-String brainstorming:
+String refactoring:
 * Abstract_List class, superclass of String and List. (But not Symbol...)
+* other specialized list representations: bit list, numeric range
 
 Update Array documentation: definition of ranked array, ranked function.
 

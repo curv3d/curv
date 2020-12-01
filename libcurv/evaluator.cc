@@ -425,6 +425,11 @@ Spread_Op::exec(Frame& f, Executor& ex) const
             ex.push_value(list->at(i), cstmt);
         return;
     }
+    if (auto string = arg.maybe<const String>()) {
+        for (char c : *string)
+            ex.push_value(Value{c}, cstmt);
+        return;
+    }
     if (auto rec = arg.maybe<const Record>()) {
         for (auto i = rec->iter(); !i->empty(); i->next())
             ex.push_field(i->key(), i->value(carg), cstmt);

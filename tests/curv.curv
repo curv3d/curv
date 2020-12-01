@@ -774,6 +774,7 @@ assert([for (c in "abc") c] == "abc");
 assert("a"++"b" == "ab" && [1]++[2]==[1,2] && "a"++[2]==[char#'a',2]);
 assert( "foo"[0] == char#'f' && "foobar"[[3,2,4]] == "boa" );
 assert( "abc"@[0,[1,2]] == [char#'a',"bc"] );
+assert( [..."abc",char#'d'] == "abcd" );
 
 // script return value:
 in null
