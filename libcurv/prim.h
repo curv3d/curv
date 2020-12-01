@@ -26,6 +26,17 @@
 
 namespace curv {
 
+struct Binary_Op
+{
+    static SC_Value sc_call(
+        SC_Frame& fm, const Operation& a, const Operation& b,
+        Shared<const Phrase> syntax)
+    {
+        throw Exception(At_SC_Phrase(syntax, fm),
+            "operation not supported");
+    }
+};
+
 //----------------------------------------------------------------------//
 // Templates for converting an Array_Op to a unary or binary Expression //
 //----------------------------------------------------------------------//

@@ -51,6 +51,23 @@ struct Not_Prim : public Unary_Bool_Prim
 using Not_Op = Unary_Array_Op<Not_Prim>;
 using Not_Expr = Unary_Op_Expr<Not_Op>;
 
+// a++b catenates two lists or strings
+struct Cat_Op : public Binary_Op
+{
+    static Value call(Fail fl, const Context& cx, Value a, Value b)
+    {
+        (void)fl; // TODO
+        List_Builder lb;
+        lb.concat(a, cx);
+        lb.concat(b, cx);
+        return lb.get_value();
+    }
+    struct Prim {
+        static const char* name() {return "++";};
+    };
+};
+using Cat_Expr = Binary_Op_Expr<Cat_Op>;
+
 struct Add_Prim : public Binary_Num_SCMat_Prim
 {
     static const char* name() {return "+";};

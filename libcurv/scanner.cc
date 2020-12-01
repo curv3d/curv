@@ -361,7 +361,11 @@ quoted_identifier:
             tok.kind_ = Token::k_colon;
         goto success;
     case '+':
-        tok.kind_ = Token::k_plus;
+        if (p < last && *p == '+') {
+            tok.kind_ = Token::k_plus_plus;
+            ++p;
+        } else
+            tok.kind_ = Token::k_plus;
         goto success;
     case '-':
         if (p < last && *p == '>') {

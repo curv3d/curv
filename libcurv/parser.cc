@@ -521,7 +521,7 @@ parse_relation(Scanner& scanner)
     }
 }
 
-// sum : product | sum + product | sum - product
+// sum : product | sum + product | sum - product | sum ++ product
 Shared<Phrase>
 parse_sum(Scanner& scanner)
 {
@@ -530,6 +530,7 @@ parse_sum(Scanner& scanner)
         auto tok = scanner.get_token();
         switch (tok.kind_) {
         case Token::k_plus:
+        case Token::k_plus_plus:
         case Token::k_minus:
             left = make<Binary_Phrase>(
                 std::move(left), tok, parse_product(scanner));

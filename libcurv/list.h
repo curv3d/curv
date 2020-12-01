@@ -71,6 +71,7 @@ private:
     std::vector<Value> list_;
 public:
     void push_back(Value);
+    void concat(Value, const Context&);
     Value get_value();
 };
 

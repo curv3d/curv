@@ -115,6 +115,29 @@ void List_Builder::push_back(Value val)
     list_.push_back(val);
 }
 
+void List_Builder::concat(Value val, const Context& cx)
+{
+    if (auto strval = val.maybe<String>()) {
+        if (strval->empty()) return;
+        if (in_string_)
+            string_ += strval->c_str();
+        else {
+            for (auto c : *strval)
+                list_.push_back({c});
+        }
+    } else if (auto listval = val.maybe<List>()) {
+        if (listval->empty()) return;
+        if (in_string_) {
+            for (auto c : string_)
+                list_.push_back({c});
+            in_string_ = false;
+        }
+        list_.insert(list_.end(), listval->begin(), listval->end());
+    } else {
+        throw Exception(cx, stringify(val, "is not a list"));
+    }
+}
+
 Value List_Builder::get_value()
 {
     if (in_string_) {

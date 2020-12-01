@@ -773,6 +773,7 @@ assert(is_string[] && is_string[char 97]);
 assert(concat["ab","cd"] == "abcd");
 assert(concat["a",[1]] == [char 97,1]);
 assert([for (c in "abc") c] == "abc");
+assert("a"++"b" == "ab" && [1]++[2]==[1,2] && "a"++[2]==[char#'a',2]);
 
 // script return value:
 in null

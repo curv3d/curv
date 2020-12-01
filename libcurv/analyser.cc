@@ -630,6 +630,11 @@ Binary_Phrase::analyse(Environ& env, Interp) const
             share(*this),
             analyse_op(*left_, env),
             analyse_op(*right_, env));
+    case Token::k_plus_plus:
+        return make<Cat_Expr>(
+            share(*this),
+            analyse_op(*left_, env),
+            analyse_op(*right_, env));
     case Token::k_times:
         return make<Multiply_Expr>(
             share(*this),

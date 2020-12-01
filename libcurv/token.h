@@ -95,6 +95,7 @@ struct Token
         k_right_arrow,      ///! `->` operator
         k_power,            ///! `^` operator
         k_plus,
+        k_plus_plus,
         k_minus,
         k_times,
         k_over,             ///! `/` operator
