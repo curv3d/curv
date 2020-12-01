@@ -403,7 +403,7 @@ Call_Expr::tail_eval(std::unique_ptr<Frame>& f) const
 }
 
 Value
-List_Expr_Base::eval_list(Frame& f) const
+List_Expr_Base::eval(Frame& f) const
 {
     // TODO: if the # of elements generated is known at compile time,
     // then the List could be constructed directly without using a std::vector.
@@ -412,12 +412,6 @@ List_Expr_Base::eval_list(Frame& f) const
     for (size_t i = 0; i < this->size(); ++i)
         (*this)[i]->exec(f, lex);
     return lb.get_value();
-}
-
-Value
-List_Expr_Base::eval(Frame& f) const
-{
-    return eval_list(f);
 }
 
 void

@@ -1,24 +1,15 @@
 String TODO:
-* remove eval_list
-- [char 97] behaves like "a"
-  - To make equality work, all lists/strings have a single canonical repr.
-    If all list elements are chars, use String repr.
-    - 'char' function: construct a String or List in vector case, based on data.
-    - [char 97] == "a"
-- [] and "" are the same. Both are an empty curv::List.
-- "ab" == [char 97, char 98]
-- is_string [] == #true
 * concat supports a mixture of Strings and Lists
-- 'for (i in list)' works when list is a string
-- "" prints as []
 * concat["abc",[1,2,3]] prints as "abc"++[1,2,3] but is represented
   internally as a List
 * a==b and equal[a,b] treat strings and lists as equivalent.
   equal["foo","fob"] => [#true,#true,#false]
 * "abc"[[0,[1,2]]] == "abc"@[0,[1,2]] == "a"++["bc"]
 * do local a = "abc"; a[0] := 42 in a==[42]++"bc"
+* pronounceable literals for printable characters: "a"@0 == char#a
 
 String brainstorming:
+* Abstract_List class, superclass of String and List. (But not Symbol...)
 * Rename 'symbol' and 'char' to 'to_symbol' and 'to_char', for consistency
   with other *_to_* functions?
   * This means characters print as 'to_char 42' instead of as 'char 42'.
@@ -28,6 +19,8 @@ String brainstorming:
     chr#a    chr#'*'  chr 10
     char 97  char 42  char 10
     "a"@0    "*"@0
+  Pronounceable programming: char#a is pronounced "char ay".
+  That's the most pronounceable character literal syntax I've found.
 
 Update Array documentation: definition of ranked array, ranked function.
 
