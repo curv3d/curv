@@ -645,14 +645,29 @@ For_Op::exec(Frame& f, Executor& ex) const
 {
     At_Phrase cx{*list_->syntax_, f};
     At_Index icx{0, cx};
-    auto list = list_->eval(f).to<List>(cx);
-    for (size_t i = 0; i < list->size(); ++i) {
-        icx.index_ = i;
-        // TODO: For_Op::exec: can't use icx in pattern_->exec(), not At_Syntax
-        pattern_->exec(f.array_, list->at(i), cx, f);
-        if (cond_ && !cond_->eval(f).to_bool(At_Phrase{*cond_->syntax_,f}))
-            break;
-        body_->exec(f, ex);
+    auto values = list_->eval(f);
+    if (auto list = values.maybe<const List>()) {
+        for (size_t i = 0; i < list->size(); ++i) {
+            icx.index_ = i;
+            // TODO: For_Op::exec: use icx in pattern_->exec()
+            // doesn't work now because not At_Syntax
+            pattern_->exec(f.array_, list->at(i), cx, f);
+            if (cond_ && !cond_->eval(f).to_bool(At_Phrase{*cond_->syntax_,f}))
+                break;
+            body_->exec(f, ex);
+        }
+    } else if (auto string = values.maybe<const String>()) {
+        for (size_t i = 0; i < string->size(); ++i) {
+            icx.index_ = i;
+            // TODO: For_Op::exec: use icx in pattern_->exec()
+            // doesn't work now because not At_Syntax
+            pattern_->exec(f.array_, {string->at(i)}, cx, f);
+            if (cond_ && !cond_->eval(f).to_bool(At_Phrase{*cond_->syntax_,f}))
+                break;
+            body_->exec(f, ex);
+        }
+    } else {
+        throw Exception(cx, stringify(values, " is not a list"));
     }
 }
 
