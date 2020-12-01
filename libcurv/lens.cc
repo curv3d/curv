@@ -99,7 +99,7 @@ Value get_value_at_index(
                     stringify("String index is not in range 0..",len-1),
                     value, index, slice, endslice));
             }
-            auto r = Value{make_string(string->data()+size_t(num),1)};
+            auto r = Value{string->at(size_t(num))};
             return get_value_at_slice(r, slice, endslice, cx);
         }
         if (auto rx = value.maybe<Reactive_Value>()) {
@@ -140,22 +140,30 @@ Value get_value_at_index(
         return get_value_at_slice(elem, slice, endslice, cx);
     }
     if (auto list = index.maybe<List>()) {
-        auto string = value.maybe<String>();
-        if (string && slice==endslice) {
-            String_Builder sb;
-            for (auto ival : *list) {
-                int i = ival.to_int(0, int(string->size()-1), cx);
-                sb << string->at(i);
-            }
-            return {sb.get_string()};
+        List_Builder lb;
+        for (auto i : *list) {
+            auto r = get_value_at_index(value, i, slice, endslice, cx);
+            lb.push_back(r);
         }
-        // More complicated string slicing cases will produce weird results.
-        // TODO: This is fixed once a string is a list of characters.
+        return lb.get_value();
+        #if 0
+        // TODO: faster code for special cases?
+        if (auto string = value.maybe<String>()) {
+            if (slice==endslice) {
+                String_Builder sb;
+                for (auto ival : *list) {
+                    int i = ival.to_int(0, int(string->size()-1), cx);
+                    sb << string->at(i);
+                }
+                return {sb.get_string()};
+            }
+        }
         Shared<List> result = List::make(list->size());
         for (unsigned i = 0; i < list->size(); ++i)
             result->at(i) =
                 get_value_at_index(value, list->at(i), slice, endslice, cx);
         return {result};
+        #endif
     }
     if (auto func = maybe_function(index, cx)) {
         std::unique_ptr<Frame> f2 =
