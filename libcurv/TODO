@@ -1,8 +1,13 @@
 String TODO:
+* fix where Lists work but Strings fail:
+  * select[bits,string,string]
+  * equal,unequal,Unary_Scalar_Prim
+    equal["foo","fob"] == [#true,#true,#false]
+* locatives: do local a = "abc"; a[0] := 42 in a==[42]++"bc"
 * resolve issue of String/Quoted Identifier Escape Sequences
 * concat["abc",[1,2,3]] prints as "abc"++[1,2,3]
-* equal["foo","fob"] => [#true,#true,#false]
-* do local a = "abc"; a[0] := 42 in a==[42]++"bc"
+* `ucode c` converts the character c to a code point integer. (Vectorized.)
+* `string` converts an arbitrary value to a string (using print_string format).
 
 String/Quoted Identifier Escape Sequences
 * pronounceable literals for printable characters: "a"@0 == char#a
@@ -37,7 +42,15 @@ String/Quoted Identifier Escape Sequences
 
 String refactoring:
 * Abstract_List class, superclass of String and List. (But not Symbol...)
-* other specialized list representations: bit list, numeric range
+   * size_t size_;
+   * virtual Value val_at(size_t i);
+   * No iterators. Provide some bulk virtual operations where it makes sense
+     for performance.
+   * Convert String_Or_Symbol class to a template that takes a Base parameter.
+     Symbol base is Ref_Value; String base is Abstract_List.
+* Other specialized list representations: bit list, numeric range.
+  * Some values have an associated typed-array class, used by List_Builder
+    instead of curv::List for arrays of those values.
 
 Update Array documentation: definition of ranked array, ranked function.
 

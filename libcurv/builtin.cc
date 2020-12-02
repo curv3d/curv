@@ -973,6 +973,35 @@ struct Char_Function : public Function
         return to_char(arg, fl, At_Arg(*this, fr));
     }
 };
+Value ucode(Value arg, Fail fl, const Context& cx)
+{
+    if (arg.is_char())
+        return {(double)(unsigned)arg.to_char_unsafe()};
+    if (auto str = arg.maybe<const String>()) {
+        List_Builder lb;
+        for (size_t i = 0; i < str->size(); ++i)
+            lb.push_back({(double)(unsigned)str->at(i)});
+        return lb.get_value();
+    }
+    if (auto list = arg.maybe<const List>()) {
+        List_Builder lb;
+        for (Value e : *list) {
+            TRY_DEF(r, ucode(e, fl, cx));
+            lb.push_back(r);
+        }
+        return lb.get_value();
+    }
+    FAIL(fl, missing, cx,
+        stringify(arg, " is not a character or list of characters"));
+}
+struct Ucode_Function : public Function
+{
+    using Function::Function;
+    virtual Value call(Value arg, Fail fl, Frame& fr) const override
+    {
+        return ucode(arg, fl, At_Arg(*this, fr));
+    }
+};
 struct Symbol_Function : public Function
 {
     using Function::Function;
@@ -981,6 +1010,16 @@ struct Symbol_Function : public Function
         TRY_DEF(string, value_to_string(arg, fl, At_Arg(*this, fr)));
         auto symbol = make_symbol(string->data(), string->size());
         return symbol.to_value();
+    }
+};
+struct String_Function : public Function
+{
+    using Function::Function;
+    virtual Value call(Value arg, Fail fl, Frame& fr) const override
+    {
+        String_Builder sb;
+        arg.print_string(sb);
+        return {sb.get_string()};
     }
 };
 struct Strcat_Function : public Tuple_Function
@@ -1498,7 +1537,9 @@ builtin_namespace()
     FUNCTION("count", Count_Function),
     FUNCTION("fields", Fields_Function),
     FUNCTION("char", Char_Function),
+    FUNCTION("ucode", Ucode_Function),
     FUNCTION("symbol", Symbol_Function),
+    FUNCTION("string", String_Function),
     FUNCTION("strcat", Strcat_Function),
     FUNCTION("repr", Repr_Function),
     FUNCTION("decode", Decode_Function),
