@@ -14,10 +14,15 @@ namespace curv {
 bool is_symbol(Value a);
 
 struct Symbol_Ref;
-
-struct Symbol : public String_or_Symbol
+struct Symbol_Base;
+using Symbol = String_Mixin<Symbol_Base>;
+struct Symbol_Base : public Ref_Value
 {
-    using String_or_Symbol::String_or_Symbol;
+    Symbol_Base() : Ref_Value(ty_symbol) {}
+    size_t size_;
+    char data_[1];
+    size_t size() const noexcept { return size_; }
+    bool empty() const noexcept { return size_ == 0; }
     // you must call make_symbol() to construct a Symbol.
     friend Symbol_Ref make_symbol(const char*, size_t);
     virtual void print_repr(std::ostream&) const;
@@ -43,7 +48,7 @@ struct Symbol_Ref : private Shared<const Symbol>
 private:
     using Base = Shared<const Symbol>;
     inline Symbol_Ref(Base sym) : Base(sym) {}
-    friend void Symbol::print_repr(std::ostream& out) const;
+    friend void Symbol_Base::print_repr(std::ostream& out) const;
 public:
     using Shared<const Symbol>::Shared;
 

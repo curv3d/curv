@@ -5,11 +5,12 @@
 #ifndef LIBCURV_STRING_H
 #define LIBCURV_STRING_H
 
+#include <libcurv/alist.h>
+#include <libcurv/dtostr.h>
+#include <libcurv/range.h>
 #include <libcurv/value.h>
 #include <sstream>
 #include <cstring>
-#include <libcurv/dtostr.h>
-#include <libcurv/range.h>
 
 namespace curv {
 
@@ -18,75 +19,86 @@ namespace curv {
 /// This is a variable length object: the size and the character array
 /// are in the same object. This is very efficient for small strings:
 /// only a single cache hit is required to access both the size and the data.
-struct String_or_Symbol : public Ref_Value
+///
+/// Base is derived from Ref_Value (for the print_string override).
+/// Base must define members
+///     size_t size_;
+///     char data_[1];
+///     size()
+///     empty()
+template<class Base>
+struct String_Mixin : public Base
 {
-private:
-    String_or_Symbol(const String_or_Symbol&) = delete;
-    String_or_Symbol(String_or_Symbol&&) = delete;
-    String_or_Symbol& operator=(const String_or_Symbol&) = delete;
 protected:
-    String_or_Symbol(int t) : Ref_Value(t) {}
-    template <class STRING>
-    static Shared<STRING>
-    make(int ty, size_t len)
+    String_Mixin() : Base() {}
+public:
+    static Shared<String_Mixin>
+    make(size_t len)
     {
-        void* raw = malloc(sizeof(STRING) + len);
+        void* raw = malloc(sizeof(String_Mixin) + len);
         if (raw == nullptr)
             throw std::bad_alloc();
-        STRING* s = new(raw) STRING(ty);
+        String_Mixin* s = new(raw) String_Mixin();
         s->data_[len] = '\0';
         s->size_ = len;
-        return Shared<STRING>{s};
+        return Shared<String_Mixin>{s};
     }
-    template <class STRING>
-    static Shared<STRING>
-    make(int ty, const char* str, size_t len)
+    static Shared<String_Mixin>
+    make(const char* str, size_t len)
     {
-        void* raw = malloc(sizeof(STRING) + len);
+        void* raw = malloc(sizeof(String_Mixin) + len);
         if (raw == nullptr)
             throw std::bad_alloc();
-        STRING* s = new(raw) STRING(ty);
+        String_Mixin* s = new(raw) String_Mixin();
         memcpy(s->data_, str, len);
         s->data_[len] = '\0';
         s->size_ = len;
-        return Shared<STRING>{s};
+        return Shared<String_Mixin>{s};
     }
 private:
-    size_t size_;
-    char data_[1];
+    String_Mixin(const String_Mixin&) = delete;
+    String_Mixin(String_Mixin&&) = delete;
+    String_Mixin& operator=(const String_Mixin&) = delete;
 public:
-    virtual void print_string(std::ostream&) const;
+    virtual void print_string(std::ostream& out) const override
+    {
+        out << c_str();
+    }
     // interface is based on std::string and the STL container concept
-    size_t size() const { return size_; }
-    bool empty() const { return size_ == 0; }
-    char operator[](size_t i) const { return data_[i]; }
-    char at(size_t i) const { return data_[i]; }
-    char& at(size_t i) { return data_[i]; }
-    const char* data() const { return data_; }
-    const char* c_str() const { return data_; }
-    const char* begin() const { return data_; }
-    const char* end() const { return data_ + size_; }
-    bool operator==(const char* s) const { return strcmp(data_, s) == 0; }
-    bool operator==(const String_or_Symbol& s) const { return strcmp(data_,s.data_)==0; }
-    bool operator!=(const String_or_Symbol& s) const { return strcmp(data_,s.data_)!=0; }
-    bool operator<(const String_or_Symbol& s) const { return strcmp(data_,s.data_)<0; }
+    char operator[](size_t i) const { return Base::data_[i]; }
+    char at(size_t i) const { return Base::data_[i]; }
+    char& at(size_t i) { return Base::data_[i]; }
+    const char* data() const { return Base::data_; }
+    const char* c_str() const { return Base::data_; }
+    const char* begin() const { return Base::data_; }
+    const char* end() const { return Base::data_ + Base::size_; }
+    bool operator==(const char* s) const { return strcmp(Base::data_, s) == 0; }
+    bool operator==(const String_Mixin& s) const { return strcmp(Base::data_,s.data_)==0; }
+    bool operator!=(const String_Mixin& s) const { return strcmp(Base::data_,s.data_)!=0; }
+    bool operator<(const String_Mixin& s) const { return strcmp(Base::data_,s.data_)<0; }
 };
 
-struct String : public String_or_Symbol
-{
-    using String_or_Symbol::String_or_Symbol;
-    friend Shared<String> make_string(const char*, size_t);
-    friend Shared<String> make_string(size_t);
-    virtual void print_repr(std::ostream&) const;
-    static const char name[];
-};
-
+template <class Base>
 inline std::ostream&
-operator<<(std::ostream& out, const String_or_Symbol& str)
+operator<<(std::ostream& out, const String_Mixin<Base>& str)
 {
     out.write(str.data(), str.size());
     return out;
 }
+
+struct String_Base;
+using String = String_Mixin<String_Base>;
+struct String_Base : public Abstract_List
+{
+    String_Base() : Abstract_List(ty_string) {}
+    virtual void print_repr(std::ostream&) const;
+    static const char name[];
+    virtual Value val_at(size_t i) const override
+    {
+        return Value{data_[i]};
+    }
+    char data_[1];
+};
 
 void write_curv_string(const char*, unsigned, std::ostream&);
 

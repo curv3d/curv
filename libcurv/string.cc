@@ -31,18 +31,18 @@ maybe_string(Value val, const Context& cx)
     return val.maybe<const String>();
 }
 
-const char String::name[] = "string";
+const char String_Base::name[] = "string";
 
 Shared<String>
 make_string(size_t len)
 {
-    return String::make<String>(Ref_Value::ty_string, len);
+    return String::make(len);
 }
 
 Shared<String>
 make_string(const char* str, size_t len)
 {
-    return String::make<String>(Ref_Value::ty_string, str, len);
+    return String::make(str, len);
 }
 
 Shared<const String>
@@ -70,15 +70,9 @@ String_Builder::get_value()
 }
 
 void
-String_or_Symbol::print_string(std::ostream& out) const
+String_Base::print_repr(std::ostream& out) const
 {
-    out << c_str();
-}
-
-void
-String::print_repr(std::ostream& out) const
-{
-    write_curv_string(c_str(), 0, out);
+    write_curv_string(data_, 0, out);
 }
 
 void

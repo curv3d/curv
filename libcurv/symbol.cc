@@ -19,12 +19,12 @@ bool is_symbol(Value a)
     return r && r->sctype_.is_bool();
 }
 
-const char Symbol::name[] = "symbol";
+const char Symbol_Base::name[] = "symbol";
 
 Symbol_Ref
 make_symbol(const char* str, size_t len)
 {
-    return Symbol::make<Symbol>(Ref_Value::ty_symbol, str, len);
+    return Symbol::make(str, len);
 }
 
 bool is_C_identifier(const char* p)
@@ -102,13 +102,13 @@ Value Symbol_Ref::to_value() const
     return Value{*this};
 }
 
-std::ostream& operator<<(std::ostream& out, Symbol_Ref a)
+void print_idstr(const char* id, std::ostream& out)
 {
-    if (a.is_identifier())
-        out << *a;
+    if (is_C_identifier(id))
+        out << id;
     else {
         out << '\'';
-        for (const char* s = a.c_str(); *s != '\0'; ++s) {
+        for (const char* s = id; *s != '\0'; ++s) {
             char c = *s;
             if (c == '$')
                 out << "$.";
@@ -119,13 +119,19 @@ std::ostream& operator<<(std::ostream& out, Symbol_Ref a)
         }
         out << '\'';
     }
+}
+
+std::ostream& operator<<(std::ostream& out, Symbol_Ref a)
+{
+    print_idstr(a.c_str(), out);
     return out;
 }
 
 void
-Symbol::print_repr(std::ostream& out) const
+Symbol_Base::print_repr(std::ostream& out) const
 {
-    out << "#" << Symbol_Ref(share(*this));
+    out << "#";
+    print_idstr(data_, out);
 }
 
 int
