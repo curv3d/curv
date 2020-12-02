@@ -1022,20 +1022,6 @@ struct String_Function : public Function
         return {sb.get_string()};
     }
 };
-struct Strcat_Function : public Tuple_Function
-{
-    Strcat_Function(const char* nm) : Tuple_Function(1,nm) {}
-    Value tuple_call(Fail fl, Frame& args) const override
-    {
-        if (auto list = args[0].maybe<const List>()) {
-            String_Builder sb;
-            for (auto val : *list)
-                val.print_string(sb);
-            return {sb.get_string()};
-        }
-        FAIL(fl, missing, At_Arg(*this, args), "not a list");
-    }
-};
 struct Repr_Function : public Tuple_Function
 {
     Repr_Function(const char* nm) : Tuple_Function(1,nm) {}
@@ -1514,7 +1500,6 @@ builtin_namespace()
     FUNCTION("ucode", Ucode_Function),
     FUNCTION("symbol", Symbol_Function),
     FUNCTION("string", String_Function),
-    FUNCTION("strcat", Strcat_Function),
     FUNCTION("repr", Repr_Function),
     FUNCTION("match", Match_Function),
     FUNCTION("compose", Compose_Function),
