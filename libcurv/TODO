@@ -1,13 +1,16 @@
 String TODO:
+* rm array_mixin.h
+* Abstract_List class, superclass of String and List. (But not Symbol...)
+* is_list "abc" == true
 * fix where Lists work but Strings fail:
   * select[bits,string,string]
   * equal,unequal,Unary_Scalar_Prim
     equal["foo","fob"] == [#true,#true,#false]
 * locatives: do local a = "abc"; a[0] := 42 in a==[42]++"bc"
 * resolve issue of String/Quoted Identifier Escape Sequences
+  * New design for $ escapes in quoted idents and string lits. $. $| $#
+  * Then, new char literal syntax: char "a"
 * concat["abc",[1,2,3]] prints as "abc"++[1,2,3]
-* `ucode c` converts the character c to a code point integer. (Vectorized.)
-* `string` converts an arbitrary value to a string (using print_string format).
 
 String/Quoted Identifier Escape Sequences
 * pronounceable literals for printable characters: "a"@0 == char #a
@@ -39,15 +42,60 @@ String/Quoted Identifier Escape Sequences
     * Any weird syntax I chose for escaping apostrophe in a quoted identifier
       will be weird.
     * Use "'"@0
+    * So far, my experience is that char #'a' is weird and complicated syntax
+      for a character literal. Lots of parts to remember and type in the
+      correct order. Maybe use a simpler syntax?
+  char #'a'
+  char "a"  Simpler, less confusing. No new syntax involving non-standard
+            arrangements of punctuation characters.
+            However, `char` is vectorized, so logically it should be given
+            a scalar argument to construct a scalar character.
+            Actually, this works. A single-element string is distinct from any
+            other valid argument.
+  $a        Erlang. Space, newline encoded as $\s $\n.
+  \a        Clojure. \space, \newline
+            idea: In a string literal, $\x escapes x literally.
+                "hello" ==> "$\"hello$\""
+  @"a"      @x is the first element of list x.
+Rethinking escape sequences.
+* Better escape sequences for " and '
+    $# is "    The top of # is "
+    $| is '    The top of | is '
+  See how this looks:
+    "hello world"  "$#hello world$#"
+                   "$=hello world$="
+    #'This isn$|t C.'
+    #'This isn$-t C.'
+* Within string literals or quoted identifiers, $ followed by a punctuation
+  character is an escape sequence, and you get an error for an unknown escape
+  sequence.
+    ERROR: Unknown escape sequence
+    $ followed by a punctuation character is an escape sequence.
+    $@ is an unknown escape sequence.
+    Usage: $. means $ and $| means ' and $# means "
+* Within a quoted identifier, $' means $ at the end of an identifier.
+  $ followed by non-punctuation is a literal $, so eg '$42 is too much'
+  contains no escape sequences.
+* When a quoted symbol is printed, ' is escaped as $| and $ is only escaped
+  as $. when it is followed by a punctuation character.
+* Within a string literal, $" means $ at the end of the string.
+  So "$" is a single-character string and char "$" is the printed rep
+  for the dollar character.
+  $ followed by a non-punctuation and non-letter character is a literal $
+* char "$#" is the printed rep for the " character.
+  Or 'quot' or 'char [quot]' or 'char "$quot".
+  But be consistent when printing a string value as a string literal.
 
 String refactoring:
 * Abstract_List class, superclass of String and List. (But not Symbol...)
-   * size_t size_;
+   * size_t size_; size(), empty()
    * virtual Value val_at(size_t i);
    * No iterators. Provide some bulk virtual operations where it makes sense
      for performance.
    * Convert String_Or_Symbol class to a template that takes a Base parameter.
      Symbol base is Ref_Value; String base is Abstract_List.
+      * But, Abstract_List defines size_ and Ref_Value does not.
+        Different interfaces. So I need Sized_Ref_Value?
 * Other specialized list representations: bit list, numeric range.
   * Some values have an associated typed-array class, used by List_Builder
     instead of curv::List for arrays of those values.

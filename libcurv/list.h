@@ -7,7 +7,7 @@
 
 #include <libcurv/value.h>
 #include <libcurv/tail_array.h>
-#include <libcurv/array_mixin.h>
+#include <libcurv/alist.h>
 #include <string>
 #include <vector>
 
@@ -29,9 +29,10 @@ Value list_elem(Value, size_t, const At_Syntax&);
 /// only a single cache hit is required to access both the size and the data.
 using List = Tail_Array<List_Base>;
 
-struct List_Base : public Ref_Value
+struct List_Base : public Abstract_List
 {
-    List_Base() : Ref_Value(ty_list) {}
+    List_Base() : Abstract_List(ty_list) {}
+    virtual Value val_at(size_t i) const override { return array_[i]; }
     virtual void print_repr(std::ostream&) const;
     Ternary equal(const List_Base&, const Context&) const;
     void assert_size(size_t sz, const Context& cx) const;
@@ -41,7 +42,7 @@ struct List_Base : public Ref_Value
     Value* ref_lens(Value, bool need_value, const Context&);
 
     static const char name[];
-    TAIL_ARRAY_MEMBERS(Value)
+    TAIL_ARRAY_MEMBERS_MOD_SIZE(Value)
 };
 
 inline std::ostream&
