@@ -1046,32 +1046,6 @@ struct Repr_Function : public Tuple_Function
         return {sb.get_string()};
     }
 };
-struct Decode_Function : public Tuple_Function
-{
-    Decode_Function(const char* nm) : Tuple_Function(1,nm) {}
-    Value tuple_call(Fail fl, Frame& f) const override
-    {
-        String_Builder sb;
-        At_Arg cx(*this, f);
-        TRY_DEF(list, f[0].to<List>(fl, cx));
-        for (size_t i = 0; i < list->size(); ++i)
-            sb << (char)(*list)[i].to_int(1, 127, At_Index(i,cx));
-        return {sb.get_string()};
-    }
-};
-struct Encode_Function : public Tuple_Function
-{
-    Encode_Function(const char* nm) : Tuple_Function(1,nm) {}
-    Value tuple_call(Fail fl, Frame& f) const override
-    {
-        List_Builder lb;
-        At_Arg cx(*this, f);
-        TRY_DEF(str, value_to_string(f[0], fl, cx));
-        for (size_t i = 0; i < str->size(); ++i)
-            lb.push_back({(double)(int)str->at(i)});
-        return lb.get_value();
-    }
-};
 
 struct Match_Function : public Function
 {
@@ -1542,8 +1516,6 @@ builtin_namespace()
     FUNCTION("string", String_Function),
     FUNCTION("strcat", Strcat_Function),
     FUNCTION("repr", Repr_Function),
-    FUNCTION("decode", Decode_Function),
-    FUNCTION("encode", Encode_Function),
     FUNCTION("match", Match_Function),
     FUNCTION("compose", Compose_Function),
 

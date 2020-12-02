@@ -42,6 +42,8 @@ cot a = cos a / sin a;
 atan2[y,x] = phase[x,y];
 
 // lists
+encode = ucode; // backward compatibility to Curv 0.4
+decode = char; // backward compatibility to Curv 0.4
 concat vv = [for (v in vv) for (i in v) i];
 reverse v = v[count(v)-1..0 by -1];
 map f list = [for (x in list) f x];
