@@ -1,7 +1,4 @@
 String TODO:
-* rm array_mixin.h
-* Abstract_List class, superclass of String and List. (But not Symbol...)
-* is_list "abc" == true
 * fix where Lists work but Strings fail:
   * select[bits,string,string]
   * equal,unequal,Unary_Scalar_Prim

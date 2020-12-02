@@ -12,7 +12,7 @@ namespace curv {
 
 bool is_list(Value a)
 {
-    if (a.maybe<List>())
+    if (a.maybe<Abstract_List>())
         return true;
     if (auto r = a.maybe<Reactive_Value>())
         return r->sctype_.is_list();
