@@ -10,11 +10,11 @@ String TODO:
 * `string` converts an arbitrary value to a string (using print_string format).
 
 String/Quoted Identifier Escape Sequences
-* pronounceable literals for printable characters: "a"@0 == char#a
+* pronounceable literals for printable characters: "a"@0 == char #a
   The apostrophe and dollar characters are special cases.
   For dollar: change quoted identifier syntax so that '$' is legal.
    * Okay, #'$' is legal. But it prints as #'$.', and [#'$'] prints as "$.".
-  For apostrophe: char 39, apos, char#'$-', "'"@0. I chose char 39, simple code.
+  For apostrophe: char 39, apos, char #'$-', "'"@0. I chose char 39, simple code.
   Should newline be printed as char 10 or as nl?
   * 'Char' is an abstract type whose values print as constructor expressions.
     So it is consistent to print apostrophe and newline as apos and nl.
