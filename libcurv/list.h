@@ -58,12 +58,17 @@ inline Shared<List> make_list(size_t size)
     return {std::move(list)};
 }
 
-// Factory class for making a Curv list value,
-// which is interally represented as a curv::List or curv::String.
+// Factory class for making a Curv Abstract_List value,
+// constructing a curv::List or curv::String depending on data.
 // Each Curv list value has a single canonical representation:
 //  * an empty list is a curv::List
 //  * a non-empty list containing only characters is a curv::String
 //  * otherwise, a curv::List
+//
+// TODO: reserve_next(n) specifies how many elements are about to be added
+// next, so that List_Builder can reserve space in the underlying collection.
+// Calls reserve() on std::vector or std::string.
+// See also size(), capacity(), reserve(new_capacity).
 struct List_Builder
 {
 private:

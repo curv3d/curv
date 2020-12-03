@@ -1,14 +1,10 @@
 New Types proposal
- * `Bool32` module contains the bool32 ops and constructors.
-
-A string is a list of characters.
-* curv::Value(char), Value::is_char()
+* `Bool32` module contains the bool32 ops and constructors.
 * char x/is_char x --or-- Char x/Char? x
-* str[i] returns a Char
-* a list of Char behaves like a string in all cases
 * string x -- or String x (with String? x replacing is_string x)
 * bool x --or-- Bool x (with Bool? x replacing is_bool x)
 * symbol x --or-- Symbol x (with Symbol? x replacing is_symbol x)
+
 bool x -- x is 0 or 1 -- convert to #false or #true -- vectorized
     > bool x = select(equal(x, 0), false, true);
     > bool x = unequal(x, 0);
@@ -33,5 +29,3 @@ Bool = {
     type: #[#false, #true],
     call x: unequal[x,0]
 }
-symbol s -- s is printable string -- convert to symbol -- not vectorized
-

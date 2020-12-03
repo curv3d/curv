@@ -1,0 +1,204 @@
+Special Character Escape Sequences
+==================================
+Within a quoted string, how do you escape $ and "
+Within a symbol/quoted id, how do you escape $ and '
+
+Current design: $. -> $ and $` -> quote (" or ' depending on context).
+Also:
+* Within a string lit, $ is only magic if followed by punct or alpha.
+* Within a quoted id, $ is only magic if followed by punct.
+* When printing string or symbol, output bare $ when context allows.
+Rationale: less clutter from escaping when printing strings and symbols.
+Eg, dollar character is printed as char "$"
+
+Within string literals or quoted identifiers, $ followed by a punctuation
+character is an escape sequence, and you get an error for an unknown escape
+sequence:
+    ERROR: Unknown escape sequence
+    $ followed by a punctuation character is an escape sequence.
+    $@ is an unknown escape sequence.
+    Usage: $. means $ and $` means "
+This error provides room for future expansion, and forces old code to be
+updated to the new syntax, but it also helps eliminate ambiguity and maintain
+the visual clarity of character/escape sequence boundaries.
+
+History of Proposals
+--------------------
+All the alternatives have problems. Escaping impairs readability.
+
+Compare 1 and 5:
+    print "x=$x";
+ 1. "print $`x=$.x$`;"   char "$`"
+ 5. "print ""x=$$x"";"   char """"
+    "print ${quot}x=${dol}x${quot};"
+
+With #1, the boundaries of the escape sequences are visually clear, and
+repeated escaping has linear growth. It's hard to reconstruct original text.
+With #5, it is easier to see the original text, but hard to see escape
+boundaries without character counting, and repeated escaping has exponential
+growth.
+
+Then there are the various "raw" string literal syntaxes that avoid escaping.
+No best design, just tradeoffs between different kinds of readability, and
+complexity of the syntax.
+
+Newest to earliest:
+1. $./$`
+  $. is $
+  $` is quote (" in a string, ' in a symbol)
+  Note: meaning of $` is context sensitive.
+
+    "print $`hello, world$`;"
+    "print $`x=$.x$`;"
+    char "$`"
+
+2. $./$^/$`
+  $. is $
+  $^ is "
+  $` is `
+  All 3 are available in any context, for consistency.
+  Note: $` is the absolute best escape for ' because `/' are so similar.
+  Also because, in technical languages, ` is only ever used as a quote
+  character, so it registers as a quote (for me).
+  Far better than $| or $-
+  $^ for " is not as good, but stylistically/visually similar (if you squint).
+  These sequences "jump out" better than $#/$|
+  But ^ registers for me as exponentiation or something, not as a quote.
+
+    "print $^hello, world$^;"
+    "print $^x=$.x$^;"
+    char "$^"
+
+3. $./$#/$|
+  $. is $
+  $# is "
+  $| is '
+
+    "print $#hello, world$#;"
+    "print $#x=$.x$#;"
+    char "$#"
+
+  If you just look at the tops of the characters, #->" and |->'
+  All 3 are available in any context, for consistency.
+  $ and # are both full height characters so $# doesn't visually "jump out"
+  if beside other full height characters.
+
+4. $./$=/$-
+  = is " lying on its side, ditto for - and '
+
+    "print $=hello, world$=;"
+    "print $=x=$.x$=;"
+    char "$="
+
+  All 3 are available in any context, for consistency.
+  Easier to visually parse because $ only occurs at the start of an escape.
+  Grows linearly under repeated escaping: " -> $= -> $.= -> $..=
+  Not very mneumonic: = and - look like algebra, not like quotes.
+
+5. $$/""/''
+  $$ is $   not needed in symbol, where $ is literal
+  "" is "   only available in string
+  '' is '   only available in symbol/quoted id
+
+  Doubling is a simple and natural rule.
+    "print ""hello, world"";"
+    "print ""x=$$x"";"
+    char """"
+  
+  Looks good in non-adverse situations.
+  Hard to visually parse for repeated characters, because then you have to
+  count characters. Eg, three dollars is $$$$$$
+  Grows exponentially under repeated escaping: $ -> $$ -> $$$$ -> $$$$$$$$
+
+-------------------------------------------------------------------------
+print "hello, world";
+
+print $`hello, world$`;     -- better than $^
+
+print $^hello, world$^;
+
+print $``hello, world$``;
+
+In a quoted string, use the $`` escape.
+* In this context, $` not followed by another ` is an error (unknown escape).
+  So you can't use $` in a string, only in a symbol.
+* Or, $` not followed by another ` is a ' character. But if you want
+  to encode '` what do you do (in a symbol literal)?
+  So you can't use $`` in a symbol, only in a string.
+ 
+So maybe it is simpler if $` means the quote character in either context.
+The downside is that it doesn't have a fixed meaning independent of context.
+---
+String/Quoted Identifier Escape Sequences
+* pronounceable literals for printable characters: "a"@0 == char #a
+  The apostrophe and dollar characters are special cases.
+  For dollar: change quoted identifier syntax so that '$' is legal.
+   * Okay, #'$' is legal. But it prints as #'$.', and [#'$'] prints as "$.".
+  For apostrophe: char 39, apos, char #'$-', "'"@0. I chose char 39, simple code.
+  Should newline be printed as char 10 or as nl?
+  * 'Char' is an abstract type whose values print as constructor expressions.
+    So it is consistent to print apostrophe and newline as apos and nl.
+  Brainstorming:
+  #''' and #'$' are not legal syntax.
+  * Use char 39 and char 36 for these cases.
+  * Use dol and apos.
+  * Use #'$-' and #'$.' but WTF syntax.
+  * Revise symbol syntax to make this less brutal?
+    For dollar:
+    * #'$' is legal syntax. People will naturally assume this works.
+      * maybe $ is not magic in a quoted identifier.
+      * maybe $ is literal if followed by '
+    For apostrophe:
+    * #'''' is an apostrophe?
+    * #''' is legal syntax? How do we know the quoted identifier ends at the
+      third apostrophe?
+    * #"'" -- double quoted symbols
+      It doesn't generalize to quoted identifiers, though.
+    * Markdown style escaping for `foo` type code literals.
+      The Markdown syntax provides no way to write a zero-length code literal.
+    * Any weird syntax I chose for escaping apostrophe in a quoted identifier
+      will be weird.
+    * Use "'"@0
+    * So far, my experience is that char #'a' is weird and complicated syntax
+      for a character literal. Lots of parts to remember and type in the
+      correct order. Maybe use a simpler syntax?
+  char #'a'
+  char "a"  Simpler, less confusing. No new syntax involving non-standard
+            arrangements of punctuation characters.
+            However, `char` is vectorized, so logically it should be given
+            a scalar argument to construct a scalar character.
+            Actually, this works. A single-element string is distinct from any
+            other valid argument.
+  $a        Erlang. Space, newline encoded as $\s $\n.
+  \a        Clojure. \space, \newline
+            idea: In a string literal, $\x escapes x literally.
+                "hello" ==> "$\"hello$\""
+  @"a"      @x is the first element of list x.
+Rethinking escape sequences.
+* Better escape sequences for " and '
+    $# is "    The top of # is "
+    $| is '    The top of | is '
+  See how this looks:
+    "hello world"  "$#hello world$#"
+                   "$=hello world$="
+    #'This isn$|t C.'
+    #'This isn$-t C.'
+* Within string literals or quoted identifiers, $ followed by a punctuation
+  character is an escape sequence, and you get an error for an unknown escape
+  sequence.
+    ERROR: Unknown escape sequence
+    $ followed by a punctuation character is an escape sequence.
+    $@ is an unknown escape sequence.
+    Usage: $. means $ and $| means ' and $# means "
+* Within a quoted identifier, $' means $ at the end of an identifier.
+  $ followed by non-punctuation is a literal $, so eg '$42 is too much'
+  contains no escape sequences.
+* When a quoted symbol is printed, ' is escaped as $| and $ is only escaped
+  as $. when it is followed by a punctuation character.
+* Within a string literal, $" means $ at the end of the string.
+  So "$" is a single-character string and char "$" is the printed rep
+  for the dollar character.
+  $ followed by a non-punctuation and non-letter character is a literal $
+* char "$#" is the printed rep for the " character.
+  Or 'quot' or 'char [quot]' or 'char "$quot".
+  But be consistent when printing a string value as a string literal.

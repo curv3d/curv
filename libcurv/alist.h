@@ -9,6 +9,24 @@
 
 namespace curv {
 
+// An Abstract_List is any Curv value that denotes a sequence of values.
+// (Right now, except for the case of Reactive_Value.)
+//
+// At present, there are two Abstract_List subclasses: List and String.
+// String exists for efficiency reasons: with the List representation,
+// each character occupies 64 bits.
+//
+// In the future, we need more specialized list representations,
+// for compactness and speed. Eg, bit lists, numeric ranges,
+// and images, voxel grids, triangle meshes.
+//
+// Right now, a lot of code has special cases for List and String (faster
+// than repeatedly calling val_at). If we want more list representations,
+// we need a better way to write efficient, abstract list code.
+//  * Extend the Abstract_List interface with efficient bulk operations.
+//  * Extend the Reactive_Value API so that any RV that is a list is also
+//    an Abstract_List. We need to preserve the identity of primitive
+//    vectorized operations from SPIR-V/WGSL.
 struct Abstract_List : public Ref_Value
 {
     using Ref_Value::Ref_Value;

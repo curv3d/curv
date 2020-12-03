@@ -118,7 +118,7 @@ void List_Builder::push_back(Value val)
 void List_Builder::concat(Value val, const Context& cx)
 {
     if (auto strval = val.maybe<String>()) {
-        if (strval->empty()) return;
+        // Strings can't be empty.
         if (in_string_)
             string_ += strval->c_str();
         else {
@@ -127,6 +127,8 @@ void List_Builder::concat(Value val, const Context& cx)
         }
     } else if (auto listval = val.maybe<List>()) {
         if (listval->empty()) return;
+        // A non-empty List is guaranteed to contain 1 non-character,
+        // so we need to switch out of string mode.
         if (in_string_) {
             for (auto c : string_)
                 list_.push_back({c});
