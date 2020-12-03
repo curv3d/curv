@@ -78,6 +78,11 @@ String_Base::print_repr(std::ostream& out) const
 void
 write_curv_string(const char* s, unsigned indent, std::ostream& out)
 {
+    // Normally, a String should not be empty, but be robust and handle anyway.
+    if (*s == '\0') {
+        out << "[]";
+        return;
+    }
     out << '"';
     for (; *s != '\0'; ++s) {
         char c = *s;
@@ -91,7 +96,11 @@ write_curv_string(const char* s, unsigned indent, std::ostream& out)
                 out << " ";
             if (s[1] != '\0')
                 out << "|";
-        } else
+        } else if (c == '\t')
+            out << c;
+        else if (c < ' ' || c > '~')
+            out << "$[" << unsigned(c) << "]";
+        else
             out << c;
     }
     out << '"';
