@@ -1,5 +1,4 @@
 String TODO:
-* BUG: 'symbol x' should fail if x contains nonprintable characters
 * new [[Escape]] design:
   * for symbols & quoted identifiers
   * for string literals

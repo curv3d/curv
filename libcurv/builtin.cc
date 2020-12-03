@@ -1011,7 +1011,14 @@ struct Symbol_Function : public Function
     using Function::Function;
     virtual Value call(Value arg, Fail fl, Frame& fr) const override
     {
-        TRY_DEF(string, value_to_string(arg, fl, At_Arg(*this, fr)));
+        At_Arg cx(*this, fr);
+        TRY_DEF(string, value_to_string(arg, fl, cx));
+        for (auto c : *string) {
+            if (c <= ' ' || c >= '~') {
+                FAIL(fl,missing,cx, stringify(
+                    "string ",arg," contains nongraphic characters"));
+            }
+        }
         auto symbol = make_symbol(string->data(), string->size());
         return symbol.to_value();
     }

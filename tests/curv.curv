@@ -762,6 +762,10 @@ let f = match[ensure is_num, _->#null]
 in assert(f 42 == 42 && f true == #null);
 
 assert(symbol "" == #'' && symbol "true" == true && symbol "foo" == #foo);
+assert_error [
+    "argument #1 of symbol: string $=$.[1]$= contains nongraphic characters",
+    symbol[char 1]
+];
 let c=char 42 in assert(is_char c && repr c == "char #'*'");
 assert(char 36 == char #'$');
 assert(char[] == [] && char[97] == "a");
