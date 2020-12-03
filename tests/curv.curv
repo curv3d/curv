@@ -780,6 +780,7 @@ assert( string [char #'a',"b",#cd] == "[char #'a',$=b$=,#cd]" );
 assert( ucode (char #'a') == 97 && ucode "12" == [49,50] );
 assert( ucode [char #'a',"12"] == [97,[49,50]] );
 assert( is_list "abc" && not(is_list #abc) );
+assert( select [[true,false], "ab", "cd"] == "ad" );
 
 // script return value:
 in null

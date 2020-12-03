@@ -517,19 +517,23 @@ select(Value a, Value b, Value c, Fail fl, const Context& cx)
     if (a.is_bool())
         return a.to_bool_unsafe() ? b : c;
     if (auto alist = a.maybe<List>()) {
-        auto blist = b.maybe<List>();
-        if (blist) blist->assert_size(alist->size(), At_Index(1, cx));
-        auto clist = c.maybe<List>();
-        if (clist) clist->assert_size(alist->size(), At_Index(2, cx));
-        Shared<List> r = List::make(alist->size());
+        auto blist = b.maybe<Abstract_List>();
+        if (blist) {
+            ASSERT_SIZE(fl,missing,blist,alist->size(),At_Index(1, cx));
+        }
+        auto clist = c.maybe<Abstract_List>();
+        if (clist) {
+            ASSERT_SIZE(fl,missing,clist,alist->size(),At_Index(2, cx));
+        }
+        List_Builder lb;
         for (unsigned i = 0; i < alist->size(); ++i) {
             TRY_DEF(v, select(alist->at(i),
-                              blist ? blist->at(i) : b,
-                              clist ? clist->at(i) : c,
+                              blist ? blist->val_at(i) : b,
+                              clist ? clist->val_at(i) : c,
                               fl, cx));
-            r->at(i) = v;
+            lb.push_back(v);
         }
-        return {r};
+        return lb.get_value();
     }
     FAIL(fl, missing, At_Index(0, cx),
         stringify(a, " is not a Bool or a List"));

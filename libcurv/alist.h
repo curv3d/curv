@@ -20,5 +20,11 @@ public:
     virtual Value val_at(size_t i) const = 0;
 };
 
+#define ASSERT_SIZE(fl,rval,list,sz,cx) \
+    if (list->size() != sz) { \
+        FAIL(fl,rval,cx, \
+            stringify("list ",list," does not have ",sz," elements")); \
+    }
+
 } // namespace curv
 #endif // header guard
