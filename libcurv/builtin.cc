@@ -1030,7 +1030,7 @@ struct String_Function : public Function
     {
         String_Builder sb;
         arg.print_string(sb);
-        return {sb.get_string()};
+        return sb.get_value();
     }
 };
 struct Repr_Function : public Tuple_Function
@@ -1040,7 +1040,7 @@ struct Repr_Function : public Tuple_Function
     {
         String_Builder sb;
         sb << args[0];
-        return {sb.get_string()};
+        return sb.get_value();
     }
 };
 

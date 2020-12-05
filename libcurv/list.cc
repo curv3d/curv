@@ -78,6 +78,33 @@ const
 }
 
 void
+List_Base::print_string(std::ostream& out) const
+{
+    bool in_string = true;
+    bool first_after_left_bracket = false;
+    for (auto e : *this) {
+        if (e.is_char()) {
+            if (!in_string) {
+                out << ']';
+                in_string = true;
+            }
+            out << e.to_char_unsafe();
+        } else {
+            if (in_string) {
+                out << '[';
+                in_string = false;
+                first_after_left_bracket = true;
+            }
+            if (!first_after_left_bracket)
+                out << ',';
+            e.print_repr(out);
+            first_after_left_bracket = false;
+        }
+    }
+    if (!in_string)
+        out << ']';
+}
+void
 List_Base::print_repr(std::ostream& out) const
 {
     out << "[";

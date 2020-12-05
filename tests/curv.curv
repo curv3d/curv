@@ -780,14 +780,14 @@ assert( "foo"[0] == char "f" && "foobar"[[3,2,4]] == "boa" );
 assert( "abc"@[0,[1,2]] == [char "a","bc"] );
 assert( [..."abc",char "d"] == "abcd" );
 assert( string (char "a") == "a" && string "b" == "b" && string #cd == "cd" );
-assert( string [char "a","b",#cd] == "[char "_a"_,"_b"_,#cd]" );
+assert( string "" == "" && string("abc"++[1,2,3]) == "abc[1,2,3]"
+        && string([1,2,3]++"abc") == "[1,2,3]abc" );
 assert( "$_" == "$" && ""_" == string #'"' );
 assert( ucode (char "a") == 97 && ucode "12" == [49,50] );
 assert( ucode [char "a","12"] == [97,[49,50]] );
 assert( is_list "abc" && not(is_list #abc) );
 assert( select [[true,false], "ab", "cd"] == "ad" );
 assert( repr[char 1] == [quot,dol]++"[1]"++[quot] );
-
 
 // script return value:
 in null
