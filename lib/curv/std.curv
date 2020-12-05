@@ -20,9 +20,8 @@ Y_axis = [0,1,0];
 Z_axis = [0,0,1];
 nl = char 0xA;   // newline character
 tab = char 0x9;  // tab character
-dol = char #'$';  // dollar sign character
-quot = char #'"'; // double quote character
-apos = "'"@0;    // apostrophe character
+dol = char "$";  // dollar sign character
+quot = char ""_"; // double quote character
 
 mod[a,m] = a - m * floor(a/m);
 rem[a,m] = a - m * trunc(a/m);
