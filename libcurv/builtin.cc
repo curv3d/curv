@@ -926,7 +926,7 @@ struct Fields_Function : public Tuple_Function
     }
 };
 
-// Construct a character from an integer or a symbol of length 1.
+// Construct a character from an integer or a string of length 1.
 // Vectorized.
 Value to_char(Value arg, Fail fl, const Context& cx)
 {
@@ -936,12 +936,12 @@ Value to_char(Value arg, Fail fl, const Context& cx)
             return missing;
         return Value{char(code)};
     }
-    else if (auto sym = maybe_symbol(arg)) {
-        if (sym.size() != 1) {
+    else if (auto str = arg.maybe<String>()) {
+        if (str->size() != 1) {
             FAIL(fl, missing, cx,
-                stringify(arg, " is not a symbol of length 1"));
+                stringify(arg, " is not a string of length 1"));
         }
-        return Value{*sym.c_str()};
+        return Value{str->at(0)};
     }
     else if (auto list = arg.maybe<List>()) {
         // List values use a single canonical representation.
@@ -966,7 +966,7 @@ Value to_char(Value arg, Fail fl, const Context& cx)
     }
     else {
         FAIL(fl, missing, cx,
-            stringify(arg, " is not an integer, symbol, or list of these"));
+            stringify(arg, " is not an integer, string, or list of these"));
     }
 }
 struct Char_Function : public Function

@@ -766,8 +766,8 @@ let s = #''_' in
     assert(string s == "'" && repr s == "#''_'" && symbol "'" == s);
 
 // char and string
-let c=char 42 in assert(is_char c && repr c == "char #'*'");
-assert(char 36 == char #'$');
+let c=char 42 in assert(is_char c && repr c == "char "_*"_");
+assert(char 36 == char "$");
 assert(char[] == [] && char[97] == "a");
 assert("" == [] && repr "" == "[]");
 assert([char 97] == "a" && repr[char 97] == ""_a"_");
@@ -775,15 +775,15 @@ assert(is_string[] && is_string[char 97]);
 assert(concat["ab","cd"] == "abcd");
 assert(concat["a",[1]] == [char 97,1]);
 assert([for (c in "abc") c] == "abc");
-assert("a"++"b" == "ab" && [1]++[2]==[1,2] && "a"++[2]==[char #'a',2]);
-assert( "foo"[0] == char #'f' && "foobar"[[3,2,4]] == "boa" );
-assert( "abc"@[0,[1,2]] == [char #'a',"bc"] );
-assert( [..."abc",char #'d'] == "abcd" );
-assert( string (char #'a') == "a" && string "b" == "b" && string #cd == "cd" );
-assert( string [char #'a',"b",#cd] == "[char #'a',"_b"_,#cd]" );
+assert("a"++"b" == "ab" && [1]++[2]==[1,2] && "a"++[2]==[char "a",2]);
+assert( "foo"[0] == char "f" && "foobar"[[3,2,4]] == "boa" );
+assert( "abc"@[0,[1,2]] == [char "a","bc"] );
+assert( [..."abc",char "d"] == "abcd" );
+assert( string (char "a") == "a" && string "b" == "b" && string #cd == "cd" );
+assert( string [char "a","b",#cd] == "[char "_a"_,"_b"_,#cd]" );
 assert( "$_" == "$" && ""_" == string #'"' );
-assert( ucode (char #'a') == 97 && ucode "12" == [49,50] );
-assert( ucode [char #'a',"12"] == [97,[49,50]] );
+assert( ucode (char "a") == 97 && ucode "12" == [49,50] );
+assert( ucode [char "a","12"] == [97,[49,50]] );
 assert( is_list "abc" && not(is_list #abc) );
 assert( select [[true,false], "ab", "cd"] == "ad" );
 assert( repr[char 1] == [quot,dol]++"[1]"++[quot] );

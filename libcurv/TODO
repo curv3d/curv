@@ -1,15 +1,13 @@
 String TODO:
-* new [[Escape]] design:
-  * for symbols & quoted identifiers
-  * for string literals
-* new char print_repr: char "$", char ""_" or quot or char 34
+* new String language documentation
 * locatives: do local a = "abc"; a[0] := 42 in a==[42]++"bc"
 * fix where Lists work but Strings fail:
   * equal,unequal,Unary_Scalar_Prim
     equal["foo","fob"] == [#true,#true,#false]
     * requires surgery on the Prim API (Abstract_List vs List in the internals)
     * think about: new Prim proposal, Abstract_List API
-* concat["abc",[1,2,3]] prints as "abc"++[1,2,3]
+* Uniform syntax for printing lists.
+  concat["abc",[1,2,3]] prints as "abc"++[1,2,3]
 * List_Builder allows you to specify how many elements are about to be added,
   so that it can preallocate in the underlying collection. Calls reserve()
   on std::vector or std::string. size(), capacity(), reserve(new_capacity).
