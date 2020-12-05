@@ -101,6 +101,7 @@ struct String_Base : public Abstract_List
 };
 
 void write_curv_string(const char*, unsigned, std::ostream&);
+void write_curv_char(char c, char next, unsigned indent, std::ostream& out);
 
 inline std::ostream&
 operator<<(std::ostream& out, Shared<const String> str)

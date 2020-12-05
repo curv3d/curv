@@ -1,7 +1,4 @@
 String TODO:
-* Uniform 'repr' and 'string' syntax for lists.
-  concat["abc",[1,2,3]] prints as "abc"++[1,2,3] (via 'repr')
-  or as abc[1,2,3] (via 'string').
 * locatives: do local a = "abc"; a[0] := 42 in a==[42]++"bc"
 * fix where Lists work but Strings fail:
   * equal,unequal,Unary_Scalar_Prim

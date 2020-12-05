@@ -109,4 +109,28 @@ write_curv_string(const char* s, unsigned indent, std::ostream& out)
     out << '"';
 }
 
+void
+write_curv_char(char c, char next, unsigned indent, std::ostream& out)
+{
+    if (c == '$') {
+        out << c;
+        if (is_dollar_next_char(next))
+            out << '_';
+    }
+    else if (c == '"')
+        out << "\"_";
+    else if (c == '\n') {
+        out << "\n";
+        for (unsigned i = 0; i < indent; ++i)
+            out << " ";
+        if (next != '\0')
+            out << "|";
+    } else if (c == '\t')
+        out << c;
+    else if (c < ' ' || c > '~')
+        out << "$[" << unsigned(c) << "]";
+    else
+        out << c;
+}
+
 } // namespace curv

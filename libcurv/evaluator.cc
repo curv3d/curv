@@ -775,9 +775,14 @@ void
 Brace_Segment::generate(Frame& f, String_Builder& sb) const
 {
     At_Phrase cx(*expr_->syntax_, f);
-    auto list = expr_->eval(f).to<List>(cx);
-    for (auto val : *list)
-        val.print_string(sb);
+    auto val = expr_->eval(f);
+    if (auto str = val.maybe<String>())
+        sb << *str;
+    else {
+        auto list = val.to<List>(cx);
+        for (auto val : *list)
+            val.print_string(sb);
+    }
 }
 Value
 String_Expr_Base::eval(Frame& f) const

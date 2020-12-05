@@ -788,6 +788,9 @@ assert( ucode [char "a","12"] == [97,[49,50]] );
 assert( is_list "abc" && not(is_list #abc) );
 assert( select [[true,false], "ab", "cd"] == "ad" );
 assert( repr[char 1] == [quot,dol]++"[1]"++[quot] );
+assert( repr("abc"++[1,2,3]) == ""_abc"_++[1,2,3]" );
+assert( repr([1,2,3]++"abc") == "[1,2,3]++"_abc"_" );
+assert( "${dol}" == "$" );
 
 // script return value:
 in null

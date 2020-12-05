@@ -107,12 +107,46 @@ List_Base::print_string(std::ostream& out) const
 void
 List_Base::print_repr(std::ostream& out) const
 {
-    out << "[";
+    enum {begin, in_string, in_list} state = begin;
+    bool first_after_left_bracket = false;
     for (size_t i = 0; i < size(); ++i) {
-        if (i > 0) out << ",";
-        array_[i].print_repr(out);
+        Value e = array_[i];
+        if (e.is_char()) {
+            switch (state) {
+            case begin: out << '"'; break;
+            case in_string: break;
+            case in_list: out << "]++\""; break;
+            }
+            state = in_string;
+            char next = 0;
+            if (i + 1 < size() && array_[i+1].is_char())
+                next = array_[i+1].to_char_unsafe();
+            write_curv_char(e.to_char_unsafe(), next, 0, out);
+        } else {
+            switch (state) {
+            case begin:
+                out << '[';
+                first_after_left_bracket = true;
+                break;
+            case in_string:
+                out << "\"++[";
+                first_after_left_bracket = true;
+                break;
+            case in_list:
+                break;
+            }
+            state = in_list;
+            if (!first_after_left_bracket)
+                out << ',';
+            first_after_left_bracket = false;
+            e.print_repr(out);
+        }
     }
-    out << "]";
+    switch (state) {
+    case begin: out << "[]"; break;
+    case in_string: out << '"'; break;
+    case in_list: out << ']'; break;
+    }
 }
 
 Ternary List_Base::equal(const List_Base& list, const Context& cx) const
