@@ -260,16 +260,10 @@ Char_Escape_Phrase::analyse(Environ& env, Interp) const
     if (location().token().kind_ == Token::k_string_newline)
         c = '\n';
     else {
-        switch (location().range()[1]) {
-        case '=':
-            c = '"';
-            break;
-        case '.':
-            c = '$';
-            break;
-        default:
-            die("bad char escape");
-        }
+        assert(location().token().kind_ == Token::k_char_escape);
+        auto r = location().range();
+        assert(r.size() == 2 && r[1] == '_');
+        c = r[0];
     }
     return make<Literal_Segment>(share(*this), make_string(&c, 1));
 }

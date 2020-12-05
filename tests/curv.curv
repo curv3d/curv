@@ -185,14 +185,9 @@ assert( {call x = x + 1} 3 == 4 );
 
 assert( strcat("foo","bar",0) == "foobar0" );
 
-assert(
-    count "foo" == 3 && count "$." == 1 && count(repr "$.") == 4
-    && count "$=" == 1
-);
-
 assert( [if (true) (;)] == [] );
 
-assert( "$(2+2)" == "4" && "$("foo")" == "$=foo$=" && "${"foo"}" == "foo" );
+assert( "$(2+2)" == "4" && "$("foo")" == ""_foo"_" && "${"foo"}" == "foo" );
 
 assert( (let x=1 in x+2) == 3
     && (let x=2; y=3; in x+y) == 5
@@ -204,16 +199,16 @@ assert( (x+y where (x=1;y=2)) == 3 );
 
 assert_error("foo",error "foo");
 assert_error(
-    "assertion failed: expected error $=foo$=, actual error $=bar$=",
+    "assertion failed: expected error "_foo"_, actual error "_bar"_",
     do assert_error("foo",error "bar") in null);
 assert_error(
-    "assertion failed: expected error $=foo$=, got value $=bar$=",
+    "assertion failed: expected error "_foo"_, got value "_bar"_",
     do assert_error("foo","bar") in null);
 
 exec(file "scope.curv");
 
 assert_error(
-    "argument #1 of file: illegal recursive reference to file $=a$=",
+    "argument #1 of file: illegal recursive reference to file "_a"_",
     file "a");
 
 assert({a:1;b:2} == {a:1,b:2});
@@ -761,19 +756,21 @@ assert_error [
 let f = match[ensure is_num, _->#null]
 in assert(f 42 == 42 && f true == #null);
 
+// symbol
 assert(symbol "" == #'' && symbol "true" == true && symbol "foo" == #foo);
 assert_error [
-    "argument #1 of symbol: string $=$.[1]$= contains nongraphic characters",
+    "argument #1 of symbol: string "_$_[1]"_ contains nongraphic characters",
     symbol[char 1]
 ];
 let s = #''_' in
     assert(string s == "'" && repr s == "#''_'" && symbol "'" == s);
 
+// char and string
 let c=char 42 in assert(is_char c && repr c == "char #'*'");
 assert(char 36 == char #'$');
 assert(char[] == [] && char[97] == "a");
 assert("" == [] && repr "" == "[]");
-assert([char 97] == "a" && repr[char 97] == "$=a$=");
+assert([char 97] == "a" && repr[char 97] == ""_a"_");
 assert(is_string[] && is_string[char 97]);
 assert(concat["ab","cd"] == "abcd");
 assert(concat["a",[1]] == [char 97,1]);
@@ -783,7 +780,8 @@ assert( "foo"[0] == char #'f' && "foobar"[[3,2,4]] == "boa" );
 assert( "abc"@[0,[1,2]] == [char #'a',"bc"] );
 assert( [..."abc",char #'d'] == "abcd" );
 assert( string (char #'a') == "a" && string "b" == "b" && string #cd == "cd" );
-assert( string [char #'a',"b",#cd] == "[char #'a',$=b$=,#cd]" );
+assert( string [char #'a',"b",#cd] == "[char #'a',"_b"_,#cd]" );
+assert( "$_" == "$" && ""_" == string #'"' );
 assert( ucode (char #'a') == 97 && ucode "12" == [49,50] );
 assert( ucode [char #'a',"12"] == [97,[49,50]] );
 assert( is_list "abc" && not(is_list #abc) );

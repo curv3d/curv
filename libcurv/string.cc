@@ -86,10 +86,13 @@ write_curv_string(const char* s, unsigned indent, std::ostream& out)
     out << '"';
     for (; *s != '\0'; ++s) {
         char c = *s;
-        if (c == '$')
-            out << "$.";
+        if (c == '$') {
+            out << c;
+            if (is_dollar_next_char(s[1]))
+                out << '_';
+        }
         else if (c == '"')
-            out << "$=";
+            out << "\"_";
         else if (c == '\n') {
             out << "\n";
             for (unsigned i = 0; i < indent; ++i)

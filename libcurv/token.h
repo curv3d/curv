@@ -120,5 +120,9 @@ struct Token
     } kind_ = k_missing;
 };
 
+// Test if the character following '$' in a string literal is part of
+// a $ escape sequence.
+bool is_dollar_next_char(char);
+
 } // namespace curv
 #endif // header guard

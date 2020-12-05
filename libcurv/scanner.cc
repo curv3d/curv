@@ -11,6 +11,11 @@
 using namespace std;
 namespace curv {
 
+bool is_dollar_next_char(char c)
+{
+    return c=='_' || c=='(' || c=='[' || c=='{' || isalpha(c);
+}
+
 void
 Scanner::push_token(Token tok)
 {
@@ -46,15 +51,10 @@ Scanner::get_token()
         }
         if (*p == '"') {
             ++p;
-            if (p < last && *p == '"') {
+            if (p < last && *p == '_') {
                 ++p;
-                tok.last_ = p - first;
-                tok.kind_ = Token::k_bad_token;
-                ptr_ = p;
-                throw Exception(At_Token(tok, *this),
-                    "\"\" is not a valid escape sequence.\n"
-                    "Use ${quot} or $="
-                      " to interpolate a \" character into a string.");
+                tok.kind_ = Token::k_char_escape;
+                goto success;
             }
             tok.kind_ = Token::k_quote;
             string_begin_.kind_ = Token::k_missing;
@@ -66,17 +66,7 @@ Scanner::get_token()
                 throw Exception(At_Token(string_begin_, *this),
                     "unterminated string literal");
             }
-            if (*p == '$') {
-                ++p;
-                tok.last_ = p - first;
-                tok.kind_ = Token::k_bad_token;
-                ptr_ = p;
-                throw Exception(At_Token(tok, *this),
-                    "$$ is not a valid escape sequence.\n"
-                    "Use ${dol} or $."
-                      " to interpolate a $ character into a string.");
-            }
-            if (*p == '.' || *p == '=') {
+            if (*p == '_') {
                 ++p;
                 tok.kind_ = Token::k_char_escape;
                 goto success;
@@ -96,18 +86,12 @@ Scanner::get_token()
                 tok.kind_ = Token::k_dollar_bracket;
                 goto success;
             }
-            if (isalpha(*p) || *p == '_') {
+            if (isalpha(*p)) {
                 while (p < last && (isalnum(*p) || *p == '_'))
                     ++p;
                 tok.kind_ = Token::k_dollar_ident;
                 goto success;
             }
-            ++p;
-            tok.first_ = p - 2 - first;
-            tok.last_ = p - first;
-            tok.kind_ = Token::k_bad_token;
-            ptr_ = p;
-            throw Exception(At_Token(tok, *this), "illegal string escape");
         }
         if (*p == '\n') {
             ++p;
@@ -133,8 +117,13 @@ Scanner::get_token()
             throw Exception(At_Token(tok, *this),
                 "unterminated string literal");
         }
-        while (p < last && *p != '$' && *p != '\n' && *p != '"' && *p != 0)
+        for (;;) {
+            if (p == last || *p == '\n' || *p == '"' || *p == 0)
+                break;
+            if (*p == '$' && p < last && is_dollar_next_char(p[1]))
+                break;
             ++p;
+        }
         tok.kind_ = Token::k_string_segment;
         goto success;
     }
