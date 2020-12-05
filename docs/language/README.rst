@@ -34,7 +34,7 @@ Simple, Elegant, Powerful
 
 Simple Type System
   Curv is a dynamically typed language with 6 value types:
-  symbols, numbers, lists, strings, records, and functions.
+  symbols, numbers, characters, lists, records, and functions.
   Everything else is represented using combinations of these primitives.
   There are no type names or type declarations.
 

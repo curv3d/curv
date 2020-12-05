@@ -10,8 +10,8 @@ Curv has 6 primitive value types:
 ==============     ============================================
 symbol             ``#foo``, ``#'hello world'``
 number             ``-1, 3.1416, 0xFF``
-string             ``"hello, world"``
-list               ``[0,1,2]``
+character          ``char 65`` or ``char "A"``
+list               ``[0,1,2]`` or ``"abc"``
 record             ``{name: "Lancelot", quest: "To seek the holy grail", favourite_colour: "blue"}``
 function           ``x -> x+1``
 ==============     ============================================
@@ -23,6 +23,7 @@ For example,
 * The boolean values are represented by the symbols ``#true`` and ``#false``.
 * If you need a null value, like the ``null`` in JSON or Javascript,
   you can use the symbol ``#null``.
+* A character string is a list of characters.
 * A geometric point or vector is a list of numbers.
 * A matrix is a list of lists of numbers.
 * A geometric shape is a record containing 5 fields

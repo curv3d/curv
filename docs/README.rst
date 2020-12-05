@@ -115,7 +115,7 @@ There is no concept of I/O. A Curv program is simply an expression that
 computes a shape, without causing side effects.
 
 Curv is *dynamically typed*, with 6 fundamental types:
-symbols, numbers, strings, lists, records and functions.
+symbols, numbers, characters, lists, records and functions.
 All application level data is built from these 6 types.
 For example, a geometric shape is simply a record value
 with a standard set of fields.
