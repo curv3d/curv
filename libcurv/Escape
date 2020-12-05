@@ -22,12 +22,13 @@ This error provides room for future expansion, and forces old code to be
 updated to the new syntax, but it also helps eliminate ambiguity and maintain
 the visual clarity of character/escape sequence boundaries.
 
-History of Proposals
---------------------
+Design Alternatives
+-------------------
 All the alternatives have problems. Escaping impairs readability.
 
-Compare 1 and 5:
+Compare some of the designs:
     print "x=$x";
+ 0. "print "_x=$_x"_;"   char ""_"
  1. "print $`x=$.x$`;"   char "$`"
  5. "print ""x=$$x"";"   char """"
     "print ${quot}x=${dol}x${quot};"
@@ -42,6 +43,94 @@ Then there are the various "raw" string literal syntaxes that avoid escaping.
 No best design, just tradeoffs between different kinds of readability, and
 complexity of the syntax.
 
+0. A Syntax Coloured Alternative
+--------------------------------
+This is an alternative design, optimized for syntax colouring, but still
+better even without syntax colouring.
+
+String literals are coloured with two colours: there is a literal text colour
+(red) and a metacharacter colour (blue). For readability, these escape sequences
+contain the special character being escaped, which is coloured as literal text.
+So if you read the string literal, looking only at the red characters, that's
+all the literal text.
+
+Inside a string literal, the following `$` escape sequences are supported:
+    $identifier
+    $'quoted identifier'
+    ${expression}
+    $(expression)
+    $[expression]
+
+There are two metacharacters inside a string literal: `$` and `"`.
+We have a compact syntax for escaping these metacharacters:
+    $_  ->  $
+    "_  ->  "
+The syntax colouring for the above escape sequences is: the $ or "
+is coloured red (for literal text) and the following _ is coloured blue.
+
+The _ character never needs to be escaped. Outside of these two escape
+sequences, it is treated literally.
+
+If $ is not followed by <alpha> _ { ( [ then it is treated literally.
+
+If " is not followed by _ then it terminates the string literal.
+
+Here are some 1-character string literals:
+    "$"    contains a $ character
+    "_"    contains an _ character
+    ""_"   contains a " character
+
+Another example
+    original text:        print "x=$x";
+    as a quoted string:   "print "_x=$_x"_;"
+    C syntax              "print \"x=\$x\";"
+
+This escape sequence is more readable than anything else I've designed.
+It is more readable than traditional C-style escaping.
+The readability comes from the use as _ as a quoting metacharacter.
+The _ has minimal visual interference with the literal text.
+It's really easy to ignore the _ characters and just read off the
+literal text (even without syntax highlighting to help).
+
+Another benefit comes when text is repeatedly escaped.
+Using C syntax, escape sequences grow exponentially in size as they
+are repeatedly escaped:
+    \  ->  \\  ->  \\\\  ->  \\\\\\\\
+    "  ->  \"  ->  \\\"  ->  \\\\\\\"
+Using this new syntax, escape sequences grow linearly in size as they
+are repeatedly escaped:
+    $  ->  $_  ->  $__  ->  $___
+    "  ->  "_  ->  "__  ->  "___
+
+Another well known design that could be used is to escape the two
+metacharacters by doubling them. This looks okay, *unless* there is
+repeated escaping, in which case you get exponential growth again:
+    $  ->  $$  ->  $$$$  ->  $$$$$$$$
+    "  ->  ""  ->  """"  ->  """"""""
+
+Curv has quoted identifiers, like this: 'this is an indentifier'.
+There are no $ escapes, and the only escape sequence is
+    '_
+which is replaced by a ' character.
+    'This isn'_t C'
+
+One limitation of this design is that it is impossible to write a quoted
+string literal that is immediately followed by an _ character. This is not
+a problem for Curv.
+
+A Graphical Alternative
+-----------------------
+If I could use arbitrary graphics to make lexical distinctions, then ...
+* This ASCII syntax would be an interchange format, and not the primary UI.
+* The primary purpose of character values and text in a graphical language is
+  to support a rich text data type (not character strings). There are no
+  control characters, probably no tabs or newlines. Rich text is used for:
+  logging debug messages, rendering text in a model, documentation.
+* The secondary use for character strings is file interchange. Eg, exporting
+  data to a text file format, or importing and parsing a text file.
+
+History of Proposals
+--------------------
 Newest to earliest:
 1. $./$`
   $. is $

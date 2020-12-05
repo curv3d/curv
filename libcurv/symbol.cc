@@ -49,19 +49,14 @@ Symbol_Ref token_to_symbol(Range<const char*> str)
     if (str[0] == '\'') {
         // parse the quoted identifier
         assert(str.size() >= 2);
-        assert(str[str.size()-1] == '\'');
+        const char* end = &str[str.size() - 1];
+        assert(*end == '\'');
         String_Builder sb;
-        for (const char* p = &str[1]; *p != '\''; ++p) {
-            if (p[0] == '$') {
-                if (p[1] == '-') {
-                    ++p;
-                    sb << '\'';
-                }
-                else if (p[1] == '.') {
-                    ++p;
-                    sb << '$';
-                } else
-                    sb << '$';
+        for (const char* p = &str[1]; p < end; ++p) {
+            if (p[0] == '\'') {
+                ++p;
+                assert(p < end && *p == '_');
+                sb << '\'';
             } else
                 sb << *p;
         }
@@ -110,10 +105,8 @@ void print_idstr(const char* id, std::ostream& out)
         out << '\'';
         for (const char* s = id; *s != '\0'; ++s) {
             char c = *s;
-            if (c == '$')
-                out << "$.";
-            else if (c == '\'')
-                out << "$-";
+            if (c == '\'')
+                out << "'_";
             else
                 out << c;
         }

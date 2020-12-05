@@ -288,6 +288,10 @@ quoted_identifier:
         while (p < last) {
             if (*p == '\'') {
                 ++p;
+                if (p < last && *p == '_') {
+                    ++p;
+                    continue;
+                }
                 goto success;
             }
             if (*p >= ' ' && *p <= '~') {

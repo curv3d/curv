@@ -766,6 +766,9 @@ assert_error [
     "argument #1 of symbol: string $=$.[1]$= contains nongraphic characters",
     symbol[char 1]
 ];
+let s = #''_' in
+    assert(string s == "'" && repr s == "#''_'" && symbol "'" == s);
+
 let c=char 42 in assert(is_char c && repr c == "char #'*'");
 assert(char 36 == char #'$');
 assert(char[] == [] && char[97] == "a");

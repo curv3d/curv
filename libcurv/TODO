@@ -2,7 +2,7 @@ String TODO:
 * new [[Escape]] design:
   * for symbols & quoted identifiers
   * for string literals
-* new char print_repr: char "$", char "$`" or quot or char 34
+* new char print_repr: char "$", char ""_" or quot or char 34
 * locatives: do local a = "abc"; a[0] := 42 in a==[42]++"bc"
 * fix where Lists work but Strings fail:
   * equal,unequal,Unary_Scalar_Prim
@@ -30,14 +30,6 @@ Update Array documentation: definition of ranked array, ranked function.
     which contains the other high precedence prefix operators.
   * I would also like postfix `foo`, also for partial application. Precedence?
     It's probably '<sum> `foo`'.
-
-Functions:
- * `id` is the identity function, domain is All.
-   * Rename `identity` to `idmatrix`.
- * `error`, when referenced in an expression context (outside a function call)
-   is the error function, domain is None.
- * `compose` is a primitive, so that the following works:
-   in_domain F = match[compose[F,_->true],_->false]
 
 All builtin numeric/boolean operations are now vectorized. Document this.
     Call_Expr -- could vectorize the function argument. Q'NIAL, FP
