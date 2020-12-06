@@ -3,6 +3,9 @@ Curv3D organization and community
 The FreeBSD code of conduct is pretty good (2nd iteration):
 https://www.freebsd.org/internal/code-of-conduct.html
 
+Idea: create a "Future of Signed Distance Fields" community, with discussion
+channels for Curv, LibFive, Dali, and others.
+
 mailing list/forum software
 ---------------------------
 Goal is to support both a mailing list and a web forum interface, with both
@@ -50,6 +53,13 @@ People are confused about:
    This thread explains why Discourse is not suitable for migrating from a
    mailman instance. It's not designed to support mailing lists.
 Possibly suitable:
+ * Zulip 3. The Zulip data model matches the email data model: each message
+   has a subject line, contents, belongs to a thread. The Zulip project
+   lists "mirroring mailing list traffic" as a supported use case, and the
+   docs for configuring this look plausible. Still need: testimonials about
+   how well this works, what the problems are.
+    * Is zulip a good replacement for google groups?
+      Weirdly, "zulip-announce" is on google groups.
  * Mailman 3.
    eg, https://lists.mailman3.org/archives/list/mailman-users@mailman3.org/
    Installing on Ubuntu 20.04 requires following a mailing list post,
@@ -62,3 +72,10 @@ Possibly suitable:
  * dfeed : https://github.com/CyberShadow/DFeed
    Forum UI initially looks pretty good, and seems there is no compromise
    on mailing list support.
+
+Zulip is currently my top pick. It is often proposed as an alternative to
+Slack on the FoC forum. The pro-Zulip evangelism arguments seem compelling.
+  "Combines the immediacy of real-time chat with the productivity benefits
+  of a threaded conversation model"
+A non-aligned FoC member who needs to use both says it is neither better nor
+worse than Slack, just different.
