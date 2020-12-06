@@ -1,0 +1,43 @@
+General Purpose Volumetric Data Structures
+==========================================
+Goals: Design a data structure for representing a 3D signed distance field.
+A complex signed distance function (in executable code representation)
+can be "rendered" into one of these data structures. Then the data structure
+can be rapidly rendered into a frame buffer.
+
+Catchy names: SDClay
+
+Signed distance functions can be too slow to render at an interactive frame
+rate, if they contain a lot of code, so it is standard practice to convert
+the SDF to a data structure, then render the data structure. The two most
+popular representations are:
+ * triangle mesh
+ * voxel grid, usually hierarchical
+These both take advantage of GPU hardware features.
+
+If we consider only modern GPUs, and program them as general purpose
+SIMD machines, then alternative data structures may exist that have
+competitive performance. Maybe we don't need hardware rendering support if
+we can compensate by using a more compact data structure that requires less
+memory bandwidth to render.
+
+I'm looking for a better data structure. Goals:
+ * Memory efficient.
+ * Represents a signed distance field, even when far from the boundary.
+ * Represents smooth curved surfaces and sharp features. Doesn't break up
+   into "atoms" when you zoom in.
+ * Can efficiently convert a signed distance function to a GPVDS on the GPU.
+ * And convert a mesh to a GPVDS.
+ * Can quickly render a GPVDS on the GPU at interactive frame rates.
+ * Can convert to a high quality mesh for file export, preserving sharp
+   features etc.
+Bonus feature: works well as digital clay for interactive sculpting.
+
+Brainstorming:
+ * Splines.
+ * Hierarchical (octree) structures:
+    * Adaptively Sampled Distance Fields (Frisken)
+    * That data structure used by Dual Marching Cubes (Warren).
+      It's an octree rep of a signed distance field and it supports
+      sharp features.
+ * Radial Basis Functions (RBF) with compact support.

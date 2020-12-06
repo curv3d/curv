@@ -22,24 +22,33 @@ may provide a Lipschitz or C1 SDF, but it is not required to. However,
 it must provide derivations of the following three auxiliary fields.
 There are multiple implementations of each auxiliary field.
 
-ray-casting field:
+3D ray-casting field:
     Maps a ray (point + direction vector) onto the point on the closest surface
     along the ray. Needed for rasterizing a 3D shape.
 
-offset field:
-    Maps a point onto the Euclidean signed distance to the closest surface.
-    Needed for exact offset, blending, other level-set ops.
+2D ray-casting field:
+    For fast, high quality GPU rendering of 2D vector graphics,
+    a popular approach is scanline conversion, where you calculate the signed
+    distance from the pixel to the nearest boundary along the X axis.
+
+offset fields:
+    Maps a point onto the signed distance to the closest surface.
+    Several metric spaces are needed:
+    * Euclidean: for exact offset, blending, other level-set ops.
+      Underglow and rounded outlines in 2D font rendering.
+    * Mitred: mitred outlines, and offsets for modifying a font weight in 2D.
 
 direction field:
     Maps a point onto a vector that points away from the closest point on the
     surface. If the point is on the surface, this is an inverse surface normal.
-    The direction can be ambiguous or undefined.
+    The direction can be ambiguous or undefined. Aka the gradient.
     Use cases:
-      * Surface normal for rendering.
+      * 3D Surface normal for rendering.
       * Morphing between two convex objects that don't overlap: separate
         linear interpolation on the length and angle of the direction vector
         from the point to the closest surface point.
       * Special blends...
+      * 3D Ambient occlusion
 
 GIFRep supports a rich and composable collection of shape operations.
 A shape operator knows how to derive the 3 fields from its shape arguments.
