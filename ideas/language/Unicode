@@ -2,6 +2,52 @@
 Curv currently restricts programs and strings to ASCII, since Unicode is too
 complex for humans to understand and will create too many bugs.
 
+UPDATE Dec 2020
+    Here's a plan for introducing Unicode.
+    * A string literal like "abc" is nothing more than a list of characters.
+      "char" is an abstract data type, which encapsulates a single
+      Unicode code point. Eg, 'char 97' constructs the character "a".
+      "abc" is shorthand for [char 97, char 98, char 99].
+      There is also a constructor 'char "a"'. The string argument of 'char'
+      can contain two or more characters, if those characters can be fused into
+      a single character using NFC. Since we have a hard requirement for
+      the 'char 97' and 'char "a"' constructors, do we also need a separate
+      bespoke syntax for character literals? I decided no.
+      The semantics of strings and characters are very simple, and do not
+      require an advanced understanding of Unicode for general use.
+    * A symbol is a scalar value, representing an identifier.
+      #abc and #'hello world' are symbols. Internally, a symbol is represented
+      using NFC. Unlike strings, the equality semantics for symbols conform
+      to the Unicode requirements for comparing two identifiers.
+      The language API subtly pushes you to use symbols rather than strings
+      if you want to compare identifiers.
+    * Strings and symbols are simple, and are introduced at high level tiers
+      of the Curv language documentation (following the principle of progressive
+      disclosure). The Curv core depends only on a small subset of Unicode;
+      that subset is frozen, and won't change in the future. This subset is:
+      the set of valid code points, and NFC. We don't want a ton of complexity
+      in the core, and we don't want the core to depend on semantics that may
+      change in the future, causing existing Curv code to break.
+    * If you need to deal with the full complexity of Unicode semantics,
+      you need to use a more complex and low level Unicode API, which is
+      packaged in a Unicode module. There is a Unicode.EGC data type for
+      working with Extended Grapheme Clusters. The Unicode module is versioned
+      (the name contains the Unicode version number). These Unicode modules
+      can be maintained separately from the Curv core.
+    * Raku and Swift identify their high level character type with the EGC.
+      Strings based on the EGC abstraction are buggy and fragile and
+      complicated, since:
+      * String catenation s1++s2 does not obey list axioms. Adjacent EGCs in
+        the resulting string can fuse, resulting in fewer than
+        count s1 + count s2 EGC characters.
+      * The definition of an EGC changes from year to year, as new revisions
+        of the Unicode standard are released. Code that works this year can
+        break in subsequent years. As the Swift developers have discovered.
+      * So these fragile buggy semantics do not belong in the core language.
+        They belong in a *versioned* Unicode module.
+
+Previous Text
+-------------
 In addition to the inhuman complexity, the Unicode standard keeps changing.
 So the semantics of strings and identifiers changes as Curv is updated to
 understand new Unicode versions. So a program that works under one version

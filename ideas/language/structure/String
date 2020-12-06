@@ -285,8 +285,14 @@ Instead we construct character values using a function call.
 char #a
 
 With no character literal syntax, how do you pattern match a character?
-Using `== expression` patterns.
-    match [
+ 1. Using a 'char x' constructor expression, from the ADT proposal.
+      match [
+        char #a -> 
+        char 127 ->
+        == nl ->
+        ]
+ 2. Using `== expression` patterns.
+      match [
         == char #a -> 
         == char 127 ->
         == nl ->
