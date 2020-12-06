@@ -67,6 +67,7 @@ Value list_elem(Value val, size_t i, const At_Syntax& cx)
 }
 
 const char List_Base::name[] = "list";
+const char Abstract_List::name[] = "list";
 
 void
 List_Base::assert_size(size_t sz, const Context& cx)

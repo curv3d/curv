@@ -89,15 +89,10 @@ Tuple_Function::call(Value arg, Fail fl, Frame& fm) const
         return tuple_call(fl, fm);
     }
     At_Arg cx(*this, fm);
-    auto list = arg.to<const List>(cx);
-    if (list->size() != nargs_) {
-        if (fl == Fail::soft)
-            return {};
-        else
-            list->assert_size(nargs_,cx);
-    }
+    auto list = arg.to<const Abstract_List>(cx);
+    ASSERT_SIZE(fl,missing,list,nargs_,cx);
     for (size_t i = 0; i < list->size(); ++i)
-        fm[i] = (*list)[i];
+        fm[i] = list->val_at(i);
     return tuple_call(fl, fm);
 }
 
