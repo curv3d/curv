@@ -1,0 +1,290 @@
+https://www.buildingbeauty.org/beautiful-software
+"Beautiful Software" is a seminar and research group on applying Alexander's
+ideas to software.
+
+lectures on The Nature of Order:
+https://www.buildingbeauty.org/nature-of-order-lecture-series
+
+Stefan Lesser is taking this course (Oct 2020).
+https://stefan-lesser.com/2020/10/27/how-to-adopt-christopher-alexanders-ideas-in-the-software-industry/
+
+A video introducing the Beautiful Software program.
+https://www.youtube.com/watch?v=tiOzvEUoLeU
+"Software that helps people become whole and to create things with feeling"
+
+Christopher Alexander's address to the software community:
+https://youtu.be/98LdFA-_zfA
+
+Ryan Singer videos
+https://www.youtube.com/watch?v=XLsTZXT0FlM Christopher Alexander: A Primer
+https://www.youtube.com/watch?v=X-5KG73fzJ4 (interview Greg Bryant)
+
+Christopher Alexander: A Primer
+-------------------------------
+3:00 a universal approach to design problems
+4:00 there is no introduction/summary by Alexander himself (in > 15 books)
+5:20 took him 10 years to understand the material
+7:10 Plan of the talk:
+ 1. How do we productively frame a design problem so that we can make things
+    better. What is a productive way to frame and deal with a design problem.
+ 2. What is the outcome we are trying to reach by solving the design problem?
+    This goes deeper than immediate practical goals. How do we make the world
+    better?
+ 3. What are the actual processes that we use, when we have a design problem
+    framed in the right way, and we want to get to this outcome. What are the
+    steps we go through to get the design outcome we want. 8:24
+
+The key books to read are:
+ 1. Notes on the Synthesis of Form. Gives some good primitives to start with.
+    (Alexander's system is completely recursive. You have a very general,
+    fractal-like process of finding some area where something isn't right,
+    differentiating it, unfolding it, and then healing it, and doing this at
+    all different scales.)
+ 2. Nature of Order, book 1
+ 3. Nature of Order, book 2
+ 4. Battle for the Life and Beauty of the Earth. In depth case study.
+
+10:30 Form, Context, and Fit
+Notes on the Synthesis of Form, first few chapters are essential.
+Ignore the latter half. Three concepts: Form, Context and Fit.
+
+Anytime we have a design problem, there is some part of the whole world we
+have decided to create or change. This is the Form: the thing we are going
+to make or modify.
+
+The way that we get to a good form is by looking at the context that the form
+fits in to. We're not just looking at a physical context. Not just "the couch
+has to be the right size to fit into the living room". The context really
+refers to the dynamics, the activities that people are trying to do. The things
+that are going on, we can either go with the grain or against the grain. 12:15
+
+With other designers, there tends to be a style-based ideology. At a given time,
+for a given generation of designers, there tends to be a "right way" to do
+things, which is based on certain styles and certain forms. Then we tend to
+build things that follow a standard format without understanding why.
+
+Actually, there isn't one way to design anything, but this doesn't mean
+"anything goes". There's an empirical relationship between the thing that
+people are trying to do and the way that our form harmonizes with that or
+enables that or fits with that. The judgement of success is the fitness, the
+relationship between these two things.
+
+This is very important in everyday practical design work because we often see
+the opposite. Somebody creates a requirement for what the project should
+become. Nine times out of ten, this requirement is expressed in terms of the
+form. Eg, the client doesn't tell us what problem they are trying to solve,
+they instead tell us what form to build. We have no meaningful fitness function.
+A better definition of success is a struggle: something someone was trying to
+do, that they weren't able to do. We need to understand the behaviour that
+the users are trying to attempt in some context. Now we have two things that
+are in different categories: the things that people are trying to do, and the
+structure of the form. And then we have a definition of fitness that we can
+work with. We need to understand the behaviours that the customer wants to
+enable, in a form agnostic way.
+
+The chapter "Goodness of Fit" is fundamental. 16:25
+
+16:44 Beyond Fitness: Life and a Better World
+By mastering form, context and fit, we can build better widgets and increase
+sales. But Alexander has a higher goal than increased sales: he want to build
+a better world.
+
+ref: The Nature of Order, book 1: The Phenomenon of Life
+The term "quality without a name" in earlier books is now called Life.
+This idea is now fully analysed with many examples. 17:46
+Life: the degree to which a certain form enables different types of activity
+to take place.
+
+18:36 example. Soviet style building, vs a courtyard designed by Alexander.
+The important difference is the kind of activity that can take place.
+ * Inner level: what sort of neurocognitive activity takes place?
+   How much does my eye jump around? There's a lighting up of the brain, and
+   movement of the eye, which is much more alive in the latter structure.
+ * Outer level: In Alexander's courtyard, you can go for a stroll. Sit on the
+   bench and read a book. Children can play in the yard. You can go under
+   the arcade to get shade. You can go out to the benchs to warm up. You can
+   have social gatherings.
+
+22:45 example. Modern planter in corporate plaza. It's fairly dead. Why?
+ * Not much to engage the eye. Doesn't enable much activity. To fix it,
+ * Widen the ledge so you can sit down. Affords more activity. Also it becomes
+   more structurally interesting to look at. Why is sitting important?
+ * You might be waiting to meet someone. You might arrange to meet someone
+   then sit together and socialize. You might choose to take a phone call there
+   because it's nicer than a stuffy office.
+ * There's a great variety of activities; a kind of flourishing of possibilities
+   for human experience, for meaningful things to happen, that come out of this.
+   27:00
+
+28:00 Introducing centers and generative process
+To apply these ideas, we need to get from a first order view to a higher
+order view. Alexander gives us tooling: higher order descriptions.
+
+Static aspect: how do we take a snapshot of what exists as a spatial
+structure, and then how do we describe the geometry or the physical
+relationships in that spatial structure, to characterize: how do we get to
+something that is more living. How do we get to a better design, just by
+looking at the arrangement of things. This is the topic of centres.
+
+Dynamic aspect: By what process do we improve this form? Through time, what
+do we do, in terms of design process, to actually step by step unfold
+and realize a better design?
+
+These two things (centres, and generative process) constitute the remainder
+of the program. 29:57
+
+Centres: The Nature of Order / The Phenomenon of Life
+All form that exists, any structure that we point to, is some elements in a
+relationship. Whatever it is, there is a structure there, and there are atoms
+(could be pixels, sound waves, etc). There are things that exist, in a certain
+relationship to each other, and this relationship has some sort of coherence
+or lack of coherence. A centre is a way of describing those elements in this
+field of related elements that are more coherent, that are more salient, and
+that are more related to each other. This gives us a way to talk about the unit
+of change and the unit of design that we are manipulating at a given time, or
+refering to at a given time, by partitioning the world of form, which is given
+to our senses. It's one big world, but we want to identify one salient part,
+and say, here I want to mentally draw a dotted line, and say here's something
+interesting going on that I would like to improve or change or identify.
+And this is a centre.
+
+Consider the human face. 33:00 ...
+
+36:00 Strong centres and weak centres
+Every structure we could look at has this quality of central pieces that are
+more coherent or less coherent. In areas where we would like to create
+coherence or extend coherence, we do this by improving the relationship
+between centres. Book 1, Nature of Order.
+
+36:37 Generative Process
+Patterns, and pattern languages. The key value of a pattern language is very
+different from the perception of the software community.
+Book 2, Nature of Order / The Process of Creating Life -- the best book
+
+37:51 example, map of Rome
+Amazing network of centres. All kind of beautiful shapes, adapted to the shapes
+around it. Not only esthetically pleasing, in terms of the configuration of
+the shapes, but also very functional, enabling all sorts of life to happen.
+How do we get to something like this? You can tell that this city was not
+conceived by one person thinking of a few key points then drawing a blueprint.
+There is far too much complexity, too much detail, too much fitness between
+parts to have been conceived all at once. The way to get to something that is
+so well adapted like this, and has such a multiplicity of well adapted parts,
+is by step-by-step unfolding, by piecewise adaptation, by doing one thing at
+a time, and doing this one thing with careful attention to what's already there.
+
+Two essential points. 1) step by step adaptation, unfolding one step after the
+other, and 2) sequence: the order of problem solving is extremely important.
+There's a path dependence here. The things that we do first constrain what
+we can do next, and either this can lead us closer and closer to a good result,
+or it can paint us into a corner, depending on our choice of sequence.
+
+Process: how we can use a pattern language to get to unfolding something.
+
+A Pattern is a generic relationship of centres. When we talk about centres,
+we are talking about structure. When we talk about structure, we are talking
+about form. A pattern is a bundle of form and context together. Some context
+has been understood. In reaction to that, some kind of generic arrangement
+of centres has been designed. If we put those handful of centres together
+according to the generic relationships that we've understood, then everytime
+this context happens, we can solve it with a certain family of relationships,
+as a form. And because these two things are fit with each other, any time we
+encounter this problem, we can pull out this pattern, and then we can get
+more life out.
+
+Example: the pattern "six foot balcony". 42:22
+If you build a balcony less than 6 feet deep, people won't use it, because
+it restricts the activities that can take place there.
+
+If we have a collection of patterns, we can knit them together into a language.
+Kitchen layout language (example). Sequence: you lay down patterns in a
+particular sequence: earlier items in the sequence have more constraints
+for maximizing life than later items in the sequence. 49:00
+
+Pattern languages may be useful to communicate solved problems and pass on
+knowledge in a modular way. This is the thing that the software community
+has adopted. We're going to give you an encyclopedia of solved things so that
+you don't waste time reinventing the wheel. This is not the deeper meaning of
+patterns. The main thing is that a pattern language is a way to specify
+one unique project. Rather than taking a cross-sectional view and say that
+a pattern allows us to build a 1000 different buildings, actually, one pattern
+language allows us to describe, at the right level of abstraction, how we
+should go about problem solving to make _one_ thing. This is the longitudinal
+view. This is: how will we, step by step, solve which problem in which order.
+To make this one thing we're trying to make. Not to make everything over and
+over again. Not to be more efficient and reuse everything we did in the past.
+But to do one thing right. Making one product in a way that is fitting and
+effective and beautiful and enables a lot of activities to take place on the
+basis of that form. This is difficult. Making one building that is successful
+is really difficult. We easily over-index on the efficiency gains of having
+some modular components, instead of the real problem, which is making one
+coherent system that is whole, and functioning, and a success.
+
+A pattern language is actually what we create for a project, to specify
+this project at the right level of abstraction. This gives us two things:
+It gives us a stepwise path through the problem solving process, so that we
+can step-by-step adapt each centre to the neighbouring centres, and weave them
+into a harmonious field of centres, which are all working together.
+The second thing, is that it allows us to avoid overspecifying all of the
+details that we don't understand in the beginning. We cannot, in one flash,
+draw a master plan that says here is the design. You can try. You can draw a
+master plan, but as soon as you put it into reality, you find it doesn't fit,
+it doesn't work the way that we thought, because we do not have all of the
+variables and all of the interactions between components in our heads.
+The truth of the field of relationships between all the components, whether
+it's the spatial relationships, of a garden and the neighbouring plots of
+land and the house, or, it's the interdependence of all the pieces of code
+in software. This field of relationships is too complex to have completely
+in our mind and then say: I have the perfect solution, and blueprint it.
+So what we want is a high level way to say: we will more or less have this
+and that, and then allow the ones who are actually doing the construction
+to go in to the level of detail, figure out the actual fit and the actual
+final form in the context of doing the building. And then come up and say,
+what's the next major piece I have to solve. And then go down. So it actually
+allows us to unify construction and design together at the right level of
+scale.
+
+54:00 Examples: 
+
+Summary: frame the problem in terms of form and context (what are we making,
+what are the activities, so we have a ...
+
+My Thoughts on Pattern Languages
+--------------------------------
+Every large software project can benefit from having a pattern language to
+direct and coordinate the development. "Large" means: multiple contributors,
+with the need for coordination between contributors, or, a single person
+project with enough code, written over a long enough period of time,
+that you can't keep all the details in your head.
+
+My Curv project has a pattern language, but much of it is implicit knowledge.
+It will be beneficial to make that knowledge explicit, to write it down.
+It will speed up development by making it easier for me to make design decisions
+and engineer past roadblocks. And it will make it easier for other people
+to contribute to the project.
+
+Curv, as a programming language, has an ASCII text syntax.
+Part of the pattern language will deal with centres, activities and patterns
+relating to that syntax. What gives "life" to a language syntax?
+
+Curv is also a development environment. The project's pattern language
+will deal with the developer's experience of using Curv and its associated
+associated development environment to create, run and debug software.
+What are the related centres, activities and patterns?
+
+And there is a meta level. Curv is used for software development. Part of
+large scale software development is creating a pattern language for your
+project. How does Curv help developers create and use a pattern language?
+What are the patterns for that?
+
+In formal language theory, a language is a vocabulary and a set of grammar
+rules which recursively unfold to generate all the valid sentences or
+utterances in that language. We use these same ideas of generative grammar
+to design and think about programming languages. Alexander's method seems
+to be inspired by generative grammar, because he talks about recursively
+unfolding patterns to generate architecture.
+
+So what does this mean for the links between Alexander's method and
+programming languages?
+* Can do you design a programming language's vocabulary and grammar rules
+  so that they recursively unfold to generate living structure?

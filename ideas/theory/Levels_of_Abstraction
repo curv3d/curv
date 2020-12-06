@@ -1,0 +1,64 @@
+Levels of Abstraction: Functional Programming without Category Theory
+=====================================================================
+Haskell is the poster child for pure functional programming.
+But boy is it a complicated language. Haskell has a steep learning curve,
+due it its overly complicated and abstract type system. The caricature
+that many outsiders internalize (as evidenced by internet conversations)
+is that you need to learn monads and category theory before you can write
+the "hello world" program.
+
+This essay takes the position that Haskell really is too complicated and
+abstract, and that pure functional programming is or should be a practical
+discipline that doesn't require learning category theory. In this vision,
+the amount of abstraction required for every day pure functional programming
+is no greater than what you need to master any mainstream programming language.
+In fact, the essential ideas of pure functional programming are actually
+much simpler than object-oriented programming. A properly designed
+pure functional language should be easier to learn than a mainstream language;
+programs should be easier to write and easier to understand, test and debug.
+
+Levels of Abstraction
+---------------------
+In this section I will try to quantify the level of abstraction that is
+actually needed for functional programming. I'll start with the levels of
+abstraction found in mathematics, from arithmetic up to category theory.
+
+These "levels" represent increasingly higher levels of abstraction, building
+on earlier levels, and each level is increasingly more difficult to master.
+My evidence is the dates at which each concept was first published.
+
+0. Arithmetic (Rhind Papyrus, 1800 BC)
+Just numbers and a fixed set of arithmetic operators.
+2 + 2 = 4
+What you need to know in order to use a pocket calculator.
+
+1. Algebra (al-Khwarizmi, 800 AD)
+We introduce variables, which abstract over numbers.
+Eg, 'x + 2 = 4' where 'x' is an 'unknown' number.
+Using algebraic laws, such as these:
+    a + b = b + a              -- commutative property
+    a + (b + c) = (a + b) + c  -- associative property
+you can transform algebraic equations and solve for an unknown.
+   x + 2 = 4 implies x = 2
+
+2. Functions (Sharaf al-Din al-Tusi, 1200 AD)
+Functions abstract over arithmetic operators and algebraic expressions.
+Now you can define new arithmetic operations.
+f(x) = x + 2
+
+3. Abstract Algebra (the 1800s: Euler, Gauss, etc)
+An algebra (or, algebraic structure) is a set of values (which could be numbers,
+but don't have to be) and a set of operations (which could be arithmetic
+operations, but don't have to be), and a set of algebraic laws that the
+operations uphold. At this level, we study specific algebraic structures
+(eg, the numbers modulo an integer).
+The concept of an "abstract data type" in programming comes directly from
+Abstract Algebra. In Object Oriented Programming, this corresponds to a Class.
+
+4. Universal Algebra (Alfred North Whitehead, 1898)
+Instead of studying specific algebraic structures, we classify algebraic
+structures into "varieties" (eg, the Group), and study these varieties as the
+main object of interest. In object oriented programming, this corresponds
+to an Interface.
+
+5. Category Theory

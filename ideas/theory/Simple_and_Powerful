@@ -7,8 +7,41 @@ and how do we achieve them? The issues are subtle and require deep analysis.
 Simple is not the same as easy.
     See: "Simple Made Easy" -- Rich Hickey
     https://www.youtube.com/watch?v=oytL881p-nQ
+
 Ease of use is discussed in another essay.
 Here, we discuss simplicity and expressive power.
+One way to achieve ease-of-use is to design a language that is already
+familiar to users.
+
+Simplicity, by Rob Pike
+* Public Static Void <https://www.youtube.com/watch?v=5kj5ApnhPAE> 2010
+    I'm always delighted by the light touch and stillness of early
+    programming languages. Not much text; a lot gets done. Old programs
+    read like quiet conversations between a well-spoken research worker
+    and a well-studied mechanical collegue, not as a debate with a compiler.
+    Who'd have guessed sophistication brought such noise? -- Richard Gabriel
+  Modern languages have too much verbosity, too much bureaucracy, too many
+  complex choices to make between overly-similar options.
+* Simplicity is Complicated <https://www.youtube.com/watch?v=rFejpH_tAHM> 2015
+  Sapir-Whorf hypothesis, language influences thought. This seems especially
+  true for programming languages, which are far more diverse than natlangs.
+  Mainstream languages are evolving by adding features from other languages.
+  Complexity is growing while they become more similar to one another.
+  The Go design process was different:
+  * If a language has too many features, you waste time choosing which ones
+    to use. Later, "why does the code work this way?". The code is harder to
+    understand because it is written in a more complex language.
+  * Preferable to have just one way, or fewer simpler ways to do things.
+  * Features add complexity. We want simplicity.
+  * Features hurt readability. Readability is paramount.
+  * Look for a minimal, orthogonal, composable feature set that can express
+    everything you need (as mentioned elsewhere here).
+Curv, being a hybrid array/functional/imperative language, is not minimal.
+
+A powerful language will surface the deepest principles underlying a subject,
+revealing a new world to the user. When you learn such a language, you
+internalize those principles, giving you more powerful ways of reasoning about
+that world. 
 
 Alan Kay, 2015: Power of Simplicity
 https://www.youtube.com/watch?v=NdSD07U5uBs 10:00

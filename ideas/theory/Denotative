@@ -1,0 +1,152 @@
+What *I* Mean by "Functional Programming"
+=========================================
+I call Curv a "pure functional" programming language.
+There is a broad range of opinions on what "functional programming" is,
+so my attempts at labelling Curv like this are less successful than I like
+in conveying what Curv is or what the goals of the language are.
+A more precise term is "denotative programming", but even with that term,
+I still need to explain how Curv's denotative programming is different
+from Haskell's.
+
+The main design goals related to "functional programming" are:
+ * Exceptionally simple semantics. Curv programs are very easy to understand.
+ * Automatic parallelism. Curv uses the massive parallelism of a GPU to
+   grind through compute intensive 3D graphics algorithms, but you don't have
+   to think about this, it just magically happens. Some of the expressions
+   in your Curv program will be evaluated on the CPU, some on the GPU,
+   and some on both the CPU and the GPU at different times.
+   You don't declare this explicitly in your code, it just happens.
+ * Sandboxing. When you download a 3D model coded in Curv, and run it,
+   the Curv program cannot encrypt all your files and display a ransom
+   notice. Nor can it exfiltrate personal information and upload it
+   to a "surveilance capitalism" server on the internet. I believe that
+   21st century programming languages need to be designed from the ground
+   up to support this kind of security, and that bolting a "sandboxing"
+   feature onto an inherently insecure language will result in a faulty
+   design where you are constantly fixing newly discovered leaks.
+
+Exceptionally simple semantics:
+ * Curv is meant to be a declarative language, rather than an imperative
+   language. When you use Curv to describe 3D models, the goal is to simply
+   describe what the results should be, and let the machine figure out how
+   to accomplish them. That is a very vague and slippery statement, though.
+   I need to be more formal and precise.
+ * Curv has exceptionally simple semantics. Curv programs are very easy to
+   reason about.
+    * Curv is an expression language. A 3D model is described by an expression.
+    * Expressions have a very simple semantics. There are no side effects:
+      the meaning (or "denotation") of an expression is the value that it
+      computes.
+    * Algebra Driven Design:
+       * Curv has an "algebra of programs", where you can transform
+         expressions algebraically without changing the results.
+         Simple example: the '+' operator is commutative, so 'a+b' is always
+         the same as 'b+a', in all circumstances, no exceptions.
+       * A great deal of care is taken to ensure that all operators have
+         simple, unsurprising algebraic properties, and obey simple,
+         unsurprising algebraic laws. So I think about whether a binary
+         operator is associative, commutative, has a left or right identity.
+         There should be no sharp change in behaviour or breaking of the
+         algebraic laws when you hit an edge condition. If, on analysis,
+         the algebra is hairy, then I change the design to make it simpler.
+         Sometimes removing unnecessary limitations makes it simpler and
+         more general.
+       * This analysis, this process of algebra driven design, is more work
+         for the programming language designer, but the benefit for users is
+         that the language seems to have simple and natural semantics with
+         no unpleasant surprises or edge cases that you need to code around.
+         Users will have a better experience even if they have no explicit
+         understanding of the underlying algebraic laws.
+    * Curv has "compositional semantics". The meaning of a program
+      is derived in a very simple way from the meanings of the individual
+      parts of the program.
+       * Curv has a phrase-structured grammar. A program is parsed into a
+         syntax tree, where almost every node in the tree is a "phrase"
+         with a meaning that can be reasoned about independently.
+         The three most important phrase types are expressions, statements
+         and definitions.
+       * A great deal of care has been taken to ensure (1) that almost every
+         phrase in Curv has a meaning independent of context; (2) that you
+         can type a subphrase into the REPL (without its syntactic context)
+         and see what it does, or get help on it using the `help` command.
+       * There is no "spooky action at a distance", where something that
+         happens "way over there" changes the meaning of a subphrase.
+       * I mean, other than the lexical scope in which the phrase is embedded.
+         That is obviously context that determines the meaning of a phrase.
+         But it is a static context that is plainly visible in the static
+         structure of the source code.
+       * In other words, you can use 'local reasoning' to understand the
+         meaning of a program.
+
+On GPU programming.
+ * GPU programming APIs like OpenGL and Vulkan are insanely complicated and
+   evil. Having to write all of your GPU shader logic in an entirely different
+   language (eg, GLSL) is bonkers.
+ * Curv is a high level, unified CPU/GPU programming language that makes all
+   this pain go away (albeit, for now, within a very specific domain).
+ * In order to achieve this goal of being an implicitly parallel, unified
+   CPU/GPU language, Curv must be a pure functional language. But with
+   qualifications, because Haskell is considered the epitome of pure functional
+   programming, and Haskell doesn't go far enough to transcend the limitations
+   of its imperative ancestors.
+ * Shared mutable state is the enemy of GPU parallelism. Haskell's lazy
+   data structures are also the enemy of GPU parallelism.
+ * The major 20th Century programming paradigms (imperative programming with
+   shared mutable state, object oriented programming with object identity
+   and shared mutable state, and even Haskell with its pervasive linked
+   list data structure and its lazy data structures) are deeply rooted in
+   a single-threaded, one step at a time model of program execution. This
+   single-threaded model is incompatible with massive data parallelism on a GPU.
+ * So Curv is different. It has immutable values, instead of mutable objects
+   with object identity. It has no shared mutable state and no side effects.
+   Sounds like functional programming, right?
+ * Instead of Haskell-style lazy linked lists, Curv has arrays and array
+   operations that can operate in parallel on array elements. This is inspired
+   by APL, and is meant to exploit the hardware parallelism of CPU vector
+   instructions and GPU SIMD parallelism. Is this functional?
+    * On one hand, functional languages also have operations like `map`
+      and `reduce` that can be implemented in parallel.
+    * On the other hand, John Hughes' famous paper "Why Functional Programming
+      Matters" identifies lazy sequential data structures as part of the
+      "essence" of functional programming.
+    * Haskell's versions of 'map' and 'reduce' are single threaded, and
+      'reduce' is represented by two functions, 'foldl' and 'foldr' which
+      force you to choose between two single-threaded evaluation orders:
+      left-to-right or right-to-left.
+
+On Sandboxing.
+ * The most important thing: expressions do not have side effects.
+   A 3D model is denoted by an expression. Evaluating the expression
+   yields a geometric shape as a result, but cannot do anything else:
+   expression evaluation cannot delete files, or engage in a conversation
+   with an internet server.
+ * There are many more subtle issues that I need to work through.
+    * There will eventually be an internet based package repository,
+      and there will be a mechanism for downloading packages, and downloading
+      the dependencies of a package. So the Curv IDE will have internet
+      access. But, I envision that internet communication will only occur
+      when dependencies are downloaded, and that the user will click through
+      a dialog to authorize this.
+    * Downloaded Curv packages will not have access to the local file system.
+    * Nor will they have the ability to extract data from the local system
+      and insert this data into the URL of a dependency that they need to
+      download. Specifying dependencies happens at the earliest phase of
+      evaluation. Access to local system information happens in a later
+      phase of evaluation.
+    * Curv supports animation, so geometric shapes can be a function of time.
+      But, the mechanism for accessing the time has pure functional semantics.
+      So a function cannot measure the amount of time it takes to evaluate a
+      subexpression. If a function could do this, it could use timing attacks
+      to exfiltrate sensitive data.
+    * My web browser is locked down, so that when I load a web page, it does
+      not automatically begin playing video and sound without an explicit
+      user interface action from me. Curv already supports animation, and
+      somebody might eventually add the ability to synthesize audio output.
+      We may need a setting that prevents a Curv model from animating or
+      playing sound unless the user authorizes it.
+    * I would like to process the output of my webcam using a Curv program,
+      eg to amuse people during Zoom calls by transforming my face using
+      Curv code. But, webcam output is sensitive information, and Curv
+      programs should not automatically have access to this information.
+      So, hooking up a Curv program to a live video source should be an
+      external step that is performed interactively by the user.

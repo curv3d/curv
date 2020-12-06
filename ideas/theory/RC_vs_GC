@@ -1,0 +1,104 @@
+Reference Counting (RC) vs Tracing Garbage Collection (GC)
+
+Don't want GC pauses in a GPU main loop that is iterating at 60 FPS.
+RC gives predictable, deterministic behaviour, so it's easy to
+avoid this problem. RC can cause significant pauses when freeing a deep
+tree with many nodes. Deferred reference counting mitigates this.
+
+RC is more efficient in low memory situations, where a GC will thrash.
+It doesn't preallocate large memory arenas, so it plays well with application
+code in a situation where a Curv library is embedded in an app, or embedded
+in the runtime for another language.
+
+GC is most efficient if you have lots of free space, relative to the amount
+of live data, because GC only scans the live data, it doesn't scan the garbage.
+So the GC of an embedded Curv may be competing for the free memory it needs
+to be efficient with the GC of the host environment.
+Also, Curv is for GPU based graphics programming, and if you look at video
+games you see that memory pressure can be a big issue.
+
+GC involves repeatedly rescanning live data, so it loads up the cache with
+data that might not be relevant to the current computations.
+
+Naive RC can be costly in a multi-threaded environment, where the same
+ref-counted object can be simultaneously accessed by multiple threads.
+ * You must use atomic integers for the refcount, and that is slow.
+   Conversely, Curv uses RC that isn't thread safe,
+   and that's an issue for embedding the Curv interpreter in an app or
+   another language's runtime. Curv objects can't be shared between threads.
+ * If an object is shared across multiple threads, the reference count updates
+   may invalidate cache lines on multiple processors. In the C++ shared_ptr,
+   only the control block will be invalidated, but when the reference count
+   is embedded in the object, the object itself may be invalidated, which has
+   an even higher performance cost.
+ * The copy-on-write trick for efficient update of compound data structures
+   (if the refcount == 1) doesn't work for objects shared by multiple threads,
+   because the refcount can be changed asynchronously from 1 to 2 by a thread
+   running on a different core.
+
+Multiple threads don't matter much in Curv right now, but they will if I want
+to support more general GPU programming and UI programming.
+
+We can mitigate these problems with multi-threaded performance using a
+more sophisticated RC implementation.
+ * Optimizations to reduce the # of refcount changes:
+    * Move optimization (linear logic)
+    * Deferred RC, like in Nim
+ * The refcount contains metadata: is the object thread-local or shared between
+   threads. Thread-local objects don't require atomic refcounting.
+   Thread-shared objects can be converted to thread-local by copying.
+ * If we had a good way to transfer ownership of a ref-counted object from one
+   thread to another (so that the object itself, and its subobjects, are not
+   shared between threads). Then we can use nonatomic refcounts.
+ * If we could distinguish between shared and thread-local objects, and use
+   non-atomic refcounting when possible. Note that copying an object for the
+   purpose of COW also makes it thread local.
+
+GC adds complexity for a WASM version of Curv because objects can move
+around asynchronously, they don't have fixed addresses. So you need an object
+table for communicating with external code (eg, JS), and that has to be
+built from scratch. WASM has a proposal for Reference Types that is standardized
+and has experimental implementations in Firefox and Chrome but not Safari.
+Might help with the object table problem?
+There is a Garbage Collection proposal but it hasn't made it to the Roadmap
+page yet, and seems a bit stagnant.
+
+Didn't John Carmack talk about garbage collection in game programming in a
+blog post? He explained a use for garbage collection *in the game loop* and
+how it would work?
+
+Prior Art: Languages that use RC
+--------------------------------
+RC + weak pointers
+    Developer is responsible for breaking cycles to avoid links.
+    "Weak references" are one way to do this.
+    Atomic refcounts to support multithreading.
+    Swift, C++
+hybrid RC + GC
+    Use GC to clean up cyclic graphs that RC cannot collect.
+
+"Dynamic atomicity: optimizing swift memory management"
+https://www.researchgate.net/publication/320359957_Dynamic_atomicity_optimizing_swift_memory_management
+  Swift is a modern multi-paradigm programming language with an extensive
+  developer community and open source ecosystem. Swift 3's memory management
+  strategy is based on Automatic Reference Counting (ARC) augmented with
+  unsafe APIs for manually-managed memory. We have seen ARC consume as much
+  as 80% of program execution time. A significant portion of ARC's direct
+  performance cost can be attributed to its use of atomic machine instructions
+  to protect reference count updates from data races. Consequently, we have
+  designed and implemented dynamic atomicity, an optimization which safely
+  replaces atomic reference-counting operations with nonatomic ones where
+  feasible. The optimization introduces a store barrier to detect possibly
+  intra-thread references, compiler-generated recursive reference-tracers to
+  find all affected objects, and a bit of state in each reference count to
+  encode its atomicity requirements. Using a suite of 171 microbenchmarks,
+  9 programs from the Computer Language Benchmarks Game, and the Richards
+  benchmark, we performed a limit study by unsafely making all reference
+  counting operations nonatomic. We measured potential speedups of up to 220%
+  on the microbenchmarks, 120% on the Benchmarks Game and 70% on Richards. By
+  automatically reducing ARC overhead, our optimization both improves Swift 3's
+  performance and reduces the temptation for performance-oriented programmers
+  to resort to unsafe manual memory management. Furthermore, the machinery
+  implemented for dynamic atomicity could also be employed to obtain cheaper
+  thread-safe Swift data structures, or to augment ARC with optional cycle
+  detection or a backup tracing garbage collector.
