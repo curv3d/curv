@@ -40,6 +40,14 @@ This seems appropriate for SubCurv, where functions must not diverge, and they
 cannot throw an exception. (Dhall is too limited to write shader functions:
 no division operator.)
 
+Statically typed is the way forward, because:
+ * Untyped looks to break things that currently work.
+ * Right now, reactive values always occur in the context of code that needs to
+   be SC compiled, meaning the SC type restrictions are necessary anyway.
+ * We will extend the SC type system to be more like C (general tuple and array
+   types, record types), making the restrictions more acceptable.
+It's the easiest path forward, and we'll make the type system richer over time.
+
 Soft Typing
 -----------
 Assignment of types to reactive expressions uses "soft typing", where type

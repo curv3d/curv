@@ -28,24 +28,69 @@ Methods:
   debugging.
 
 Should IR_Expr be merged with Operation?
-* It will eliminate some code duplication between methods that are identical
-  between the IR_Expr and Operation version of the same operation, such
-  as print() and hash().
+----------------------------------------
+Consider the following data types:
+1. The output of the semantic analyser. Currently the same as executable code.
+   Without additional passes, it is slower than it could be. For example,
+   references to recursive functions must be looked up symbolically, instead of
+   by index.
+2. Executable code. Can evaluate, partially evaluate (to a reactive expr),
+   print as Curv syntax, convert to IR.
+3. Reactive expressions. It is statically typed, and currently represented
+   as an Operation/SC_Type pair. Can evaluate, print, convert to IR.
+4. IR expressions, also statically typed. Can be optimized: this includes
+   constant folding (compile time evaluation), and CSE (using hash tables).
+   Can be emitted as (currently) GLSL or C++. The plan was to make IR nodes
+   isomorphic to GLSL operations. Eg, the Curv `and` function maps to
+   multiple IR nodes (logical_and, bitwise_and). The plan is also to print
+   as Curv syntax (is there Curv syntax for logical_and vs bitwise_and?).
+
+Minimize code duplication by using a single representation for all these types.
+Extend the Operation class, add a type field and new methods.
+Replace Reactive_Expression with Operation values.
 * There is elegance and code compactness in using the same representation
   for multiple passes of the compiler. It might enable new uses of the semantic
   tree representation in the future. It's a step closer to modelling Curv as
   a term rewrite system, where values and operations are both terms.
-Challenges:
-* It works against strong typing. Only a subset of Operations will be used as
-  IR_Exprs, but these Operation classes are not distinguished by static typing.
-  An IR_Expr contains zero or more Operation subnodes, which are known
-  dynamically to be IR_Expr nodes.
-* Adds a type field to Operation which isn't needed by non-expressions,
-  or at runtime.
-* Yeah, but Operation already works this way. There's no type distinction
-  between an expression and an action. It's OOP disease, or it's dynamically
-  typed code, take your pick. If I want fine grained type distinctions, I'll
-  need to write extra boilerplate code to get it.
+* It is dynamically typed, in the sense that Operation is used to represent
+  everything. This is a tradeoff: more fine grained static typing means
+  more boilerplate.
+
+Consider Dot_Function. Due to the code handling reactive arguments,
+there is code duplication between ::call and ::sc_call_legacy. During
+evaluation I'm constructing Reactive_Expression values which contain type
+checked Operation + SC_Type pairs that are isomorphic to IR nodes.
+It's the type checking that is duplicated.
+
+So now,
+* Use Operations as IR nodes, adding a type field.
+* To SC compile a function, evaluate the function body, with the parameters
+  defined as reactive variables. The function body is partially evaluated,
+  and the result is a reactive expression containing IR as residual code.
+  (Then we optimize the IR.)
+* The SC compiler performs CSE using a hash table. Will we also perform
+  CSE when a function body is partially evaluated with reactive parameters?
+* IR nodes correspond 1-1 with Curv operations. Curv functions like 'dot',
+  '*', 'and' are compiled into multiple different GLSL operations.
+* Originally I was going to map each GLSL operation onto a different IR node:
+    struct And_Prim : Binary_Boolean_Prim
+    {
+        static Value zero() { return {true}; }
+        static Value call(bool x, bool y) { return {x && y}; }
+        static IR_Expr ir_call(IR_Frame& f, IR_Expr x, IR_Expr y)
+        {
+            if (x.type() == IR_Type::Bool())
+                return Logical_And_IR(x,y);
+            else
+                return Bitwise_And_IR(x,y);
+        }
+    }
+* Now I think: keep it high level, don't differentiate until code is emitted.
+* Use typed Operation expression objects directly as Reactive_Expressions.
+* Generalize the type system to describe actions and generators.
+  There are value generator types corresponding to List T and Tuple[T1,T2,...]?
+  I don't need a detailed description of types that don't exist in SubCurv,
+  at least for the moment.
 
 emit
 ----

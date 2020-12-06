@@ -2,7 +2,7 @@ This is the new (2019) compiler that translates a statically typed subset
 of Curv (SubCurv) into a low-level language or executable format.
 Possible targets include:
  * GLSL, now, for rendering shapes in a preview window.
- * The WebGL shader language (which might be either WSL or SPIR-V), later.
+ * WGSL, later, the WebGL shader language.
  * C++, now, for converting shapes to a mesh.
  * WASM, eg for generating meshes in a web browser, later
  * LLVM IR code (very speculative)
@@ -17,6 +17,15 @@ The main benefits of the new compiler:
 The new compiler works by translating a Curv value (normally a function value)
 into low level intermediate representation (IR), which is a tree of nodes.
 The IR is optimized, then finally translated to the target language.
+
+To avoid code duplication in the support for reactive values,
+the IR is a subset of the interpreter's executable format, which means
+for now that IR nodes are Operation objects. A Reactive_Expression contains an
+IR node. (Aug 2020: this eliminates code duplication in the `dot` function.)
+* To SC compile a function, we evaluate the function body, with the parameters
+  defined as reactive variables. The function body is partially evaluated,
+  and the result is a reactive expression containing IR as residual code.
+  (Then we optimize the IR.)
 
 I may implement this incrementally, as a new API that coexists with the old
 compiler, until the new compiler is complete.
