@@ -2,21 +2,27 @@
 // Here it is in Curv.
 let spiralize m =
       if (m == []) m
-      else concat[m[0], spiralize(reverse(transpose(m[1..<count m])))],
+      else m.[0] ++ spiralize(reverse(transpose(m.[1..<count m]))),
 in spiralize [[1,2,3], [8,9,4], [7,6,5]]
 
 /*
+// With proposed ... patterns:
 let spiralize = match [
         [] -> [],
         [a,...b] -> a ++ spiralize(reverse(transpose b)) ]
 in spiralize [[1,2,3], [8,9,4], [7,6,5]]
 
+// With alternate slicing syntax:
 // m[1..<count m]
 // m[1..last]
 // m[1..]
-
 let spiral_print m =
-      if (m == []) m else m[0] ++ spiral_print(reverse(transpose(m[1..])))
+      if (m == []) m else m.[0] ++ spiral_print(reverse(transpose(m.[1..])))
+in spiral_print [[1,2,3], [8,9,4], [7,6,5]]
+
+// With proposed 'pronounceable' if syntax
+let spiral_print m =
+      if m == [] then m else m.[0] ++ spiral_print(reverse(transpose(m.[1..])))
 in spiral_print [[1,2,3], [8,9,4], [7,6,5]]
 
 /// algol68 blocks
