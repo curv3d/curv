@@ -31,6 +31,63 @@ calls. Since 'include' and 'test' take an expression argument, I don't mind if
 they are invoked as 'include(expr)' and 'test(expr)'. However, I think that
 local definitions look bad if they use the syntax 'local(defn)'.
 
+Reserved Words
+--------------
+Seems straightforward.
+    <ritem> ::=
+        if <ritem> then <ritem> else <ritem>
+        for <ritem> in <ritem> while <ritem> do <ritem>
+        while <ritem> do <ritem>
+        ...
+
+My concern is that 'do' and 'while' can occur either as initial or interior
+keywords, and while not formally ambiguous, it can still be ambiguous to
+human readers. This is fine:
+    if
+        some really
+        long multi
+        line condition
+    then
+        something
+    else
+        something else
+because 'then' and 'else' can only be interior mixfix keywords.
+
+But this is concerning:
+    for i in 1..n
+    while not (endable i)
+    do ...
+
+The solutions are:
+
+  * Choose different keywords so that initial keywords and interior keywords
+    are disjoint.
+        foreach i in 1..10 until done repeat ...
+
+    I think 'until' is actually better, by specifying a stop condition rather
+    than a keep going condition. Similar to specifying a stop condition using
+    'break' in C-like languages.
+
+    I think 'repeat' is good, directly preceding the phrase that is to be
+    repeatedly executed. Also used in Hedy (pronounceable programming).
+
+    'for' has the same pronounciation as '4', which is confusing for
+    non-English speaking beginner programmers. Try 'foreach'. Also in C#.
+
+ * Use stropping to distinguish initial from interior keywords.
+   That's ugly and not pronounceable.
+
+Prior art?
+    I seem to be influenced by Pascal, which has for..do, while..do
+    and repeat..until. The 'do..in' syntax is a mashup of LISP DO and ML
+    let..in.
+Modern prior art?
+    while (cond) {stmts}        Javascript
+    while cond {stmts}          Rust, Go, Swift
+    while cond \n stmts \n end  Julia
+Empirical syntax design research
+    Pronounceable programming. Keywords, not punctuation.
+
 UPPERfix notation
 -----------------
 We use a new syntax where mixfix keywords are lexically distinct from
@@ -160,10 +217,35 @@ backfix ::= postfix
   | postfix id: primary id: primary id: backfix
   | ...
 
+Alternatively, I now plan to make 'id: expr' (as seen in record literals
+like {a: 2}) into an expression, as part of the Collection proposal. This
+means that Swift style function calls, with ordered keyword arguments, such as
+    range[0, to: 10, by: 2]
+will (accidently) now become possible. The curried version of this function
+call syntax is
+    range 0 (to: 10) (by: 2)
+The parens are needed because the : operator parses the right operand
+as an <ritem>, which is the natural precedence in record literals.
+So the following syntax is available:
+    if a (then: b) (else: c)
+The parens mean there is no chaining. With a syntax tweak, you could get
+chaining like this:
+    if a (then: b) else: if c (then: d) (else: e)
+
 Curried Macros
 --------------
 if (a) then (b) else (c)
 This works with my current parser. The `if` macro has 5 curried arguments.
+
+Except that, for chaining to work, a mixfix macro name must be recognizable
+at compile time. The final argument of one of these forms is either a
+primary expression, or a mixfix form. It's not really just curried macros.
+
+Also, we aren't able to create a parse tree without knowing the bindings
+of these curried macros, if chaining works. To fix this, try an alternative
+like:
+    if A then B else: if C then D else E
+So : is behaving like the << operator, or something like that.
 
 Alternative Ways to Distinguish Keywords
 ----------------------------------------
