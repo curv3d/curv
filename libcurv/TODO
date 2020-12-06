@@ -1,4 +1,7 @@
 String TODO:
+* rationale for char escapes
+* symbol doc (list nature vs scalar nature of strings)
+* ordered characters (and symbols)
 * locatives: do local a = "abc"; a[0] := 42 in a==[42]++"bc"
 * fix where Lists work but Strings fail:
   * equal,unequal,Unary_Scalar_Prim
