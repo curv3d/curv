@@ -37,7 +37,7 @@ technical advantages over the C convention.
    for the path separator in Windows filenames.
 
 3. The new syntax has less visual clutter.
-   In order for a character escape syntax to be readable, the literal
+   In order for escaped text to be readable, the literal
    characters need to be visually prominent, and the escape characters
    need to recede into the background.
    The ``_`` character was chosen so that it doesn't interfere visually
