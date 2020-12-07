@@ -75,6 +75,10 @@ Simple String Literals
   A ``$`` character only needs to be escaped if it is followed by
   ``_``, ``(``, ``[``, ``{`` or an alphabetic character.
 
+  See also: `Rationale for the character escape syntax`_.
+
+.. _`Rationale for the character escape syntax`: rationale/Char_Escape.rst
+
 String Literals with Variable Substitutions
   Curv supports variable substitutions beginning with ``$``.
   Within a string literal, ``$name`` or ``${name}`` substitutes the value
