@@ -3,17 +3,17 @@ Characters and Strings
 A string is a list of characters.
 The string literal syntax ``"abc"``
 is a shorthand for ``[char 97, char 98, char 99]``.
+Because there is no difference between a string and a list of characters,
+all of the `List`_ operations can be used on strings, without restriction.
 
 Currently, only ASCII characters are supported (excluding the NUL character).
 Later, Unicode will be supported.
-
-Because there is no difference between a string and a list of characters,
-all of the `List`_ operations can be used on strings, without restriction.
 
 .. _`List`: List.rst
 
 ``char c``
   Construct a character value.
+  
   * The argument ``c`` can be an integer code point between 1 and 127.
     For example, ``char 65`` is the character ``A``.
   * The argument ``c`` can be a single character string.
