@@ -50,3 +50,9 @@ technical advantages over the C convention.
 
        $  ->  $_  ->  $__  ->  $___
        "  ->  "_  ->  "__  ->  "___
+
+4. Curv runs on Windows, and uses strings to represent Windows path names.
+   Windows path names use ``\`` as the separator character.
+   Using ``\`` as an escape character would require you to type ``\\``
+   as the separator in a pathname, which would be confusing to novices
+   and annoying to experts.
