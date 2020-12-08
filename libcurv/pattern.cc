@@ -241,31 +241,29 @@ struct List_Pattern : public Pattern
     virtual void exec(Value* slots, Value arg, const Context& argcx, Frame& f)
     const override
     {
-        if (is_list(arg)) {
-            size_t n = list_count(arg);
-            if (items_.size() == n) {
-                for (size_t i = 0; i < n; ++i) {
-                    items_[i]->exec(
-                        slots,
-                        list_elem(arg, i, At_Phrase(*items_[i]->syntax_,f)),
-                        At_Index(i, argcx), f);
-                }
-                return;
-            }
+        Generic_List list(arg, Fail::hard, argcx);
+        list.assert_size(items_.size(), argcx);
+        size_t n = list.size();
+        for (size_t i = 0; i < n; ++i) {
+            items_[i]->exec(
+                slots,
+                list.val_at(i, At_Phrase(*items_[i]->syntax_,f)),
+                At_Index(i, argcx),
+                f);
         }
-        throw Exception(argcx,
-            stringify(arg," is not a list of ",items_.size()," items"));
     }
     virtual bool try_exec(Value* slots, Value val, const Context& cx, Frame& f)
     const override
     {
-        if (!is_list(val)) return false;
-        size_t n = list_count(val);
+        Generic_List list(val, Fail::soft, cx);
+        if (!list.is_list()) return false;
+        size_t n = list.size();
         if (items_.size() != n) return false;
+
         for (size_t i = 0; i < n; ++i) {
             bool matched = items_[i]->try_exec(
                 slots,
-                list_elem(val, i, At_Phrase(*items_[i]->syntax_,f)),
+                list.val_at(i, At_Phrase(*items_[i]->syntax_,f)),
                 At_Index(i, cx),
                 f);
             if (!matched) return false;

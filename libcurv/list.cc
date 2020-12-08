@@ -10,60 +10,57 @@
 
 namespace curv {
 
-bool is_list(Value a)
-{
-    if (a.maybe<Abstract_List>())
-        return true;
-    if (auto r = a.maybe<Reactive_Value>())
-        return r->sctype_.is_list();
-    return false;
-}
-size_t list_count(Value val)
+Generic_List::Generic_List(Value val, Fail fl, const Context& cx)
 {
     if (val.is_ref()) {
-        auto& ref = val.to_ref_unsafe();
-        switch (ref.type_) {
+        list_ = share(val.to_ref_unsafe());
+        switch (list_->type_) {
         case Ref_Value::ty_abstract_list:
-          {
-            auto list = (Abstract_List*)&ref;
-            return list->size();
-          }
+            return;
         case Ref_Value::ty_reactive:
           {
-            auto rx = (Reactive_Value*)&ref;
+            auto* rx = (Reactive_Value*)(&*list_);
             if (rx->sctype_.is_list())
-                return rx->sctype_.count();
+                return;
           }
         }
     }
-    return 1;
+    if (fl == Fail::hard)
+        throw Exception(cx, stringify(val, " is not a list"));
+    else
+        list_ = nullptr;
 }
-Value list_elem(Value val, size_t i, const At_Syntax& cx)
+
+size_t Generic_List::size() const noexcept
 {
-    if (val.is_ref()) {
-        auto& ref = val.to_ref_unsafe();
-        switch (ref.type_) {
-        case Ref_Value::ty_abstract_list:
-          {
-            auto list = (Abstract_List*)&ref;
-            return list->val_at(i);
-          }
-        case Ref_Value::ty_reactive:
-          {
-            auto rx = (Reactive_Value*)&ref;
-            auto ph = share(cx.syntax());
-            Shared<List_Expr> index = List_Expr::make(
-                {make<Constant>(ph, Value(double(i)))},
-                ph);
-            index->init();
-            return {make<Reactive_Expression>(
-                rx->sctype_.elem_type(),
-                make<Call_Expr>(ph, rx->expr(), index),
-                cx)};
-          }
-        }
+    if (is_abstract_list())
+        return get_abstract_list().size();
+    else
+        return get_reactive_value().sctype_.count();
+}
+
+void Generic_List::assert_size(size_t sz, const Context& cx) const
+{
+    if (size() != sz)
+        throw Exception(cx,
+            stringify("list ",Value{list_}," does not have ",sz," elements"));
+}
+
+Value Generic_List::val_at(size_t i, const At_Syntax& cx) const
+{
+    if (is_abstract_list())
+        return get_abstract_list().val_at(i);
+    else {
+        auto& rx = get_reactive_value();
+        auto ph = share(cx.syntax());
+        return {make<Reactive_Expression>(
+            rx.sctype_.elem_type(),
+            make<Index_Expr>(
+                ph,
+                rx.expr(),
+                make<Constant>(ph, Value(double(i)))),
+            cx)};
     }
-    return {};
 }
 
 const char List_Base::name[] = "list";

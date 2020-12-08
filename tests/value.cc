@@ -3,6 +3,8 @@
 #include <libcurv/value.h>
 #include <libcurv/function.h>
 #include <libcurv/string.h>
+#include <libcurv/context.h>
+#include "sys.h"
 #include <sstream>
 #include <iostream>
 using namespace curv;
@@ -32,6 +34,7 @@ struct Id_Function : public Tuple_Function
 TEST(curv, value)
 {
     Value v;
+    At_System cx(sys);
 
     v = Value();
     EXPECT_TRUE(v.is_missing());
@@ -106,10 +109,12 @@ TEST(curv, value)
     EXPECT_TRUE(v.to_ref_unsafe().use_count == 2);
     EXPECT_TRUE(v.to_ref_unsafe().type_ == Ref_Value::ty_abstract_list);
     EXPECT_TRUE(v.to_ref_unsafe().subtype_ == Ref_Value::sty_string);
-    EXPECT_TRUE(is_list(v));
-    EXPECT_TRUE(list_count(v)==3);
     ptr = nullptr;
     EXPECT_TRUE(v.to_ref_unsafe().use_count == 1);
+
+    Generic_List glist(v, Fail::soft, cx);
+    EXPECT_TRUE(glist.is_list());
+    EXPECT_TRUE(glist.size() == 3);
 
 #if 0
     v = make_ref_value<Ref_Value>(17);

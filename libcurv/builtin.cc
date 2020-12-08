@@ -141,9 +141,10 @@ struct Is_String_Function : public Function
 struct Is_List_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Fail, Frame&) const override
+    Value call(Value arg, Fail, Frame& fr) const override
     {
-        return {is_list(arg)};
+        Generic_List glist(arg, Fail::soft, At_Frame(fr));
+        return {glist.is_list()};
     }
 };
 struct Is_Record_Function : public Function
