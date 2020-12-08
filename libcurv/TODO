@@ -1,13 +1,11 @@
 String TODO:
-* rationale for char escapes
-* symbol doc (list nature vs scalar nature of strings)
-* ordered characters (and symbols)
+* let f[x,y]="$x|$y" in f "ab" == "a|b"
 * locatives: do local a = "abc"; a[0] := 42 in a==[42]++"bc"
 * fix where Lists work but Strings fail:
   * equal,unequal,Unary_Scalar_Prim
     equal["foo","fob"] == [#true,#true,#false]
-    * requires surgery on the Prim API (Abstract_List vs List in the internals)
-    * think about: new Prim proposal, Abstract_List API
+    See [[List_Prim]]
+    Generic_List class
 * List_Builder allows you to specify how many elements are about to be added,
   so that it can preallocate in the underlying collection. Calls reserve()
   on std::vector or std::string. size(), capacity(), reserve(new_capacity).

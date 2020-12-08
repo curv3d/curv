@@ -104,7 +104,8 @@ TEST(curv, value)
     EXPECT_FALSE(v.is_num());
     ASSERT_TRUE(v.is_ref());
     EXPECT_TRUE(v.to_ref_unsafe().use_count == 2);
-    EXPECT_TRUE(v.to_ref_unsafe().type_ == Ref_Value::ty_string);
+    EXPECT_TRUE(v.to_ref_unsafe().type_ == Ref_Value::ty_abstract_list);
+    EXPECT_TRUE(v.to_ref_unsafe().subtype_ == Ref_Value::sty_string);
     ptr = nullptr;
     EXPECT_TRUE(v.to_ref_unsafe().use_count == 1);
 

@@ -333,8 +333,7 @@ call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f)
             }
             break;
           }
-        case Ref_Value::ty_string:
-        case Ref_Value::ty_list:
+        case Ref_Value::ty_abstract_list:
         case Ref_Value::ty_reactive:
           {
             return get_value_at_boxed_slice(funv, arg,
@@ -377,8 +376,7 @@ tail_call_func(
             }
             break;
           }
-        case Ref_Value::ty_string:
-        case Ref_Value::ty_list:
+        case Ref_Value::ty_abstract_list:
         case Ref_Value::ty_reactive:
           {
             f->result_ = get_value_at_boxed_slice(funv, arg,

@@ -23,9 +23,9 @@ size_t list_count(Value val)
     if (val.is_ref()) {
         auto& ref = val.to_ref_unsafe();
         switch (ref.type_) {
-        case Ref_Value::ty_list:
+        case Ref_Value::ty_abstract_list:
           {
-            auto list = (List*)&ref;
+            auto list = (Abstract_List*)&ref;
             return list->size();
           }
         case Ref_Value::ty_reactive:
@@ -43,10 +43,10 @@ Value list_elem(Value val, size_t i, const At_Syntax& cx)
     if (val.is_ref()) {
         auto& ref = val.to_ref_unsafe();
         switch (ref.type_) {
-        case Ref_Value::ty_list:
+        case Ref_Value::ty_abstract_list:
           {
-            auto list = (List*)&ref;
-            return list->at(i);
+            auto list = (Abstract_List*)&ref;
+            return list->val_at(i);
           }
         case Ref_Value::ty_reactive:
           {

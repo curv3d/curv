@@ -161,14 +161,23 @@ Ternary Value::equal(Value v, const Context& cx) const
     switch (r1.type_) {
     case Ref_Value::ty_symbol:
         return Ternary((Symbol&)r1 == (Symbol&)*r2);
-    case Ref_Value::ty_string:
-        return Ternary((String&)r1 == (String&)*r2);
-    case Ref_Value::ty_list:
-        return ((List&)r1).equal((List&)*r2, cx);
+    case Ref_Value::ty_abstract_list:
+        if (r1.subtype_ == r2->subtype_) {
+            // TODO: list containing only characters == string?
+            // not currently constructible, but this could change.
+            switch (r1.subtype_) {
+            case Ref_Value::sty_string:
+                return Ternary((String&)r1 == (String&)*r2);
+            case Ref_Value::sty_list:
+                return ((List&)r1).equal((List&)*r2, cx);
+            }
+        } else {
+            return Ternary::False;
+        }
     case Ref_Value::ty_record:
         return ((Record&)r1).equal((Record&)*r2, cx);
     default:
-        // Outside of the 6 data types, two values are equal if they have
+        // Outside of the data types, two values are equal if they have
         // the same type.
         return Ternary::True;
     }

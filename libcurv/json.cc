@@ -60,25 +60,28 @@ void write_json_value(Value val, std::ostream& out)
             write_json_string(sym.c_str(), out);
         return;
       }
-    case Ref_Value::ty_string:
-      {
-        auto& str = (String&)ref;
-        write_json_string(str.c_str(), out);
-        return;
-      }
-    case Ref_Value::ty_list:
-      {
-        auto& list = (List&)ref;
-        out << "[";
-        bool first = true;
-        for (auto e : list) {
-            if (!first) out << ",";
-            first = false;
-            write_json_value(e, out);
+    case Ref_Value::ty_abstract_list:
+        switch (ref.subtype_) {
+        case Ref_Value::sty_string:
+          {
+            auto& str = (String&)ref;
+            write_json_string(str.c_str(), out);
+            return;
+          }
+        case Ref_Value::sty_list:
+          {
+            auto& list = (List&)ref;
+            out << "[";
+            bool first = true;
+            for (auto e : list) {
+                if (!first) out << ",";
+                first = false;
+                write_json_value(e, out);
+            }
+            out << "]";
+            return;
+          }
         }
-        out << "]";
-        return;
-      }
     case Ref_Value::ty_record:
       {
         auto& record = (Record&)ref;

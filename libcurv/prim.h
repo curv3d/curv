@@ -94,8 +94,11 @@ struct Unary_Array_Op
         } else if (x.is_ref()) {
             Ref_Value& rx(x.to_ref_unsafe());
             switch (rx.type_) {
-            case Ref_Value::ty_list:
-                return element_wise_op(fl, cx, (List&)rx);
+            case Ref_Value::ty_abstract_list:
+                if (rx.subtype_ == Ref_Value::sty_list)
+                    return element_wise_op(fl, cx, (List&)rx);
+                else
+                    break; // TODO strings are lists?
             case Ref_Value::ty_reactive:
                 return reactive_op(fl, cx, (Reactive_Value&)rx);
             }
@@ -254,8 +257,11 @@ struct Binary_Array_Op
             else if (y.is_ref()) {
                 Ref_Value& ry(y.to_ref_unsafe());
                 switch (ry.type_) {
-                case Ref_Value::ty_list:
-                    return broadcast_right(fl, cx, x, (List&)ry);
+                case Ref_Value::ty_abstract_list:
+                    if (ry.subtype_ == Ref_Value::sty_list)
+                        return broadcast_right(fl, cx, x, (List&)ry);
+                    else
+                        break; // TODO: strings are lists
                 case Ref_Value::ty_reactive:
                     return reactive_op(cx, x, y);
                 }
@@ -264,14 +270,17 @@ struct Binary_Array_Op
         } else if (x.is_ref()) {
             Ref_Value& rx(x.to_ref_unsafe());
             switch (rx.type_) {
-            case Ref_Value::ty_list:
+            case Ref_Value::ty_abstract_list:
                 if (Prim::unbox_right(y, sy, cx))
                     return broadcast_left(fl, cx, (List&)rx, y);
-                else if (y.is_ref()) {
+                else if (rx.subtype_ == Ref_Value::sty_list && y.is_ref()) {
                     Ref_Value& ry(y.to_ref_unsafe());
                     switch (ry.type_) {
-                    case Ref_Value::ty_list:
-                        return element_wise_op(fl, cx, (List&)rx, (List&)ry);
+                    case Ref_Value::ty_abstract_list:
+                        if (ry.subtype_ == Ref_Value::sty_list)
+                            return element_wise_op(fl, cx, (List&)rx, (List&)ry);
+                        else
+                            break; // TODO: strings are lists
                     case Ref_Value::ty_reactive:
                         return reactive_op(cx, x, y);
                     }

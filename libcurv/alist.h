@@ -29,7 +29,7 @@ namespace curv {
 //    vectorized operations from SPIR-V/WGSL.
 struct Abstract_List : public Ref_Value
 {
-    using Ref_Value::Ref_Value;
+    Abstract_List(int sty) : Ref_Value(ty_abstract_list, sty) {}
 protected:
     size_t size_;
 public:

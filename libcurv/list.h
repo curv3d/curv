@@ -31,7 +31,7 @@ using List = Tail_Array<List_Base>;
 
 struct List_Base : public Abstract_List
 {
-    List_Base() : Abstract_List(ty_list) {}
+    List_Base() : Abstract_List(sty_list) {}
     virtual Value val_at(size_t i) const override { return array_[i]; }
     virtual void print_repr(std::ostream&) const override;
     virtual void print_string(std::ostream&) const override;

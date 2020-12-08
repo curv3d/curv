@@ -1,0 +1,33 @@
+Records and Variants
+====================
+* symbol doc (list nature vs scalar nature of strings)
+  [[docs/language/rationale/Strings_and_Symbols.rst]]
+* deprecate and replace the "id":expr syntax.
+* replace the syntax 'defined(expr."id")' with 'defined(expr@key)'
+  or with a regular function API.
+
+Associations
+------------
+'id : expr' is now an assoc expression.
+Purpose is to simplify and generalize the mechanics of record construction.
+Element and field generator statements are replaced by just generators.
+'items(record)' returns a list of assoc values that you can iterate over.
+'{...items(record)}' reconstructs the record: nice algebra.
+
+Two alternative representations for assoc values:
+* 'id : expr' is sugar for a pair [#id,expr].
+* 'id : expr' is sugar for an Assoc constructor, #id => expr.
+One of these replaces the '"id":expr' syntax.
+
+With the introduction of this syntax, it looks like a more natural match
+for the role of 'tagged variant value' than '{id : expr}'.
+But we probably want variant values to be abstract, than syntactic sugar for a
+list, so we can sum them with lists. That argues for introducing Assoc values.
+
+If tagged values are assoc values (either alternative), rather than records,
+then you can now pattern match them in two ways:
+    id : pattern
+or
+    [name, value]  -- assoc is pair
+    name => value  -- assoc is abstract
+There's no way to do the latter with singleton records using pattern matching.

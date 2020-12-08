@@ -37,11 +37,14 @@ The abstract interface consists of size(), which is fast, and val_at(),
 which is slow (a virtual function). Let's ignore this and consider
 requirements.
 
-Most potential users of Abstract_List care about trees of nums or bools,
+Most potential uses of Abstract_List care about trees of nums or bools,
 they don't care about characters, so they don't need to be polymorphic
 over List and String. So maybe we need to use compile time polymorphism
-for efficiency. So Abstract_List<Elem> is a template class.
-Use C++17 and 'if constexpr'.
+for efficiency. So Abstract_List<Elem> is a template class. The constructor
+takes a Value and fails if it isn't a list that meets the Elem requirement.
+Then the Value is specialized, where possible, to a typed representation
+with operations that are as fast as feasible given the Elem restriction.
+(Use C++17 and 'if constexpr'.)
 
 The Algebra
 -----------
