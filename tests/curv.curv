@@ -792,6 +792,7 @@ assert( repr("abc"++[1,2,3]) == ""_abc"_++[1,2,3]" );
 assert( repr([1,2,3]++"abc") == "[1,2,3]++"_abc"_" );
 assert( "${dol}" == "$" );
 assert( equal "ab" == false );
+assert( let f[x,y]="$x|$y" in f "ab" == "a|b" );
 
 // script return value:
 in null

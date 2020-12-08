@@ -1,5 +1,4 @@
 String TODO:
-* let f[x,y]="$x|$y" in f "ab" == "a|b"
 * locatives: do local a = "abc"; a[0] := 42 in a==[42]++"bc"
 * fix where Lists work but Strings fail:
   * equal,unequal,Unary_Scalar_Prim
