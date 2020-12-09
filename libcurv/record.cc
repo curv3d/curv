@@ -14,7 +14,7 @@ Record::getfield(Symbol_Ref field, const Context& cx) const
 {
     Value val = find_field(field, cx);
     if (val.is_missing())
-        throw Exception(cx, stringify(*this," does not contain field .",field));
+        throw Exception(cx, stringify(*this," does not contain the field .",field));
     return val;
 }
 

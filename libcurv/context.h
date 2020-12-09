@@ -215,6 +215,17 @@ struct At_Metacall_With_Call_Frame : public At_Syntax
     virtual const Phrase& syntax() const override;
 };
 
+struct At_Syntax_Wrapper : public At_Syntax
+{
+    const At_Syntax& parent_;
+    At_Syntax_Wrapper(const At_Syntax& cx) : parent_(cx) {}
+    Shared<const String> rewrite_message(Shared<const String> s) const override;
+    void get_locations(std::list<Location>& locs) const override;
+    System& system() const override;
+    Frame* frame() const override;
+    const Phrase& syntax() const override;
+};
+
 struct At_Field : public Context
 {
     const char* fieldname_;

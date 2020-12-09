@@ -73,7 +73,7 @@ Value::at(Symbol_Ref field, const Context& cx) const
         if (s)
             return s->getfield(field, cx);
     }
-    throw Exception(cx, stringify(*this," does not contain field .",field));
+    throw Exception(cx, stringify(*this," does not contain the field .",field));
 }
 
 void

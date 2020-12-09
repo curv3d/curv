@@ -27,9 +27,13 @@ num_to_int(double num, int lo, int hi, const Context& cx)
     double frac = modf(num, &intf);
     if (frac != 0.0)
         throw Exception(cx, stringify(num, " is not an integer"));
-    if (intf < double(lo) || intf > double(hi))
-        throw Exception(cx, stringify(
-            intf, " is not in the range ",lo,"..",hi));
+    if (intf < double(lo) || intf > double(hi)) {
+        if (lo > hi)
+            throw Exception(cx, stringify(intf, " is not in range"));
+        else
+            throw Exception(cx, stringify(
+                intf, " is not in the range ",lo,"..",hi));
+    }
     return int(intf);
 }
 

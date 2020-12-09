@@ -231,4 +231,16 @@ At_Index::rewrite_message(Shared<const String> msg) const
     return stringify("at index [",index_,"]: ",parent_.rewrite_message(msg));
 }
 
+// At_Syntax_Wrapper
+Shared<const String> At_Syntax_Wrapper::rewrite_message(Shared<const String> s)
+  const { return parent_.rewrite_message(s); }
+void At_Syntax_Wrapper::get_locations(std::list<Location>& locs) const
+  { return parent_.get_locations(locs); }
+System& At_Syntax_Wrapper::system() const
+  { return parent_.system(); }
+Frame* At_Syntax_Wrapper::frame() const
+  { return parent_.frame(); }
+const Phrase& At_Syntax_Wrapper::syntax() const
+  { return parent_.syntax(); }
+
 } // namespace curv
