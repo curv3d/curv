@@ -560,8 +560,6 @@ make_pattern(const Phrase& ph, Environ& env)
                     {
                         pat = make_pattern(*def->left_, env);
                         dfl_src = def->right_;
-                    } else if (isa<Empty_Phrase>(bin->right_)) {
-                        pat = make<Const_Pattern>(bin->right_, Value{true});
                     } else {
                         pat = make_pattern(*bin->right_, env);
                     }
