@@ -759,7 +759,7 @@ in assert(f 42 == 42 && f true == #null);
 // symbol
 assert(symbol "" == #'' && symbol "true" == true && symbol "foo" == #foo);
 assert_error [
-    "argument #1 of symbol: string "_$_[1]"_ contains nongraphic characters",
+    "argument #1 of symbol: string "_$_[1]"_ contains illegal character 0x1",
     symbol[char 1]
 ];
 let s = #''_' in

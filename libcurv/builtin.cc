@@ -1017,7 +1017,7 @@ struct Symbol_Function : public Function
         for (auto c : *string) {
             if (c <= ' ' || c >= '~') {
                 FAIL(fl,missing,cx, stringify(
-                    "string ",arg," contains nongraphic characters"));
+                    "string ",arg," contains ",illegal_character_message(c)));
             }
         }
         auto symbol = make_symbol(string->data(), string->size());

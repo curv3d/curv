@@ -289,7 +289,13 @@ quoted_identifier:
             }
             break;
         }
-        goto error;
+        ++p;
+        tok.last_ = p - first;
+        tok.kind_ = Token::k_bad_token;
+        ptr_ = p;
+        throw Exception(At_Token(tok, *this),
+            stringify(illegal_character_message(p[-1]), " in ",
+                first[tok.first_] == '#' ? "symbol" : "quoted identifier"));
     case '#':
         // symbol literal
         tok.kind_ = Token::k_symbol;
