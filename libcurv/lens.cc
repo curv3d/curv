@@ -91,15 +91,6 @@ Value get_value_at_index(
         }
         return lb.get_value();
     }
-    else if (auto func = maybe_function(index, gcx)) {
-        std::unique_ptr<Frame> f2 =
-            Frame::make(func->nslots_, gcx.system(), gcx.frame(),
-                share(gcx.syntax()), nullptr);
-        f2->func_ = func;
-        auto r = func->call(value, Fail::hard, *f2);
-        f2 = nullptr;
-        return get_value_at_slice(r, slice, endslice, gcx);
-    }
     else if (auto ri = index.maybe<Reactive_Value>()) {
         if (ri->sctype_.is_num()) {
             auto type = sc_type_of(value);
