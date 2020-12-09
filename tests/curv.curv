@@ -267,17 +267,6 @@ assert(
         (n :: is_num) -> n+1 ])
     == 43);
 
-assert( {a:} == {a:true} );
-
-let f = match [
-    {nothing:} -> "nothing";
-    {just: a} -> "just $a";
-    ];
-in (
-    assert(f{nothing:} == "nothing");
-    assert(f{just:42} == "just 42");
-);
-
 (
     local a = 42;
     for (i in 1..3) (

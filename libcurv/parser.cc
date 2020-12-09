@@ -237,7 +237,6 @@ is_ritem_end_token(Token::Kind k)
 //  | 'local' ritem
 //  | pipeline = ritem
 //  | pipeline := ritem
-//  | pipeline :
 //  | pipeline : ritem
 //  | pipeline -> ritem
 //  | pipeline << ritem
@@ -373,14 +372,7 @@ parse_ritem(Scanner& scanner)
       {
         auto tok2 = scanner.get_token();
         scanner.push_token(tok2);
-        Shared<Phrase> right;
-        if (is_ritem_end_token(tok2.kind_)) {
-            tok2.kind_ = Token::k_missing;
-            tok2.last_ = tok2.first_;
-            right = make<Empty_Phrase>(Location{scanner.source_, tok2});
-        } else {
-            right = parse_ritem(scanner);
-        }
+        Shared<Phrase> right = parse_ritem(scanner);
         return make<Binary_Phrase>(std::move(left), tok, std::move(right));
       }
     case Token::k_right_arrow:

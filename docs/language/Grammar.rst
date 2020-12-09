@@ -26,7 +26,6 @@ precedence and ``postfix`` being the highest precedence::
     | 'test' ritem
     | pipeline '=' ritem
     | pipeline ':=' ritem
-    | pipeline ':'
     | pipeline ':' ritem
     | pipeline '->' ritem
     | pipeline '<<' ritem

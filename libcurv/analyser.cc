@@ -426,11 +426,7 @@ analyse_assoc(Environ& env,
         }
     }
 
-    Shared<Operation> right_expr;
-    if (isa<Empty_Phrase>(right))
-        right_expr = make<Constant>(right, Value{true});
-    else
-        right_expr = analyse_op(*right, env);
+    Shared<Operation> right_expr = analyse_op(*right, env);
 
     if (auto id = dynamic_cast<const Identifier*>(&left))
         return make<Assoc>(share(src), Symbol_Expr{share(*id)}, right_expr);
