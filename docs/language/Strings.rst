@@ -1,14 +1,28 @@
 Characters and Strings
 ----------------------
-A string is a list of characters.
-The string literal syntax ``"abc"``
-is a shorthand for ``[char 97, char 98, char 99]``.
-Because there is no difference between a string and a list of characters,
-all of the `List`_ operations can be used on strings, without restriction.
+In Python, Ruby and Javascript, there is a *string* type, but not a
+*character* type. And strings are distinct from lists/arrays, which is
+important to some data structures. Strings mostly behave like lists or arrays,
+but not exactly, because indexing into a string yields a 1-element string
+instead of a character. The difference between string and list semantics adds
+complexity when you need to view a string as a list of characters.
+Curv has a different view of reality.
+
+* Curv has a character type, and the string literal syntax ``"abc"``
+  is shorthand for a list of characters ``[char 97, char 98, char 99]``.
+  Because there is no difference between a string and a list of characters,
+  all of the `List`_ operations work correctly on strings, without limitation.
+* Curv has a symbol type. A symbol ``#foo`` is an abstract labelled value
+  with no internal structure. Symbols are scalar values, distinct from lists.
+  Use symbols, not strings, when you need labelled values to distinguish
+  between several disjoint alternatives. See `Variants`_ for more details.
+* The ``string`` function converts a symbol to a string, and the ``symbol``
+  function converts a string to a symbol.
 
 Currently, only ASCII characters are supported (excluding the NUL character).
 Later, Unicode will be supported.
 
+.. _`Variants`: Variants.rst
 .. _`List`: List.rst
 
 ``char c``

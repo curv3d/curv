@@ -67,17 +67,39 @@ data. For example::
     #colour_picker -> ...;
   ]
 
-Symbol API
-----------
-Symbol names may contain spaces and punctuation characters other than ``_``.
-The syntax is ``#'hello world!'``.
-In other words, you precede a quoted identifier with a ``#`` to construct a
-quoted symbol. The use case for this will arise once symbol names appear as
-labels in the value picker GUI.
+Symbol Names
+------------
+A symbol name may contain any printable characters (including spaces), but
+not control characters (tab and newline are forbidden).
+In the general case, symbol names are quoted with apostrophes, like this::
 
-The function ``is_symbol x`` is a predicate that returns ``#true``
-if ``x`` is a symbol.
+    #'hello world!'
 
-The function ``symbol str`` converts a string argument to a symbol.
-As a special case, consider that ``symbol "true"`` and ``symbol "false"``
-construct the boolean values.
+Within a symbol name, an apostrophe character must be written as
+a 2-character escape sequence::
+
+    '_
+
+For example::
+
+    #'This isn'_t a plain identifier.'
+
+But if the name matches the syntax of an plain Curv identifier,
+consisting only of alphanumeric characters and underscores, and with
+a non-numeric first character, then the quotes may be omitted, like this::
+
+    #hello_world
+
+A symbol name may be empty: the empty symbol prints as ``#''``.
+
+The Symbol API
+--------------
+``is_symbol x``
+    A predicate that returns ``#true`` if ``x`` is a symbol.
+
+``symbol str``
+    Convert a string argument to a symbol.
+    As a special case, consider that ``symbol "true"`` and ``symbol "false"``
+    construct the boolean values.
+
+Use ``string`` to convert a symbol to a string.
