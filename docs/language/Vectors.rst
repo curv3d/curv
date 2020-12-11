@@ -12,7 +12,7 @@ Vec2 and Vec3
   ``is_vec3 x``
     True if ``x`` is a 3 dimensional vector or point.
   
-  ``p[X]``, ``p[Y]``, ``p[Z]``
+  ``p.[X]``, ``p.[Y]``, ``p.[Z]``
     The X and Y components of a Vec2 or Vec3.
     The Z component of a Vec3.
     Note: ``X=0``, ``Y=1`` and ``Z=2``.
@@ -26,7 +26,7 @@ Vec2 and Vec3
   Equivalent to ``v / mag v``.
 
 ``dot[v1,v2]``
-  Vector dot product (a special case of the tensor dot product).
+  Vector dot product (a special case of the array dot product).
   The result is a number. Same as ``sum(v1*v2)``.
   
   * Equivalent to ``mag v1`` × ``mag v2`` × *cos* θ,

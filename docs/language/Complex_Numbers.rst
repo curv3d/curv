@@ -8,7 +8,7 @@ from 2D points/vectors, and they share the same set of operations.
   Construct a complex number with real part ``re``
   and imaginary part ``im``.
 
-``z[RE]``, ``z[IM]``
+``z.[RE]``, ``z.[IM]``
   The real and imaginary components of a complex number.
   Note: ``RE=0`` and ``IM=1``.
 

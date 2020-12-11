@@ -1,25 +1,29 @@
 Lists
 -----
 A list is a finite, ordered sequence of values.
-For example, ``[1,2,3]`` is a list of 3 numbers,
-and ``"abc"`` is a list of 3 characters.
-(See `Strings`_ for more about string syntax.)
+Everything in Curv that is an ordered sequence of values, is also a list,
+and all the list operations describe here will work on it.
+
+There are multiple syntaxes for constructing lists:
+
+* ``[1,2,3]`` is a list of 3 numbers.
+* ``"abc"`` is a list of 3 characters,
+  equivalent to ``[char 97,char 98,char 99]``.
+  See `Strings`_ for more about string syntax.
+* ``2..7`` is a range, the consecutive integers from ``2`` to ``7``.
+  It is equivalent to ``[2,3,4,5,6,7]``.
 
 .. _`Strings`: Strings.rst
 
 List Constructors
   A list constructor is a comma-separated list of expressions or value
-  generators, inside square brackets or parentheses.
-
-      The parenthesis notation is deprecated. If used, either the list is
-      empty ``()`` or contains at least one comma. The final expression or
-      value generator may be followed by an optional comma.
+  generators, inside square brackets.
 
   For example::
 
-    [] or ()
-    [1] or [1,] or (1,)
-    [1,2] or (1,2)
+    []
+    [1]
+    [1,2]
 
   A value generator is a kind of `statement`_
   that adds zero or more elements to the list being constructed.
@@ -86,29 +90,25 @@ Range constructors
     Same as ``i..j by k`` except that the final element in the sequence is omitted.
 
 List Indexing
-  ``a[i]``
+  ``a.[i]``
     The i'th element of list ``a``, if ``i`` is an integer.
-    Zero based indexing: ``a[0]`` is the first element.
+    Zero based indexing: ``a.[0]`` is the first element.
+
+    Note: the syntax ``a.[i]`` is used for list indexing, rather than the
+    more popular ``a[i]`` syntax, because in Curv, ``a[i]`` means
+    a call to the function ``a`` with argument ``[i]``.
+
+    For multi-dimensional array indexing, see `Arrays`_.
 
 List Slicing
-  ``a[indices]``
-    Returns ``[a[indices[0]], a[indices[1]], ...]``,
+  ``a.[indices]``
+    Returns ``[a.[indices.[0]], a.[indices.[1]], ...]``,
     where ``indices`` is a list of integers.
-    For example, ``a[0..<3]`` returns a list of the first 3 elements of ``a``.
+    For example, ``a.[0..<3]`` returns a list of the first 3 elements of ``a``.
 
-Array Indexing
-  ``a[i,j,k,...]``
-   Index into a multidimensional array, which is represented by nested lists.
-   If the indices ``i``, ``j``, ``k``, ... are all integers,
-   then this is equivalent to ``a[i][j][k]...``.
-   See `Tensors`_ for more information about multidimensional arrays.
+    For multi-dimensional array slicing, see `Arrays`_.
 
-.. _`Tensors`: Tensors.rst
-    
-*Syntax note:* The Curv juxtaposition operator (``a b``) is overloaded.
-If ``a`` is a function, then this is a function call with argument ``b``.
-If ``a`` is a list, then this is list or array indexing,
-and ``b`` is a list of indices.
+.. _`Arrays`: Arrays.rst
 
 ``count a``
   The number of elements in list ``a``.
@@ -116,8 +116,18 @@ and ``b`` is a list of indices.
 ``is_list value``
   True if the value is a list, false otherwise.
 
+``a ++ b``
+  Infix binary list concatenation.
+
+  * ``[1,2] ++ [3,4]`` returns ``[1,2,3,4]``.
+  * ``"ab" ++ "cd"`` returns ``"abcd"``.
+  * ``"ab" ++ [3,4]`` returns ``"ab"++[3,4]``.
+    We use this syntax for printing a list containing a mixture of character
+    and non-character elements because it's easier to read than the
+    alternatives.
+
 ``concat aa``
-  This is the list concatenation operator.
+  This is the general list concatenation operator.
   ``aa`` is a list of lists. The component lists are catenated.
   For example, ``concat[[1,2],[3,4]]`` is ``[1,2,3,4]``.
   ``concat[]`` is ``[]``, because ``[]`` is the

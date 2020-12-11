@@ -84,10 +84,12 @@ Imperative Programming
 
 Array Programming
   Curv is an array language. Scalar arithmetic operations are generalized
-  to work on Vectors_, Matrices_, and higher dimensional arrays called Tensors_.
+  to work on Vectors_, Matrices_, and `higher dimensional arrays`_.
   This makes geometric algorithms involving linear algebra easier to code,
   and these operations take advantage of vector hardware on GPUs for fast
   rendering.
+
+.. _`higher dimensional arrays`: Arrays.rst
 
 Table of Contents
 -----------------
@@ -97,9 +99,9 @@ The six types of `Values`_:
 
 * `Symbols`_ -- which include `Boolean Values`_
 * `Numbers`_ -- and `Trigonometry`_
-* `Lists`_ -- which include `Vectors`_, `Complex Numbers`_,
-  `Matrices`_, `Tensors`_
-* `Strings`_
+* `Characters`_
+* `Lists`_ -- which include `Strings`_, `Complex Numbers`_,
+  `Vectors`_, `Matrices`_ and `Arrays`_
 * `Records`_
 * `Functions`_
 
@@ -122,8 +124,10 @@ Advanced Topics:
 * `Imperative Style Programming in a Pure Functional Language`_
 * `Grammar`_
 
+.. _`Arrays`: Arrays.rst
 .. _`Blocks`: Blocks.rst
 .. _`Boolean Values`: Boolean_Values.rst
+.. _`Characters`: Strings.rst
 .. _`Complex Numbers`: Complex_Numbers.rst
 .. _`Debug Actions`: Debug_Actions.rst
 .. _`Design by Contract`: Design_by_Contract.rst
@@ -144,7 +148,6 @@ Advanced Topics:
 .. _`Statements`: Statements.rst
 .. _`Strings`: Strings.rst
 .. _`Tail Call Optimization`: ../theory/Tail_Call.rst
-.. _`Tensors`: Tensors.rst
 .. _`Trigonometry`: Trigonometry.rst
 .. _`Values`: Values.rst
 .. _`Vectors`: Vectors.rst
