@@ -97,16 +97,18 @@ Record Operations
   The value of the field named by ``identifier``.
   Eg, ``r.foo``.
 
-``record . quotedString``
-  The value of the field named by ``quotedString``.
-  Eg, ``r."foo"``.
-  The field name need not be a constant. Eg, ``r."$x"``.
+``record .[ symbolExpr ]``
+  The value of the field named by the symbol after evaluating symbolExpr.
+  This allows the field name to be computed at run time.
+  Eg, ``r.[#foo]``.
 
 ``defined (record . identifier)``
   True if a field named ``identifier`` is defined by ``record``, otherwise false.
 
-``defined (record . quotedString)``
-  True if a field named ``quotedString`` is defined by ``record``, otherwise false.
+``defined (record .[ symbolExpr ])``
+  Test the field named by the symbol after evaluating symbolExpr.
+  If the field exists, return true, otherwise false.
+  This allows the field name to be computed at run time.
 
 ``fields record``
   The field names defined by ``record`` (as a list of strings).
