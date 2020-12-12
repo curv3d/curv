@@ -425,7 +425,7 @@ Value sc_constify(const Operation& op, SC_Frame& f)
             return base.at(dot->selector_.id_->symbol_,
                 At_SC_Phrase(op.syntax_, f));
         else
-            throw Exception(At_SC_Phrase(dot->selector_.string_->syntax_, f),
+            throw Exception(At_SC_Phrase(dot->selector_.expr_->syntax_, f),
                 "not an identifier");
     }
     else if (auto ref = dynamic_cast<const Nonlocal_Data_Ref*>(&op))

@@ -1419,13 +1419,28 @@ struct Defined_Metafunction : public Metafunction
     using Metafunction::Metafunction;
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
-        auto arg = analyse_op(*ph.arg_, env);
-        auto dot = cast<Dot_Expr>(arg);
-        if (dot != nullptr)
+        auto a = strip_parens(ph.arg_);
+        if (auto dot = cast<const Dot_Phrase>(a)) {
+            if (auto brackets = cast<const Bracket_Phrase>(dot->right_)) {
+                return make<Defined_Expression>(
+                    share(ph),
+                    analyse_op(*dot->left_, env),
+                    Symbol_Expr(analyse_op(*brackets->body_, env)));
+            }
+        }
+        auto arg = analyse_op(*a, env);
+        if (auto dot = cast<Dot_Expr>(arg)) {
             return make<Defined_Expression>(
                 share(ph), dot->base_, dot->selector_);
+        }
+        if (auto slice = cast<Index_Expr>(arg)) {
+            return make<Defined_Expression>(
+                share(ph), slice->arg1_, Symbol_Expr(slice->arg2_));
+        }
         throw Exception(At_Phrase(*ph.arg_, env),
-            "defined: argument must be `expression.identifier`");
+            "defined: argument must be `expression.identifier`"
+                " or `expression.[expression]`"
+                " or `expression@expression`");
     }
 };
 

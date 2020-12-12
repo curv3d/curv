@@ -857,18 +857,18 @@ using String_Expr = Tail_Array<String_Expr_Base>;
 
 struct Symbol_Expr
 {
-    Shared<const Identifier> id_;
-    Shared<String_Expr> string_;
+    Shared<const Identifier> id_ = nullptr;
+    Shared<const Operation> expr_ = nullptr;
 
-    Symbol_Expr(Shared<const Identifier> id) : id_(id), string_(nullptr) {}
-    Symbol_Expr(Shared<String_Expr> string) : id_(nullptr), string_(string) {}
+    Symbol_Expr(Shared<const Identifier> id) : id_(id) {}
+    Symbol_Expr(Shared<String_Expr> str) : expr_(str) {}
+    Symbol_Expr(Shared<const Operation> expr) : expr_(expr) {}
+    Symbol_Expr(Shared<Operation> expr) : expr_(expr) {}
 
     Shared<const Phrase> syntax() {
-        if (id_) return id_; else return string_->syntax_;
+        if (id_) return id_; else return expr_->syntax_;
     }
-    Symbol_Ref eval(Frame& f) const {
-        return id_ ? id_->symbol_ : string_->eval_symbol(f);
-    } 
+    Symbol_Ref eval(Frame& f) const;
 };
 
 struct Dot_Expr : public Just_Expression

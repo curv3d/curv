@@ -44,6 +44,7 @@ assert(
 assert(
   let r = {a:1};
   in defined(r.a) && defined(r."a") && not(defined(r.b))
+     && defined(r@#a) && defined(r.[#a])
 );
 
 assert((0..<5) == [0,1,2,3,4]);

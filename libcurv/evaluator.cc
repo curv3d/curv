@@ -914,4 +914,13 @@ Parametric_Expr::eval(Frame& f) const
     return {drec};
 }
 
+Symbol_Ref Symbol_Expr::eval(Frame& f) const
+{
+    if (id_) return id_->symbol_;
+    if (auto str = cast<const String_Expr>(expr_))
+        return str->eval_symbol(f);
+    auto val = expr_->eval(f);
+    return value_to_symbol(val, At_Phrase(*expr_->syntax_, f));
+}
+
 } // namespace curv
