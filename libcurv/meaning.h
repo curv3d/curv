@@ -905,6 +905,7 @@ struct Assoc : public Operation
     {}
 
     virtual void exec(Frame&, Executor&) const override;
+    virtual Value eval(Frame&) const override;
 };
 
 struct Parametric_Expr : public Just_Expression

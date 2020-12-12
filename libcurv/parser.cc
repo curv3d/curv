@@ -373,7 +373,7 @@ parse_ritem(Scanner& scanner)
         auto tok2 = scanner.get_token();
         scanner.push_token(tok2);
         Shared<Phrase> right = parse_ritem(scanner);
-        return make<Binary_Phrase>(std::move(left), tok, std::move(right));
+        return make<Assoc_Phrase>(std::move(left), tok, std::move(right));
       }
     case Token::k_right_arrow:
         return make<Lambda_Phrase>(

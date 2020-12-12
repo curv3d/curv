@@ -56,17 +56,20 @@ Operation::List_Executor::push_value(Value val, const Context& cx)
     list_.push_back(val);
 }
 void
-Operation::List_Executor::push_field(Symbol_Ref, Value, const Context& cstmt)
+Operation::List_Executor::push_field(
+    Symbol_Ref name, Value elem, const Context& cstmt)
 {
-    throw Exception(cstmt,
-        "illegal statement type: can't add record fields to a list");
+    Shared<List> pair = List::make({name.to_value(),elem});
+    list_.push_back(Value(pair));
 }
 
 void
-Operation::Record_Executor::push_value(Value, const Context& cstmt)
+Operation::Record_Executor::push_value(Value val, const Context& cstmt)
 {
-    throw Exception(cstmt,
-        "illegal statement type: can't add list elements to a record");
+    auto pair = val.to<List>(cstmt);
+    pair->assert_size(2, cstmt);
+    Symbol_Ref name = value_to_symbol(pair->at(0), cstmt);
+    record_.fields_[name] = pair->at(1);
 }
 void
 Operation::Record_Executor::push_field(Symbol_Ref name, Value value, const Context& cx)
@@ -440,6 +443,14 @@ void
 Assoc::exec(Frame& f, Executor& ex) const
 {
     ex.push_field(name_.eval(f), definiens_->eval(f), At_Phrase(*syntax_, f));
+}
+Value
+Assoc::eval(Frame& f) const
+{
+    auto name = name_.eval(f);
+    auto elem = definiens_->eval(f);
+    Shared<List> pair = List::make({name.to_value(),elem});
+    return {pair};
 }
 
 Value

@@ -780,5 +780,11 @@ assert( "${dol}" == "$" );
 assert( equal "ab" == false );
 assert( let f[x,y]="$x|$y" in f "ab" == "a|b" );
 
+// associations
+let r={a:1} in assert([...r] == [[#a,1]]);
+assert({[#a,1]} == {a:1});
+assert([a:1] == [[#a,1]]);
+assert((a:1) == [#a,1]);
+
 // script return value:
 in null

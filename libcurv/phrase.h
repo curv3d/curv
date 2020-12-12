@@ -210,6 +210,10 @@ struct Dot_Phrase : public Binary_Phrase
     using Binary_Phrase::Binary_Phrase;
     virtual Shared<Meaning> analyse(Environ&, Interp) const override;
 };
+struct Assoc_Phrase : public Binary_Phrase
+{
+    using Binary_Phrase::Binary_Phrase;
+};
 
 struct Lambda_Phrase : public Binary_Phrase
 {
