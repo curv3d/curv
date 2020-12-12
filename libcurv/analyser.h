@@ -26,6 +26,7 @@ struct File_Analyser
     bool paren_empty_list_deprecated_ = false;
     bool paren_list_deprecated_ = false;
     bool not_deprecated_ = false;
+    bool dot_string_deprecated_ = false;
 
     File_Analyser(System& system, Frame* file_frame)
     :
@@ -34,6 +35,7 @@ struct File_Analyser
     {}
 
     void deprecate(bool File_Analyser::*, int, const Context&, const String_Ref&);
+    static const char dot_string_deprecated_msg[];
 };
 
 // Local analysis state that changes when entering a new name-binding scope.

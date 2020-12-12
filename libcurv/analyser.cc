@@ -29,6 +29,10 @@ void File_Analyser::deprecate(bool File_Analyser::* flag, int lvl,
     }
 }
 
+const char File_Analyser::dot_string_deprecated_msg[] =
+    "record.\"name\" is deprecated.\n"
+    "Use record.'name', record.[#name] instead.";
+
 Shared<Operation>
 analyse_op(const Phrase& ph, Environ& env, Interp terp)
 {
@@ -668,6 +672,10 @@ Shared<Meaning> Dot_Phrase::analyse(Environ& env, Interp) const
             Symbol_Expr{id});
     }
     if (auto string = cast<const String_Phrase>(right_)) {
+        env.analyser_.deprecate(
+            &File_Analyser::dot_string_deprecated_, 1,
+            At_Phrase(*this, env),
+            File_Analyser::dot_string_deprecated_msg);
         auto str_expr = string->analyse_string(env);
         return make<Dot_Expr>(
             share(*this),
