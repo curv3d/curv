@@ -406,13 +406,20 @@ Call_Expr::tail_eval(std::unique_ptr<Frame>& f) const
 Value
 List_Expr_Base::eval(Frame& f) const
 {
-    // TODO: if the # of elements generated is known at compile time,
-    // then the List could be constructed directly without using a std::vector.
+    // TODO: If the # of elements generated is known at compile time,
+    // then the List could be constructed directly without using a std::vector?
+    // The result now depends on the element types, but we could still use
+    // the length information to optimize List_Builder.
     List_Builder lb;
     List_Executor lex(lb);
     for (size_t i = 0; i < this->size(); ++i)
         (*this)[i]->exec(f, lex);
     return lb.get_value();
+}
+void Paren_List_Expr_Base::exec(Frame& f, Executor& ex) const
+{
+    for (size_t i = 0; i < this->size(); ++i)
+        this->at(i)->exec(f, ex);
 }
 
 void

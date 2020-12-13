@@ -868,18 +868,23 @@ Shared<Meaning>
 Paren_Phrase::analyse(Environ& env, Interp terp) const
 {
     if (cast<const Empty_Phrase>(body_)) {
-        env.analyser_.deprecate(
+        if (terp.is_expr()) {
+          env.analyser_.deprecate(
             &File_Analyser::paren_empty_list_deprecated_, 1,
             At_Phrase(*this, env),
             "Using '()' as the empty list is deprecated. Use '[]' instead.");
-        return List_Expr::make(0, share(*this));
+        }
+        return Paren_List_Expr::make(0, share(*this));
     }
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
-        env.analyser_.deprecate(&File_Analyser::paren_list_deprecated_, 1,
-            At_Phrase(*this, env),
-            "'(a,b,c)' is deprecated. Use '[a,b,c]' instead.");
+        if (terp.is_expr()) {
+            env.analyser_.deprecate(&File_Analyser::paren_list_deprecated_, 1,
+                At_Phrase(*this, env),
+                "'(a,b,c)' is deprecated. Use '[a,b,c]' instead.");
+        }
         auto& items = commas->args_;
-        Shared<List_Expr> list = List_Expr::make(items.size(), share(*this));
+        Shared<Paren_List_Expr> list =
+            Paren_List_Expr::make(items.size(), share(*this));
         for (size_t i = 0; i < items.size(); ++i)
             (*list)[i] = analyse_op(*items[i].expr_, env);
         list->init();

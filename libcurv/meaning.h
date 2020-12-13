@@ -461,6 +461,13 @@ struct List_Expr_Base : public Just_Expression
 };
 using List_Expr = Tail_Array<List_Expr_Base>;
 
+struct Paren_List_Expr_Base : public List_Expr_Base
+{
+    using List_Expr_Base::List_Expr_Base;
+    virtual void exec(Frame&, Executor&) const override;
+};
+using Paren_List_Expr = Tail_Array<Paren_List_Expr_Base>;
+
 struct Record_Expr : public Just_Expression
 {
     // `fields_` contains actions and binders.
