@@ -1,3 +1,11 @@
+Curv 0.6: Reactive values work in all circumstances where they should.
+Relies on new compiler/partial evaluator, new type system.
+
+Indexing:
+* generalized locatives using arbitrary index values
+* Get rid of function indexes. Only support primitive index values in Curv 0.5.
+* slice and path operators.
+
 String TODO:
 * locatives: do local a = "abc"; a[0] := 42 in a==[42]++"bc"
 * fix where Lists work but Strings fail:
@@ -43,7 +51,6 @@ rename sc_vec_element -> sc_list_elem
 update sc_eval_index*_expr() functions to support all struc types
 sc index an array using a struc index value
 add Reactive_Value::at(i,cx), call from list_elem and list_at
-maybe refactor that list_at code in evaluator
 replace idchr() -- use is_C_identifier()?
 Array_Op and Prim should export the same interface.
 Remove boilerplate and duplication from PrimType classes.

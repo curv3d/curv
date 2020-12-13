@@ -1,0 +1,88 @@
+Reactive Values: Fix or Remove
+==============================
+There's a lot of bad code for handling reactive values; it's never worked
+right. Can I fix this code to work, and ensure that it doesn't turn into a
+maintenance problem again in the future? Or do I need a different approach?
+
+Current proposal (Curv 0.6):
+ * [[issues/Types]]
+ * Design/document semantics of new generalized type system.
+ * New data structures for Reactive/Operation/IR, new compiler/partial evaluator
+
+The current purpose is to support parametric records. A future purpose is
+to support 'time' expressions, so that I have an intuitive, convenient and
+expressive way of writing animated expressions, and also a way to detect if a
+shape is animated so I can optimize battery usage. I will add other reactive
+variables so I can do art project things like write functions of webcam input.
+
+Reactive Values are an implementation mechanism. First I should define the
+semantics of dynamic and static type inference in Curv, document it, then
+figure the best way to implement those language semantics. This roadblock is
+caused by hacking something together without a clear design goal. [[Types]]
+
+Parametric records are sugar for functions that return records. I don't have
+a type system or type inference in the interpreted language. But I need
+a way to figure out, in the interpreter, whether a call to a parametric
+record function will return a shape, so that I can compile the thing as a
+shape and preview it graphically. So I partially evaluate the body of the
+function, keeping the parameters symbolic, and then test if the resulting
+partially symbolic value is a record with the same fields as a shape. The
+partial evaluator enforces a first-order type discipline on symbolic values,
+so you can get type inference errors.
+
+Another approach to parametric records is to use a gradual type system.
+Parameters with picker declarations are typed, so that triggers type
+inference in the body of the parametric record.
+
+
+Remaining bad code in get_value_at_index is the reactive index case.
+    else if (auto ri = index.maybe<Reactive_Value>()) {
+        if (ri->sctype_.is_num()) {
+            auto type = sc_type_of(value);
+            if (type.is_list()) {
+                auto r = make<Reactive_Expression>(
+                    type.elem_type(),
+                    make<Index_Expr>(
+                        share(gcx.syntax()),
+                        to_expr(value, index_value_phrase(gcx)),
+                        ri->expr()),
+                    gcx);
+                return get_value_at_slice(Value{r}, slice, endslice, gcx);
+            }
+        } else if (ri->sctype_.is_list()) {
+            // TODO
+            // The only thing I need is the result type of value@index
+            // and then it's the same code as above. Wait til SubCurv supports
+            // this then use the function that computes the result type.
+        }
+    }
+In principle, the code I need is here:
+    SC_Value sc_eval_index_expr(SC_Value array, Operation& index, SC_Frame& f)
+But it needs to be refactored.
+ 1. GLSL code generation needs to happen in a later pass from SC type
+    checking and IR tree construction.
+ 2. A curv::Value (non-reactive) corresponds to an IR constant expression,
+    but the latter also contains an SC_Type and a syntax tree.
+    A Reactive_Value is a non-constant IR expression.
+ 3. Reactive values are a subset of IR expressions, and we want to use the
+    same representation for both. get_value_at_index(c,i) should lift both
+    arguments to IR expressions and invoke ir_index(lifted c, lifted i)
+    to construct the result, if either c or i is a symbolic value.
+    ir_index is a simple function that does type checking and constructs
+    the IR node. The code generation for an IR index node is much longer,
+    in a separate function that doesn't fail.
+
+Data Structures
+---------------
+It says that a Reactive_Value *is* an IR expression which *is* a Value.
+This object is also an Operation, because:
+ * We need the ability to evaluate or partially evaluate a
+   Reactive_Value, given bindings for some reactive variables.
+   It's the same code as Operation::eval(Frame&), except that reactive variable
+   bindings need to be accessible via whatever the Frame is in this case.
+ * If we want to have one copy of the eval() code, then a Reactive_Value
+   must encapsulate its state and behaviour in an Operation.
+ * Either a Reactive_Value is an Operation (meaning an Operation is a Value)
+   or a Reactive_Value forwards its Value protocol work to its Operation.
+Either way, I think these Operations need an SC_Type for eval().
+Let's validate this hunch.
