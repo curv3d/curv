@@ -9,7 +9,7 @@ Variable binding patterns:
     Pronounce '<:' as 'from'. Alt syntax: ':<<'.
   * `pat when cond` matches pat, then evaluates cond with pat's bindings,
     and fails if cond is false. Alt. syntax: `pat if cond` (like Python, Rust)
-    O'Caml uses 'when'.
+    OCaml uses 'when'.
   * Since `pat :: predicate` no longer works, what's the replacement? Ideas:
     - `pat ?: predicate`. Alt syntax `:?`.
     * `pat <: ensure predicate`.
@@ -44,7 +44,7 @@ The question concerns this code:
 If pat1 succeeds and cond fails, does the entire match fail, or do we backtrack
 and try pat2? The article claims that backtracking produces more intuitive
 behaviour. It also points out that:
- * O'Caml doesn't use backtracking. However, it issues a compile time warning
+ * OCaml doesn't use backtracking. However, it issues a compile time warning
    if backtracking would produce different results.
  * Rust uses backtracking in an experimental impl of or-patterns.
 
