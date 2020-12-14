@@ -6,8 +6,6 @@ Functional Programming:
 
 Array Programming:
 * multidimensional array slicing
-* a string is a list of characters (see structure/String)
-* a ++ b == concat[a,b]
 * '[a,...b]' is a pattern
 
 Imperative Programming:
