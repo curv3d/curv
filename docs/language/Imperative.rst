@@ -148,7 +148,7 @@ Recursively scoped local variables: ``let <definitions> in <statement>``
 Assignment statement: ``<variable> := <value>``
     An assignment statement modifies a local variable
     defined in an enclosing scope using a ``local`` statement,
-    or defined using ``let``, ``where`` or ``for``.
+    or defined using ``let`` or ``for``.
     Example::
 
         local msg = "Hello"; msg := msg ++ " world"; print msg;
@@ -179,7 +179,7 @@ Bounded iteration:
 Unbounded iteration: ``while (condition) statement``
     The statement is executed repeatedly, zero or more times,
     until ``condition`` becomes false. The condition tests one or
-    more variables which are modified by assignments within
+    more local variables which are modified by assignments within
     the loop body on each iteration.
 
 .. _`Boolean Values`: Boolean_Values.rst
