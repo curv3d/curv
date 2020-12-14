@@ -1,0 +1,56 @@
+Scalar Maps
+===========
+The Dictionary proposal conflicts with other parts of the language,
+due to the fact that dictionaries are indexed by arbitrary values of any type.
+ * I want 'dict@key' for indexing a dict with an arbitrary key value,
+   but I also want 'collection@lens'.
+ * I want c@[i,j,k] to be equivalent to [c@i,c@j,c@k]
+
+What are dicts used for in Curv?
+What axioms and algebras do I want my primitive types and operations to support?
+
+Instead of dictionaries, consider scalar maps. An index is a scalar, where
+scalars are disjoint with lenses. These are like generalized sparse arrays.
+To index a map with a list, use a nested/multidimensional map.
+
+In the Collection proposal, Records and Dictionaries can't be unified because
+they have divergent semantics. A Record is ordered by the sorted order of its
+keys. That won't work for dictionaries, so a Dictionary is ordered by insertion
+order. This adds some additional complexity to Dictionaries, because now you
+may want to index elements either by key or by position.
+
+There's a problem with the semantics of indexing a Dictionary with a Function,
+or a data structure containing functions, due to the difficulty of defining
+function equality.
+
+Suppose that a Scalar Map is restricted to keys that are ordered
+via the '<=' operator. This restricts keys to numbers, symbols and characters,
+plus all keys must have a uniform type. So now, maps are ordered by their keys,
+and the extra complexity of dictionaries disappears. A map with symbol keys
+is semantically equivalent to a record. With the previous proposal of
+making 'id:expr' into sugar for '[#id,expr]', we can use {...} syntax for
+constructing maps. Eg, {[0,"zero"],[1,"one"]}.
+
+Curv needs two kinds of values: data types, for describing 3D shapes efficiently
+on a GPU, and API types, for describing high level APIs.
+
+Do dictionaries fit either use case?
+ * Dictionaries are like hash tables, which are a way to describe sparse arrays
+   on a GPU. It would be better to support the Taichi primitives for
+   constructing sparse array types. Instead of dictionaries, sparse arrays.
+ * Are there high level APIs that take dictionaries as arguments, or return
+   them as results?
+ * If whatever replaces dictionaries are only indexed by scalars, then it
+   solves my problem with the slice operator. Instead of a dictionary
+   indexed by a vector, I'll have a multi-dimensional map value that is
+   indexed along multiple axes.
+
+Prior Art
+---------
+On restricting the types of keys in a dictionary.
+Even in Curv, this makes sense: using functions as keys makes no sense.
+
+In Clojure, a Map is a collection that maps keys to values. Two different map
+types are provided - hashed and sorted. HashMaps require keys that correctly
+support hashCode and equals. SortedMaps require keys that implement Comparable,
+or an instance of Comparator.
