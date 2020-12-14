@@ -1,0 +1,46 @@
+Structure Editing via Value Editors
+===================================
+Manipulating output values to specify programs
+
+* glisp (graphical lisp)
+* TSE (Tiny Structure Editors)
+
+Tiny Structure Editors for Low, Low Prices! (Generating GUIs from toString Functions)
+http://people.cs.uchicago.edu/~rchugh/static/papers/vlhcc20-tse.pdf
+
+"Emerging value-centric IDEs, such as those that provide programming by
+examples (PBE) or bidirectional transformation (BX) modalities, in which
+users manipulate output values to specify programs"
+
+Instances of user-defined ADTs can be presented using a high level, domain
+specific syntax, and this syntax is editable, using a GUI, to modify the value.
+applications:
+  Literals in a Structure Editor:
+  Programming by Examples (PBE):
+    Given input-output examples, these systems synthesize a small program.
+  Direct Manipulation Programming:
+    Several tools augment text-based coding with direct manipulation of
+    output values.
+    * Bidirectional Programming (BX): Edit constructor expressions in the output
+      of a program to thereby change appropriate literals in the original code.
+    * Output-directed programming (ODP): allow the user to make larger,
+      structural changes to the program, refactoring or inserting new code.
+
+BX references:
+ [9] K. Fukahori, D. Sakamoto, J. Kato, and T. Igarashi, “CapStudio: An
+     Interactive Screencast for Visual Application Development,” in Conference
+     on Human Factors in Computing Systems (CHI), Extended Abstracts, 2014.
+[10] R. Chugh, B. Hempel, M. Spradlin, and J. Albers, “Programmatic and Direct
+     Manipulation, Together at Last,” in Conference on Programming Language
+     Design and Implementation (PLDI), 2016.
+[11] K. Kwok and G. Webster, “Carbide Alpha,” 2016,
+     https://alpha.trycarbide.com/.
+[12] M. Mayer, V. Kunˇcak, and R. Chugh, “Bidirectional Evaluation with Direct
+     Manipulation, ”Proceedings of the ACM on Programming Languages (PACMPL),
+     Issue OOPSLA, 2018.
+[13] X. Wang, L. Zhang, T. Xie, Y. Xiong, and H. Mei, “Automating Presentation
+     Changes in Dynamic Web Applications via Collaborative Hybrid Analysis,” in
+     International Symposium on the Foundations of Software Engineering (FSE),
+     2012.
+[14] C. Schuster and C. Flanagan, “Live Programming by Example: Using Direct
+     Manipulation for Live Program Synthesis,” in LIVE Workshop, 2016.
