@@ -1,0 +1,32 @@
+There is a help command, which outputs documentation.
+* Implement `help` function as a REPL-only binding.
+* Change analyser to mark Operation nodes as expressions or statements.
+* Implement `help` metafunction.
+
+`help` is a metafunction.
+`help <primary-phrase>` shows helpful information about the phrase after
+compiling it to an Operation. If the phrase is an expression, it also
+evaluates the expression and shows helpful information about the value.
+
+When `help` is used in an expression context, it is converted to a function.
+As a function, `help value` outputs helpful information about the value.
+
+If `help` is REPL only, then why is it a function? Do I want the ability
+to create automation using `help`, or do I want to focus on `help` as a
+command line UI?
+ * In the former case, I want access to a help data structure, not just
+   a string. There might be a 'lib.meta' module for this stuff.
+   Or it returns a data structure that prints as documentation.
+   Eg, 'help (help help)' => 'a help document'
+ * In the latter case, what should typing `help` by itself do?
+
+Help should print type/kind metadata and usage information.
+
+`help <phrase>` and `help value` are expressions that return a multi-line
+documentation string, which is then printed as a string literal.
+At some point, we will support rich-text values which will print as values
+in a more typographically enhanced format.
+
+I have long intended to enhance the Curv compiler to mark Operation nodes
+as expressions or statements during analysis. (Earlier objections to this
+idea have been overcome.) The full implementation of `help` requires this.

@@ -1,0 +1,82 @@
+Curv is a hybrid static- and dynamically-typed language. The semantics need to
+be properly designed and defined before Reactive_Values can be cleaned up.
+Full documentation of the type system should be a goal.
+
+Goals:
+ * The main goal of the type system is to make Curv code run fast on a GPU.
+ * A secondary goal is earlier detection of type errors and higher quality
+   error messages when you violate the interface of a library function.
+ * But: don't give up the expressive power of the untyped lambda calculus,
+   where every expression can be abstracted with respect to any of its
+   subexpressions, and everything is a first class value.
+ * And: don't get sucked into the complexity tarpit of higher order type theory.
+
+Compared to Curv 0.4, we want a more powerful type system for SubCurv:
+ * Record and tuple types, general array types.
+ * Functions that take record arguments.
+ * Curried functions.
+ * The ability to define an 'animate' function:
+      'animate (t -> shape_expression)'.
+
+In Curv, a type is a structured set of values, and types are values. Because
+a type is a set, that means you can test if a value belongs to a type at
+runtime. It is a *structured* set because we don't admit arbitrary subsets
+of the set of all values as types. The constraints on what values can belong
+together in a type give us information on how the value can be efficiently
+represented in memory, and what operations can be applied to any member of
+the type. In standard academic type theory, types are not sets.
+
+SubCurv Type System
+-------------------
+The 5 primitive data types (numbers, symbols, characters, lists, records) give
+rise to 6 primitive type constructors (lists are describe by Array and Tuple
+types). Every data value has a principal type, which can be inferred at run
+time. Value types are properties of values, not expressions, and derive
+from the constructor used to construct the value. These principal types
+are designed so that they map onto GPU shader language data types.
+
+GPU function types we care about:
+ * A simple function whose parameter and result types are principal data types
+   can be compiled directly into a GPU function.
+ * A curried function whose parameter types and final result type are
+   principal data types can also be compiled directly into a GPU function,
+   but in a function call, all arguments would need to be supplied.
+   Here, via currying, we allow a GPU function to return another GPU function.
+
+In order to infer the type of a function value that has one of these
+monomorphic types, we need type declarations for parameters, and we need
+type inference for expressions (for the body of the function). GPU functions
+cannot be recursive, so we can use simple bottom-up type inference for the
+function body.
+    It would be cool to have a syntax for declaring the type of a function
+    result. Eg
+        f (param1) (param2) :: (rtype) = body
+        f (param1) (param2) returns rtype = body
+        param -> body
+        param returns rtype -> body
+
+Most Curv functions are polymorphic. During SC compilation of a function call,
+we can create a monomorphic instance of the function being called (the function
+value will necessarily be a constant for SC compilation to succeed).
+Monomorphization works if the arguments are pure data, and not functions
+or data structures containing functions.
+
+If a function argument is not simple data (eg, it is a type or function),
+then the function call must be inline expanded at the call site.
+
+We also need the ability to take a general polymorphic function value,
+and cast it (specialize it) to a monomorphic function type, without calling it.
+This is needed for compiling distance and colour functions.
+
+Non-simple values are functions, types, or data structures containing
+non-simple values. In Curv 0.4, a shape value is an example.
+ * In Curv 0.4, a non-simple value is required to be a constant.
+   We partially evaluate expressions like 'shape.dist' in the SC compiler,
+   using code that is separate from the evaluator.
+ * A more general approach is to support non-constant non-simple data, described
+   using non-simple data types, an extension to the type language described
+   earlier. This is required in order to define an 'animate' function:
+      'animate (t -> shape_expression)'.
+   The problem here is that the body of the function is a non-constant
+   shape expression, which is not currently supported and can't be described
+   by the current type system.

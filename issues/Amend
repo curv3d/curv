@@ -1,0 +1,47 @@
+amend: update a collection using a lens
+=======================================
+two syntaxes:
+    c @ index := item
+    c >> amend index item
+
+differences:
+ * 'amend' fails if the index value is bad, or doesn't index the collection.
+ * @ := panics if the collection variable has a type constraint that rejects
+   the new item value. Won't worry about this in Curv 0.5.
+
+implementation
+
+amend_value_at_index(value, index, slice, endslice, fl, cx)
+amend_value_at_slice(value, slice, endslice, fl, cx)
+
+For efficiency, I want to use copy-on-write.
+ideas:
+ * move the value to be updated into the value parameter,
+   return the updated value,
+   move the updated value back to its original variable.
+ * pass the value by reference. update it in place.
+
+One tricky issue: compact typed arrays, which don't store their
+elements as boxed values. The first example of this will be strings
+in Curv 0.5, which are compact character lists.
+ * Passing a reference to an 8 bit character is tricky.
+   Or a variable-length UTF-8 character.
+ * Updating the character in a String to be a non-character is tricky.
+   Worse is updating a variable-length UTF-8 character (not in Curv 0.5).
+
+I'll ignore the problem of updating variable-length encoded values for now.
+I'll consider the problem of an array of fixed-length compact typed values.
+
+Any implementation of K solves this problem. I couldn't find the code in Kona.
+https://ngn.bitbucket.io/k.html (K implementations)
+
+Another tricky issue: failure semantics. Don't mutate the collection until
+everything is validated? This sounds hard. A large update will happen
+iteratively, depth first. One update will be completed before the next
+is even considered. Ideas:
+ * Use a slower algorithm if Fail::soft is passed to amend and there are
+   multiple elements to update in the same collection value.
+ * What is the safe (if slow) algorithm?
+    * Copy the collection before updating it.
+    * Fully validate the update before making the first change.
+      This is more complex, could require more code duplication.

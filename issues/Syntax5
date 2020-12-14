@@ -1,12 +1,28 @@
 Syntax changes and standard coding style for Curv 0.5
 =====================================================
+* locative patterns
+* indexed locatives: a.[i,j].f@k := ...
+  * Amend: new Locative design supporting slice updates.
+- In statement context, () and (a,b,c) are statements. In expression context,
+  they are deprecated list syntax.
 - () as an empty list is deprecated, use [].
   It is incompatible with () as the empty statement.
 - (a,b,c) as a list is deprecated, use [a,b,c].
   It is incompatible with (a,b,c) as a statement and , as a first class
   expression sequencing operator.
-* slice operator: collection.[i,j,k]
+- slice rvalue: collection.[i,j,k]
 * deprecate array[i,j]; use array.[i,j] instead.
+  * The deprecation happens at run time. We should only print one such warning
+    per source file, during a run.
+     * Given a Frame, we need to find a run-time deprecation structure
+       associated with the current source file. This doesn't have to be very
+       fast, as it is only triggered in a deprecated code path.
+        + A new entry in the Frame structure.
+        + In the System structure: A stack of Source_State structures.
+        + Frame contains Program_State& which contains System&, Source_State&,
+          expression cache for CSE during symbolic evaluation. Hmm, requires
+          switching out Source_State.
+        + Frame contains Source_State& which contains System&, Program_State&.
   * This syntax is incompatible with lenses as functions,
     because [lens1,lens2] is a lens.
   * This syntax can't be used for lens application because it doesn't work
@@ -14,11 +30,41 @@ Syntax changes and standard coding style for Curv 0.5
   * The new syntax allows indexing a record with a symbol, replacing
     the old record."string" syntax.
 * low precedence collection@index operator
-* deprecate record."string"; use record@symbol or record.[symbol] instead.
-* id:expr is sugar for [#id,expr].
-* Deprecate {"foo":1}. Use {[#foo, 1]} instead.
-* Consider adding the `func` keyword.
+- deprecate record."string"; use record.[symbol] instead.
+  - 'symbol <string>' converts string to symbol
+  * 'record.[symbol]:=elem' must be made to work, first.
+- id:expr is sugar for [#id,expr].
+- Deprecate {"foo":1}. Use {[#foo, 1]} instead.
+- Deprecate {foo:}. I've never used it, there hasn't been a use case.
+* Consider adding the `func` keyword, then deprecate non-func fundefs.
+* Uniform control structure syntax:
+    if <ritem> then <ritem> else <ritem>
+    foreach <ritem> in <ritem> until <ritem> repeat <ritem>
+    while <ritem> repeat <ritem>
+    do <ritem> in <ritem>
+    let <ritem> in <ritem>
+  Inspired by 'pronounceable programming' research on syntax for beginners.
+  * Parens are only used for grouping, not as keywords in if/for/while.
+  * No parens are necessary in simple cases; all keywords are pronounceable.
+  * No homonyms ('for' is confusible with '4')
+  * Leading keywords and interior keywords are disjoint. 'while A do B' and
+    'for A in B while C do E' are ambiguous when spread over multiple lines.
+  * Meaningful keywords ('repeat' precedes the phrase to be repeatedly
+    executed, better than 'do').
+  Alt design, more like Pascal:
+    if A then B else C
+    for A in B until C do E
+    while A do B
+    perform A in B       or begin A in B, replaces do A in B
+    let A in B
+  Notes:
+  * Arguments are items, requiring more parentheses.
+  * Support optional offside syntax, like Haskell/Python.
+* Deprecate `where`?
+
+Formatting:
 * A curv-fmt program that enforces standardized spacing for expressions?
+  This relates to how function values are printed (as code).
   Thinking about good style, and how rigid the standard should be.
 * Definitions are separated by commas? Enforced by the style guide?
   That means if you avoid the imperative dialect, then there are no semicolons.
@@ -26,6 +72,48 @@ Syntax changes and standard coding style for Curv 0.5
   Currently, I am using semicolons for separators in 'big' constructs like a
   top-level module, or a multi-line let.
 
+## if/for/while, grouping-only parens
+ 1. A more uniform, keyword-based mixfix syntax.
+      <ritem> ::=
+        if <ritem> then <ritem> else <ritem>
+        for <ritem> in <ritem> while <ritem> do <ritem>
+        while <ritem> do <ritem>
+    It's not totally uniform, otherwise I'd require 'let <ritem> in <ritem>'.
+    This is the smallest change to eliminate parens as syntax.
+
+    It's weird and concerning because 'do' and 'while' can now occur at the
+    beginning or the end of an ritem. But still formally parseable.
+    This possible style concerns me:
+        for i in 1..n
+        while not (endable i)
+        do ...
+    because 'while' and 'do' at start of line is visually ambiguous.
+    But this is fine:
+        if
+            some really
+            long multi
+            line condition
+        then
+            something
+        else
+            something else
+    because 'then' and 'else' can only be interior mixfix keywords.
+
+New keyword design:
+    if <ritem> then <ritem> else <ritem>
+    foreach <ritem> in <ritem> until <ritem> repeat <ritem>
+    while <ritem> repeat <ritem>
+Inspired by pronounceable programming research. No punctuation.
+No homonyms (foreach, not for). Meaningful keywords ('repeat' precedes
+the phrase to be repeatedly executed, more meaningful than 'do').
+
+Can I parse the new syntax along with the old syntax?
+    if: Try to parse an <ritem> followed by 'then'.
+        If that fails, because I ran into an ritem_end_token,
+        then try to parse <parens>.
+    while: ditto
+
+## array indexing
 f[x,y] function call looks like array indexing, and is confusible
 with actual array indexing using the a[i,j] syntax. a[i] array indexing
 is incompatible with lenses.
