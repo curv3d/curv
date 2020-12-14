@@ -1,0 +1,46 @@
+Shapes, using Modular Data Abstraction
+======================================
+'Shape' is a theory.
+The constructors for this theory are cube, box, ...
+Plus we need 'make_shape'.
+
+I assume Shape is also a type, and that
+    move off (sh :: Shape) = ...
+is an efficient way to require the argument to be a shape.
+
+To define Shape, we construct a branded Theory that specifies the
+operations on a Shape. Pseudocode:
+    def Shape = Theory T {
+        distance Vec3 T -> Num,
+        colour Vec3 T -> Vec3,
+        bounds T -> BBox,
+        is_2d T -> Bool,
+        is_3d T -> Bool,
+    }
+
+In constrast, here is a monoid theory:
+    def Monoid = Theory T {
+        op T T -> T,
+        zero -> T,
+    }
+
+To access the properties of a Shape sh, use
+    Shape.bbox sh
+    Shape.distance [x,y,z] sh
+
+What's the equivalent of make_shape? Syntactically, maybe something like
+    make Shape {
+        distance ...
+        colour ...
+        bounds ...
+        is_2d ...
+        is_3d ...
+    }
+
+By contrast, 'make Monoid' doesn't make sense due to the binary operator.
+Making a single instance of a Theory is legal if all of the operations
+exactly one instance as an argument, then you have a single-dispatch,
+OOP-class-like schema.
+
+Here's another attempt: make_shape is a Shape algebra whose constructor
+maps a record to a Shape instance.

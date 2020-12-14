@@ -1,0 +1,33 @@
+Typed Arrays
+============
+A typed array value is a list where all of the elements have the same type.
+You are already free to create a list of uniform type, so what else
+is going on?
+ * A special representation, where elements are represented more compactly
+   (based on the knowledge that only elements of that type need to be
+   representable).
+ * This representation also permits fast dynamic argument type checking
+   for functions.
+ * There is an algebra for one of these compact/restricted array types,
+   which is richer than the algebra for general, unrestricted lists.
+   It's richer because the type restriction on the elements opens up
+   more structure.
+ * By the rules established elsewhere in this proposal, a typed array must
+   be an abstract value that is printed as a constructor expression,
+   whose head is an array type. Not sure if we need nominal array types?
+   * Maybe we do if the values are part of an ADT algebra with additional
+     app-specific operations. Of course, you can always embed a typed array
+     in an ADT, so nominal array types seem like they aren't strictly
+     necessary. Maybe I need an algebra of types to help see the answer.
+
+The richness of typed array algebras needs exploration.
+There is literally an Algebra value associated with a typed array algebra.
+It will have standard operations like count, at, concat.
+These operations will be typed. For a typed array algebra T,
+T.concat will return another T value.
+
+I guess there is a type constructor function, or functor, whatever,
+called Array, that takes an algebra argument for the element type,
+and returns a typed array algebra as a result.
+    NumList = Array Num
+for example.

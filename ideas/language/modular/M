@@ -1,0 +1,29 @@
+In a general sense, a "module" is a reusable software component that
+encapsulates some important ideas or design decisions behind an
+abstract interface. Implementation details are hidden behind the interface.
+
+A well designed module has a simple, abstract, general and complete
+interface, is reusable in a variety of situations, and may be composed
+with other modules. Composability is an important feature of modular
+programming.
+
+Another name for a module, in this general sense, is an abstraction.
+Abstraction mechanisms are the features of programming languages that
+allow you to define new abstractions.
+
+In modern languages, functions are abstractions; functions are modules.
+It's instructive to look at what existed before programming languages
+had functions with lexically scoped local variables, and lexically scoped
+closures. It was pretty insane. In the original BASIC programming language,
+there were no local variables, only global variables. A function could not
+hide its implementation because it couldn't hide its local variables.
+APL and LISP had local variables, but they were dynamically scoped, and
+once again, functions could not hide their implementation from other
+functions, because local variables were exposed. One function F could
+accidently clobber another function G just by defining some local variables
+with names used by G, then calling G. It was pure mayhem.
+
+But even though we now have lexically scoped local variables, we are
+still living in primitive times, because most languages require the
+use of shared mutable state to get things done. We still write functions
+that read and modify global variables.

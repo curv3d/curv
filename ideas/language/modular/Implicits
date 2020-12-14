@@ -1,0 +1,20 @@
+Modular Implicits in OCaml
+
+https://arxiv.org/pdf/1512.01895.pdf
+
+Adding ad-hoc polymorphism to OCaml by leveraging the module system.
+It sounds related to what I was trying to do with Algebra/Theory, etc.
+
+"using modules as type-directed implicit parameters" -- sounds familiar
+
+The Implicits mechanism borrowed from Scala removes awkward language
+restrictions where there must be one canonical binding of an Algebra
+to a Theory for a specific type. These restrictions affect Haskell type
+classes and also CLOS style generic functions. What happens instead is
+that if there is no canonical mapping (multiple competing Algebras)
+then you have to specify an Algebra explicitly at the call site.
+
+That seems cool. In the context of Curv, we don't want this idea to
+break modularity (if the absence of a canonical binding is a global
+property that can break working code in an external library you imported,
+for example).
