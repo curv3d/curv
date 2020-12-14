@@ -186,7 +186,7 @@ assert( {call x = x + 1} 3 == 4 );
 
 assert( strcat("foo","bar",0) == "foobar0" );
 
-assert( [if (true) (;)] == [] );
+assert( [if (true) ()] == [] );
 
 assert( "$(2+2)" == "4" && "$("foo")" == ""_foo"_" && "${"foo"}" == "foo" );
 
@@ -236,8 +236,8 @@ assert_error(
     "record has an unmatched field named d",
     let {a=12,b=23,c=34} = {d:true} in [a,b,c]
 );
-let {} = {} in (;);
-let [] = [] in (;);
+let {} = {} in ();
+let [] = [] in ();
 
 let {a:[x,y]} = {a:[1,2]} in assert([x,y]==[1,2]);
 let {"foo bar": fb} = {"foo bar":42} in assert(fb == 42);
