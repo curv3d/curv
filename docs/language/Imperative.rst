@@ -59,6 +59,14 @@ You should think of Curv as a simple language that combines the best parts
 of pure functional and imperative programming, while leaving out the parts
 that require non-local reasoning and make programs hard to understand.
 
+* These simple semantics are good for Curv users, since Curv is
+  meant to be used by designers who are not professional computer programmers.
+* These simple semantics are also good for machines. Curv is meant to be
+  compiled into optimized machine code that runs on a GPU, so that graphics are
+  fast. Compiling a general purpose imperative language like Javascript or Python
+  into performant GPU machine code is massively difficult. The simple semantics of
+  Curv make it easy to parallelize and supports powerful, general optimizations.
+
 Statement Reference
 -------------------
 Statements are distinct from expressions.
