@@ -60,6 +60,9 @@ But this is concerning:
 
 The solutions are:
 
+ * Use stropping to distinguish initial from interior keywords.
+   That's ugly and not pronounceable.
+
   * Choose different keywords so that initial keywords and interior keywords
     are disjoint.
         foreach i in 1..10 until done repeat ...
@@ -74,8 +77,95 @@ The solutions are:
     'for' has the same pronounciation as '4', which is confusing for
     non-English speaking beginner programmers. Try 'foreach'. Also in C#.
 
- * Use stropping to distinguish initial from interior keywords.
-   That's ugly and not pronounceable.
+    However, I like the Pascal inspired keywords, and quite a few other
+    languages copy them. Maybe replace 'do..in..' with 'begin..in..'.
+
+    So now I have:
+        if <condition> then <phrase> else <phrase>
+        for <pattern> in <list> until <condition> do <statements>
+        while <condition> do <statements>
+        begin <statements> in <expression>
+        let <definitions> in <phrase>
+        parametric <definitions> in <expression>
+
+Alternatives to 'begin': prog, block, perform, exec, run, 
+    + a begin expression
+    - a prog expression -- 'program' is vague and doesn't fit my use of
+            the word 'program to describe Curv programs.
+    + a block expression -- a block is a compound statement with local
+            variables so it fits. In Rust, {stmt;stmt;expr} is a "block
+            expression" which fits exactly.
+          But if 'block' is read as a verb then it is misleading.
+    * a perform expression
+    + an exec expression
+    + a run expression
+If I bring back 'do <stmt> in <stmt>' then I will also say
+    + a begin statement
+    + a prog statement
+    + a block statement
+    + a perform statement
+    + an exec statement
+    + a run statement
+How about a word that denotes sequence: this then that?
+sequential scoping?
+    + a seq expression or a seq statement (pronounced "seek")
+
+test code:
+    factorial n =
+        do
+            local result = 1;
+            local i = 0;
+            while (i < n) (
+                result := result * i;
+                i := i + 1;
+            );
+        in result
+
+    factorial n =
+        begin (
+            local result = 1;
+            local i = 0;
+            while i < n do (
+                result := result * i;
+                i := i + 1;
+            );
+        )
+        in result
+
+Consistency demands that statement lists are always parenthesized if they are
+passed as an argument to another operation. However, using operator precedence
+to eliminate useless parens makes the syntax more readable. Or offside syntax:
+
+    factorial n =
+        begin:
+            local result = 1
+            local i = 0
+            while i < n do:
+                result := result * i
+                i := i + 1
+        in result
+
+    factorial n =
+        run:
+            local result = 1
+            local i = 0
+            while i < n do:
+                result := result * i
+                i := i + 1
+        in result
+
+    factorial n =
+        perform:
+            local result = 1
+            local i = 0
+            while i < n do:
+                result := result * i
+                i := i + 1
+        in result
+
+This would also eliminate the ,/; from let..in..
+Idiomatic Haskell has no semicolons, so Curv would be like that.
+For modules, I need a `module` keyword like Haskell.
 
 Prior art?
     I seem to be influenced by Pascal, which has for..do, while..do
