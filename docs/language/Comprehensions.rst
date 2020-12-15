@@ -28,9 +28,11 @@ as a statement that adds a value to the list being constructed.
 
 Here's a comparison of the same list comprehension written in several languages.
 
-| Haskell | ``[n | x <- [1..10], let n = x*x, n `mod` 2 == 0]`` |
-| Python  | ``[n for x in range(1,11) for n in (x*x,) if n % 2 == 0]`` |
-| Curv    | ``[for (x in 1..10) let n = x*x in if (n `mod` 2 == 0) n]`` |
+=======  ===========================================================
+Haskell  ``[n | x <- [1..10], let n = x*x, n `mod` 2 == 0]``
+Python   ``[n for x in range(1,11) for n in (x*x,) if n % 2 == 0]``
+Curv     ``[for (x in 1..10) let n = x*x in if (n `mod` 2 == 0) n]``
+=======  ===========================================================
 
 Haskell and Python invent new syntax for list comprehensions, while
 in Curv, you just use the existing statement syntax.
