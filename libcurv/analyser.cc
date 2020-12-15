@@ -916,18 +916,22 @@ Paren_Phrase::as_definition(Environ& env, Fail fl) const
 Shared<Meaning>
 Bracket_Phrase::analyse(Environ& env, Interp) const
 {
+    // TODO: The interpreter works if I just call analyse_op(*body_,...),
+    // but the SubCurv compiler currently relies on seeing List_Expr
+    // expressions where expression elements are stored separately
+    // when comma syntax is used.
     if (cast<const Empty_Phrase>(body_))
         return List_Expr::make(0, share(*this));
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
         auto& items = commas->args_;
         Shared<List_Expr> list = List_Expr::make(items.size(), share(*this));
         for (size_t i = 0; i < items.size(); ++i)
-            (*list)[i] = analyse_op(*items[i].expr_, env);
+            (*list)[i] = analyse_op(*items[i].expr_, env, Interp::stmt());
         list->init();
         return list;
     } else {
         Shared<List_Expr> list = List_Expr::make(1, share(*this));
-        (*list)[0] = analyse_op(*body_, env);
+        (*list)[0] = analyse_op(*body_, env, Interp::stmt());
         list->init();
         return list;
     }
