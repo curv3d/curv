@@ -849,7 +849,13 @@ Separator_Phrase::as_definition(Environ& env, Fail fl) const
 Shared<Meaning>
 Comma_Phrase::analyse(Environ& env, Interp) const
 {
-    throw Exception(At_Token(args_[0].separator_, *this, env), "syntax error");
+    auto& items = args_;
+    Shared<Paren_List_Expr> list =
+        Paren_List_Expr::make(items.size(), share(*this));
+    for (size_t i = 0; i < items.size(); ++i)
+        (*list)[i] = analyse_op(*items[i].expr_, env);
+    list->init();
+    return list;
 }
 
 void
@@ -869,10 +875,11 @@ Paren_Phrase::analyse(Environ& env, Interp terp) const
 {
     if (cast<const Empty_Phrase>(body_)) {
         if (terp.is_expr()) {
-          env.analyser_.deprecate(
-            &File_Analyser::paren_empty_list_deprecated_, 1,
-            At_Phrase(*this, env),
-            "Using '()' as the empty list is deprecated. Use '[]' instead.");
+            env.analyser_.deprecate(
+                &File_Analyser::paren_empty_list_deprecated_, 1,
+                At_Phrase(*this, env),
+                "Using '()' as the empty list is deprecated. "
+                "Use '[]' instead.");
         }
         return Paren_List_Expr::make(0, share(*this));
     }
@@ -880,7 +887,8 @@ Paren_Phrase::analyse(Environ& env, Interp terp) const
         if (terp.is_expr()) {
             env.analyser_.deprecate(&File_Analyser::paren_list_deprecated_, 1,
                 At_Phrase(*this, env),
-                "'(a,b,c)' is deprecated. Use '[a,b,c]' instead.");
+                "Using '(a,b,c)' as a list is deprecated. "
+                "Use '[a,b,c]' instead.");
         }
         auto& items = commas->args_;
         Shared<Paren_List_Expr> list =

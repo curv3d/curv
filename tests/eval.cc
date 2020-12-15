@@ -488,10 +488,7 @@ TEST(curv, eval)
     SUCCESS("is_list 0","#false");
     SUCCESS("is_list []","#true");
 
-    FAILALL("1,2",
-        "syntax error\n"
-        "1| 1,2\n"
-        "    ^ ");
+    SUCCESS("1,2", "1\n2");
 
     SUCCESS("let a=2; f x={test print(g 2); g y=a*x*b*y; b=3} in f(5).g(7)", "210");
     EXPECT_EQ(sconsole.str(),
