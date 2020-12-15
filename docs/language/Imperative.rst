@@ -67,6 +67,35 @@ that require non-local reasoning and make programs hard to understand.
   into performant GPU machine code is massively difficult. The simple semantics of
   Curv make it easy to parallelize and supports powerful, general optimizations.
 
+Example
+-------
+This function computes the factorial (product of numbers from 1 to n),
+written in the imperative style::
+
+    factorial n =
+        do
+            local result = 1;
+            local i = 0;
+            while (i < n) (
+                result := result * i;
+                i := i + 1;
+            );
+        in result
+
+Notes:
+
+* ``do <statement-list> in <expression>`` is an expression.
+  It is the usual way to embed imperative code in Curv programs.
+* ``local <name> = <value>`` defines a local variable.
+* ``<variable> := <value>`` is an assignment statement that modifies
+  a previously defined local variable.
+* The ``;`` operator is the imperative sequencing operator.
+  ``a;b`` means execute statement ``a``, then execute statement ``b``.
+  A trailing semicolon at the end of a statement list is ignored.
+* The second argument of ``while`` is parenthesized because ``;`` has
+  the lowest operator precedence. Parentheses are used here
+  for grouping--they are not part of the syntax of a compound statement.
+
 Statement Reference
 -------------------
 Statements are distinct from expressions.
