@@ -27,6 +27,7 @@ struct File_Analyser
     bool paren_list_deprecated_ = false;
     bool not_deprecated_ = false;
     bool dot_string_deprecated_ = false;
+    bool string_colon_deprecated_ = false;
 
     File_Analyser(System& system, Frame* file_frame)
     :

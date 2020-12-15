@@ -435,6 +435,10 @@ analyse_assoc(Environ& env,
     if (auto id = dynamic_cast<const Identifier*>(&left))
         return make<Assoc>(share(src), Symbol_Expr{share(*id)}, right_expr);
     if (auto string = dynamic_cast<const String_Phrase*>(&left)) {
+        env.analyser_.deprecate(&File_Analyser::string_colon_deprecated_, 1,
+            At_Phrase(src, env),
+            "\"name\":value is deprecated.\n"
+            "Use 'name':value or [#name,value] instead.");
         auto string_expr = string->analyse_string(env);
         return make<Assoc>(share(src), Symbol_Expr{string_expr}, right_expr);
     }
