@@ -24,7 +24,7 @@ struct While_Indexing : public At_Syntax_Wrapper
     {
         return stringify(parent_.rewrite_message(s),
             "\ncollection: ", collection_,
-            "\n@index: ", index_);
+            "\nindex: ", index_);
     }
 };
 struct Bad_Index : public At_Syntax_Wrapper
@@ -72,8 +72,7 @@ Value get_value_at_index(
         double num = index.to_num_unsafe();
         if (num_is_int(num)) {
             Generic_List glist(value, Fail::hard, Bad_Collection(lcx));
-            int i = num_to_int(index.to_num_unsafe(), 0, int(glist.size())-1,
-                Bad_Index(lcx));
+            int i = num_to_int(num, 0, int(glist.size())-1, Bad_Index(lcx));
             auto r = glist.val_at(i, lcx);
             return get_value_at_slice(r, slice, endslice, gcx);
         }

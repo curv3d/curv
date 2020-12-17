@@ -663,52 +663,52 @@ let r={a:1,b:2} in (
 assert_error [
     "Bad index: 0.5
     |collection: {}
-    |@index: 0.5",
+    |index: 0.5",
     {}@0.5 ];
 assert_error [
     "Index incompatible with collection: {} is not a list
     |collection: {}
-    |@index: 0",
+    |index: 0",
     {}@0 ];
 assert_error [
     "Bad index: {} does not contain the field .foo
     |collection: {}
-    |@index: #foo",
+    |index: #foo",
     {}@#foo ];
 assert_error [
     "Bad index: 9007199254740992 is not in the range 0..2
     |collection: [1,2,3]
-    |@index: 9007199254740992",
+    |index: 9007199254740992",
     [1,2,3]@(2^53) ];
 assert_error [
     "Bad index: 0 is not in range
     |collection: []
-    |@index: 0",
+    |index: 0",
     []@0 ];
 assert_error [
     "Bad index: 9007199254740992 is not in range
     |collection: []
-    |@index: 9007199254740992",
+    |index: 9007199254740992",
     []@(2^53) ];
 assert_error [
     "Bad index: 3.141592653589793
     |collection: []
-    |@index: 3.141592653589793",
+    |index: 3.141592653589793",
     []@pi ];
 assert_error [
     "Index incompatible with collection: [] is not a record
     |collection: []
-    |@index: #foo",
+    |index: #foo",
     []@#foo ];
 assert_error [
     "Bad index: inf
     |collection: []
-    |@index: inf",
+    |index: inf",
     []@inf ];
 assert_error [
     "Bad index: {}
     |collection: {}
-    |@index: {}",
+    |index: {}",
     {}@{} ];
 
 // match and compose form a non-commutative ring with error and id

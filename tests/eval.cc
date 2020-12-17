@@ -314,7 +314,7 @@ TEST(curv, eval)
     FAILALL("[1,2,3][1.1]",
         "Bad index: 1.1\n"
         "collection: [1,2,3]\n"
-        "@index: 1.1\n"
+        "index: 1.1\n"
         "1| [1,2,3][1.1]\n"
         "   ^^^^^^^^^^^^");
     SUCCESS("(0..10)[3..1 by -1]", "[3,2,1]");
