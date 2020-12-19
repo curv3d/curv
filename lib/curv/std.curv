@@ -583,7 +583,16 @@ tetrahedron =
     };
 
 cube =
-    {
+    let
+        cube_m d =
+            let r = d / 2;
+            in make_shape {
+                dist[x,y,z,t] = max(abs[x,y,z] - r);
+                bbox = [[-r, -r, -r], [r,r,r]];
+                is_3d = true;
+            };
+        cube_e d = box.exact[d,d,d];
+    in {
         ... cube_e 2,
         call: cube_e,
         circumratio: sqrt 3,
@@ -595,28 +604,10 @@ cube =
             ... cube_m 2,
             call: cube_m
         },
-    }
-    where (
-        cube_m d =
-            let r = d / 2;
-            in make_shape {
-                dist[x,y,z,t] = max(abs[x,y,z] - r);
-                bbox = [[-r, -r, -r], [r,r,r]];
-                is_3d = true;
-            };
-        cube_e d = box.exact[d,d,d];
-    );
+    };
 
 octahedron =
-    {
-        ... octahedron_m 2,
-        call : octahedron_m,
-        circumratio : (1/2*sqrt 2) / (1/6*sqrt 6),
-        mitred: {
-            ... octahedron_m 2,
-            call: octahedron_m
-        },
-    } where (
+    let
         octahedron_m d =
             let r = d / 2;
                 v0 = normalize[1,1,1];
@@ -636,28 +627,28 @@ octahedron =
                 is_3d : true,
                 bbox : circumratio * [[-r,-r,-r], [r,r,r]],
             };
-    );
+    in {
+        ... octahedron_m 2,
+        call : octahedron_m,
+        circumratio : (1/2*sqrt 2) / (1/6*sqrt 6),
+        mitred: {
+            ... octahedron_m 2,
+            call: octahedron_m
+        },
+    };
 
 dodecahedron =
-    {
-        ... dodecahedron_m 2,
-        call : dodecahedron_m,
-        circumratio : (.25*(sqrt 3 + sqrt 15)) / (1/20*sqrt(250+110*sqrt(5))),
-        mitred: {
-            ... dodecahedron_m 2,
-            call: dodecahedron_m
-        },
-    } where (
+    let
+        v0 = normalize[0, phi, 1];
+        v1 = normalize[0, -phi, 1];
+        v2 = normalize[1, 0, phi];
+        v3 = normalize[-1, 0, phi];
+        v4 = normalize[phi, 1, 0];
+        v5 = normalize[-phi, 1, 0];
+        midratio = (.25*(3+sqrt(5))) / (1/20*sqrt(250+110*sqrt(5)));
+        circumratio = (.25*(sqrt 3 + sqrt 15)) / (1/20*sqrt(250+110*sqrt(5)));
         dodecahedron_m d =
             let r = d / 2;
-                v0 = normalize[0, phi, 1];
-                v1 = normalize[0, -phi, 1];
-                v2 = normalize[1, 0, phi];
-                v3 = normalize[-1, 0, phi];
-                v4 = normalize[phi, 1, 0];
-                v5 = normalize[-phi, 1, 0];
-                midratio = (.25*(3+sqrt(5))) / (1/20*sqrt(250+110*sqrt(5)));
-                circumratio = (.25*(sqrt 3 + sqrt 15)) / (1/20*sqrt(250+110*sqrt(5)));
             in make_shape {
                 dist p :
                     max [
@@ -671,33 +662,33 @@ dodecahedron =
                 is_3d : true,
                 bbox : midratio * [[-r,-r,-r],[r,r,r]],
             };
-    );
+    in {
+        ... dodecahedron_m 2,
+        call : dodecahedron_m,
+        circumratio : (.25*(sqrt 3 + sqrt 15)) / (1/20*sqrt(250+110*sqrt(5))),
+        mitred: {
+            ... dodecahedron_m 2,
+            call: dodecahedron_m
+        },
+    };
 
 icosahedron =
-    {
-        ... icosahedron_m 2,
-        call : icosahedron_m,
-        circumratio : (.25*sqrt(10+2*sqrt 5)) / (1/12*(3*sqrt(3)+sqrt(15))),
-        mitred: {
-            ... icosahedron_m 2,
-            call: icosahedron_m
-        },
-    } where (
+    let
+        v0 = normalize[1,1,1];
+        v1 = normalize[-1,1,1];
+        v2 = normalize[1,-1,1];
+        v3 = normalize[1,1,-1];
+        v4 = normalize[0, +1, phi+1];
+        v5 = normalize[0, -1, phi+1];
+        v6 = normalize[+phi+1, 0, 1];
+        v7 = normalize[-phi-1, 0, 1];
+        v8 = normalize[+1, phi+1, 0];
+        v9 = normalize[-1, phi+1, 0];
+        // radius of midsphere / radius of insphere
+        midratio = (phi/2) / (1/12*(3*sqrt(3)+sqrt(15)));
+        circumratio = (.25*sqrt(10+2*sqrt 5)) / (1/12*(3*sqrt(3)+sqrt(15)));
         icosahedron_m d =
             let r = d / 2;
-                v0 = normalize[1,1,1];
-                v1 = normalize[-1,1,1];
-                v2 = normalize[1,-1,1];
-                v3 = normalize[1,1,-1];
-                v4 = normalize[0, +1, phi+1];
-                v5 = normalize[0, -1, phi+1];
-                v6 = normalize[+phi+1, 0, 1];
-                v7 = normalize[-phi-1, 0, 1];
-                v8 = normalize[+1, phi+1, 0];
-                v9 = normalize[-1, phi+1, 0];
-                // radius of midsphere / radius of insphere
-                midratio = (phi/2) / (1/12*(3*sqrt(3)+sqrt(15)));
-                circumratio = (.25*sqrt(10+2*sqrt 5)) / (1/12*(3*sqrt(3)+sqrt(15)));
             in make_shape {
                 dist p :
                     max [
@@ -715,7 +706,15 @@ icosahedron =
                 is_3d : true,
                 bbox : midratio * [[-r,-r,-r], [r,r,r]],
             };
-    );
+    in {
+        ... icosahedron_m 2,
+        call : icosahedron_m,
+        circumratio : (.25*sqrt(10+2*sqrt 5)) / (1/12*(3*sqrt(3)+sqrt(15))),
+        mitred: {
+            ... icosahedron_m 2,
+            call: icosahedron_m
+        },
+    };
 
 /////////////////////////////////////////////
 // BOOLEAN / SET THEORETIC SHAPE OPERATORS //
@@ -772,10 +771,7 @@ _intersection2 [s1,s2] =
 difference[s1,s2] = _intersection2[s1, complement s2];
 symmetric_difference shapes = difference[union shapes, intersection shapes];
 
-row = match [
-    d :: is_num -> shapes -> row_impl[d,shapes];
-    shapes -> row_impl[null, shapes];
-] where (
+row = let
     row_impl[d,shapes] =
         let widths = [for (s in shapes) size s @X];
             gap = if (d==null) max widths / 4 else d;
@@ -790,7 +786,10 @@ row = match [
                 i := i + 1;
             );
         in union[for (i in 0..<count shapes) shapes@i >> move[xdelta@i,0,0]];
-);
+in match [
+    d :: is_num -> shapes -> row_impl[d,shapes];
+    shapes -> row_impl[null, shapes];
+];
 
 smooth k = {
     union [s1,s2] =
