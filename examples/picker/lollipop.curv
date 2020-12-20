@@ -1,11 +1,10 @@
 parametric
-    Diameter :: slider(.5, 2) = 1;
-    'Stick Length' :: slider(2, 8) = 4;
+    Diameter :: slider[.5, 2] = 1;
+    'Stick Length' :: slider[2, 8] = 4;
     Colour :: colour_picker = red;
-in
-union(candy, stick)
-where (
+in let
     candy = sphere Diameter >> colour Colour;
     stick = cylinder {h: 'Stick Length', d: Diameter/8}
             >> move [0, 0, -'Stick Length'/2];
-)
+in
+union[candy, stick]

@@ -1,20 +1,20 @@
 parametric
     size :: scale_picker = 1;
 in let
-log_spiral(s,g) = make_shape {
-    dist(x,y,z,t) =
-        let r = mag[x,y,z];
-            t = phase[x,y,z];
+log_spiral[s,g] = make_shape {
+    dist[x,y,z,t] =
+        let r = mag[x,y];
+            t = phase[x,y];
         in if (r == 0)
             0
         else
             let n = (log(r/s)/g - t) / tau;
                 upper_r = s * e^(g*(t+tau*ceil n));
                 lower_r = s * e^(g*(t+tau*floor n));
-            in (min(abs(upper_r-r), abs(r-lower_r)) - r*abs g)
+            in (min[abs(upper_r-r), abs(r-lower_r)] - r*abs g)
                 / 1.24; /* empirical Lipschitz compensation factor for g=.2 */
     is_2d = true;
 };
 in
-log_spiral(1,0.2)
+log_spiral[1,0.2]
 >> scale size
