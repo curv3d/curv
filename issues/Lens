@@ -1,11 +1,22 @@
 Syntax for applying a lens to a value:
-    value@lens
+    value.[lens1,lens2,...]     -- prefered syntax, a slice
+    value@lens                  -- implemented, not documented
 with postfix precedence.
 
 Initial support for:
   list@nat
   record@symbol
   collection@lens_list
+
+Slices:
+ * drop support for Curv 0.5, only value.[lens] works (single value)
+ * keep value.[lens1,lens2] as a slice. But can't slice using @ syntax.
+ * generalized lens values with path and slice lens values.
+
+Generalized lenses for paths and slices.
+* Will need more lens constructors. Either ADT style branded values
+  such as path[a,b,c] and slice[a,b,c], where path and slice are constructor
+  functions. Or Curv 0.4 style tagged values: {path:[a,b,c]} {slice:[a,b,c]}
 
 Are functions also lenses?
  * For now, no. Lists are lenses, but the juxta operator interprets

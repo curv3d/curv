@@ -22,14 +22,15 @@ Syntax changes and standard coding style for Curv 0.5
         + Frame contains Program_State& which contains System&, Source_State&,
           expression cache for CSE during symbolic evaluation. Hmm, requires
           switching out Source_State.
-        + Frame contains Source_State& which contains System&, Program_State&.
+        + Frame contains Source_State& which contains System&, Program_State&
+          and bracket_index_deprecated_.
   * This syntax is incompatible with lenses as functions,
     because [lens1,lens2] is a lens.
   * This syntax can't be used for lens application because it doesn't work
-    with records.
+    with records. (Or functions: lens application works on all values.)
   * The new syntax allows indexing a record with a symbol, replacing
     the old record."string" syntax.
-* low precedence collection@index operator
+* low precedence collection@index operator?
 - deprecate record."string"; use record.[symbol] instead.
   - 'symbol <string>' converts string to symbol
   * 'record.[symbol]:=elem' must be made to work, first.
@@ -38,29 +39,18 @@ Syntax changes and standard coding style for Curv 0.5
 - Deprecate {foo:}. I've never used it, there hasn't been a use case.
 * Consider adding the `func` keyword, then deprecate non-func fundefs.
 * Uniform control structure syntax:
-    if <ritem> then <ritem> else <ritem>
-    foreach <ritem> in <ritem> until <ritem> repeat <ritem>
-    while <ritem> repeat <ritem>
-    do <ritem> in <ritem>
-    let <ritem> in <ritem>
-  Inspired by 'pronounceable programming' research on syntax for beginners.
-  * Parens are only used for grouping, not as keywords in if/for/while.
-  * No parens are necessary in simple cases; all keywords are pronounceable.
-  * No homonyms ('for' is confusible with '4')
-  * Leading keywords and interior keywords are disjoint. 'while A do B' and
-    'for A in B while C do E' are ambiguous when spread over multiple lines.
-  * Meaningful keywords ('repeat' precedes the phrase to be repeatedly
-    executed, better than 'do').
-  Alt design, more like Pascal:
     if A then B else C
     for A in B until C do E
     while A do B
-    perform A in B       or begin A in B, replaces do A in B
+    begin A in B
     let A in B
-  Notes:
-  * Arguments are items, requiring more parentheses.
-  * Support optional offside syntax, like Haskell/Python.
-* Deprecate `where`?
+    parametric A in B
+  Rationale:
+  * more consistent, more pronounceable.
+  * parens are used only for grouping, not as keywords or syntax.
+  * leading and interior keywords are disjoint, hence 'begin'.
+  * supports optional offside syntax, like Haskell/Python.
+- Deprecate `where`.
 
 Formatting:
 * A curv-fmt program that enforces standardized spacing for expressions?

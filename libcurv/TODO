@@ -3,7 +3,6 @@ Relies on new compiler/partial evaluator, new type system.
 
 Indexing:
 * generalized locatives using arbitrary index values
-* Get rid of function indexes. Only support primitive index values in Curv 0.5.
 * slice and path operators.
 
 String TODO:

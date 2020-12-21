@@ -1,0 +1,15 @@
+'a@i := n' compiles into 'a := amend i n a':
+ * partial eval: if a/i/n are symbolic, then result is symbolic amend expr.
+ * interpreter: O(1) element update via COW and move optimization.
+   * In general, move optimize last use of a variable,
+     therefore optimize a := F a, therefore optimize 'a := amend i n a'.
+   * For now, Amend_Local is an ad-hoc move optimized Amend operation.
+ * SubCurv: special code generation for 'a := amend i n a'.
+
+'a.[i,j]@k := n' is compiled into:
+  Amend_Local(a, Path[Slice[i,j],k], n)
+Result of analysing a locative is a local variable and an index path.
+* A slice value is 'slice <list>', it's a wrapper around a list value,
+  and can be decomposed into a list using pattern matching.
+
+Is amend of a path equivalent to nested amend calls?
