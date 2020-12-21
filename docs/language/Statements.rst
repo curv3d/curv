@@ -48,7 +48,7 @@ in an imperative style.
 
 ``name := expression``
   An assignment statement modifies a local variable
-  defined in an enclosing scope using ``let``, ``where`` or ``for``.
+  defined in an enclosing scope using ``let`` or ``for``.
 
 For example, here is a function that sums a list, written in imperative
 style using an assignment statement::
@@ -158,9 +158,6 @@ Unbounded iteration: ``while (condition) statement``
 Recursively scoped local variables: ``let definitions in statement``
   Define local variables over the statement, using recursive scoping.
   The order of definitions doesn't matter. See: `Blocks`_.
-
-Recursively scoped local variables: ``statement where definitions``
-  An alternate syntax for defining local variables. See: `Blocks`_.
 
 .. _`Boolean Values`: Boolean_Values.rst
 .. _`Lists`: Lists.rst

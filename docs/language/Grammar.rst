@@ -180,6 +180,3 @@ Unbounded iteration: ``while (condition) statement``
 Local variables: ``let definition in phrase``
   Define local variables over the phrase.
   The phrase can be an expression or statement.
-
-Local variables: ``phrase where definition``
-  An alternate syntax for defining local variables.

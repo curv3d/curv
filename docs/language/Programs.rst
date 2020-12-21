@@ -29,21 +29,15 @@ Here is a larger example, which constructs a lollipop shape::
   diam = 1;
   len = 4;
 
+  in let
+  candy = sphere diam >> colour red;
+  stick = cylinder{h: len, d: diam/8} >> move[0,0,-len/2];
+
   in
   union[candy, stick]
 
-  where (
-  candy = sphere diam >> colour red;
-  stick = cylinder{h: len, d: diam/8} >> move[0,0,-len/2];
-  )
-
-This illustrates a common coding pattern,
-where you place model parameters at the top of the program
-(using a ``let...in`` clause),
-and auxiliary definitions at the bottom
-(using a ``where...`` clause).
-Both clauses are optional.
-See: `Blocks`_.
+In order to keep the model parameters separated from the auxiliary
+definitions, I've placed them in separate (nested) ``let`` clauses.
 
 Note that:
 
@@ -90,10 +84,10 @@ Here is how the lollipop example could be split into 3 source files:
 
 ``lollipop.curv``::
 
+  let
+      include file "lolli-lib.curv"
+  in
   union[candy, stick]
-  where (
-  include file "lolli-lib.curv";
-  )
 
 ``lolli-parameters.curv``::
 
