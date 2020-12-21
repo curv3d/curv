@@ -552,6 +552,11 @@ Where_Phrase::analyse(Environ& env, Interp terp) const
     Shared<Phrase> bindings = right_;
     Shared<const Phrase> bodysrc = left_;
 
+    env.analyser_.deprecate(
+        &File_Analyser::where_deprecated_, 1,
+        At_Phrase(*syntax, env),
+        "'where' is deprecated. Use 'let' instead.");
+
     // Given 'let bindings1 in body where bindings2',
     // body is analysed in a scope that combines bindings1 and bindings2.
     auto let = cast<const Let_Phrase>(bodysrc);
