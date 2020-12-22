@@ -33,7 +33,6 @@ Syntax changes and standard coding style for Curv 0.5
 * low precedence collection@index operator?
 - deprecate record."string"; use record.[symbol] instead.
   - 'symbol <string>' converts string to symbol
-  * 'record.[symbol]:=elem' must be made to work, first.
 - id:expr is sugar for [#id,expr].
 - Deprecate {"foo":1}. Use {[#foo, 1]} instead.
 - Deprecate {foo:}. I've never used it, there hasn't been a use case.
