@@ -464,8 +464,7 @@ Record_Expr::eval(Frame& f) const
 {
     auto record = make<DRecord>();
     Record_Executor rex(*record);
-    for (auto op : fields_)
-        op->exec(f, rex);
+    fields_->exec(f, rex);
     return {record};
 }
 

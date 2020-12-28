@@ -862,7 +862,7 @@ Comma_Phrase::analyse(Environ& env, Interp) const
     Shared<Paren_List_Expr> list =
         Paren_List_Expr::make(items.size(), share(*this));
     for (size_t i = 0; i < items.size(); ++i)
-        (*list)[i] = analyse_op(*items[i].expr_, env);
+        (*list)[i] = analyse_op(*items[i].expr_, env, Interp::stmt());
     list->init();
     return list;
 }
@@ -971,20 +971,10 @@ Program_Phrase::as_definition(Environ& env, Fail fl) const
 Shared<Meaning>
 Brace_Phrase::analyse(Environ& env, Interp terp) const
 {
-    Shared<Definition> adef = body_->as_definition(env, Fail::soft);
-    if (adef == nullptr) {
-        // record comprehension
-        Scope scope(env);
-        terp = terp.deepen();
-        auto record = make<Record_Expr>(share(*this));
-        each_item(*body_, [&](Phrase& item)->void {
-            auto stmt = analyse_stmt(share(item), scope, terp.to_stmt());
-            record->fields_.push_back(stmt);
-        });
-        env.frame_maxslots_ = scope.frame_maxslots_;
-        return record;
-    }
-    return analyse_module(*adef, env);
+    if (auto adef = body_->as_definition(env, Fail::soft))
+        return analyse_module(*adef, env);
+    auto fields = analyse_op(*body_, env, Interp::stmt());
+    return make<Record_Expr>(share(*this), fields);
 }
 
 Shared<Meaning>

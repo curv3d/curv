@@ -470,10 +470,13 @@ using Paren_List_Expr = Tail_Array<Paren_List_Expr_Base>;
 
 struct Record_Expr : public Just_Expression
 {
-    // `fields_` contains actions and binders.
-    std::vector<Shared<const Operation>> fields_;
+    Shared<const Operation> fields_;
 
-    Record_Expr(Shared<const Phrase> syntax) : Just_Expression(syntax) {}
+    Record_Expr(Shared<const Phrase> syntax, Shared<const Operation> fields)
+    :
+        Just_Expression(syntax),
+        fields_(fields)
+    {}
 
     virtual Value eval(Frame&) const override;
 };
