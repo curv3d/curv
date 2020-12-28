@@ -11,6 +11,7 @@
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
 #include <libcurv/import.h>
+#include <libcurv/lens.h>
 #include <libcurv/num.h>
 #include <libcurv/pattern.h>
 #include <libcurv/picker.h>
@@ -1083,6 +1084,35 @@ struct Compose_Function : public Function
     }
 };
 
+struct ISlice_Function : public Function
+{
+    using Function::Function;
+    virtual Value call(Value arg, Fail fl, Frame& fr) const override
+    {
+        At_Arg cx(*this, fr);
+        TRY_DEF(list, arg.to<List>(fl, cx));
+        return make_islice(list->begin(), list->end());
+    }
+};
+struct IPath_Function : public Function
+{
+    using Function::Function;
+    virtual Value call(Value arg, Fail fl, Frame& fr) const override
+    {
+        At_Arg cx(*this, fr);
+        TRY_DEF(list, arg.to<List>(fl, cx));
+        return make_ipath(list->begin(), list->end());
+    }
+};
+struct Amend_Function : public Tuple_Function
+{
+    Amend_Function(const char* nm) : Tuple_Function(3,nm) {}
+    Value tuple_call(Fail, Frame& args) const override
+    {
+        return index_amend(args[0], args[1], args[2], At_Arg(*this, args));
+    }
+};
+
 // The filename argument to "file", if it is a relative filename,
 // is interpreted relative to the parent directory of the source file from
 // which "file" is called.
@@ -1536,6 +1566,12 @@ builtin_namespace()
     FUNCTION("repr", Repr_Function),
     FUNCTION("match", Match_Function),
     FUNCTION("compose", Compose_Function),
+
+    // top secret index API (aka lenses)
+    {make_symbol("iid"), make<Builtin_Value>(Value{make<IId>()})},
+    FUNCTION("islice", ISlice_Function),
+    FUNCTION("ipath", IPath_Function),
+    FUNCTION("amend", Amend_Function),
 
     {make_symbol("file"), make<Builtin_Meaning<File_Metafunction>>()},
     {make_symbol("print"), make<Builtin_Meaning<Print_Metafunction>>()},

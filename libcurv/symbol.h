@@ -112,10 +112,7 @@ public:
 
 Symbol_Ref make_symbol(const char*, size_t);
 
-inline Symbol_Ref make_symbol(const char* s)
-{
-    return make_symbol(s, strlen(s));
-}
+Symbol_Ref make_symbol(const char* s);
 
 inline Symbol_Ref make_symbol(std::string s)
 {

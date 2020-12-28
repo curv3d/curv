@@ -62,6 +62,17 @@ Value Generic_List::val_at(size_t i, const At_Syntax& cx) const
             cx)};
     }
 }
+void Generic_List::amend_at(size_t i, Value newval, const At_Syntax& cx)
+{
+    if (this->is_boxed_list())
+        get_boxed_list().at(i) = newval;
+    else if (this->is_string())
+        throw Exception(cx, "Generic_List: can't amend string");
+    else if (this->is_reactive_value())
+        throw Exception(cx, "Generic_List: can't amend symbolic list");
+    else
+        throw Exception(cx, "Generic_List: internal error in amend_at");
+}
 
 const char List_Base::name[] = "list";
 const char Abstract_List::name[] = "list";

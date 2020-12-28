@@ -27,6 +27,11 @@ make_symbol(const char* str, size_t len)
     return Symbol::make(str, len);
 }
 
+Symbol_Ref make_symbol(const char* s)
+{
+    return Symbol::make(s, strlen(s));
+}
+
 bool is_C_identifier(const char* p)
 {
     if (!(isalpha(*p) || *p == '_'))

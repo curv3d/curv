@@ -59,7 +59,11 @@ struct Ref_Value : public Shared_Base
             sty_error_type,
             sty_bool_type,
             sty_num_type,
-            sty_list_type
+            sty_list_type,
+        ty_index,
+            sty_iid,
+            sty_ipath,
+            sty_islice
     };
     Ref_Value(int type) : Shared_Base(), type_(type), subtype_(type) {}
     Ref_Value(int type, int subtype)

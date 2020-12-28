@@ -296,8 +296,7 @@ void Not_Equal_Expr::print(std::ostream& out) const
 
 Value Index_Expr::eval(Frame& f) const
 {
-    return get_value_at_index(arg1_->eval(f), arg2_->eval(f),
-        nullptr, nullptr, At_Phrase(*syntax_, f));
+    return index_fetch(arg1_->eval(f), arg2_->eval(f), At_Phrase(*syntax_, f));
 }
 Value Slice_Expr::eval(Frame& f) const
 {

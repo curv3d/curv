@@ -18,57 +18,12 @@ struct Context;
 struct List_Base;
 struct Reactive_Value;
 
-/// Representation of lists in the Curv runtime.
+/// List of boxed values.
 ///
 /// This is a variable length object: the size and the value array
 /// are in the same object. This is very efficient for small lists:
 /// only a single cache hit is required to access both the size and the data.
 using List = Tail_Array<List_Base>;
-
-// A Generic_List is any Curv value that denotes a sequence of values.
-// Lists have multiple representations, and Generic_List abstracts over
-// all of those representations.
-//
-// The goal of this interface is to be abstract, efficient, convenient. Ideas:
-// * Make it a template class. The Elem argument describes the supported
-//   element types. It is used by the constructor to filter out unsupported
-//   list representations and is used by operations at compile time to disable
-//   conditional logic that isn't required under the element type restriction.
-// * Provide bulk operations so that conditional logic can be performed once
-//   per list rather than once per element.
-struct Generic_List
-{
-private:
-    // Either an Abstract_List, or a Reactive_Value of type list, or nullptr,
-    // guaranteed by construction.
-    Shared<Ref_Value> list_;
-    bool is_abstract_list() const {
-        return list_->type_ == Ref_Value::ty_abstract_list;
-    }
-    Abstract_List& get_abstract_list() const {
-        return *(Abstract_List*)(&*list_);
-    }
-    bool is_reactive_value() const {
-        return list_->type_ == Ref_Value::ty_reactive;
-    }
-    Reactive_Value& get_reactive_value() const {
-        return *(Reactive_Value*)(&*list_);
-    }
-
-public:
-    // If Value argument is not a list, then:
-    // * Throw an exception on Fail::hard.
-    // * Assert is_list() to be false on Fail::soft.
-    Generic_List(Value, Fail, const Context& cx);
-
-    // Test after construction, before invoking any list operations.
-    bool is_list() const noexcept { return list_ != nullptr; }
-
-    // List operations assume is_list().
-    size_t size() const noexcept;
-    void assert_size(size_t sz, const Context& cx) const;
-    Value val_at(size_t i, const At_Syntax&) const;
-};
 
 struct List_Base : public Abstract_List
 {
@@ -99,6 +54,62 @@ inline Shared<List> make_list(size_t size)
     auto list = List::make(size);
     return {std::move(list)};
 }
+
+// A Generic_List is any Curv value that denotes a sequence of values.
+// Lists have multiple representations, and Generic_List abstracts over
+// all of those representations.
+//
+// The goal of this interface is to be abstract, efficient, convenient. Ideas:
+// * Make it a template class. The Elem argument describes the supported
+//   element types. It is used by the constructor to filter out unsupported
+//   list representations and is used by operations at compile time to disable
+//   conditional logic that isn't required under the element type restriction.
+// * Provide bulk operations so that conditional logic can be performed once
+//   per list rather than once per element.
+struct Generic_List
+{
+private:
+    // Either an Abstract_List, or a Reactive_Value of type list, or nullptr,
+    // guaranteed by construction.
+    Shared<Ref_Value> list_;
+    bool is_abstract_list() const {
+        return list_->type_ == Ref_Value::ty_abstract_list;
+    }
+    bool is_boxed_list() const {
+        return list_->subtype_ == Ref_Value::sty_list;
+    }
+    bool is_string() const {
+        return list_->subtype_ == Ref_Value::sty_string;
+    }
+    bool is_reactive_value() const {
+        return list_->type_ == Ref_Value::ty_reactive;
+    }
+    Abstract_List& get_abstract_list() const {
+        return *(Abstract_List*)(&*list_);
+    }
+    List& get_boxed_list() {
+        return *(List*)(&*list_);
+    }
+    Reactive_Value& get_reactive_value() const {
+        return *(Reactive_Value*)(&*list_);
+    }
+
+public:
+    // If Value argument is not a list, then:
+    // * Throw an exception on Fail::hard.
+    // * Assert is_list() to be false on Fail::soft.
+    Generic_List(Value, Fail, const Context& cx);
+
+    // Test after construction, before invoking any list operations.
+    bool is_list() const noexcept { return list_ != nullptr; }
+
+    // List operations assume is_list().
+    size_t size() const noexcept;
+    void assert_size(size_t sz, const Context& cx) const;
+    Value val_at(size_t i, const At_Syntax&) const;
+    void amend_at(size_t, Value, const At_Syntax&);
+    inline Value get_value() { return {list_}; }
+};
 
 // Factory class for making a Curv Abstract_List value,
 // constructing a curv::List or curv::String depending on data.
