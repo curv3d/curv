@@ -1,0 +1,29 @@
+Ref: [[ideas/language/syntax/Comma]]
+
+Today, as implemented, the comma and semicolon operator are interchangeable
+in a definition context, but in a statement context:
+* A semicolon phrase is a compound statement, that provides a scope
+  for local definitions, and allows the use of assignment statements.
+* A comma phrase is a compound generator. You can't use
+  assignment statements or local definitions, they are not generators.
+
+You can just ignore comma and use semicolon everywhere. That works.
+
+Comma is like a "weak semicolon" that prohibits imperative semantics.
+If you see 'a,b' then you know that imperative variable mutation cannot
+occur in the transition from evaluating 'a' to evaluating 'b'.
+The phrase 'a,b' is referentially transparent, but 'a;b' may not be.
+A Curv program with no semicolons has no imperative variable-mutation
+semantics.
+
+The recommended style is to use comma everywhere it is permitted, and
+use semicolon otherwise.
+
+
+TODO (implement Theory 4):
+ * () should work as a null statement in stmt context
+ * 'id:expr' is an expression, sugar for [#id,expr]
+   WAIT: Nominal types/modules design may change this.
+ * 'expr1,expr2,expr3' should be a statement in statement context
+ * (expr1,expr2,expr3) as a list in expr context is deprecated at level 1
+ * Documentation updates, as per Theory 4 of Comma

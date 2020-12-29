@@ -1,9 +1,0 @@
-Ref: [[ideas/language/syntax/Comma]]
-
-TODO (implement Theory 4):
- * () should work as a null statement in stmt context
- * 'id:expr' is an expression, sugar for [#id,expr]
-   WAIT: Nominal types/modules design may change this.
- * 'expr1,expr2,expr3' should be a statement in statement context
- * (expr1,expr2,expr3) as a list in expr context is deprecated at level 1
- * Documentation updates, as per Theory 4 of Comma
