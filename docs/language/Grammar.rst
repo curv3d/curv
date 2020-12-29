@@ -106,7 +106,7 @@ The Deep Grammar: Phrases
 There is a deeper phrase-structure grammar that assigns syntactic meanings
 to most parse tree nodes, which are now called phrases.
 (Some parse tree nodes do not have an independent meaning, and are not phrases.)
-There are 6 phrase types:
+There are 7 primitive phrase types:
 
 definition
   A phrase that binds zero or more names to values, within a scope.
@@ -123,23 +123,50 @@ pattern
 expression
   A phrase that computes a value.
 
-statement
-  A statement is an action, value generator, or field generator.
+action
+  A statement that may cause debug side effects (eg, printing to the debug
+  console), or that may cause the program to panic and report an error (eg,
+  due to an assertion failure).
 
-  action
-    A phrase that causes a side effect, and doesn't compute a value.
+generator
+  A statement that produces a sequence of zero or more values,
+  for consumption by a list constructor or record constructor.
+  An action is a generator that produces zero values.
+  An expression is a generator that produces one value.
 
-  value generator
-    A phrase that computes a sequence of zero or more values.
-    ``[``\ *value_generator*\ ``]`` is a list constructor.
+assignment
+  An imperative statement that mutates a local variable.
 
-  field generator
-    A phrase that computes a sequence of zero or more fields,
-    which are name/value or string/value pairs.
-    ``{``\ *field_generator*\ ``}`` is a record constructor.
+local definition
+  An imperative statement that defines a local variable within the scope of
+  a compound statement.
 
-An action can be used in a statement or definition context.
-An expression can be used in any context requiring a value generator.
+Comma vs Semicolon
+------------------
+In a definition context, the comma and semicolon operator are interchangeable:
+they both construct compound definitions.
+
+In a statement context,
+* A comma phrase is a compound generator. Items in a comma phrase cannot
+  be assignment statements or local definitions, but they can be
+  expressions, debug actions and other generators.
+* A semicolon phrase is a compound statement, which is strictly more
+  general than a compound generator. A compound statement provides a
+  scope for local definitions. Items in a compound statement can include
+  local definitions and assignment statements.
+
+Semicolon is strictly more general than comma. You can just ignore the
+comma operator and use semicolon everywhere.
+
+Comma is like a "weak semicolon" that prohibits imperative semantics.
+If you see 'a,b' then you know that imperative variable mutation cannot
+occur in the transition from evaluating 'a' to evaluating 'b'.
+The phrase 'a,b' is referentially transparent, but 'a;b' may not be.
+A Curv program with no semicolons has no imperative variable-mutation
+semantics.
+
+The recommended style (for "declarative first" programming) is to use comma
+everywhere it is permitted, and use semicolon otherwise.
 
 Programs
 --------
@@ -157,11 +184,20 @@ and support sequencing, conditional evaluation, iteration, and local variables.
 Parenthesized phrase: ``(phrase)``
   Any phrase can be wrapped in parentheses without changing its meaning.
 
-Compound phrase: ``phrase1; phrase2``
-  * If both phrases are definitions, then this is a compound definition.
+Compound phrase: ``phrase1; phrase2;...``
+  This is an n-ary operator.
+  * If all phrases are definitions, then this is a compound definition.
     The order doesn't matter, and the definitions may be mutually recursive.
-  * If both phrases are statements,
+  * If all phrases are statements,
     then the statements are executed in sequence.
+  * This defines a scope for local definitions, which may appear as
+    phrase arguments.
+
+Declarative compound phrase: ``phrase1, phrase2, ...``
+  This is an n-ary operator.
+  Just like ``;``, except that the resulting compound phrase is
+  referentially transparent. The argument phrases may not be imperative
+  statements (local definitions or assignments).
 
 Single-arm conditional: ``if (condition) statement``
   The statement is only executed if the condition is true.
