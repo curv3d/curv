@@ -26,10 +26,7 @@ There are three syntaxes:
 
 **Dynamic records** permit you to construct a record value dynamically.
 The set of field names is determined at run time using program logic, which
-can include if statements, local variables and loops. Using the spread
-operator (``...``) you can copy the fields from one record into another,
-defining default values for missing fields and overriding existing fields.
-
+can include if statements, local variables and loops.
 The simplest case is a list of field expressions (``name:value``)
 separated by commas and surrounded by braces.
 The full syntax is defined in `Generators`_.
@@ -49,7 +46,10 @@ See `Definitions`_ for more details.
 
 The set of field names in a scoped record is determined at compile time.
 The definitions can refer to one another, but their order doesn't matter,
-and you can define recursive functions. Scoped record syntax is used to define
+and you can define recursive functions. Duplicate definitions cause
+an error.
+
+Scoped record syntax is used to define
 modules, where the fields represent APIs, not data.
 See ``lib/curv/*.curv`` in the source tree for examples.
 Note that these source files begin and end with ``{`` and ``}``.
@@ -60,6 +60,38 @@ multiple source files. See `File_Import`_ for details.
 .. _`Generators`: Generators.rst
 .. _`Definitions`: Blocks.rst
 .. _`File_Import`: File_Import.rst
+
+The Spread Operator
+~~~~~~~~~~~~~~~~~~~
+Within a dynamic record constructor, fields are processed left to right.
+If the same field name is specified more than once, then the last occurrence
+wins. For example::
+
+    {a: 1, b: 2, c: 3, a: 999}
+
+evaluates to ``{a: 999, b: 2, c: 3}``.
+
+The **spread operator** ``...r`` copies the fields from the record ``r``
+into the record being constructed. Using the left-to-right override
+semantics, you can create an updated copy of an existing record ``r``,
+defining default values for missing fields, and overriding existing fields.
+
+* ``{x: 0, ... r}`` -- The same as record ``r``, except that if field ``x`` is
+  not defined, then it defaults to ``0``.
+* ``{... r, x: 0}`` -- The same as record ``r``, extended with field ``x``,
+  with ``x:0`` overriding any previous binding.
+
+Within a list constructor, ``...r`` copies the fields of the record ``r``
+into the list, converting each field into a ``[symbol,value]`` pair.
+So ``[...r]`` converts a record to a field list. For example::
+
+    [... {a: 1, b: 2}]
+
+evaluates to ``[[#a,1], [#b,2]]``.
+
+Within a dynamic record constructor, ``...fieldlist`` copies the fields
+from a fieldlist into the record being constructed.
+So ``{...fieldlist}`` converts a fieldlist to a record.
 
 Record Operations
 ~~~~~~~~~~~~~~~~~
