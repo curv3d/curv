@@ -19,11 +19,10 @@ The syntax for generator phrases includes sequencing, conditional, and loop
 operators that take generators as arguments. Generators can use the full
 power of the statement language.
 
-Record constructors like ``{a:1,b:2}`` work the same way.
+Dynamic record constructors like ``{a:1,b:2}`` work the same way.
 
 * ``a:1,b:2`` is a generator that produces two fields.
-* ``a:1`` is a field expression, which is a standalone phrase that you can
-  execute in the REPL.
+* ``a:1`` is a field expression, which denotes a name/value pair.
 
 Expressions
 -----------

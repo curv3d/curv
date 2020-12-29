@@ -8,88 +8,58 @@ Records are used to represent:
 
 * sets of labeled arguments in a function call;
 * geometric shapes (each field is a shape attribute);
-* libraries.
+* general application data structures;
+* libraries or modules, where the fields represent APIs, not data;
+* module namespaces, where the fields are modules.
 
 Record Constructors
 ~~~~~~~~~~~~~~~~~~~
 A record constructor is an expression that constructs a record value.
-It is surrounded by brace brackets ``{...}``.
+There are three syntaxes:
 
-There are two kinds of record constructor:
+1. Dynamic records like ``{a:1, b:2}``.
+2. Scoped records like ``{a=1, b=2}``.
+3. Directory records. For example, a directory ``foo`` contains two files
+   named ``a.curv`` and ``b.curv``. The expression ``file "foo"``
+   reads this directory and returns a record value containing
+   fields ``a`` and ``b``.
 
-1. Record comprehensions. E.g., ``{a:1, b:2}``.
-2. Modules (scoped record constructors). E.g., ``{a=1; b=2;}``.
+**Dynamic records** permit you to construct a record value dynamically.
+The set of field names is determined at run time using program logic, which
+can include if statements, local variables and loops. Using the spread
+operator (``...``) you can copy the fields from one record into another,
+defining default values for missing fields and overriding existing fields.
 
-Unlike modules, record comprehensions do not introduce a scope (field specifiers can't refer to one another).
-This means you can write a record comprehension that references local variables
-with the same names as the field names, like this: ``{x:x,y:y}``.
-This makes record comprehensions the preferred syntax for specifying labeled arguments
-in a function call.  For example::
+The simplest case is a list of field expressions (``name:value``)
+separated by commas and surrounded by braces.
+The full syntax is defined in `Generators`_.
+
+Unlike scoped records, dynamic records do not introduce a scope
+(field specifiers can't refer to one another).
+This means you can write a dynamic record that references local variables
+with the same names as the field names, like this: ``{x:x, y:y}``.
+This makes dynamic records the preferred syntax for specifying labeled
+arguments in a function call. For example::
 
     rotate {angle: 45*deg, axis: Z_axis} cube
 
-Record comprehensions permit you to construct a record value
-dynamically. The set of field names is determined at run time using
-program logic, which can include if statements, local variables and loops.
+A **scoped record** is a set of mutually recursive definitions,
+separated by commas or semicolons, and enclosed in braces.
+See `Definitions`_ for more details.
 
-Modules (scoped record constructors) contain a static set of definitions
-that form a mutually recursive scope. Definitions can refer to one another,
-and you can define recursive functions. Modules are used to define libraries.
+The set of field names in a scoped record is determined at compile time.
+The definitions can refer to one another, but their order doesn't matter,
+and you can define recursive functions. Scoped record syntax is used to define
+modules, where the fields represent APIs, not data.
 See ``lib/curv/*.curv`` in the source tree for examples.
-Note that these files begin and end with ``{`` and ``}``.
+Note that these source files begin and end with ``{`` and ``}``.
 
-Record Comprehensions
-~~~~~~~~~~~~~~~~~~~~~
-A record comprehension consists of a comma- or semicolon-separated list of field generators
-inside of brace brackets. A field generator is a kind of `statement`_ that adds 0 or more
-fields to the record being constructed.
+**Directory syntax** is used to structure Curv programs consisting of
+multiple source files. See `File_Import`_ for details.
 
-A simple field generator constructs exactly one field:
-
-* *identifier* ``:`` *expression*
-* *quoted_string* ``:`` *expression*
-
-For example,
-
-* ``{a: 1, b: 2}``
-* ``{"a": 1, "b": 2}`` -- Same as above.
-
-The spread operator (``...``) interpolates all of the fields
-from one record into the record being constructed.
-
-* ``...`` *record_expression*
-
-Field generators are processed left to right. If the same field name is
-specified more than once, then the last occurrence wins.
-This can be used to specify defaults and overrides:
-
-* ``{x: 0, ... r}`` -- The same as record ``r``, except that if field ``x`` is
-  not defined, then it defaults to ``0``.
-* ``{... r, x: 0}`` -- The same as record ``r``, extended with field ``x``,
-  with ``x:0`` overriding any previous binding.
-
-Complex field generators may be composed from simpler ones
-using if statements, for loops, and other control structures, as described in `Statements`_.
-For example,
-
-* ``{for (i in 1..3) "f$i" : i}``
-  evaluates to ``{f1: 1, f2: 2, f3: 3}``.
-
-.. _`statement`: Statements.rst
-.. _`Statements`: Statements.rst
-
-Modules
-~~~~~~~
-Modules are an alternate syntax for constructing record values, and are useful when
-one field definition must reference another.
-
-A module is a semicolon-separated or semicolon-terminated list of definitions
-inside of brace brackets. The definitions form a single, mutually recursive scope,
-meaning that definitions can refer to one another, and you can define recursive functions.
-The order of the definitions doesn't matter. Duplicate definitions are an error.
-For definition syntax, see: `Blocks`_.
-
-.. _`Blocks`: Blocks.rst
+.. _`Generators`: Generators.rst
+.. _`Definitions`: Blocks.rst
+.. _`File_Import`: File_Import.rst
 
 Record Operations
 ~~~~~~~~~~~~~~~~~
@@ -111,7 +81,7 @@ Record Operations
   This allows the field name to be computed at run time.
 
 ``fields record``
-  The field names defined by ``record`` (as a list of strings).
+  The field names defined by ``record`` (as a list of symbols).
 
 ``is_record value``
   True if the value is a record, false otherwise.
