@@ -15,7 +15,9 @@ Comments have two forms:
   The sequence ``*/`` cannot occur within the comment, it will terminate
   the comment.
 
-### Identifiers
+Identifiers
+~~~~~~~~~~~
+
 ::
   identifier ::= plain_id | quoted_id
 
@@ -37,11 +39,15 @@ space, but not including control characters. It is delimited by apostrophe
 characters. You write ``'_`` to represent a literal apostrophe (this is the
 only escape sequence). See `Char_Escape`_ for the rationale.
 
-### Symbols
+Symbols
+~~~~~~~
+
 ::
   symbol ::= /'#' identifier/
 
-### Numerals
+Numerals
+~~~~~~~~
+
 ::
   numeral ::= mantissa exponent? | hexnum
   
@@ -50,8 +56,10 @@ only escape sequence). See `Char_Escape`_ for the rationale.
   digits ::= [0-9]+
   hexnum ::= '0' [xX] [0-9a-fA-F]+
 
-### Strings
-:::
+Strings
+~~~~~~~
+
+::
   string ::= '"' segment* '"'
 
   segment ::= [white space or printable ASCII character, except for " or $]+
