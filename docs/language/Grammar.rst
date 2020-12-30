@@ -106,7 +106,7 @@ The Deep Grammar: Phrases
 There is a deeper phrase-structure grammar that assigns syntactic meanings
 to most parse tree nodes, which are now called phrases.
 (Some parse tree nodes do not have an independent meaning, and are not phrases.)
-There are 7 primitive phrase types:
+There are 5 primitive phrase types:
 
 definition
   A phrase that binds zero or more names to values, within a scope.
@@ -123,96 +123,76 @@ pattern
 expression
   A phrase that computes a value.
 
-action
-  A statement that may cause debug side effects (eg, printing to the debug
-  console), or that may cause the program to panic and report an error (eg,
-  due to an assertion failure).
-
 generator
-  A statement that produces a sequence of zero or more values,
+  A generalized expression that produces a sequence of zero or more values,
   for consumption by a list constructor or record constructor.
-  An action is a generator that produces zero values.
-  An expression is a generator that produces one value.
+  Generators share syntax with the statement language (particularly one-arm
+  conditionals and for loops), but are declarative and referentially
+  transparent.
 
-assignment
-  An imperative statement that mutates a local variable.
+statement
+  A phrase that is executed to cause an effect.
+  The statement language lets you write imperative code using mutable
+  local variables, assignment statements, and while loops, but side effects
+  do not escape from the statement context. Functions remain pure
+  and Curv expressions remain referentially transparent.
 
-local definition
-  An imperative statement that defines a local variable within the scope of
-  a compound statement.
-
-Comma vs Semicolon
-------------------
-In a definition context, the comma and semicolon operator are interchangeable:
-they both construct compound definitions.
-
-In a statement context,
-* A comma phrase is a compound generator. Items in a comma phrase cannot
-  be assignment statements or local definitions, but they can be
-  expressions, debug actions and other generators.
-* A semicolon phrase is a compound statement, which is strictly more
-  general than a compound generator. A compound statement provides a
-  scope for local definitions. Items in a compound statement can include
-  local definitions and assignment statements.
-
-Semicolon is strictly more general than comma. You can just ignore the
-comma operator and use semicolon everywhere.
-
-Comma is like a "weak semicolon" that prohibits imperative semantics.
-If you see 'a,b' then you know that imperative variable mutation cannot
-occur in the transition from evaluating 'a' to evaluating 'b'.
-The phrase 'a,b' is referentially transparent, but 'a;b' may not be.
-A Curv program with no semicolons has no imperative variable-mutation
-semantics.
-
-The recommended style (for "declarative first" programming) is to use comma
-everywhere it is permitted, and use semicolon otherwise.
+.. Comma vs Semicolon
+.. ------------------
+.. In a definition context, the comma and semicolon operator are
+.. interchangeable: they both construct compound definitions.
+.. 
+.. In a statement context,
+.. * A comma phrase is a compound generator. Items in a comma phrase cannot
+..   be assignment statements or local definitions, but they can be
+..   expressions, debug actions and other generators.
+.. * A semicolon phrase is a compound statement, which is strictly more
+..   general than a compound generator. A compound statement provides a
+..   scope for local definitions. Items in a compound statement can include
+..   local definitions and assignment statements.
+.. 
+.. Semicolon is strictly more general than comma. You can just ignore the
+.. comma operator and use semicolon everywhere.
+.. 
+.. Comma is like a "weak semicolon" that prohibits imperative semantics.
+.. If you see 'a,b' then you know that imperative variable mutation cannot
+.. occur in the transition from evaluating 'a' to evaluating 'b'.
+.. The phrase 'a,b' is referentially transparent, but 'a;b' may not be.
+.. A Curv program with no semicolons has no imperative variable-mutation
+.. semantics.
+.. 
+.. The recommended style (for "declarative first" programming) is to use
+.. comma everywhere it is permitted, and use semicolon otherwise.
 
 Programs
 --------
 There are two kinds of programs.
 A source file is always interpreted as an expression.
 A command line (in the ``curv`` command line interpreter)
-can be an expression, a statement, or a definition.
+can be an expression, a generator, a statement, or a definition.
 
 Phrase Abstraction
 ------------------
 Curv has a set of generic operations for constructing more complex phrases
 out of simpler phrases. These operations work on multiple phrase types,
-and support sequencing, conditional evaluation, iteration, and local variables.
+with the same syntax and semantics, and support conditional evaluation,
+iteration, and local variables.
 
 Parenthesized phrase: ``(phrase)``
   Any phrase can be wrapped in parentheses without changing its meaning.
 
-Compound phrase: ``phrase1; phrase2;...``
-  This is an n-ary operator.
-  * If all phrases are definitions, then this is a compound definition.
-    The order doesn't matter, and the definitions may be mutually recursive.
-  * If all phrases are statements,
-    then the statements are executed in sequence.
-  * This defines a scope for local definitions, which may appear as
-    phrase arguments.
-
-Declarative compound phrase: ``phrase1, phrase2, ...``
-  This is an n-ary operator.
-  Just like ``;``, except that the resulting compound phrase is
-  referentially transparent. The argument phrases may not be imperative
-  statements (local definitions or assignments).
-
-Single-arm conditional: ``if (condition) statement``
-  The statement is only executed if the condition is true.
+Single-arm conditional: ``if (condition) phrase``
+  The phrase (a generator or statement)
+  is only executed if the condition is true.
 
 Double-arm conditional: ``if (condition) phrase1 else phrase2``
-  The phrases may be expressions or statements.
+  The phrases may be expressions, generators or statements.
 
-Bounded iteration: ``for (pattern in list_expression) statement``
-  The statement is executed once for each element in the list.
-  At each iteration,
+Bounded iteration: ``for (pattern in list_expression) phrase``
+  The phrase (a generator or statement) is executed once for each element
+  in the list. At each iteration,
   the element is bound to zero or more local variables by the pattern.
-
-Unbounded iteration: ``while (condition) statement``
-  The statement is executed zero or more times, until condition becomes false.
 
 Local variables: ``let definition in phrase``
   Define local variables over the phrase.
-  The phrase can be an expression or statement.
+  The phrase may be an expression, generator or statement.
