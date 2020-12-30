@@ -17,8 +17,8 @@ Comments have two forms:
 
 Identifiers
 ~~~~~~~~~~~
-
 ::
+
   identifier ::= plain_id | quoted_id
 
   plain_id ::= /[a-zA-Z_] [a-zA-Z_0-9]*/, except for reserved words
@@ -41,14 +41,14 @@ only escape sequence). See `Char_Escape`_ for the rationale.
 
 Symbols
 ~~~~~~~
-
 ::
+
   symbol ::= /'#' identifier/
 
 Numerals
 ~~~~~~~~
-
 ::
+
   numeral ::= mantissa exponent? | hexnum
   
   mantissa ::= digits | '.' digits | digits '.' digits
@@ -58,8 +58,8 @@ Numerals
 
 Strings
 ~~~~~~~
-
 ::
+
   string ::= '"' segment* '"'
 
   segment ::= [white space or printable ASCII character, except for " or $]+
