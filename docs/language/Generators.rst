@@ -1,128 +1,71 @@
-Generators (List and Record Constructors)
-=========================================
-A list constructor such as ``[1,2]`` consists of two parts:
+Generators
+==========
+A **generator** is a generalized expression that produces a sequence
+of zero or more values.
+
+For example, the generator ``1,2,3``, when evaluated, produces
+the values ``1 2 3``. You can try this in the REPL::
+
+    curv> 1, 2, 3
+    1
+    2
+    3
+
+Generators are part of the syntax of `list constructors`_ and
+`dynamic record constructors`_.
+For example, the list constructor ``[1,2,3]`` consists of two parts:
 
 * The brackets ``[ ]`` indicate we are constructing a list.
-* The generator ``1,2`` indicates the list elements.
+* The generator ``1,2,3`` produces the list elements.
 
-A **generator** is a phrase that produces a sequence of values.
-The example ``1,2`` produces two values.
+.. _`list constructors`: Lists.rst
+.. _`dynamic record constructors`: Records.rst
 
-Generators have an independent meaning, outside of the list constructor syntax.
-You can execute a generator in the REPL::
+Generator Syntax
+----------------
+Generators are declarative programs for specifying a sequence of values.
+The syntax for generators includes local variables, sequencing,
+conditionals and loops.
 
-    curv> 1,2
-    1
-    2
+expression
+    An expression is a generator that produces a single value.
 
-The syntax for generator phrases includes sequencing, conditional, and loop
-operators that take generators as arguments. Generators can use the full
-power of the statement language.
+g1, g2, g3
+    A sequence of generators separated by commas will evaluate
+    each generator in left-to-right order. You can optionally
+    append a trailing comma, which is ignored.
 
-Dynamic record constructors like ``{a:1,b:2}`` work the same way.
+the empty generator
+    The empty generator has no tokens, and produces no values.
+    It is found between the brackets of the empty list constructor ``[]``.
+    You can visualize the empty generator by parenthesizing it: ``()``.
 
-* ``a:1,b:2`` is a generator that produces two fields.
-* ``a:1`` is a field expression, which denotes a name/value pair.
+``(`` *generator* ``)``
+    Any generator can be parenthesized without changing its meaning.
 
-Expressions
------------
-An expression is a generator that produces exactly one value.
+``...`` *collection*
+    The **spread operator** (``...``) takes a list or record as argument.
+    It produces each element of the list, or each field of the record.
+    Fields are produced as [symbol,value] pairs.
 
-* For example, ``2`` is an expression, and ``[2]`` is a list containing
-  one element.
-* For example, ``a:2`` is a field expression,
-  and ``{a:2}`` is a record containing one field named ``a``.
+if (condition) generator
+    If the *condition* is true, then evaluate the *generator*
+    and produce its values. Otherwise, don't produce any values.
 
-*Note*: A field expression like ``a:2`` actually evaluates to
-a symbol/value pair, which in this case is ``[#a,2]``.
-So ``{[#a,2]}`` is just an ugly, less readable synonym for ``{a:2}``.
-This fact is useful in case you need to compute a field name at runtime
-using a symbol expression. For example::
+if (condition) g1 else g2
+    If the *condition* is true, then evaluate *g1*,
+    otherwise evaluate *g2*.
 
-    {[symbol("foo"++"bar"), 42]}
+for (name in list) generator
+    Iterate over the elements of *list*.
+    For each element value, bind it to *name* as a local variable
+    within *generator*, and evaluate *generator*.
 
-evaluates to ``{foobar: 42}``.
+let <definitions> in <generator>
+    Bind the <definitions> as local variables within <generator>.
 
-Sequences
----------
-A comma-separated sequence of zero or more generators
-is a compound generator that runs each constituent generator in sequence.
-Try typing each of the following generators into the REPL:
-
-+----------------+-----------------------+
-| This generator | produces these values |
-+----------------+-----------------------+
-|                |                       |
-+----------------+-----------------------+
-| ``1``          | ``1``                 |
-+----------------+-----------------------+
-| ``1,2``        | ``1  2``              |
-+----------------+-----------------------+
-| ``1,2,3``      | ``1  2  3``           |
-+----------------+-----------------------+
-
-If there is at least one item, then you can include an optional trailing comma.
-If we enclose each of the above generators in square brackets,
-then we get the standard syntax for list constructors::
-
-    []
-    [1]      [1,]
-    [1,2]    [1,2,]
-    [1,2,3]  [1,2,3,]
-
-*Note*: Any generator can be parenthesized without changing its meaning.
-So ``()`` is the empty generator, and ``(a,b)`` generates first *a*, then *b*.
-This becomes important later, when we introduce conditional and loop operators
-that take generators as arguments.
-
-For example, if we nest one sequence in another,
-then we discover that the following generators are equivalent::
-
-    1, (2, 3)
-    (1, 2), 3
-    1, 2, 3
-
-The Spread Operator
--------------------
-The **spread operator** (``...``) produces all of the items in its argument,
-which is a list or record. Try it in the REPL::
-
-    curv> ...[1,2]
-    1
-    2
-    curv> ...{a:1,b:2}
-    a:1
-    b:2
-
-The spread operator allows you to interpolate all of the items in a list
-or record into another list or record.
-
-In a record, fields are processed left to right. If the same field name is
-specified more than once, then the last occurrence wins.
-This can be used to specify defaults and overrides:
-
-* ``{x: 0, ... r}`` -- The same as record ``r``, except that if field ``x`` is
-  not defined, then it defaults to ``0``.
-* ``{... r, x: 0}`` -- The same as record ``r``, extended with field ``x``,
-  with ``x:0`` overriding any previous binding.
-
-List Comprehensions
--------------------
-Some programming languages (eg, Python, Haskell) provide
-**list comprehensions**, which are short declarative programs
-that generate the elements of a list, written in a special compact syntax.
-
-In Curv, there is no special "list comprehension" syntax,
-but statement operators like ``if``, ``let`` and ``for``
-can be applied to generators. You can use the following syntax
-to simulate list comprehensions:
-
-* ``if (condition) generator`` is a conditional generator.
-* ``let <definitions> in generator`` defines local variables
-  within a generator.
-* ``for (<variable> in <list>) generator`` runs a generator in a loop,
-  once for each element of a list.
-
+Example
+-------
 Here is a list constructor that yields the list ``[4,16,36,64,100]``,
 by computing the even squares between 1 and 100::
 
@@ -133,7 +76,10 @@ by computing the even squares between 1 and 100::
                     n
     ]
 
-Here's a comparison of the same list comprehension written in several languages.
+In Haskell, Python, and a few other languages, you would accomplish the
+same thing using a *list comprehension*. Curv's generator syntax provides
+a superset of the capabilities of list comprehensions in these languages.
+Here's a syntax comparison:
 
 =======  ===========================================================
 Haskell  ``[n | x <- [1..10], let n = x*x, n `mod` 2 == 0]``
@@ -141,12 +87,16 @@ Python   ``[n for x in range(1,11) for n in (x*x,) if n % 2 == 0]``
 Curv     ``[for (x in 1..10) let n = x*x in if (n `mod` 2 == 0) n]``
 =======  ===========================================================
 
-Statements
-----------
-You can use the entire statement language to write generators.
-A generator can be used in any context where a statement is legal.
-You have full access to imperative programming, including mutable local
-variables, assignment statements, and while loops.
+Imperative Generators
+---------------------
+You can use the imperative statement language to write generators.
+This gives you the machinery of mutable local variables, assignments,
+and while loops.
+
+The syntax is: you write a compound statement (imperative
+statements separated by semicolons), and you insert generators
+*as statements* into the imperative program.
+
 This example produces ``[1,2,3,4,5]``::
 
     [
@@ -159,6 +109,3 @@ This example produces ``[1,2,3,4,5]``::
 
 The statement ``i;`` is an expression generator that produces each
 list element.
-
-The reason this works is composability: every Curv language construct can
-be composed with every other language construct, without restriction.
