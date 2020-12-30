@@ -1,6 +1,76 @@
 Grammar
 =======
 
+The Lexical Syntax
+------------------
+Curv programs are written in ASCII. Unicode and UTF-8 will come later.
+
+Tokens are separated by white-space and/or comments.
+White-space characters are space, form-feed, new-line, carriage return,
+horizontal tab, and vertical tab.
+Comments have two forms:
+
+* A single-line comment begins with ``//`` and extends to the end of the line.
+* A multi-line comment is a sequence of characters between ``/*`` and ``*/``.
+  The sequence ``*/`` cannot occur within the comment, it will terminate
+  the comment.
+
+### Identifiers
+::
+  identifier ::= plain_id | quoted_id
+
+  plain_id ::= /[a-zA-Z_] [a-zA-Z_0-9]*/, except for reserved words
+  reserved_word ::= '_' | 'by' | 'do' | 'else' | 'for' | 'if' | 'in' | 'include'
+        | 'let' | 'local' | 'parametric' | 'test' | 'var' | 'where' | 'while'
+  quoted_id ::= /['] id_segment* [']/
+      id_segment ::= plain_char | id_escape
+      plain_char ::= /[space or printable ASCII character, except ']/
+      id_escape ::= ['] '_'
+
+Quoted identifiers exist so that you can include spaces or punctuation
+in an identifier, or use a reserved word as an ordinary identifier.
+One motivation is that identifiers appear as widget labels in the GUI
+when you display a parametric shape.
+
+A quoted identifier may contain any printable ASCII character, including
+space, but not including control characters. It is delimited by apostrophe
+characters. You write ``'_`` to represent a literal apostrophe (this is the
+only escape sequence). See `Char_Escape`_ for the rationale.
+
+### Symbols
+::
+  symbol ::= /'#' identifier/
+
+### Numerals
+::
+  numeral ::= mantissa exponent? | hexnum
+  
+  mantissa ::= digits | '.' digits | digits '.' digits
+  exponent ::= [eE] [+-]? digits
+  digits ::= [0-9]+
+  hexnum ::= '0' [xX] [0-9a-fA-F]+
+
+### Strings
+:::
+  string ::= '"' segment* '"'
+
+  segment ::= [white space or printable ASCII character, except for " or $]+
+    | '"_'
+    | '$_'
+    | '${' list '}'
+    | '$[' list ']'
+    | '$(' list ')'
+    | '$' identifier
+    | '$' not-followed-by [_a-zA-Z{[(]
+    | newline (space|tab)* '|'
+    | newline (space|tab)* followed-by '"'
+
+Within a quoted string, the special characters ``"`` and ``$`` are escaped
+using ``"_`` and ``$_``. See `Char_Escape`_ for the rationale. String syntax
+is intertwined with the grammar due to the ``$`` substitution syntax.
+
+.. _`Char_Escape`: rationale/Char_Escape.rst
+
 The Surface Grammar
 -------------------
 The surface grammar is a simplified grammar that describes the hierarchical
@@ -17,7 +87,7 @@ precedence and ``postfix`` being the highest precedence::
     semicolons ::= optitem | semicolons ';' optitem
     optitem ::= empty | item
 
-  item ::= ritem | ritem `where` ritem
+  item ::= ritem | ritem 'where' ritem
   
   ritem ::= pipeline
     | '...' ritem
@@ -68,38 +138,9 @@ precedence and ``postfix`` being the highest precedence::
 
   primary ::= identifier | symbol | numeral | string | parens | brackets | braces
 
-  identifier ::= plain_id | quoted_id
-    plain_id ::= /[a-zA-Z_] [a-zA-Z_0-9]*/, except for reserved words
-      reserved_word ::= '_' | 'by' | 'do' | 'else' | 'for' | 'if' | 'in' | 'include'
-        | 'let' | 'local' | 'parametric' | 'test' | 'var' | 'where' | 'while'
-    quoted_id ::= /['] id_segment* [']/
-      id_segment ::= plain_char | id_escape
-      plain_char ::= /[space or printable ASCII character, except ' or $]/
-      id_escape ::= /'$.'/ | /'$-'/
-
-  symbol ::= /'#' identifier/
-
-  numeral ::= hexnum | mantissa | /mantissa [eE] [+-]? digits/
-    mantissa ::= /digits/ | /'.' digits/ | /digits '.' digits/
-    digits ::= /[0-9]+/
-    hexnum ::= /'0x' [0-9a-fA-F]+/
-
-  string ::= /'"' segment* '"'/
-    segment ::= /[white space or printable ASCII character, except for " or $]+/
-      | /'$.'/
-      | /'$='/
-      | /'${' list '}'/
-      | /'$[' list ']'/
-      | /'$(' list ')'/
-      | /'$' identifier/
-      | /newline (space|tab)* '|'/
-      | /newline (space|tab)*/ followed by /'"'/
-
   parens ::= '(' list ')'
   brackets ::= '[' list ']'
   braces ::= '{' list '}'
-
-  C style comments, either '//' to end of line, or '/*'...'*/'
 
 The Deep Grammar: Phrases
 -------------------------
