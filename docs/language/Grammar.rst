@@ -155,7 +155,7 @@ The Deep Grammar: Phrases
 There is a deeper phrase-structure grammar that assigns syntactic meanings
 to most parse tree nodes, which are now called phrases.
 (Some parse tree nodes do not have an independent meaning, and are not phrases.)
-There are 5 primitive phrase types:
+There are 6 primitive phrase types:
 
 definition
   A phrase that binds zero or more names to values, within a scope.
@@ -171,6 +171,8 @@ pattern
 
 expression
   A phrase that computes a value.
+
+l
 
 generator
   A generalized expression that produces a sequence of zero or more values,
