@@ -172,7 +172,8 @@ pattern
 expression
   A phrase that computes a value.
 
-lo
+locative
+  The subset of expressions that are permitted on the left side of an assignment statement.
 
 generator
   A generalized expression that produces a sequence of zero or more values,
