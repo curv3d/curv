@@ -172,7 +172,7 @@ pattern
 expression
   A phrase that computes a value.
 
-l
+lo
 
 generator
   A generalized expression that produces a sequence of zero or more values,
