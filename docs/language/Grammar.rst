@@ -15,8 +15,10 @@ Comments have two forms:
   The sequence ``*/`` cannot occur within the comment, it will terminate
   the comment.
 
-### Identifiers
+Identifiers
+~~~~~~~~~~~
 ::
+
   identifier ::= plain_id | quoted_id
 
   plain_id ::= /[a-zA-Z_] [a-zA-Z_0-9]*/, except for reserved words
@@ -38,12 +40,16 @@ space, but not including control characters. It is delimited by apostrophe
 characters. You write ``'_`` to represent a literal apostrophe (this is the
 only escape sequence). See `Char_Escape`_ for the rationale.
 
-### Symbols
+Symbols
+~~~~~~~
 ::
+
   symbol ::= /'#' identifier/
 
-### Numerals
+Numerals
+~~~~~~~~
 ::
+
   numeral ::= mantissa exponent? | hexnum
   
   mantissa ::= digits | '.' digits | digits '.' digits
@@ -51,8 +57,10 @@ only escape sequence). See `Char_Escape`_ for the rationale.
   digits ::= [0-9]+
   hexnum ::= '0' [xX] [0-9a-fA-F]+
 
-### Strings
-:::
+Strings
+~~~~~~~
+::
+
   string ::= '"' segment* '"'
 
   segment ::= [white space or printable ASCII character, except for " or $]+
@@ -148,7 +156,7 @@ The Deep Grammar: Phrases
 There is a deeper phrase-structure grammar that assigns syntactic meanings
 to most parse tree nodes, which are now called phrases.
 (Some parse tree nodes do not have an independent meaning, and are not phrases.)
-There are 5 primitive phrase types:
+There are 6 primitive phrase types:
 
 definition
   A phrase that binds zero or more names to values, within a scope.
@@ -164,6 +172,9 @@ pattern
 
 expression
   A phrase that computes a value.
+
+locative
+  The subset of expressions that are permitted on the left side of an assignment statement.
 
 generator
   A generalized expression that produces a sequence of zero or more values,
