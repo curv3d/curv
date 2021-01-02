@@ -1,0 +1,40 @@
+This is about reifying unevaluated generators.
+
+[Previously, I thought generators were statements.]
+A generator is a generalized expression, part of the declarative language.
+A statement is part of the imperative language. Even though generators and
+statements share some syntax (one-arm if and for loops), they are different.
+We should have different constructs for an unevaluated statement (a procedure)
+vs an unevaluated generator (lazy list or generator function).
+
+Benefits of generator functions:
+* Abstraction over generators.
+* Make it possible to replace any use of `for` with tail recursion.
+* Make it possible to use `match` in any context where `if` is legal.
+
+Pattern-matching conditionals over generators:
+
+ 1. A `switch` generator. eg, `switch val in [pattern->generator, ...]`
+    as magic syntax. Recursive references are supported in this magic syntax.
+    This syntax would be shared with statements (a switch statement).
+
+ 2. First we give a meaning to 'pattern->generator'. It returns some value.
+    Then we build a conditional from that building block.
+    * 'pat->gen' appears to be a 'generator function'. A call to such a function
+      is a generator, not an expression.
+    So just use exactly the same syntax for match over generators as match
+    over expressions.
+    Function call is ambiguous: either an expression or a generator.
+    Generator functions are just functions: is_func is true.
+
+ 3. A unevaluated generator is #[generator], which is evaluated
+    using '... <unevaluated generator>'.
+    Then write
+        ... arg >> match [
+            pat1 -> #[gen1],
+            pat2 -> #[gen2],
+        ]
+    Recursive references are permitted within #[gen].
+    A generator thunk has predicate `is_generator`.
+    Could use a generator thunk as an argument to my 'linear union' operator.
+    Or see the [[structure/Procedural_Data]] essay.

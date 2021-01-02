@@ -1,0 +1,5 @@
+There should be a 'curv fmt' command to convert Curv source code to canonical
+form. What is this canonical form?
+
+commas vs semicolons
+--------------------

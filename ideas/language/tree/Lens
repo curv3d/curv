@@ -132,7 +132,52 @@ slice [L1,L2,L3,...]
     Not the same as string slicing. put(slice X) will not allow you
     to change the number of elements in an array.
 
+    I think that slice is a monoid: an associative binary operator slice[L1,L2]
+    whose identity is the identity lens, aka slice[], aka path[].
+    (This is based on the slicing code I've written.)
+
 Abstract data types can provide lenses for indexing into ADT instances.
+
+Lens Algebra
+------------
+Ad-hoc notation:
+    i,j,k   indexes (lens values)
+    a,b,c   arbitrary values (that are indexed by lenses)
+    a@i     index a value 'a' using index 'i'
+    a@i:n   amend the substructure of 'a' indexed by 'i' to contain 'n'
+    s       a scalar index (list index or record index)
+    id      the identity index
+    [i,j]   a pick index
+    i+j     a path, path[i,j]
+    i*j     a slice, slice[i,j]
+Laws:
+    a@id == a
+  pick semantics
+    a@[i,j] == [a@i, a@j]
+  path is a monoid
+    id+i == i
+    i+id == i
+    (i+j)+k == i+(j+k)
+  path semantics
+    a@(i+j) == a@i@j
+  slice is a monoid
+    id*i == i
+    i*id == i
+    (i*j)*k == i*(j*k)
+  slice semantics
+    s*i == s+i              -- traditional
+    s*[i,j] == [s*i,s*j]    -- traditional
+1       i*[j,k] == [i*j,i*k] ??? WRONG
+    s*(i+j) == 
+        consider that [0,2]+[1,0] == [2,0]
+        then 0*([0,2]+[1,0]) == 0*[2,0]
+                             == 0*[0,2] + [1,0]
+2       i*(j+k) == (i*j)+k ???
+3   [i,j]*k == [i*k,j*k]
+
+    [i,j]*[k,m]
+        == [[i,j]*k, [i,j]*m]   by 1    <-- wrong
+        == [i*[k,m], j*[k,m]]   by 3    <-- correct (empirical testing)
 
 Lens as a Function
 ------------------

@@ -26,11 +26,13 @@ Resolved issues (DONE):
  * Theory 1 (use semicolon everywhere) now works, modulo () in stmt context.
  * Theory 3 (use comma for compound definitions, semicolon for compound
    statements) now works, modulo () in stmt context.
+ * () works as a null statement in stmt context -- all theories.
+ * 'id:expr' is an expression
+ * 'expr1,expr2,expr3' is a statement in statement context -- theory 4.
 
 Unresolved issues:
- * () should work as a null statement in stmt context -- all theories.
- * 'id:expr' is an expression
- * 'expr1,expr2,expr3' should be a statement in statement context -- theory 4.
+ * Theories 3+4 claim that comma is an associative binary operator.
+   But it isn't in the pattern language.
  * () as a list in expr context should be removed.
  * (expr1,expr2,expr3) as a list in expr context should be removed.
 

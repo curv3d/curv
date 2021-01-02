@@ -2,12 +2,83 @@ A procedure is a lambda-abstraction of a statement.
 
 Benefits:
 * Make it possible to replace any use of `for` with tail recursion.
+  -- There is a `for` generator and a `for` statement. Different.
 * Make it possible to use `match` in any context where `if` is legal.
-  Eg, in a list comprehension.
+  Eg, in a list comprehension. But this is generators. See [[Generators]].
 * Once I have an interactive debugger, and a rich set of actions for
   controlling the debugger, then procedures are used as debugger scripts.
 * print, error, warning, assert become values.
 * Another step in making it easier to port imperative code?
+
+Generators are not Statements
+-----------------------------
+A generator is a generalized expression, part of the declarative language.
+A statement is part of the imperative language. We should have different
+constructs for an unevaluated generator and an unevaluated statement.
+The latter is a procedure. The former is something else, maybe a lazy list.
+
+Kinds of Procedures (Dec 2020)
+------------------------------
+Here are two viable kinds of procedures:
+
+ 1. Procedure
+    This is a statement, reified as a value. When executed, it can have
+    debug effects, and that's it. Recursive procedures are supported.
+    There's not much utility here without a richer set of debug actions.
+
+    Possible constructor syntax:
+        proc <statement>
+    In offside syntax,
+        p x = proc:
+            stmt1
+            stmt2
+
+    Possible call syntax: <statement> ::= !<proc>
+
+    Most of the builtin metafunctions can be replaced by procedure values.
+    !print x; !warning x; !assert x
+
+ 2. Mutate Function, aka Mutator,
+    aka Ref Function (call-by-reference function)
+
+    This is a statement abstracted over mutable variables, but externally
+    it behaves like an ordinary function. The benefit is using 'linear
+    logic' and imperative code to efficiently mutate a data structure.
+    You invoke it by passing a locative to mutate.
+    The effect is to mutate the locative. There are no generator effects,
+    those would be side effects. Mutators are supported by SubCurv:
+    in GLSL, function parameters can have the 'inout' attribute.
+
+    Possible contructor syntax:
+        mutate <locpattern> in <statement>
+        ref <locpattern> -> <statement>
+    (For offside syntax, we prefer a keyword preceding the statement.)
+
+    Possible call syntax: <statement> ::= <locative>!<mutator>
+    * A mutator can be called like an ordinary function, mapping a value
+      argument onto a value result. Internally, the value is bound to the
+      locative formal parameters, the statement body is executed, the contents
+      of the formal parameters are reconstituted into the result value.
+    * A function can be invoked as x!f, same as x := f x
+      This syntax is chainable, and is evocative of a chain of mutator
+      methods in Object Oriented Programming.
+
+    x!negate; x!reverse
+    x!reverse!negate
+
+    In imperative languages, it is idiomatic to create two versions of each
+    function that can be efficiently implemented by mutating its argument:
+    a functional version, and a mutating version.
+    * In Scheme, '(reverse x)' vs '(reverse! x)'.
+    * In Python, 'reversed(x)' vs 'x.reverse()'.
+    In Curv, there is only one 'reverse' function, and the syntax shows
+    unambiguously whether mutation is occurring or not.
+        x >> reverse
+        x!reverse
+
+This does not provide full abstraction over the statement language.
+It separately provides abstraction over assignment statements and generators,
+filling in the two biggest holes.
 
 Challenge: Mutable Variables
 ----------------------------

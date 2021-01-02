@@ -1,0 +1,82 @@
+Full Phrase Abstraction
+=======================
+Inspired by ISWIM and R.D.Tennent's Principles of Programming Languages.
+
+Curv's main phrase types:
+* definition
+* pattern
+* expression
+* locative
+* generator
+* statement
+
+Every phrase type supports abstraction:
+* For any phrase, you can abstract out a semantically meaningful subphrase,
+  convert the phrase into a function body and the subphrase into a parameter.
+* For any phrase, you can abstract out a semantically meaningful subphrase,
+  convert the phrase into a let body and the subphrase into a let binding.
+* As a corollary, there is a 1-1 map between let abstractions and functional
+  abstractions.
+
+Let's say I want to support full abstraction for all phrase types.
+Why? It's so that library developers have the power to create high
+level abstractions and embedded DSLs for various kinds of modelling.
+The means for defining these abstractions is at the implementation level
+(and can be complicated), but the means for invoking these abstractions
+is at the modelling level (and must be clean and simple). The semantics at
+the modelling level must be clean and simple.
+
+Right now, user-defined names can only be bound to values. Tennent says we
+can introduce new binding mechanisms, for binding names to any phrase type.
+(We have this for primitive names: builtin names can be bound to metafunctions,
+and reserved words are a weird kind of binding.) If we keep the value-only
+restriction, we can instead introduce syntax for reifying non-expressions as
+values, and for converting these values back to the original phrase type.
+It's a tradeoff. The syntax for raising/lowering phrases to/from values is
+noisy, but it allows user-defined functions at the parametric modelling level
+to take these things as arguments and pass them on to library abstractions,
+without introducing new function types or new binding types.
+
+Tennent's programme can create too much expressive power, destroying the simple
+local semantics of Curv. Full unrestricted abstraction of mutable local
+variables in the value space results in references and shared mutable state.
+But the goal is to be able to abstract over any phrase with respect to
+any subphrase, and we can achieve this without introducing non-local semantics.
+For example, lenses are a local way to abstract over complex locatives.
+
+Expressions
+-----------
+Mission accomplished.
+
+Locatives
+---------
+* 'locative@lens' is a locative->locative functional transformation.
+* 'locative!function' is abstraction over an assignment statement.
+* mutate functions abstract a locative parameter from a statement.
+
+Generators
+----------
+* #[generator] is an unevaluated generator, type 'is_generator'.
+
+Definitions
+-----------
+* Let abstraction over a definition: considered it, but use cases are limited
+  relative to the cost of implementation and documentation.
+* Lambda abstraction over a definition. Hard to implement. Macros would help,
+  but in the current design, definitions are recognized before names are bound.
+  Macros have crazy semantics that make programs hard to parse and understand.
+
+Patterns
+--------
+* Transform patterns (pat <: func) are a kind of user-defined pattern operator.
+
+Statements
+----------
+* Mutate functions abstract a locative parameter from a statement.
+* A proc value is an unevaluated statement, but you can't capture nonlocal
+  mutable variables, so the utility is low.
+* To define statement abstractions, with statement arguments that can reference
+  nonlocal mutable variables, without breaking the expression language:
+  perhaps hygienic macros. The actual requirement is something less powerful
+  than functions, so that mutable variables aren't captured by imperative
+  closure values that leak into value/expression space.

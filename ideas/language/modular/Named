@@ -1,0 +1,375 @@
+Named Functions and Modules
+===========================
+Store documentation and provenance metadata in function/module values.
+
+Named functions and modules are the components out of which library APIs
+are built. They are the modules and functors of the Modular Programming
+proposal. Named modules are not used as instances of abstract data types,
+but named functions are used as constructors of ADT instances.
+
+This is a transitional design, not the final Curv 1.0 design.
+
+This is a variant of the "branded values" proposal.
+ * Weaker, because it doesn't require the printed representation to be globally
+   unambiguous, or that value equality is isomorphic to printed rep equality.
+   (This is a transitional design, I'll worry about that other stuff later.)
+ * Named values may contain documentation metadata.
+
+Named Functions
+---------------
+A function literal like `x->x+1` constructs a function value that prints
+as a lambda expression. If you bind this to a name using
+    incr = x->x+1
+then by the law of substitution, `incr` is just an alias for x->x+1,
+and `incr` also prints as a lambda expression.
+
+To define a named function, you can write:
+    func incr = x->x+1
+    func incr x = x + 1
+and `incr` prints as the name `incr`. The `func` keyword signals that we are
+constructing a named function value. The old definition syntax
+    incr x = x + 1
+is deprecated.
+
+In `func f = expr`, the value of `expr` must match the `is_func` predicate
+or an error is reported.
+
+If a *.curv source file occurs as an element of a directory record, and the
+contents of the source file are a function expression, then use `func` as the
+first token in the file to define a named function.
+
+How are anonymous recursive functions printed?
+* An earlier proposal suggests printing as a `let` expression:
+      let fac n = ...fac(n-1)... in fac
+* However, we could impose the restriction that recursive functions must
+  be named (the definition must use 'func').
+    fac = n -> if (n <= 0) 1 else n * fac(n-1)
+        ERROR: recursive function 'fac' must be declared using 'func' keyword.
+    func fac = n -> if (n <= 0) 1 else n * fac(n-1)
+    func fac n = if (n <= 0) 1 else n * fac(n-1)
+  This simplifies the job of printing a recursive function.
+  It also simplifies the implementation of recursive functions.
+  (I can avoid the recursive refcounting proposal for now.)
+* This simplification would not prohibit an operation for stripping the name
+  from a named recursive function to expose the lambda expression.
+
+Builtin functions like `sin` are named functions.
+
+Function Documentation
+----------------------
+Named functions can contain embedded documentation, which is printed
+by the `help` command in the REPL.
+
+The `func` keyword can be preceded by a multi-line comment, which is used
+as a docstring and embedded in the function value.
+
+Named Modules
+-------------
+A module is a named record, defined as
+    module name = record_expr
+The `module` keyword works like `func`: it can be preceded by a doc comment,
+and it can appear as the first token in a source file.
+
+We should support mutually recursive functions that exist in different
+named modules. There are good reasons to support this in modular programming.
+
+A module constructor is a set of definitions surrounded by {}.
+Some of the definitions are 'named' (prefixed with func or module),
+and some are not. We store a boolean flag with each field, in the module's
+metadata, indicating which fields are named. This is separate from the field
+values. There is a distinction between a named field, and an anonymous field
+that happens to be bound to a named value.
+
+A module is a record with extra metadata, including this field metadata.
+'Module' is a subtype of 'Record'. All the algebraic laws for records also
+apply to modules.
+
+`module m = r` constructs a new value 'm' which has the name 'm' but
+inherits all the other properties of record r, including its field metadata.
+`m.f` returns a named value, whose name is `m.f`, if `f` is a named field of m.
+
+Constructors
+------------
+A constructor is a function that returns a named value.
+
+Anonymous constructor:
+    param ->func expr
+    param ->module expr
+
+func f x y = x+y (curried function) is equivalent to
+    func f = x ->func y -> x+y
+A partially applied named curried function is a constructor.
+And this might motivate a different syntax for curried lambdas:
+    x y -> x+y
+is short for
+    x ->func y -> x+y
+
+'module f x = mexpr' is equivalent to
+    func f x = module mexpr
+
+Related proposals
+-----------------
+But, I also intend to print function values as constructor expressions
+that reconstruct the original value.
+ * A builtin function prints as the function name.
+ * A function from a (nonrecursive) lambda expression prints as a lambda
+   expression.
+ * A function from a recursive lambda expression prints as
+      let fac n = ...fac(n-1)... in fac
+
+In addition, there is a proposal for branded record and function values.
+A branded value is printed as a constructor expression (global variable name,
+function call or selection), rather than as a record or function literal.
+Builtin functions are considered branded, and print as a function name.
+There are also user-defined branded functions and records.
+The limitation is that there exists a global context in which all such
+constructor expressions can be evaluated to reconstruct the value, which
+means that a function value from a local function definition can't be branded,
+even though we do label such function values in Curv 0.4.
+
+    This includes a definition syntax for named, branded record fields.
+    Something like:
+        @name = <rec-or-func>;
+        def name = <rec-or-func>;
+        term name = <rec-or-func>;
+        named name = <rec-or-func>;
+        module name = <rec-or-func>;
+        labelled name = <rec-or-func>;
+    Which is related to the 'func' labelled function definition syntax.
+    Notes:
+     * A 'module' is an abstract, labelled, record or module value.
+
+    In a *.curv source file referenced by a directory (directory syntax),
+    the source file begins with '@' in one version of the proposal.
+
+Finally, I want a 'help' function for displaying the documentation for a
+function value. 'help f' evaluates 'f' as a function expression, then returns
+a multi-line documentation string. Function name, parameter documentation,
+plus a general doc string. Probably this is REPL only.
+
+    Syntax is not designed yet. The metadata will include a function name,
+    even if the function is locally defined and not branded. It will include
+    a function comment, and parameter comments. A keyword like 'func' (or
+    'def' or 'term') will be needed to trigger the collection and storage of
+    this metadata in the case where a function is defined with a combinator.
+
+Combined Proposal
+-----------------
+Use same syntax for labelled and branded func/record definitions.
+Extend this syntax with main docstring and parameter/field docstrings.
+
+When this syntax is used, we collect and store metadata.
+When this syntax is not used, we don't collect and store metadata.
+We don't decide based on the syntax of the definiens expression (eg, is it
+a lambda expression), because this breaks the algebra of programs.
+You should be able to substitute a lambda expression for another expression
+that computes the same value without changing the meaning of the program.
+
+Docstring Syntax
+----------------
+I don't want to overthink or overengineer the doc syntax.
+This is a transitional design, so I'm going for the simplest design that works,
+and I'll get experience with this before choosing a final design.
+
+I don't need any new syntax for doc strings. If I just do what pydoc does,
+it's fine. Pydoc doesn't require string-literal docstring syntax, it will
+collect a documentation string from a block comment preceding a definition.
+I'll just rely on block comment syntax.
+
+Quote from pydoc:
+  For modules, classes, functions and methods, the displayed documentation
+  is derived from the docstring (i.e. the __doc__ attribute) of the object,
+  and recursively of its documentable members. If there is no docstring,
+  pydoc tries to obtain a description from the block of comment lines just
+  above the definition of the class, function or method in the source file,
+  or at the top of the module.
+
+In Curv, a labelled value definition (function or module or constructor) can be
+preceded with a block comment, which provides the doc string.
+
+I considered collecting docstrings from formal parameter comments,
+like in doxygen. However, I won't do this. First, it doesn't work for
+functions defined using combinators. Second, there's no need (Python doesn't
+do this: the parameter documentation is embedded in the function's docstring).
+So this idea is overengineering.
+
+What about per-module-field docstrings?
+ 1. Internal field documentation.
+    Maybe only labelled values in a module have their own documentation,
+    similar to how in Python, only "documentable members" of a class or module
+    have documentation. To collect documentation from a module, you get the
+    module's docstring, then you iterate over the fields, and for each element
+    that is a labelled value, you collect that labelled value's documentation.
+    (Note that a labelled value field can be defined as 'x = labelled_val_expr',
+    so in this case the documentation string is actually defined elsewhere.)
+    Fields that don't have internal documentation can be documented in the
+    module's central docstring. This design nicely explains how unlabelled
+    definitions like
+        x = expr
+        [a,b] = expr
+        include expr
+    can produce fields with docstrings. It's compositional. To display module
+    documentation, first display the module's docstring (which will end with
+    docs for otherwise undocumented fields), then display the docstrings for
+    each member value that has one. I should start with this design, because
+    anything else will be a superset. And hey, it's good enough for Python.
+ 2. External field documentation.
+    Maybe I want all the members of a labelled module to have their own doc
+    strings, even definitions like 'pi' in stdlib. This gets complicated:
+    we have to define the precedence of external vs internal docstrings,
+    and define rules for multi-variable definitions. Later.
+
+Data Model
+----------
+A brand or formula is:
+  <brand> ::= <identifier>
+            | <brand> . <identifier>
+            | <brand> <argument>
+  <formula> ::= <symbol>                // variable formula
+              | <module> . <symbol>     // field selection formula
+              | <function> <argvalue>   // function call formula
+
+Previously,
+  Storing the original constructor function value in a call formula is useful
+  for "customizing" a parametric model (tweaking some of the parameters).
+But parametric shapes are not named modules in this design.
+
+Previously,
+  Storing the original module value in a field formula may also be useful,
+  but depending on implementation, it might result in a recursive object cycle
+  (requiring a tracing garbage collector or cyclic reference counts), or we can
+  avoid that by applying the label to the field value each time the '.' operator
+  is evaluated. Alternatively, instead of storing a module value, we store the
+  module's formula.
+But in this design, a formula only needs to be purely symbolic. I don't have
+a rationale for storing function and module values in a formula.
+
+  <formula> ::= <symbol>               // variable formula
+              | <formula> . <symbol>   // field selection formula
+              | <formula> <argvalue>   // function call formula
+
+A label is a pair of [formula, docstring]. The docstring may be an empty string.
+
+A function has an optional label, and orthogonal to that,
+it has a constructor flag. If the constructor flag is true, the function
+is called a constructor.
+
+A record has an optional label, and orthogonal to that, each field
+has a constructor flag.
+
+Labelled Definition Syntax
+--------------------------
+I don't have a syntax I like; I don't know what keywords or symbols to use.
+It is an esthetic and linguistic problem of choosing the right words.
+As a stopgap measure, here is a temporary syntax.
+
+<definition> ::=
+  labelled <singleton-pattern> = <function-or-module-expression>
+  labelled <id> <param>... = <expression>
+      same as labelled <id> = <param> -> labelled ... -> <expression>
+  constructor <id> <param>... = <function-or-module-expression>
+      same as labelled <id> = <param> -> labelled ... -> labelled <expression>
+
+In the case of directory syntax, the first token in a *.curv file appearing
+as a directory entry can begin with the 'labelled' keyword,
+and that results in a labelled definition.
+
+<program> ::=
+  labelled <expression>
+
+In all cases, the keyword 'labelled' or 'constructor' can be preceeded by a
+block comment, which will form the doc string for the labelled function or
+module.
+
+Syntax alternative: In the Branded proposal, the keyword 'labelled' is
+replaced by '@', and each variable in a definiendum pattern can be either
+prefixed or not prefixed by '@'. But this doesn't take doc strings into
+account. In the present syntax, the entire definition is prefixed by
+    // <doc comment> <nl> labelled <definition>
+
+Syntax alternative: In the Branded proposal, an anonymous constructor
+is 'a -> @b' and a labelled constructor definition is '@f a = @b'.
+(Instead of two special tokens, => and constructor, we only need one.)
+And also, we could put a docstring before the second @ in a constructor:
+    <doc> @f a = <doc>@b
+    <doc> @f = a -> <doc>@b
+
+A module constructor is a scoped record constructor containing one or more
+labelled field definitions. When an anonymous module value is bound as the
+definiens in a labelled definition, the label from that definition is combined
+with field names and applied to the labelled fields in the module.
+
+A constructor expression is like a lambda expression with -> replaced by =>.
+When an anonymous constructor value is bound as the definiens in a labelled
+definition, the label from that definition is applied to the result of calling
+the constructor function.
+
+We need anonymous constructor values as a first class concept, otherwise we
+can't use combinators to compute a constructor before binding it to a label.
+
+Labelled Value Semantics
+------------------------
+An anonymous module value is printed as a sequence of singleton definitions
+within curly braces, where labelled definitions are prefixed with 'labelled'.
+
+An anonymous constructor value is printed as <pattern> ->labelled <expr>.
+
+A labelled record, module, function or constructor is printed as a label
+expression.
+
+The 'open' function takes a labelled value as an argument, strips the label,
+and returns the value component of the label/value pair. Labels can be stacked.
+If you apply 'open' enough times to strip all the labels, you get an anonymous
+record, module, function or constructor. The 'open' function is used to look
+inside a data abstraction, perhaps during debugging. Or it is applied in the
+body of a constructor to strip an existing label and apply a new one.
+    constructor cube n = open (box [n,n,n]);
+
+'include R' and '... R' ignore the label of R.
+
+'{include R, ***}' preserves the labelled status of the included fields.
+    Rationale: if you are including a library API into a superset library
+    module, you want to preserve API labels.
+'...R' preserves the labelled status of the included fields.
+    * For consistency with 'include', so as not to create a useless distinction
+      between "records" and "modules".
+    * Also, it is plausible to use a record comprehension to build an API.
+    When records are used purely as data structures, they don't need or use
+    field labels, but that's not a good reason to disallow the use of
+    comprehension syntax to build a module.
+So, a record has an extra bit of information per field: is it labelled?
+
+a==b
+    Two labelled values are equal if they have equal labels and equal payloads.
+    (So we are comparing documentation strings for equality?)
+
+Products, Sums and Subtypes
+---------------------------
+Based on my requirements, it seems like I want the equivalents of nominally
+typed product types, sum types and subtypes.
+
+Problem: Having two ways to encode data: (1) the original Curv style,
+writing out structured data literals directly (without having to declare
+types first), and (2) first defining nominal types & type constructors,
+and then invoking those constructors. Which would suck: warring language
+constructs, which ones do I use? Can I unify these two approaches?
+
+A Haskell algebraic type such as
+    data T = Foo | Bar a
+could be represented by these constructors:
+    labelled Foo = {};
+    labelled Bar x =labelled {};
+
+Can labelled values created by these constructors be unified with tagged
+values?
+
+Criticism of Labelled Values for Performance
+--------------------------------------------
+Labelled values as a performance hack for precise domains?
+At the cost of language complexity, and heading down the path towards
+reinventing the complex and inexpressive type systems found in mainstream
+languages? Maybe there is a better way. Try thinking differently about
+this problem.
+
+What if we start with a simpler design with the performance hit, then look for
+alternate ways to speed things up without so much language complexity.

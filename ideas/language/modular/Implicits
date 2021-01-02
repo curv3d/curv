@@ -14,6 +14,11 @@ classes and also CLOS style generic functions. What happens instead is
 that if there is no canonical mapping (multiple competing Algebras)
 then you have to specify an Algebra explicitly at the call site.
 
+You don't have to bind an Algebra to a Theory in the environment, at all.
+You can just construct an Algebra value and pass it as an explicit argument.
+Which is what you do in Modular Programming. So the scheme is upward compatible
+with Modular Programming and loses nothing of its expressiveness.
+
 That seems cool. In the context of Curv, we don't want this idea to
 break modularity (if the absence of a canonical binding is a global
 property that can break working code in an external library you imported,
