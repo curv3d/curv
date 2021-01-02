@@ -312,25 +312,25 @@ parse_ritem(Scanner& scanner)
 
         auto listexpr = parse_ritem(scanner);
 
-        Token tokw = scanner.get_token();
+        Token toku = scanner.get_token();
         Shared<const Phrase> cond;
-        if (tokw.kind_ == Token::k_while) {
+        if (toku.kind_ == Token::k_until) {
             cond = parse_ritem(scanner);
         } else {
-            scanner.push_token(tokw);
-            tokw = Token();
+            scanner.push_token(toku);
+            toku = Token();
         }
 
         Token tokrp = scanner.get_token();
         if (tokrp.kind_ != Token::k_rparen) {
             throw Exception(At_Token(tokrp, scanner),
-                "syntax error: expecting ')'");
+                "syntax error: expecting 'until' or ')'");
         }
 
         auto body = parse_ritem(scanner);
 
         return make<For_Phrase>(
-            tok, toklp, pat, tokin, listexpr, tokw, cond, tokrp, body);
+            tok, toklp, pat, tokin, listexpr, toku, cond, tokrp, body);
       }
     case Token::k_while:
       {

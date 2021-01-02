@@ -257,6 +257,8 @@ Scanner::get_token()
             tok.kind_ = Token::k_parametric;
         else if (id == "test")
             tok.kind_ = Token::k_test;
+        else if (id == "until")
+            tok.kind_ = Token::k_until;
         else if (id == "var")
             tok.kind_ = Token::k_var;
         else if (id == "where")

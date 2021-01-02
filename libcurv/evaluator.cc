@@ -684,7 +684,7 @@ For_Op::exec(Frame& f, Executor& ex) const
             // TODO: For_Op::exec: use icx in pattern_->exec()
             // doesn't work now because not At_Syntax
             pattern_->exec(f.array_, list->at(i), cx, f);
-            if (cond_ && !cond_->eval(f).to_bool(At_Phrase{*cond_->syntax_,f}))
+            if (cond_ && cond_->eval(f).to_bool(At_Phrase{*cond_->syntax_,f}))
                 break;
             body_->exec(f, ex);
         }
@@ -694,7 +694,7 @@ For_Op::exec(Frame& f, Executor& ex) const
             // TODO: For_Op::exec: use icx in pattern_->exec()
             // doesn't work now because not At_Syntax
             pattern_->exec(f.array_, {string->at(i)}, cx, f);
-            if (cond_ && !cond_->eval(f).to_bool(At_Phrase{*cond_->syntax_,f}))
+            if (cond_ && cond_->eval(f).to_bool(At_Phrase{*cond_->syntax_,f}))
                 break;
             body_->exec(f, ex);
         }

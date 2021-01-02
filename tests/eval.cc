@@ -403,7 +403,7 @@ TEST(curv, eval)
     FAILMSG("for (i = a) x", "syntax error: expecting 'in'");
     FAILMSG("for x x", "syntax error: expecting '(' after 'for'");
     FAILMSG("for () x", "unexpected token when expecting 'for' pattern");
-    FAILMSG("for (i in a,j in b) x", "syntax error: expecting ')'");
+    FAILMSG("for (i in a,j in b) x", "syntax error: expecting 'until' or ')'");
     FAILMSG("for (i) x", "syntax error: expecting 'in'");
     FAILMSG("for (42 in i) x", "not a pattern");
     SUCCESS("[for (i in [1,2,3]) i+1]", "[2,3,4]");

@@ -61,6 +61,12 @@ for (name in list) generator
     For each element value, bind it to *name* as a local variable
     within *generator*, and evaluate *generator*.
 
+for (name in list until stop_condition) generator
+    Iterate over the elements of *list*,
+    stopping early if *stop_condition* becomes true.
+    For each element value, bind it to *name* as a local variable
+    within *generator*, and evaluate *generator*.
+
 let <definitions> in <generator>
     Bind the <definitions> as local variables within <generator>.
 

@@ -20,8 +20,9 @@ Comments have two forms:
   identifier ::= plain_id | quoted_id
 
   plain_id ::= /[a-zA-Z_] [a-zA-Z_0-9]*/, except for reserved words
-  reserved_word ::= '_' | 'by' | 'do' | 'else' | 'for' | 'if' | 'in' | 'include'
-        | 'let' | 'local' | 'parametric' | 'test' | 'var' | 'where' | 'while'
+  reserved_word ::= '_' | 'by' | 'do' | 'else' | 'for' | 'if' | 'in'
+        | 'include' | 'let' | 'local' | 'parametric' | 'test'
+        | 'until' | 'var' | 'where' | 'while'
   quoted_id ::= /['] id_segment* [']/
       id_segment ::= plain_char | id_escape
       plain_char ::= /[space or printable ASCII character, except ']/
@@ -102,7 +103,7 @@ precedence and ``postfix`` being the highest precedence::
     | 'if' parens ritem
     | 'if' parens ritem 'else' ritem
     | 'for' '(' ritem 'in' ritem ')' ritem
-    | 'for' '(' ritem 'in' ritem 'while' ritem ')' ritem
+    | 'for' '(' ritem 'in' ritem 'until' ritem ')' ritem
     | 'while' parens ritem
     | 'do' list 'in' ritem
     | 'let' list 'in' ritem
@@ -232,6 +233,11 @@ Double-arm conditional: ``if (condition) phrase1 else phrase2``
 Bounded iteration: ``for (pattern in list_expression) phrase``
   The phrase (a generator or statement) is executed once for each element
   in the list. At each iteration,
+  the element is bound to zero or more local variables by the pattern.
+
+Bounded iteration: ``for (pattern in list_expr until cond) phrase``
+  The phrase (a generator or statement) is executed once for each element
+  in the list, but stopping early if ``cond`` becomes true. At each iteration,
   the element is bound to zero or more local variables by the pattern.
 
 Local variables: ``let definition in phrase``

@@ -143,9 +143,9 @@ Bounded iteration: ``for (pattern in list_expression) statement``
   the element is bound to zero or more local variables by the pattern.
   See: `Patterns`_.
 
-``for (pattern in list_expression while condition) statement``
-  If you add ``while condition`` to a ``for`` loop,
-  then the loop will exit on the first iteration where ``condition`` is false.
+``for (pattern in list_expression until condition) statement``
+  If you add ``until condition`` to a ``for`` loop,
+  then the loop will exit on the first iteration where ``condition`` is true.
   This is how you code early exit from a ``for`` loop:
   there is no ``break`` statement.
 
