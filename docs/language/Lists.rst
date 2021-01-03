@@ -4,47 +4,65 @@ A list is a finite, ordered sequence of values.
 Everything in Curv that is an ordered sequence of values, is also a list,
 and all the list operations describe here will work on it.
 
+Lists are used to represent:
+
+* Tuples, which are fixed length sequences of values of possibly differing type.
+  For example, ``[17, #true, "some text"]``.
+* Homogenous lists (sequences of values of the same type), including:
+
+  * Character strings.
+  * Bit strings, represented as lists of boolean values.
+  * Numeric ranges.
+
+* Multidimensional arrays, including vectors and matrices
+  for doing linear algebra. These are represented by nested lists.
+
+For efficiency, Curv uses multiple internal list representations,
+depending on the contents of the list. But this is transparent to
+users: all internal list representations are semantically equivalent.
+
+The semantic equivalence of all list representations means that any two lists
+may be concatenated. If you concatenate a character string with a numeric
+range, you will get a list of characters and numbers, you won't get an error.
+
 There are multiple syntaxes for constructing lists:
 
 * ``[1,2,3]`` is a list of 3 numbers.
 * ``"abc"`` is a list of 3 characters,
   equivalent to ``[char 97,char 98,char 99]``.
-  See `Strings`_ for more about string syntax.
+  See `Strings`_ for more about character string syntax.
 * ``2..7`` is a range, the consecutive integers from ``2`` to ``7``.
   It is equivalent to ``[2,3,4,5,6,7]``.
 
 .. _`Strings`: Strings.rst
 
 List Constructors
-  A list constructor is a comma-separated list of expressions or value
-  generators, inside square brackets.
+  The most general form of list constructor
+  is a `generator expression`_ inside square brackets.
+  The generator is evaluated to produce zero or more values,
+  which are the elements of the list.
 
   For example::
 
     []
     [1]
     [1,2]
+    [1,2,3]
 
-  A value generator is a kind of `statement`_
-  that adds zero or more elements to the list being constructed.
-  The simplest value generator is just an expression,
-  which adds one element to the list.
+  are list constructors. The list elements are specified by a sequence of
+  zero or more expressions separated by commas, and that is generator syntax.
 
-  The spread operator (``...list_expression``) interpolates all of the elements
-  from some list into the list being constructed.
+  The spread operator (``... list``) is a generator that produces each element
+  of the ``list`` argument. This allows you to interpolate all the elements
+  of some list into another list being constructed.
   For example, this concatenates two lists::
 
     [...a, ...b]
 
-  Complex value generators may be composed from simpler ones using blocks and control structures,
-  as described in `Statements`_.
-  This syntax is a generalization of the *list comprehensions* found in other languages.
-  For example, this yields ``[1,4,9,16,25]``::
+  See `Generators`_ for a full description of generator syntax.
 
-    [for (i in 1..5) i^2]
-
-.. _`statement`: Statements.rst
-.. _`Statements`: Statements.rst
+.. _`generator expression`: Generators.rst
+.. _`Generators`: Generators.rst
 
 Range constructors
   ``i .. j``
