@@ -174,7 +174,12 @@ expression
   A phrase that computes a value.
 
 locative
-  The subset of expressions that are permitted on the left side of an assignment statement.
+  The subset of expressions that are permitted on the left side of an
+  assignment statement. A Locative denotes a single storage location,
+  or a structured collection of storage locations. Using a Locative as an
+  Expression reads these storage locations and returns a value. Using a
+  Locative on the left side of an assignment updates these storage locations
+  by modifying the contents of local variables.
 
 generator
   A generalized expression that produces a sequence of zero or more values,

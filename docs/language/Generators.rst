@@ -113,5 +113,4 @@ This example produces ``[1,2,3,4,5]``::
         );
     ]
 
-The statement ``i;`` is an expression generator that produces each
-list element.
+The statement ``i;`` is a generator that produces each list element.
