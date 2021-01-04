@@ -52,7 +52,7 @@ Note that:
   to a Unix shell pipeline.
 * See: `Functions`_.
 
-.. _`Blocks`: Blocks.rst
+.. _`Definitions`: Definitions.rst
 .. _`Functions`: Functions.rst
 
 Source Files
@@ -110,7 +110,7 @@ Note that:
   and evaluates to a record value. See: `Records`_.
 * ``include record_value`` is a special kind of definition that adds all
   of the fields in a record to the current scope.
-  See: `Blocks`_.
+  See: `Definitions`_.
 
 .. _`Records`: Records.rst
-.. _`Blocks`: Blocks.rst
+.. _`Definitions`: Definitions.rst

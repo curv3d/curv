@@ -65,7 +65,7 @@ Note that these source files begin and end with ``{`` and ``}``.
 multiple source files. See `File_Import`_ for details.
 
 .. _`Generators`: Generators.rst
-.. _`Definitions`: Blocks.rst
+.. _`Definitions`: Definitions.rst
 .. _`File_Import`: File_Import.rst
 
 The Spread Operator

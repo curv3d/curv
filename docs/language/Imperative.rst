@@ -179,7 +179,7 @@ Recursively scoped local variables: ``let <definitions> in <statement>``
     functions local to a statement block. So this is outside
     of idiomatic imperative programming.
 
-.. _`Definitions`: Blocks.rst
+.. _`Definitions`: Definitions.rst
 
 Assignment statement: ``<variable> := <value>``
     An assignment statement modifies a local variable
@@ -222,5 +222,5 @@ Unbounded iteration: ``while (condition) statement``
 .. _`Lists`: Lists.rst
 .. _`Records`: Records.rst
 .. _`Debug Actions`: Debug_Actions.rst
-.. _`Blocks`: Blocks.rst
+.. _`Definitions`: Definitions.rst
 .. _`Patterns`: Patterns.rst

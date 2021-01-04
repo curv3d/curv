@@ -55,7 +55,7 @@ There is a shortcut syntax for function definitions::
   plusr {x,y} = x + y;
   plusc x y = x + y;
 
-Definitions are described in more detail here: `Blocks`_.
+Definitions are described in more detail here: `Definitions`_.
 
 Pipelines
 ~~~~~~~~~
@@ -186,7 +186,7 @@ Predicates
   to classify the set of all values into disjoint categories.
 
 .. _`Patterns`: Patterns.rst
-.. _`Blocks`: Blocks.rst
+.. _`Definitions`: Definitions.rst
 
 Domains and Errors
 ~~~~~~~~~~~~~~~~~~

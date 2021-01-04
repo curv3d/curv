@@ -109,7 +109,7 @@ Basic Syntax:
 
 * `Programs`_
 * `Expressions`_
-* `Blocks`_ (local variables)
+* `Definitions`_ (local variables)
 * `Parametric Shapes`_
 * `Statements`_ (imperative style programming)
 * `Debug Actions`_
@@ -125,11 +125,11 @@ Advanced Topics:
 * `Grammar`_
 
 .. _`Arrays`: Arrays.rst
-.. _`Blocks`: Blocks.rst
 .. _`Boolean Values`: Boolean_Values.rst
 .. _`Characters`: Strings.rst
 .. _`Complex Numbers`: Complex_Numbers.rst
 .. _`Debug Actions`: Debug_Actions.rst
+.. _`Definitions`: Definitions.rst
 .. _`Design by Contract`: Design_by_Contract.rst
 .. _`Expressions`: Expressions.rst
 .. _`File Import`: File_Import.rst

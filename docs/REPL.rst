@@ -38,7 +38,7 @@ to the REPL environment, and can be used in later commands.
   curv> x
   17
 
-.. _`definition`: language/Blocks.rst
+.. _`definition`: language/Definitions.rst
 
 ..
   mutually recursive definitions: `def1;def2`

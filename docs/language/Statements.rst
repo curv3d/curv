@@ -126,7 +126,7 @@ Compound statement with local variables:
   left-to-right order.
   Local definitions cannot be recursive.
   Use ``let`` for recursively scoped local variables,
-  and see `Blocks`_ for definition syntax.
+  and see `Definitions`_ for definition syntax.
 
 Single-arm conditional: ``if (condition) statement``
   The statement is only executed if the condition is true.
@@ -157,11 +157,11 @@ Unbounded iteration: ``while (condition) statement``
 
 Recursively scoped local variables: ``let definitions in statement``
   Define local variables over the statement, using recursive scoping.
-  The order of definitions doesn't matter. See: `Blocks`_.
+  The order of definitions doesn't matter. See: `Definitions`_.
 
 .. _`Boolean Values`: Boolean_Values.rst
 .. _`Lists`: Lists.rst
 .. _`Records`: Records.rst
 .. _`Debug Actions`: Debug_Actions.rst
-.. _`Blocks`: Blocks.rst
+.. _`Definitions`: Definitions.rst
 .. _`Patterns`: Patterns.rst
