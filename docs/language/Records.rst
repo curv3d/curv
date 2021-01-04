@@ -26,9 +26,16 @@ There are three syntaxes:
 
 **Dynamic records** permit you to construct a record value dynamically.
 The set of field names is determined at run time using program logic, which
-can include if statements, local variables and loops.
-The simplest case is a list of field expressions (``name:value``)
-separated by commas and surrounded by braces.
+can include conditionals, local variables and loops.
+
+A dynamic record constructor is a list of field generators
+(such as ``name: value``), separated by commas and enclosed by braces.
+For example::
+
+    {}
+    {a: 1}
+    {a: 1, b: 2}
+
 The full syntax is defined in `Generators`_.
 
 Unlike scoped records, dynamic records do not introduce a scope
@@ -92,6 +99,9 @@ evaluates to ``[[#a,1], [#b,2]]``.
 Within a dynamic record constructor, ``...fieldlist`` copies the fields
 from a fieldlist into the record being constructed.
 So ``{...fieldlist}`` converts a fieldlist to a record.
+
+The spread operator is one example of generator syntax.
+See `Generators`_ for full details.
 
 Record Operations
 ~~~~~~~~~~~~~~~~~
