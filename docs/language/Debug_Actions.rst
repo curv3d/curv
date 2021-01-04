@@ -1,13 +1,12 @@
 Debug Actions
 -------------
-Curv programs are debugged by inserting ``print`` statements and other debug actions.
+Curv programs are debugged by inserting ``print`` statements and other debug
+actions.
 
 Debug actions are statements, but you can embed statements anywhere in a Curv program.
 You can attach statements to an expression using a ``do`` expression (see below).
 You can embed statements in a set of definitions using a ``test`` definition
 (see `<Design_by_Contract.rst>`_).
-Debug actions can be embedded in list comprehensions, record comprehensions and
-string comprehensions (since a comprehension contains a statement sequence).
 
 ``do`` Expressions
 ~~~~~~~~~~~~~~~~~~

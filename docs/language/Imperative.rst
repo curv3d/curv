@@ -17,7 +17,6 @@ Here are some reasons for using the imperative features:
   selectively updating elements of a nested data structure.
 * Debugging using print statements.
 * Embedding assertions and unit tests in your code.
-* List and record comprehensions are expressed using the statement language.
 * You are porting graphics algorithms from another language, and you don't
   want the hassle of translating from imperative to functional style.
   Preserving the imperative code structure makes it easier to track

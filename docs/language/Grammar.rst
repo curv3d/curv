@@ -186,7 +186,7 @@ generator
   for consumption by a list constructor or record constructor.
   Generators share syntax with the statement language (particularly one-arm
   conditionals and for loops), but are declarative and referentially
-  transparent.
+  transparent. Main article: `Generators`_.
 
 statement
   A phrase that is executed to cause an effect.
@@ -194,6 +194,8 @@ statement
   local variables, assignment statements, and while loops, but side effects
   do not escape from the statement context. Functions remain pure
   and Curv expressions remain referentially transparent.
+
+.. _`Generators`: Generators.rst
 
 .. Comma vs Semicolon
 .. ------------------

@@ -42,16 +42,19 @@ Indexing an Array
 Arrays are indexed using a generalization of list indexing notation.
 An array of rank *k* is indexed by *k* indices.
 
+In the array indexing syntax ``A.[i]``, the index phrase *i* is a `generator`_
+that produces a sequence of up to *k* index values. Usually, *i* is a
+comma-separated list of index expressions.
+
+.. _`generator`: Generators.rst
+
 For example, if ``M`` is a matrix, and ``i``, ``j`` are row, column indices,
 then ``M.[i,j]`` retrieves the element at row ``i`` and column ``j``.
 ``M.[i,j]`` is then equivalent to ``M.[i].[j]`` due to the representation
 of matrices as nested lists.
 
-If you have a variable ``ix`` containing a list of indices,
-then you can use that to index an array using the syntax ``A.[...ix]``.
-In general, inside the square brackets of the ``a.[b]`` syntax,
-you can generate a sequence of indices using any syntax that works
-inside a list constructor, including list comprehension syntax.
+For example, if ``ix`` is a list of indices,
+then you can use it to index an array using the syntax ``A.[...ix]``.
 
 As a special case, since ``42`` is a scalar (an array of rank 0),
 you can index it with 0 indices, and ``42.[]`` returns ``42``.

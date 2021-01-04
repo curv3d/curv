@@ -70,14 +70,6 @@ Later, Unicode will be supported.
   The ``string`` function is used to convert values to strings
   in ``${expr}`` substitutions in string literals.
 
-``strcat list``
-  Each element of the list argument is converted to a string using the
-  ``string`` function. Then all of the resulting strings are catenated
-  to create the result.
-
-  The ``strcat`` function is used to explain the meaning of ``${...}``
-  substitutions within string literals, in the general case.
-
 Simple String Literals
   A simple string literal is a sequence of zero or more literal characters
   enclosed in double quotes.
@@ -140,7 +132,7 @@ Multi-Line String Literals
     |Second line.
     |Final line without trailing newline."
 
-Expression Substitutions and String Comprehensions
+Expression Substitutions
   These escape sequences evaluate arbitrary expressions,
   and substitute the resulting values into string literals.
   
@@ -149,14 +141,15 @@ Expression Substitutions and String Comprehensions
     replaced by the string ``string(...)``. For example,
     ``${2+2}`` is replaced by the character ``4``.
 
-    In the general case, ``...`` is a sequence of zero or more expressions
-    or statements, separated by commas or semicolons.
-    Inside the braces, you can include comments, newlines, and quoted
-    string literals. This feature is called "string comprehensions".
-    Then ``${...}`` is replaced by the string ``strcat[...]``,
-    where ``[...]`` is a list comprehension. For example,
+    In the general case, ``...`` is a `generator`_ that produces a sequence
+    of zero or more values. Each value is converted to a string using ``string``
+    and then added to the string under construction.
 
-    * ``${if (cond) "foo"}`` executes the ``if`` statement, interpolating
+    Inside the braces, you can include comments, newlines, and quoted
+    string literals, and using generator syntax, you can define local
+    variables, conditionals and loops. For example,
+
+    * ``${if (cond) "foo"}`` interpolates
       ``"foo"`` into the string if ``cond`` is true.
     
   ``$(...)``
@@ -172,7 +165,7 @@ Expression Substitutions and String Comprehensions
     ``$[65]`` or ``$[0x41]`` is replaced by the character ``A``,
     since ``65`` is the ASCII encoding of ``A``.
     
-    More generally, the ``...`` is a list comprehension,
+    More generally, the ``...`` is a generator,
     so ``$[65,66,67,68,69]`` or ``$[... 65..69]``
     are replaced by the characters ``ABCDE``.
 
@@ -185,9 +178,10 @@ String Literal Grammar
     and added to the string under construction with no interpretation.
   * ``"_`` is replaced by a ``"`` character.
   * ``$_`` is replaced by a ``$`` character.
-  * ``${...}`` is replaced by the string ``strcat[...]``.
-  * ``$(...)`` is replaced by the string ``repr(...)``.
-  * ``$[...]`` is replaced by the string ``ucode[...]``.
+  * ``${generator}`` is replaced by the string
+    ``concat(map string [generator])``.
+  * ``$(expression)`` is replaced by the string ``repr(expression)``.
+  * ``$[generator]`` is replaced by the string ``ucode[generator]``.
   * ``$identifier`` is equivalent to ``${identifier}``.
   * A ``$`` character that is not followed by ``_``, ``{``, ``(``, ``[``
     or an alphabetic character is treated literally.
@@ -197,3 +191,4 @@ String Literal Grammar
     is replaced by a newline, and the ``"`` character denotes the end
     of the string literal.
 
+.. _`generator`: Generators.rst
