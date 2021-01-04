@@ -160,6 +160,7 @@ There are 6 primitive phrase types:
 
 definition
   A phrase that binds zero or more names to values, within a scope.
+  Main article: `Definitions`_.
 
 pattern
   A pattern can occur as a function formal parameter,
@@ -169,9 +170,11 @@ pattern
   we attempt to match an argument value against a pattern.
   If the match is successful, we bind (each) parameter name
   to (elements of) the argument value.
+  Main article: `Patterns`_.
 
 expression
   A phrase that computes a value.
+  Main article: `Expressions`_.
 
 locative
   The subset of expressions that are permitted on the left side of an
@@ -194,8 +197,13 @@ statement
   local variables, assignment statements, and while loops, but side effects
   do not escape from the statement context. Functions remain pure
   and Curv expressions remain referentially transparent.
+  Main article: `Statements`_.
 
+.. _`Definitions`: Definitions.rst
+.. _`Expressions`: Expressions.rst
 .. _`Generators`: Generators.rst
+.. _`Patterns`: Patterns.rst
+.. _`Statements`: Statements.rst
 
 .. Comma vs Semicolon
 .. ------------------
