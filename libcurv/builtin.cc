@@ -1084,24 +1084,24 @@ struct Compose_Function : public Function
     }
 };
 
-struct ISlice_Function : public Function
+struct XSlice_Function : public Function
 {
     using Function::Function;
     virtual Value call(Value arg, Fail fl, Frame& fr) const override
     {
         At_Arg cx(*this, fr);
         TRY_DEF(list, arg.to<List>(fl, cx));
-        return make_islice(list->begin(), list->end());
+        return make_xslice(list->begin(), list->end());
     }
 };
-struct IPath_Function : public Function
+struct XPath_Function : public Function
 {
     using Function::Function;
     virtual Value call(Value arg, Fail fl, Frame& fr) const override
     {
         At_Arg cx(*this, fr);
         TRY_DEF(list, arg.to<List>(fl, cx));
-        return make_ipath(list->begin(), list->end());
+        return make_xpath(list->begin(), list->end());
     }
 };
 struct Amend_Function : public Tuple_Function
@@ -1568,9 +1568,9 @@ builtin_namespace()
     FUNCTION("compose", Compose_Function),
 
     // top secret index API (aka lenses)
-    {make_symbol("iid"), make<Builtin_Value>(Value{make<IId>()})},
-    FUNCTION("islice", ISlice_Function),
-    FUNCTION("ipath", IPath_Function),
+    {make_symbol("xid"), make<Builtin_Value>(Value{make<XId>()})},
+    FUNCTION("xslice", XSlice_Function),
+    FUNCTION("xpath", XPath_Function),
     FUNCTION("amend", Amend_Function),
 
     {make_symbol("file"), make<Builtin_Meaning<File_Metafunction>>()},
