@@ -88,7 +88,7 @@ Value call_func(
 
 // A Tuple_Function has a single argument, which is a tuple when nargs!=1.
 // Tuple functions with a nargs of 0, 1 or 2 are called like this:
-//   f(), f(x), f(x,y)
+//   f[], f(x), f[x,y]
 //
 // This class is a convenience for defining builtin functions.
 // The tuple is unpacked into individual values, stored as frame slots,
@@ -104,11 +104,6 @@ struct Tuple_Function : public Function
     Tuple_Function(unsigned nargs, const char* name)
     :
         Function(nargs, name),
-        nargs_(nargs)
-    {}
-    Tuple_Function(unsigned nargs, unsigned nslots)
-    :
-        Function(nslots),
         nargs_(nargs)
     {}
 
