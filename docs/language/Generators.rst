@@ -99,9 +99,23 @@ You can use the imperative statement language to write generators.
 This gives you the machinery of mutable local variables, assignments,
 and while loops.
 
-The syntax is: you write a compound statement (imperative
-statements separated by semicolons), and you insert generators
-*as statements* into the imperative program.
+Every statement is also a generator that, when executed, produces zero values.
+By itself, this is of limited utility. It allows you to conveniently
+add print or assert statements to a generator for debugging.
+For example, you could add a print statement to the previous example to
+debug the loop logic::
+
+    [
+        for (x in 1..10)
+            let n = x*x in (
+                print "x=$x, n=$n, n`mod`2=$(n `mod` 2)",
+                if (n `mod` 2 == 0)
+                    n
+            )
+    ]
+
+You can also insert generators *as statements* into an imperative program.
+The result is a generator that uses imperative logic to produce values.
 
 This example produces ``[1,2,3,4,5]``::
 
