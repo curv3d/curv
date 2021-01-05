@@ -112,7 +112,6 @@ Basic Syntax:
 * `Definitions`_ (local variables)
 * `Parametric Shapes`_
 * `Statements`_ (imperative style programming)
-* `Debug Actions`_
 * `Patterns`_
 * `File Import`_
 
@@ -128,7 +127,6 @@ Advanced Topics:
 .. _`Boolean Values`: Boolean_Values.rst
 .. _`Characters`: Strings.rst
 .. _`Complex Numbers`: Complex_Numbers.rst
-.. _`Debug Actions`: Debug_Actions.rst
 .. _`Definitions`: Definitions.rst
 .. _`Design by Contract`: Design_by_Contract.rst
 .. _`Expressions`: Expressions.rst

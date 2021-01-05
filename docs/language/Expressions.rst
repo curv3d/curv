@@ -16,10 +16,10 @@ For more about errors, see: `Design by Contract`_.)
   debugger. If you are using these features, then trace messages can be
   written to the debug console during expression evaluation. However, these
   "side effects" are not considered part of the language semantics.
-  See: `Debug Actions`_.
+  See: `Statements`_.
 
 .. _`Design by Contract`: Design_by_Contract.rst
-.. _`Debug Actions`: Debug_Actions.rst
+.. _`Statements`: Statements.rst
 
 Curv is an expression-oriented language.
 Curv programs are constructed primarily from nested expressions.
