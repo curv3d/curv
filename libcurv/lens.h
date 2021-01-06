@@ -43,12 +43,12 @@ Value make_tslice(const Value* list, const Value* endlist);
 // The 'slice' argument is unboxed to a list of index values.
 Value get_value_at_boxed_slice(Value value, Value slice, const At_Syntax& cx);
 
-Value index_fetch(Value tree, Value index, const At_Syntax& cx);
-Value index_fetch_slice(Value tree, Value i1, Value i2, const At_Syntax& cx);
-Value index_amend(Value tree, Value index, Value elems, const At_Syntax& cx);
-Value index_amend_slice(Value tree, Value i1, Value i2, Value elems,
+Value tree_fetch(Value tree, Value index, const At_Syntax& cx);
+Value tree_fetch_slice(Value tree, Value i1, Value i2, const At_Syntax& cx);
+Value tree_amend(Value tree, Value index, Value elems, const At_Syntax& cx);
+Value tree_amend_slice(Value tree, Value i1, Value i2, Value elems,
     const At_Syntax& cx);
-Value index_over(Value tree, Value index,
+Value tree_over(Value tree, Value index,
     std::function<Value(Value, At_Syntax&)>, const At_Syntax& cx);
 
 } // namespace curv

@@ -85,10 +85,10 @@ const Phrase& index_value_phrase(const At_Syntax& cx)
 Value get_value_at_boxed_slice(Value value, Value slice, const At_Syntax& cx)
 {
     auto list = slice.to<const List>(cx);
-    return index_fetch(value, make_tslice(list->begin(), list->end()), cx);
+    return tree_fetch(value, make_tslice(list->begin(), list->end()), cx);
 }
 
-Value index_fetch(Value tree, Value index, const At_Syntax& gcx)
+Value tree_fetch(Value tree, Value index, const At_Syntax& gcx)
 {
     While_Indexing lcx(tree, index, gcx);
     if (index.is_num()) {
@@ -106,17 +106,17 @@ Value index_fetch(Value tree, Value index, const At_Syntax& gcx)
     else if (auto list = index.maybe<List>()) {
         List_Builder lb;
         for (auto i : *list) {
-            auto r = index_fetch(tree, i, gcx);
+            auto r = tree_fetch(tree, i, gcx);
             lb.push_back(r);
         }
         return lb.get_value();
     }
     else if (auto path = index.maybe<TPath>()) {
-        Value r = index_fetch(tree, path->index1_, gcx);
-        return index_fetch(r, path->index2_, gcx);
+        Value r = tree_fetch(tree, path->index1_, gcx);
+        return tree_fetch(r, path->index2_, gcx);
     }
     else if (auto sli = index.maybe<TSlice>()) {
-        return index_fetch_slice(tree, sli->index1_, sli->index2_, gcx);
+        return tree_fetch_slice(tree, sli->index1_, sli->index2_, gcx);
     }
     else if (auto id = index.maybe<TId>()) {
         return tree;
@@ -142,7 +142,7 @@ Value index_fetch(Value tree, Value index, const At_Syntax& gcx)
     }
     throw Exception(lcx, stringify("Bad index: ", index));
 }
-Value index_fetch_slice(Value tree, Value index, Value index2,
+Value tree_fetch_slice(Value tree, Value index, Value index2,
     const At_Syntax& gcx)
 {
     While_Indexing lcx(tree, index, gcx);
@@ -152,35 +152,35 @@ Value index_fetch_slice(Value tree, Value index, Value index2,
             Generic_List glist(tree, Fail::hard, Bad_Collection(lcx));
             int i = num_to_int(num, 0, int(glist.size())-1, Bad_Index(lcx));
             auto r = glist.val_at(i, lcx);
-            return index_fetch(r, index2, gcx);
+            return tree_fetch(r, index2, gcx);
         }
     }
     else if (auto sym = maybe_symbol(index)) {
         auto rec = tree.to<Record>(Bad_Collection(lcx));
         auto elem = rec->getfield(sym, Bad_Index(lcx));
-        return index_fetch(elem, index2, gcx);
+        return tree_fetch(elem, index2, gcx);
     }
     else if (auto list = index.maybe<List>()) {
         List_Builder lb;
         for (auto i : *list) {
-            auto r = index_fetch_slice(tree, i, index2, gcx);
+            auto r = tree_fetch_slice(tree, i, index2, gcx);
             lb.push_back(r);
         }
         return lb.get_value();
     }
     else if (auto path = index.maybe<TPath>()) {
-        Value r = index_fetch(tree, path->index1_, gcx);
-        return index_fetch_slice(r, path->index2_, index2, gcx);
+        Value r = tree_fetch(tree, path->index1_, gcx);
+        return tree_fetch_slice(r, path->index2_, index2, gcx);
     }
     else if (auto slice = index.maybe<TSlice>()) {
         // This case normally doesn't happen, since islice[i1,i2,i3]
         // is normalized to islice[i1,islice[i2,i3]].
-        return index_fetch_slice(tree, slice->index1_,
+        return tree_fetch_slice(tree, slice->index1_,
             Value{make<TSlice>(slice->index2_, index2)},
             gcx);
     }
     else if (index.maybe<TId>()) {
-        return index_fetch(tree, index2, gcx);
+        return tree_fetch(tree, index2, gcx);
     }
 #if 0
     else if (auto ri = index.maybe<Reactive_Value>()) {
@@ -194,7 +194,7 @@ Value index_fetch_slice(Value tree, Value index, Value index2,
                         to_expr(value, index_value_phrase(gcx)),
                         ri->expr()),
                     gcx);
-                return index_fetch(Value{r}, slice, endslice, gcx);
+                return tree_fetch(Value{r}, slice, endslice, gcx);
             }
         } else if (ri->sctype_.is_list()) {
             // TODO
@@ -206,7 +206,7 @@ Value index_fetch_slice(Value tree, Value index, Value index2,
 #endif
     throw Exception(lcx, stringify("Bad index: ", index));
 }
-Value index_amend(Value tree, Value index, Value elems, const At_Syntax& gcx)
+Value tree_amend(Value tree, Value index, Value elems, const At_Syntax& gcx)
 {
     While_Indexing lcx(tree, index, gcx);
     if (index.is_num()) {
@@ -230,17 +230,17 @@ Value index_amend(Value tree, Value index, Value elems, const At_Syntax& gcx)
         ilist->assert_size(elist.size(), Bad_Index(lcx));
         auto r = tree;
         for (unsigned i = 0; i < elist.size(); ++i) {
-            r = index_amend(r, ilist->at(i), elist.val_at(i,lcx), gcx);
+            r = tree_amend(r, ilist->at(i), elist.val_at(i,lcx), gcx);
         }
         return r;
     }
     else if (auto path = index.maybe<TPath>()) {
-        Value e = index_fetch(tree, path->index1_, gcx);
-        Value ne = index_amend(e, path->index2_, elems, gcx);
-        return index_amend(tree, path->index1_, ne, gcx);
+        Value e = tree_fetch(tree, path->index1_, gcx);
+        Value ne = tree_amend(e, path->index2_, elems, gcx);
+        return tree_amend(tree, path->index1_, ne, gcx);
     }
     else if (auto sli = index.maybe<TSlice>()) {
-        return index_amend_slice(tree, sli->index1_, sli->index2_, elems, gcx);
+        return tree_amend_slice(tree, sli->index1_, sli->index2_, elems, gcx);
     }
     else if (index.maybe<TId>()) {
         return elems;
@@ -248,7 +248,7 @@ Value index_amend(Value tree, Value index, Value elems, const At_Syntax& gcx)
     // TODO: amend using a reactive index
     throw Exception(lcx, stringify("Bad index: ", index));
 }
-Value index_amend_slice(Value tree, Value index, Value index2, Value elems,
+Value tree_amend_slice(Value tree, Value index, Value index2, Value elems,
     const At_Syntax& gcx)
 {
     While_Indexing lcx(tree, index, gcx);
@@ -258,7 +258,7 @@ Value index_amend_slice(Value tree, Value index, Value index2, Value elems,
             Generic_List glist(tree, Fail::hard, Bad_Collection(lcx));
             int i = num_to_int(num, 0, int(glist.size())-1, Bad_Index(lcx));
             Value e = glist.val_at(i,lcx);
-            Value ne = index_amend(e, index2, elems, gcx);
+            Value ne = tree_amend(e, index2, elems, gcx);
             glist.prepare_for_amend();
             glist.amend_at(i, ne, lcx);
             return glist.get_value();
@@ -267,7 +267,7 @@ Value index_amend_slice(Value tree, Value index, Value index2, Value elems,
     else if (auto sym = maybe_symbol(index)) {
         auto rec = update_drecord(std::move(tree), Bad_Collection(lcx));
         auto ref = rec->ref_field(sym, false, lcx);
-        Value ne = index_amend(*ref, index2, elems, gcx);
+        Value ne = tree_amend(*ref, index2, elems, gcx);
         *ref = ne;
         return {rec};
     }
@@ -276,24 +276,24 @@ Value index_amend_slice(Value tree, Value index, Value index2, Value elems,
         ilist->assert_size(elist.size(), Bad_Index(lcx));
         auto r = tree;
         for (unsigned i = 0; i < elist.size(); ++i) {
-            auto e = index_fetch(r, ilist->at(i), gcx);
-            auto ne = index_amend(e, index2, elist.val_at(i,lcx), gcx);
-            r = index_amend(r, ilist->at(i), ne, gcx);
+            auto e = tree_fetch(r, ilist->at(i), gcx);
+            auto ne = tree_amend(e, index2, elist.val_at(i,lcx), gcx);
+            r = tree_amend(r, ilist->at(i), ne, gcx);
         }
         return r;
     }
 #if 0
     else if (auto path = index.maybe<TPath>()) {
         --- amend
-        Value e = index_fetch(tree, path->index1_, gcx);
-        Value ne = index_amend(e, path->index2_, elems, gcx);
-        return index_amend(tree, path->index1_, ne, gcx);
+        Value e = tree_fetch(tree, path->index1_, gcx);
+        Value ne = tree_amend(e, path->index2_, elems, gcx);
+        return tree_amend(tree, path->index1_, ne, gcx);
         --- fetch_slice
-        Value r = index_fetch(tree, path->index1_, gcx);
-        return index_fetch_slice(r, path->index2_, index2, gcx);
+        Value r = tree_fetch(tree, path->index1_, gcx);
+        return tree_fetch_slice(r, path->index2_, index2, gcx);
     }
     else if (auto sli = index.maybe<TSlice>()) {
-        return index_amend_slice(tree, sli->index1_, sli->index2_, elems, gcx);
+        return tree_amend_slice(tree, sli->index1_, sli->index2_, elems, gcx);
     }
     else if (index.maybe<TId>()) {
         return elems;
@@ -302,10 +302,10 @@ Value index_amend_slice(Value tree, Value index, Value index2, Value elems,
 #endif
     throw Exception(lcx, stringify("Bad index: ", index));
 }
-Value index_over(Value tree, Value index,
+Value tree_over(Value tree, Value index,
     std::function<Value(Value, At_Syntax&)> f, const At_Syntax& gcx)
 {
-    throw Exception(gcx, stringify("index_over not implemented. index: ", index));
+    throw Exception(gcx, stringify("tree_over not implemented. index: ", index));
 }
 
 } // namespace curv

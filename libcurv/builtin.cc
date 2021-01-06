@@ -1108,7 +1108,7 @@ struct Amend_Function : public Curried_Function
 {
     static Value call(const Function& fn, Fail, Frame& args)
     {
-        return index_amend(args[2], args[0], args[1], At_Arg(fn, args));
+        return tree_amend(args[2], args[0], args[1], At_Arg(fn, args));
     }
     Amend_Function(const char* nm) : Curried_Function(3,nm,call) {}
 };
