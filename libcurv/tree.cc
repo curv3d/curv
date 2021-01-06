@@ -2,7 +2,7 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/lens.h>
+#include <libcurv/tree.h>
 
 #include <libcurv/exception.h>
 #include <libcurv/function.h>

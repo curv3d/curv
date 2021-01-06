@@ -11,7 +11,7 @@
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
 #include <libcurv/import.h>
-#include <libcurv/lens.h>
+#include <libcurv/tree.h>
 #include <libcurv/num.h>
 #include <libcurv/pattern.h>
 #include <libcurv/picker.h>

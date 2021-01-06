@@ -5,7 +5,7 @@
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
-#include <libcurv/lens.h>
+#include <libcurv/tree.h>
 #include <libcurv/list.h>
 #include <libcurv/meaning.h>
 #include <libcurv/module.h>

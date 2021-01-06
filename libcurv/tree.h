@@ -2,8 +2,8 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#ifndef LIBCURV_LENS_H
-#define LIBCURV_LENS_H
+#ifndef LIBCURV_TREE_H
+#define LIBCURV_TREE_H
 
 #include <libcurv/value.h>
 #include <libcurv/context.h>
