@@ -1,6 +1,6 @@
 do
-assert( 42@xid == 42 );
-assert( amend xid 17 42 == 17 );
+assert( 42@tid == 42 );
+assert( amend tid 17 42 == 17 );
 
 assert( [1,2,3]@0 == 1 );
 assert( amend 0 17 [1,2,3] == [17,2,3] );
@@ -12,23 +12,23 @@ local a =
   [[00, 01, 02],
    [10, 11, 12],
    [20, 21, 22]];
-assert( a@(xpath[1,2]) == 12 );
-assert( a@(xslice[0,[1,2]]) == [1,2] );
-assert( a@(xslice[[0,2],1]) == [01,21] );
-assert( a@(xslice[[0,2],[0,2]]) == [[00,02],[20,22]] );
-assert( amend (xpath[1,2]) 99 a ==
+assert( a@(tpath[1,2]) == 12 );
+assert( a@(tslice[0,[1,2]]) == [1,2] );
+assert( a@(tslice[[0,2],1]) == [01,21] );
+assert( a@(tslice[[0,2],[0,2]]) == [[00,02],[20,22]] );
+assert( amend (tpath[1,2]) 99 a ==
   [[00, 01, 02],
    [10, 11, 99],
    [20, 21, 22]] );
-assert( amend (xslice[0,[1,2]]) [98,99] a ==
+assert( amend (tslice[0,[1,2]]) [98,99] a ==
   [[00, 98, 99],
    [10, 11, 12],
    [20, 21, 22]] );
-assert( amend (xslice[[0,2],1]) [98,99] a ==
+assert( amend (tslice[[0,2],1]) [98,99] a ==
   [[00, 98, 02],
    [10, 11, 12],
    [20, 99, 22]] );
-assert( amend (xslice[[0,2],[0,2]]) [[88,89],[98,99]] a ==
+assert( amend (tslice[[0,2],[0,2]]) [[88,89],[98,99]] a ==
   [[88, 01, 89],
    [10, 11, 12],
    [98, 21, 99]] );

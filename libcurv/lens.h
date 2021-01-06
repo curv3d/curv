@@ -10,35 +10,35 @@
 
 namespace curv {
 
-struct XId : public Ref_Value
+struct TId : public Ref_Value
 {
-    XId() : Ref_Value(Ref_Value::ty_index, Ref_Value::sty_xid) {}
+    TId() : Ref_Value(Ref_Value::ty_index, Ref_Value::sty_tid) {}
     virtual void print_repr(std::ostream&) const override;
 };
-struct XPath : public Ref_Value
+struct TPath : public Ref_Value
 {
-    XPath(Value i1, Value i2)
+    TPath(Value i1, Value i2)
     :
-        Ref_Value(Ref_Value::ty_index, Ref_Value::sty_xpath),
+        Ref_Value(Ref_Value::ty_index, Ref_Value::sty_tpath),
         index1_(i1),
         index2_(i2)
     {}
     Value index1_, index2_;
     virtual void print_repr(std::ostream&) const override;
 };
-Value make_xpath(const Value* list, const Value* endlist);
-struct XSlice : public Ref_Value
+Value make_tpath(const Value* list, const Value* endlist);
+struct TSlice : public Ref_Value
 {
-    XSlice(Value i1, Value i2)
+    TSlice(Value i1, Value i2)
     :
-        Ref_Value(Ref_Value::ty_index, Ref_Value::sty_xslice),
+        Ref_Value(Ref_Value::ty_index, Ref_Value::sty_tslice),
         index1_(i1),
         index2_(i2)
     {}
     Value index1_, index2_;
     virtual void print_repr(std::ostream&) const override;
 };
-Value make_xslice(const Value* list, const Value* endlist);
+Value make_tslice(const Value* list, const Value* endlist);
 
 // The 'slice' argument is unboxed to a list of index values.
 Value get_value_at_boxed_slice(Value value, Value slice, const At_Syntax& cx);

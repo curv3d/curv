@@ -14,38 +14,38 @@
 
 namespace curv {
 
-void XId::print_repr(std::ostream& out) const
+void TId::print_repr(std::ostream& out) const
 {
-    out << "xid";
+    out << "tid";
 }
-void XSlice::print_repr(std::ostream& out) const
+void TSlice::print_repr(std::ostream& out) const
 {
-    out << "xslice [" << index1_ << "," << index2_ << "]";
+    out << "tslice [" << index1_ << "," << index2_ << "]";
 }
-void XPath::print_repr(std::ostream& out) const
+void TPath::print_repr(std::ostream& out) const
 {
-    out << "xpath [" << index1_ << "," << index2_ << "]";
+    out << "tpath [" << index1_ << "," << index2_ << "]";
 }
-Value make_xpath(const Value* list, const Value* endlist)
+Value make_tpath(const Value* list, const Value* endlist)
 {
     switch (endlist - list) {
     case 0:
-        return Value{make<XId>()};
+        return Value{make<TId>()};
     case 1:
         return list[0];
     default:
-        return Value{make<XPath>(list[0], make_xpath(list+1,endlist))};
+        return Value{make<TPath>(list[0], make_tpath(list+1,endlist))};
     }
 }
-Value make_xslice(const Value* list, const Value* endlist)
+Value make_tslice(const Value* list, const Value* endlist)
 {
     switch (endlist - list) {
     case 0:
-        return Value{make<XId>()};
+        return Value{make<TId>()};
     case 1:
         return list[0];
     default:
-        return Value{make<XSlice>(list[0], make_xslice(list+1,endlist))};
+        return Value{make<TSlice>(list[0], make_tslice(list+1,endlist))};
     }
 }
 
@@ -85,7 +85,7 @@ const Phrase& index_value_phrase(const At_Syntax& cx)
 Value get_value_at_boxed_slice(Value value, Value slice, const At_Syntax& cx)
 {
     auto list = slice.to<const List>(cx);
-    return index_fetch(value, make_xslice(list->begin(), list->end()), cx);
+    return index_fetch(value, make_tslice(list->begin(), list->end()), cx);
 }
 
 Value index_fetch(Value tree, Value index, const At_Syntax& gcx)
@@ -111,14 +111,14 @@ Value index_fetch(Value tree, Value index, const At_Syntax& gcx)
         }
         return lb.get_value();
     }
-    else if (auto path = index.maybe<XPath>()) {
+    else if (auto path = index.maybe<TPath>()) {
         Value r = index_fetch(tree, path->index1_, gcx);
         return index_fetch(r, path->index2_, gcx);
     }
-    else if (auto sli = index.maybe<XSlice>()) {
+    else if (auto sli = index.maybe<TSlice>()) {
         return index_fetch_slice(tree, sli->index1_, sli->index2_, gcx);
     }
-    else if (auto id = index.maybe<XId>()) {
+    else if (auto id = index.maybe<TId>()) {
         return tree;
     }
     else if (auto ri = index.maybe<Reactive_Value>()) {
@@ -168,18 +168,18 @@ Value index_fetch_slice(Value tree, Value index, Value index2,
         }
         return lb.get_value();
     }
-    else if (auto path = index.maybe<XPath>()) {
+    else if (auto path = index.maybe<TPath>()) {
         Value r = index_fetch(tree, path->index1_, gcx);
         return index_fetch_slice(r, path->index2_, index2, gcx);
     }
-    else if (auto slice = index.maybe<XSlice>()) {
+    else if (auto slice = index.maybe<TSlice>()) {
         // This case normally doesn't happen, since islice[i1,i2,i3]
         // is normalized to islice[i1,islice[i2,i3]].
         return index_fetch_slice(tree, slice->index1_,
-            Value{make<XSlice>(slice->index2_, index2)},
+            Value{make<TSlice>(slice->index2_, index2)},
             gcx);
     }
-    else if (index.maybe<XId>()) {
+    else if (index.maybe<TId>()) {
         return index_fetch(tree, index2, gcx);
     }
 #if 0
@@ -234,15 +234,15 @@ Value index_amend(Value tree, Value index, Value elems, const At_Syntax& gcx)
         }
         return r;
     }
-    else if (auto path = index.maybe<XPath>()) {
+    else if (auto path = index.maybe<TPath>()) {
         Value e = index_fetch(tree, path->index1_, gcx);
         Value ne = index_amend(e, path->index2_, elems, gcx);
         return index_amend(tree, path->index1_, ne, gcx);
     }
-    else if (auto sli = index.maybe<XSlice>()) {
+    else if (auto sli = index.maybe<TSlice>()) {
         return index_amend_slice(tree, sli->index1_, sli->index2_, elems, gcx);
     }
-    else if (index.maybe<XId>()) {
+    else if (index.maybe<TId>()) {
         return elems;
     }
     // TODO: amend using a reactive index
@@ -283,7 +283,7 @@ Value index_amend_slice(Value tree, Value index, Value index2, Value elems,
         return r;
     }
 #if 0
-    else if (auto path = index.maybe<XPath>()) {
+    else if (auto path = index.maybe<TPath>()) {
         --- amend
         Value e = index_fetch(tree, path->index1_, gcx);
         Value ne = index_amend(e, path->index2_, elems, gcx);
@@ -292,10 +292,10 @@ Value index_amend_slice(Value tree, Value index, Value index2, Value elems,
         Value r = index_fetch(tree, path->index1_, gcx);
         return index_fetch_slice(r, path->index2_, index2, gcx);
     }
-    else if (auto sli = index.maybe<XSlice>()) {
+    else if (auto sli = index.maybe<TSlice>()) {
         return index_amend_slice(tree, sli->index1_, sli->index2_, elems, gcx);
     }
-    else if (index.maybe<XId>()) {
+    else if (index.maybe<TId>()) {
         return elems;
     }
     // TODO: amend using a reactive index
