@@ -214,12 +214,13 @@ Value index_amend(Value tree, Value index, Value elems, const At_Syntax& gcx)
         if (num_is_int(num)) {
             Generic_List glist(tree, Fail::hard, Bad_Collection(lcx));
             int i = num_to_int(num, 0, int(glist.size())-1, Bad_Index(lcx));
+            glist.prepare_for_amend();
             glist.amend_at(i, elems, lcx);
             return glist.get_value();
         }
     }
     else if (auto sym = maybe_symbol(index)) {
-        auto rec = tree.to<Record>(Bad_Collection(lcx));
+        auto rec = update_drecord(std::move(tree), Bad_Collection(lcx));
         auto ref = rec->ref_field(sym, false, lcx);
         *ref = elems;
         return {rec};
@@ -250,12 +251,61 @@ Value index_amend(Value tree, Value index, Value elems, const At_Syntax& gcx)
 Value index_amend_slice(Value tree, Value index, Value index2, Value elems,
     const At_Syntax& gcx)
 {
-    throw Exception(gcx, stringify("index_amend_slice: Bad index: ", index));
+    While_Indexing lcx(tree, index, gcx);
+    if (index.is_num()) {
+        double num = index.to_num_unsafe();
+        if (num_is_int(num)) {
+            Generic_List glist(tree, Fail::hard, Bad_Collection(lcx));
+            int i = num_to_int(num, 0, int(glist.size())-1, Bad_Index(lcx));
+            Value e = glist.val_at(i,lcx);
+            Value ne = index_amend(e, index2, elems, gcx);
+            glist.prepare_for_amend();
+            glist.amend_at(i, ne, lcx);
+            return glist.get_value();
+        }
+    }
+    else if (auto sym = maybe_symbol(index)) {
+        auto rec = update_drecord(std::move(tree), Bad_Collection(lcx));
+        auto ref = rec->ref_field(sym, false, lcx);
+        Value ne = index_amend(*ref, index2, elems, gcx);
+        *ref = ne;
+        return {rec};
+    }
+    else if (auto ilist = index.maybe<List>()) {
+        Generic_List elist(elems, Fail::hard, lcx);
+        ilist->assert_size(elist.size(), Bad_Index(lcx));
+        auto r = tree;
+        for (unsigned i = 0; i < elist.size(); ++i) {
+            auto e = index_fetch(r, ilist->at(i), gcx);
+            auto ne = index_amend(e, index2, elist.val_at(i,lcx), gcx);
+            r = index_amend(r, ilist->at(i), ne, gcx);
+        }
+        return r;
+    }
+#if 0
+    else if (auto path = index.maybe<XPath>()) {
+        --- amend
+        Value e = index_fetch(tree, path->index1_, gcx);
+        Value ne = index_amend(e, path->index2_, elems, gcx);
+        return index_amend(tree, path->index1_, ne, gcx);
+        --- fetch_slice
+        Value r = index_fetch(tree, path->index1_, gcx);
+        return index_fetch_slice(r, path->index2_, index2, gcx);
+    }
+    else if (auto sli = index.maybe<XSlice>()) {
+        return index_amend_slice(tree, sli->index1_, sli->index2_, elems, gcx);
+    }
+    else if (index.maybe<XId>()) {
+        return elems;
+    }
+    // TODO: amend using a reactive index
+#endif
+    throw Exception(lcx, stringify("Bad index: ", index));
 }
 Value index_over(Value tree, Value index,
     std::function<Value(Value, At_Syntax&)> f, const At_Syntax& gcx)
 {
-    return {};
+    throw Exception(gcx, stringify("index_over not implemented. index: ", index));
 }
 
 } // namespace curv

@@ -107,7 +107,8 @@ public:
     size_t size() const noexcept;
     void assert_size(size_t sz, const Context& cx) const;
     Value val_at(size_t i, const At_Syntax&) const;
-    void amend_at(size_t, Value, const At_Syntax&);
+    void prepare_for_amend(); // copy list if usecount > 1
+    void amend_at(size_t, Value, const At_Syntax&); // destructive update
     inline Value get_value() { return {list_}; }
 };
 

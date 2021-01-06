@@ -62,6 +62,15 @@ Value Generic_List::val_at(size_t i, const At_Syntax& cx) const
             cx)};
     }
 }
+void Generic_List::prepare_for_amend()
+{
+    if (list_->use_count > 1) {
+        if (is_boxed_list()) {
+            auto& bl = get_boxed_list();
+            list_ = List::make_copy(bl.begin(), bl.size());
+        }
+    }
+}
 void Generic_List::amend_at(size_t i, Value newval, const At_Syntax& cx)
 {
     if (this->is_boxed_list())
