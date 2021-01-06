@@ -46,7 +46,7 @@ Function::print_repr(std::ostream& out) const
     out << "<function";
     if (!name_.empty()) {
         out << " " << name_;
-        for (int i = 0; i < argpos_; ++i)
+        for (unsigned i = 0; i < argpos_; ++i)
             out << " _";
     }
     out << ">";
@@ -79,6 +79,34 @@ const
         stringify("function class <",
             boost::core::demangle(typeid(*this).name()),
             "> is not supported"));
+}
+
+Value
+Partial_Application_Base::call(Value arg, Fail fl, Frame& fm) const
+{
+    if (argpos_ == nargs() - 1) {
+        for (unsigned i = 0; i < argpos_; ++i)
+            fm[i] = array_[i];
+        fm[argpos_] = arg;
+        return callfunc_(*this, fl, fm);
+    } else {
+        Shared<Partial_Application> pa = Partial_Application::make(
+            argpos_+1, nargs(), name_, callfunc_);
+        for (unsigned i = 0; i < argpos_; ++i)
+            pa->array_[i] = array_[i];
+        pa->array_[argpos_] = arg;
+        pa->argpos_ = argpos_+1;
+        return {pa};
+    }
+}
+
+Value
+Curried_Function::call(Value arg, Fail fl, Frame& fm) const
+{
+    Shared<Partial_Application> pa =
+        Partial_Application::make({arg}, nargs(), name_, callfunc_);
+    pa->argpos_ = 1;
+    return {pa};
 }
 
 Value

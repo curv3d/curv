@@ -1104,13 +1104,13 @@ struct XPath_Function : public Function
         return make_xpath(list->begin(), list->end());
     }
 };
-struct Amend_Function : public Tuple_Function
+struct Amend_Function : public Curried_Function
 {
-    Amend_Function(const char* nm) : Tuple_Function(3,nm) {}
-    Value tuple_call(Fail, Frame& args) const override
+    static Value call(const Function& fn, Fail, Frame& args)
     {
-        return index_amend(args[0], args[1], args[2], At_Arg(*this, args));
+        return index_amend(args[2], args[0], args[1], At_Arg(fn, args));
     }
+    Amend_Function(const char* nm) : Curried_Function(3,nm,call) {}
 };
 
 // The filename argument to "file", if it is a relative filename,

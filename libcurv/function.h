@@ -21,26 +21,33 @@ struct Function : public Ref_Value
     // size of call frame
     slot_t nslots_;
 
-    // optional name of function
-    Symbol_Ref name_{};
-
     // Suppose this function is the result of partial application of a named
     // function. Then this is the # of arguments that were applied to get here,
     // and `name_` is the name of the base function.
-    int argpos_ = 0;
+    unsigned argpos_ = 0;
+
+    // optional name of function
+    Symbol_Ref name_{};
+
+    Function(slot_t nslots, Symbol_Ref name)
+    :
+        Ref_Value(ty_function),
+        nslots_(nslots),
+        name_(name)
+    {
+    }
+
+    Function(slot_t nslots, const char* name)
+    :
+        Function(nslots, make_symbol(name))
+    {
+    }
 
     Function(slot_t nslots)
     :
         Ref_Value(ty_function),
         nslots_(nslots)
     {}
-
-    Function(slot_t nslots, const char* name)
-    :
-        Function(nslots)
-    {
-        name_ = make_symbol(name);
-    }
 
     Function(const char* name)
     :
@@ -115,10 +122,48 @@ struct Tuple_Function : public Function
 
     // Generate a call to the function during SubCurv compilation.
     // The argument is represented as an expression.
-    virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const override;
+    virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&)
+        const override;
 
     // generate a call to the function during SubCurv compilation
     virtual SC_Value sc_tuple_call(SC_Frame&) const;
+};
+
+// A Partial_Application is the result of calling a Curried_Function.
+struct Partial_Application_Base : public Function
+{
+    unsigned nargs() const { return nslots_; }
+
+    Partial_Application_Base(unsigned nargs, Symbol_Ref name,
+        Value (*func)(const Function&, Fail, Frame&))
+    :
+        Function(nargs, name),
+        callfunc_(func)
+    {}
+
+    virtual Value call(Value, Fail, Frame&) const override;
+
+    Value (*callfunc_)(const Function&, Fail, Frame&);
+    TAIL_ARRAY_MEMBERS(Value)
+};
+using Partial_Application = Tail_Array<Partial_Application_Base>;
+
+// This is a convenience for defining builtin curried functions.
+struct Curried_Function : public Function
+{
+    unsigned nargs() const { return nslots_; }
+    Value (*callfunc_)(const Function&, Fail, Frame&);
+
+    Curried_Function(unsigned nargs, const char* name,
+        Value (*func)(const Function&, Fail, Frame&))
+    :
+        Function(nargs, name),
+        callfunc_(func)
+    {
+        assert(nargs >= 2);
+    }
+
+    virtual Value call(Value, Fail, Frame&) const override;
 };
 
 /// The run-time representation of a compiled lambda expression.
@@ -138,7 +183,7 @@ struct Lambda : public Ref_Value
     // Suppose this function is the result of partial application of a named
     // function. Then this is the # of arguments that were applied to get here,
     // and `name_` is the name of the base function.
-    int argpos_ = 0;
+    unsigned argpos_ = 0;
 
     Lambda(
         Shared<const Pattern> pattern,
