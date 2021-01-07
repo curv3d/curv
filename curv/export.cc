@@ -252,7 +252,7 @@ void export_all_png(
     const char* ipath = ofile.path_.string().c_str();
     const char* p = strchr(ipath, '*');
     if (p == nullptr) {
-        throw Exception(At_System(shape.system_),
+        throw Exception(At_System(shape.system()),
           "'-O animate=' requires pathname in '-o pathname' to contain a '*'");
     }
     Range<const char*> prefix(ipath, p);
@@ -267,7 +267,7 @@ void export_all_png(
         char num[12];
         snprintf(num, sizeof(num), "%0*d", digs, i);
         auto opath = stringify(prefix, num, suffix);
-        Output_File oofile{shape.system_};
+        Output_File oofile{shape.system()};
         oofile.set_path(opath->c_str());
         geom::export_png(shape, ix, oofile);
         oofile.commit();
