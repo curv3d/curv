@@ -13,7 +13,7 @@ namespace curv {
 
 GPU_Program::GPU_Program(Program& prog)
 :
-    system_(prog.system()),
+    sstate_(prog.sstate_),
     nub_(nub_phrase(prog.phrase_))
 {
     // mark initial state (no shape has been recognized yet)
@@ -86,7 +86,7 @@ GPU_Program::recognize(Value val, Render_Opts opts)
 
         return true;
     }
-    Shape_Program shape(system_, nub_);
+    Shape_Program shape(sstate_, nub_);
     if (!shape.recognize(val, &opts))
         return false;
     is_2d_ = shape.is_2d_;

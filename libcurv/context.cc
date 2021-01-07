@@ -24,7 +24,7 @@ At_Frame::get_locations(std::list<Location>& locs) const
 {
     get_frame_locations(&call_frame_, locs);
 }
-System& At_Frame::system() const { return call_frame_.system_; }
+System& At_Frame::system() const { return call_frame_.sstate_.system_; }
 Frame* At_Frame::frame() const { return &call_frame_; }
 const Phrase& At_Frame::syntax() const
 {
@@ -85,11 +85,12 @@ System& At_Token::system() const { return system_; }
 Frame* At_Token::frame() const { return file_frame_; }
 
 At_Phrase::At_Phrase(Shared<const Phrase> phrase, Frame& call_frame)
-: phrase_(phrase), system_(call_frame.system_), frame_(&call_frame)
+: phrase_(phrase), system_(call_frame.sstate_.system_), frame_(&call_frame)
 {}
 
 At_Phrase::At_Phrase(const Phrase& phrase, Frame& call_frame)
-: phrase_(share(phrase)), system_(call_frame.system_), frame_(&call_frame)
+: phrase_(share(phrase)), system_(call_frame.sstate_.system_),
+  frame_(&call_frame)
 {}
 
 At_Phrase::At_Phrase(const Phrase& phrase, System& sys, Frame* frame)
@@ -138,7 +139,7 @@ At_Arg::get_locations(std::list<Location>& locs) const
         get_frame_locations(&call_frame_, locs);
     }
 }
-System& At_Arg::system() const { return call_frame_.system_; }
+System& At_Arg::system() const { return call_frame_.sstate_.system_; }
 Frame* At_Arg::frame() const { return &call_frame_; }
 const Phrase& At_Arg::syntax() const
 {
@@ -163,7 +164,7 @@ At_Metacall::get_locations(std::list<Location>& locs) const
     locs.push_back(arg_.location());
     get_frame_locations(&parent_frame_, locs);
 }
-System& At_Metacall::system() const { return parent_frame_.system_; }
+System& At_Metacall::system() const { return parent_frame_.sstate_.system_; }
 Frame* At_Metacall::frame() const { return &parent_frame_; }
 const Phrase& At_Metacall::syntax() const { return arg_; }
 
@@ -182,7 +183,7 @@ At_Metacall_With_Call_Frame::get_locations(std::list<Location>& locs) const
 }
 System& At_Metacall_With_Call_Frame::system() const
 {
-    return call_frame_.system_;
+    return call_frame_.sstate_.system_;
 }
 Frame* At_Metacall_With_Call_Frame::frame() const { return &call_frame_; }
 const Phrase& At_Metacall_With_Call_Frame::syntax() const

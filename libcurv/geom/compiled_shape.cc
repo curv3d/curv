@@ -12,13 +12,13 @@ namespace curv { namespace geom {
 
 Compiled_Shape::Compiled_Shape(Shape_Program& rshape)
 :
-    cpp_{rshape.system_}
+    cpp_{rshape.system()}
 {
     is_2d_ = rshape.is_2d_;
     is_3d_ = rshape.is_3d_;
     bbox_ = rshape.bbox_;
 
-    At_System cx{rshape.system_};
+    At_System cx{rshape.system()};
 
     cpp_.define_function("dist", SC_Type::Num(4), SC_Type::Num(),
         rshape.dist_fun_, cx);

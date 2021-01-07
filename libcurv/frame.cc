@@ -10,9 +10,9 @@
 namespace curv {
 
 Frame_Base::Frame_Base(
-    System& sys, Frame* parent, Shared<const Phrase> src, Module* nl)
+    Source_State& sstate, Frame* parent, Shared<const Phrase> src, Module* nl)
 :
-    system_(sys),
+    sstate_(sstate),
     parent_frame_(parent),
     call_phrase_(std::move(src)),
     nonlocals_(nl)

@@ -6,18 +6,21 @@
 #define LIBCURV_FRAME_H
 
 #include <libcurv/tail_array.h>
-#include <libcurv/list.h>
+//#include <libcurv/list.h>
 #include <libcurv/value.h>
 #include <libcurv/slot.h>
 #include <libcurv/module.h>
 
 namespace curv {
 
+struct Context;
 struct Frame_Base;
 struct Function;
 struct Operation;
 struct Phrase;
+struct String_Ref;
 struct System;
+struct Source_State;
 
 /// A Frame is an evaluation context.
 ///
@@ -31,13 +34,11 @@ using Frame = Tail_Array<Frame_Base>;
 
 struct Frame_Base
 {
-    /// The System object abstracts client- and os-specific functionality.
-    /// It is owned by the client, and is generally available to the evaluator.
-    /// A reference to the global System object is stored in every Frame,
-    /// because that seems more efficient (less copying) than passing it as
-    /// a parameter to every `eval` call, and it seems cleaner than a thread
-    /// local variable. Think of the System reference as a VM register.
-    System& system_;
+    // sstate_ provides access to shared state for evaluating the current
+    // source file (Source_State itself), evaluating the current program
+    // (Program_State) and the System interface.
+    // A reference is stored in every Frame: consider this a VM register.
+    Source_State& sstate_;
 
     /// Frames are linked into a stack. This is metadata used for printing
     /// a stack trace and by the debugger. It is not used during evaluation.
@@ -85,7 +86,43 @@ struct Frame_Base
         return array_[i];
     }
 
-    Frame_Base(System&, Frame* parent, Shared<const Phrase>, Module*);
+    Frame_Base(Source_State&, Frame* parent, Shared<const Phrase>, Module*);
+};
+
+// Shared state while running a program.
+struct Program_State
+{
+};
+
+// Shared state while analysing/evaluating a source file.
+// Referenced by Environ (analysis) and Frame (evaluation).
+struct Source_State
+{
+    System& system_;
+    Program_State& pstate_;
+
+    // If file_frame_ != nullptr, then we are processing a source file due to
+    // an evaluation-time call to `file`, and this is the Frame of the `file`
+    // call. It's used to add a stack trace to analysis time errors.
+    Frame* file_frame_;
+
+    // Have we already emitted a 'deprecated' warning for this topic?
+    // Used to prevent an avalanche of warning messages.
+    bool var_deprecated_ = false;
+    bool paren_empty_list_deprecated_ = false;
+    bool paren_list_deprecated_ = false;
+    bool not_deprecated_ = false;
+    bool dot_string_deprecated_ = false;
+    bool string_colon_deprecated_ = false;
+    bool where_deprecated_ = false;
+    bool bracket_index_deprecated_ = false;
+
+    Source_State(System& sys, Program_State& ps, Frame* ff = nullptr)
+    : system_(sys), pstate_(ps), file_frame_(ff)
+    {}
+
+    void deprecate(bool Source_State::*, int, const Context&, const String_Ref&);
+    static const char dot_string_deprecated_msg[];
 };
 
 Value tail_eval_frame(std::unique_ptr<Frame>);

@@ -13,7 +13,7 @@ namespace curv {
 
 struct GPU_Program
 {
-    System& system_;
+    Source_State& sstate_;
     Shared<const Phrase> nub_;
     bool is_2d_;
     bool is_3d_;
@@ -28,8 +28,8 @@ struct GPU_Program
 
     // abstract interface to PROGRAM classes (see At_Program)
     Location location() const;
-    System& system() const { return system_; }
-    Frame* file_frame() const { return nullptr; }
+    System& system() const { return sstate_.system_; }
+    Frame* file_frame() const { return sstate_.file_frame_; }
 
     void write_json(std::ostream&) const;
     void write_curv(std::ostream&) const;

@@ -174,7 +174,8 @@ struct Predicate_Pattern : public Pattern
               {
                 Function* fun = (Function*)&funp;
                 std::unique_ptr<Frame> f2 {
-                    Frame::make(fun->nslots_, f.system_, &f, call_phrase(), nullptr)
+                    Frame::make(fun->nslots_, f.sstate_, &f,
+                        call_phrase(), nullptr)
                 };
                 auto result = fun->call(arg, Fail::hard, *f2);
                 return result.to_bool(At_Phrase(*call_phrase(), f));
@@ -523,14 +524,14 @@ make_pattern(const Phrase& ph, Environ& env)
         std::vector<Shared<Pattern>> items;
         if (isa<Empty_Phrase>(parens->body_)) {
             env.analyser_.deprecate(
-                &File_Analyser::paren_empty_list_deprecated_, 1,
+                &Source_State::paren_empty_list_deprecated_, 1,
                 At_Phrase(ph, env),
                 "Using '()' as the empty list is deprecated. Use '[]' instead.");
             return make<List_Pattern>(share(ph), items);
         }
         if (isa<Comma_Phrase>(parens->body_)) {
             env.analyser_.deprecate(
-                &File_Analyser::paren_list_deprecated_, 1,
+                &Source_State::paren_list_deprecated_, 1,
                 At_Phrase(ph, env),
                 "Pattern '(a,b,c)' is deprecated. Use '[a,b,c]' instead.");
             each_item(*parens->body_, [&](Phrase& item)->void {
@@ -617,10 +618,10 @@ record_pattern_default_value(const Pattern& pat, Frame& f)
 
 void
 record_pattern_each_parameter(
-    const Closure& call, System& sys,
+    const Closure& call, Source_State& sstate,
     std::function<void(Symbol_Ref, Value, Value, Shared<const Phrase>)> f)
 {
-    auto frame = Frame::make(call.nslots_, sys, nullptr, nullptr, nullptr);
+    auto frame = Frame::make(call.nslots_, sstate, nullptr, nullptr, nullptr);
     auto rpat = dynamic_cast<const Record_Pattern*>(&*call.pattern_);
     if (rpat == nullptr)
         throw Exception(At_Phrase(*call.pattern_->syntax_, *frame),

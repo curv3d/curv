@@ -1130,12 +1130,11 @@ struct File_Expr : public Just_Expression
     {}
     virtual Value eval(Frame& f) const override
     {
-        // Metafunction calls do not automatically get a new stack frame
-        // allocated. But I want the call to `file pathname` to appear
-        // in stack traces, so I need a Frame.
+        // Each call to `file pathname` has its own stack frame,
+        // which permits calls to `file pathname` to appear in stack traces.
         auto& callphrase = dynamic_cast<const Call_Phrase&>(*syntax_);
         std::unique_ptr<Frame> f2 =
-            Frame::make(0, f.system_, &f, &callphrase, nullptr);
+            Frame::make(0, f.sstate_, &f, &callphrase, nullptr);
         At_Metacall_With_Call_Frame cx("file", 0, *f2);
 
         // construct file pathname from argument
@@ -1178,7 +1177,7 @@ struct Print_Action : public Operation
     {
         Value arg = arg_->eval(f);
         auto str = to_print_string(arg);
-        f.system_.print(str->c_str());
+        f.sstate_.system_.print(str->c_str());
     }
 };
 /// The meaning of the phrase `print` in isolation.
@@ -1206,7 +1205,7 @@ struct Warning_Action : public Operation
         Value arg = arg_->eval(f);
         auto msg = to_print_string(arg);
         Exception exc{At_Phrase(*syntax_, f), msg};
-        f.system_.warning(exc);
+        f.sstate_.system_.warning(exc);
     }
 };
 /// The meaning of the phrase `warning` in isolation.
@@ -1459,9 +1458,9 @@ struct Defined_Metafunction : public Metafunction
             }
             if (auto string = cast<const String_Phrase>(dot->right_)) {
                 env.analyser_.deprecate(
-                    &File_Analyser::dot_string_deprecated_, 1,
+                    &Source_State::dot_string_deprecated_, 1,
                     At_Phrase(*argph, env),
-                    File_Analyser::dot_string_deprecated_msg);
+                    Source_State::dot_string_deprecated_msg);
             }
         }
         auto arg = analyse_op(*argph, env);

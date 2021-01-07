@@ -1,3 +1,11 @@
+* Deprecate array[i,j]; use array.[i,j] instead.
+  * The deprecation happens at run time. We should only print one such warning
+    per source file, during a run.
+  * Frame contains Source_State& which contains System&, Program_State&
+    and bracket_index_deprecated_.
+  * Program_State contains expression cache for CSE during symbolic evaluation.
+* Assignment to indexed locative uses amend.
+-----
 Binary_Array_Op::call() use Fail
 
 which in turn invokes Prim::unbox_left() and unbox_right(), which may not

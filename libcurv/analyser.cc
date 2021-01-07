@@ -20,7 +20,7 @@
 namespace curv
 {
 
-void File_Analyser::deprecate(bool File_Analyser::* flag, int lvl,
+void Source_State::deprecate(bool Source_State::* flag, int lvl,
     const Context& cx, const String_Ref& msg)
 {
     if (system_.depr_ >= lvl && (system_.verbose_ || !((*this).*flag))) {
@@ -29,7 +29,7 @@ void File_Analyser::deprecate(bool File_Analyser::* flag, int lvl,
     }
 }
 
-const char File_Analyser::dot_string_deprecated_msg[] =
+const char Source_State::dot_string_deprecated_msg[] =
     "record.\"name\" is deprecated.\n"
     "Use record.'name', record.[#name] instead.";
 
@@ -48,7 +48,7 @@ std_eval(const Phrase& ph, Environ& env)
         env.analyser_.system_.std_namespace(), env.analyser_);
     auto op = analyse_op(ph, benv);
     auto frame = Frame::make(benv.frame_maxslots_,
-        env.analyser_.system_, env.analyser_.file_frame_, nullptr, nullptr);
+        env.analyser_, env.analyser_.file_frame_, nullptr, nullptr);
     return op->eval(*frame);
 }
 
@@ -310,7 +310,7 @@ Unary_Phrase::analyse(Environ& env, Interp) const
 {
     switch (op_.kind_) {
     case Token::k_not:
-        env.analyser_.deprecate(&File_Analyser::not_deprecated_, 1,
+        env.analyser_.deprecate(&Source_State::not_deprecated_, 1,
             At_Phrase(*this, env),
             "'!a' is deprecated. Use 'not(a)' instead.");
         return make<Not_Expr>(
@@ -435,7 +435,7 @@ analyse_assoc(Environ& env,
     if (auto id = dynamic_cast<const Identifier*>(&left))
         return make<Assoc>(share(src), Symbol_Expr{share(*id)}, right_expr);
     if (auto string = dynamic_cast<const String_Phrase*>(&left)) {
-        env.analyser_.deprecate(&File_Analyser::string_colon_deprecated_, 1,
+        env.analyser_.deprecate(&Source_State::string_colon_deprecated_, 1,
             At_Phrase(src, env),
             "\"name\":value is deprecated.\n"
             "Use 'name':value or [#name,value] instead.");
@@ -458,7 +458,7 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, Interp terp)
         return defn->add_to_sequential_scope(scope);
     }
     if (auto vardef = cast<const Var_Definition_Phrase>(stmt)) {
-        scope.analyser_.deprecate(&File_Analyser::var_deprecated_, 1,
+        scope.analyser_.deprecate(&Source_State::var_deprecated_, 1,
             At_Phrase(*vardef, scope),
             "'var pattern := expr' is deprecated.\n"
             "Use 'local pattern = expr' instead.");
@@ -553,7 +553,7 @@ Where_Phrase::analyse(Environ& env, Interp terp) const
     Shared<const Phrase> bodysrc = left_;
 
     env.analyser_.deprecate(
-        &File_Analyser::where_deprecated_, 1,
+        &Source_State::where_deprecated_, 1,
         At_Phrase(*syntax, env),
         "'where' is deprecated. Use 'let' instead.");
 
@@ -682,9 +682,9 @@ Shared<Meaning> Dot_Phrase::analyse(Environ& env, Interp) const
     }
     if (auto string = cast<const String_Phrase>(right_)) {
         env.analyser_.deprecate(
-            &File_Analyser::dot_string_deprecated_, 1,
+            &Source_State::dot_string_deprecated_, 1,
             At_Phrase(*this, env),
-            File_Analyser::dot_string_deprecated_msg);
+            Source_State::dot_string_deprecated_msg);
         auto str_expr = string->analyse_string(env);
         return make<Dot_Expr>(
             share(*this),
@@ -885,7 +885,7 @@ Paren_Phrase::analyse(Environ& env, Interp terp) const
     if (cast<const Empty_Phrase>(body_)) {
         if (terp.is_expr()) {
             env.analyser_.deprecate(
-                &File_Analyser::paren_empty_list_deprecated_, 1,
+                &Source_State::paren_empty_list_deprecated_, 1,
                 At_Phrase(*this, env),
                 "Using '()' as the empty list is deprecated. "
                 "Use '[]' instead.");
@@ -894,7 +894,7 @@ Paren_Phrase::analyse(Environ& env, Interp terp) const
     }
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
         if (terp.is_expr()) {
-            env.analyser_.deprecate(&File_Analyser::paren_list_deprecated_, 1,
+            env.analyser_.deprecate(&Source_State::paren_list_deprecated_, 1,
                 At_Phrase(*this, env),
                 "Using '(a,b,c)' as a list is deprecated. "
                 "Use '[a,b,c]' instead.");

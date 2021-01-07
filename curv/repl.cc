@@ -133,7 +133,7 @@ struct REPL_Locative : public Boxed_Locative
 struct REPL_Environ : public Environ
 {
     REPL_Namespace& names_;
-    REPL_Environ(REPL_Namespace& n, File_Analyser& a)
+    REPL_Environ(REPL_Namespace& n, Source_State& a)
     :
         Environ(a),
         names_(n)
@@ -393,8 +393,7 @@ void repl(System* sys, const Render_Opts* render)
             auto source = make<String_Source>("", line);
             Program prog{std::move(source), *sys};
             prog.terp_ = Interp::stmt(1);
-            File_Analyser ana(*sys, nullptr);
-            REPL_Environ env(names, ana);
+            REPL_Environ env(names, prog.sstate_);
             prog.compile(env);
             executor.start_command();
             auto bindings = prog.exec(executor);

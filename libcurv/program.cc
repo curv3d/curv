@@ -20,8 +20,7 @@ Program::compile(const Namespace* names)
 {
     if (names == nullptr)
         names = &scanner_.system_.std_namespace();
-    File_Analyser ana(scanner_.system_, scanner_.file_frame_);
-    Builtin_Environ env{*names, ana};
+    Builtin_Environ env{*names, sstate_};
     compile(env);
 }
 
@@ -35,7 +34,7 @@ Program::compile(Environ& env)
         meaning_ = phrase_->analyse(env, terp_);
     }
     frame_ = {Frame::make(env.frame_maxslots_,
-        scanner_.system_, scanner_.file_frame_, nullptr, nullptr)};
+        sstate_, scanner_.file_frame_, nullptr, nullptr)};
 }
 
 const Phrase&

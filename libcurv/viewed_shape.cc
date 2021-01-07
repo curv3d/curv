@@ -63,7 +63,7 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Render_Opts& opts)
     static Symbol_Ref picker_key = make_symbol("picker");
 
     // Recognize a parametric shape (it has `argument` and `call` fields).
-    At_System cx{shape.system_};
+    At_System cx{shape.system()};
     Shared<Record> sh_argument = nullptr;
     if (shape.record_->hasfield(argument_key))
         sh_argument = shape.record_->getfield(argument_key, cx).to<Record>(cx);
@@ -73,7 +73,7 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Render_Opts& opts)
     if (sh_argument && sh_constructor) {
         // We have a parametric shape.
         auto cparams = make<DRecord>();
-        record_pattern_each_parameter(*sh_constructor->ctor_, shape.system_,
+        record_pattern_each_parameter(*sh_constructor->ctor_, shape.sstate_,
             [&](Symbol_Ref name, Value pred, Value value,
                 Shared<const Phrase> nameph) -> void
             {
@@ -91,7 +91,7 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Render_Opts& opts)
                     Picker::State state{
                         config.type_,
                         value,
-                        At_System{shape.system_}};
+                        At_System{shape.system()}};
                     param_.insert(std::pair<const std::string,Parameter>{
                         name.c_str(),
                         Parameter{id, config, state}});
@@ -102,7 +102,8 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Render_Opts& opts)
                 }
             });
         std::unique_ptr<Frame> f2 {
-            Frame::make(sh_constructor->nslots_, shape.system_, nullptr, nullptr, nullptr)
+            Frame::make(sh_constructor->nslots_, shape.sstate_,
+                nullptr, nullptr, nullptr)
         };
         Value result = sh_constructor->call({cparams}, Fail::hard, *f2);
         //std::cerr << "parametric shape: " << result << "\n";

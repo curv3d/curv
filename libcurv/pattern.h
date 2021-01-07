@@ -42,7 +42,7 @@ Shared<Pattern> make_pattern(const Phrase&, Environ&);
 Shared<Record> record_pattern_default_value(const Pattern&, Frame&);
 
 void record_pattern_each_parameter(
-    const Closure&, System&,
+    const Closure&, Source_State&,
     std::function<void(Symbol_Ref, Value, Value, Shared<const Phrase>)>);
 
 } // namespace

@@ -10,46 +10,16 @@
 
 namespace curv {
 
-// Shared analysis state while analysing a source file.
-struct File_Analyser
-{
-    System& system_;
-
-    /// file_frame_ is nullptr, unless we are analysing a source file due to
-    /// an evaluation-time call to `file`. It's used by the Exception Context,
-    /// to add a stack trace to compile time errors.
-    Frame* file_frame_;
-
-    // Have we already emitted a 'deprecated' warning for this topic?
-    // Used to prevent an avalanche of warning messages.
-    bool var_deprecated_ = false;
-    bool paren_empty_list_deprecated_ = false;
-    bool paren_list_deprecated_ = false;
-    bool not_deprecated_ = false;
-    bool dot_string_deprecated_ = false;
-    bool string_colon_deprecated_ = false;
-    bool where_deprecated_ = false;
-
-    File_Analyser(System& system, Frame* file_frame)
-    :
-        system_(system),
-        file_frame_(file_frame)
-    {}
-
-    void deprecate(bool File_Analyser::*, int, const Context&, const String_Ref&);
-    static const char dot_string_deprecated_msg[];
-};
-
 // Local analysis state that changes when entering a new name-binding scope.
 struct Environ
 {
     Environ* parent_;
-    File_Analyser& analyser_;
+    Source_State& analyser_;
     slot_t frame_nslots_;
     slot_t frame_maxslots_;
 
     // constructor for root environment of a source file
-    Environ(File_Analyser& analyser)
+    Environ(Source_State& analyser)
     :
         parent_(nullptr),
         analyser_(analyser),
@@ -85,7 +55,7 @@ struct Builtin_Environ : public Environ
 protected:
     const Namespace& names;
 public:
-    Builtin_Environ(const Namespace& n, File_Analyser& a)
+    Builtin_Environ(const Namespace& n, Source_State& a)
     :
         Environ(a),
         names(n)

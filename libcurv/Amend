@@ -49,7 +49,7 @@ Each lens type needs to define fetch_slice and amend_slice:
 
 In Curv 0.5, an undocumented internal lens API:
 * In libcurv, fetch_slice and amend_slice for builtin lens types.
-* Builtin lens constructors: iid, ipath, islice.
+* Builtin lens constructors: tid, tpath, tslice.
 * To simplify the code, a slice is a pair of index values.
 
 Post Curv 0.5, this API is redesigned, renamed, made public.
