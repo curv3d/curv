@@ -1457,7 +1457,7 @@ struct Defined_Metafunction : public Metafunction
                     Symbol_Expr(analyse_op(*brackets->body_, env)));
             }
             if (auto string = cast<const String_Phrase>(dot->right_)) {
-                env.analyser_.deprecate(
+                env.sstate_.deprecate(
                     &Source_State::dot_string_deprecated_, 1,
                     At_Phrase(*argph, env),
                     Source_State::dot_string_deprecated_msg);

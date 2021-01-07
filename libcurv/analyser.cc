@@ -37,7 +37,7 @@ Shared<Operation>
 analyse_op(const Phrase& ph, Environ& env, Interp terp)
 {
     return ph.analyse(env, terp)
-        ->to_operation(env.analyser_.system_, env.analyser_.file_frame_);
+        ->to_operation(env.sstate_.system_, env.sstate_.file_frame_);
 }
 
 // Evaluate the phrase as a constant expression in the builtin environment.
@@ -45,10 +45,10 @@ Value
 std_eval(const Phrase& ph, Environ& env)
 {
     Builtin_Environ benv(
-        env.analyser_.system_.std_namespace(), env.analyser_);
+        env.sstate_.system_.std_namespace(), env.sstate_);
     auto op = analyse_op(ph, benv);
     auto frame = Frame::make(benv.frame_maxslots_,
-        env.analyser_, env.analyser_.file_frame_, nullptr, nullptr);
+        env.sstate_, env.sstate_.file_frame_, nullptr, nullptr);
     return op->eval(*frame);
 }
 
@@ -310,7 +310,7 @@ Unary_Phrase::analyse(Environ& env, Interp) const
 {
     switch (op_.kind_) {
     case Token::k_not:
-        env.analyser_.deprecate(&Source_State::not_deprecated_, 1,
+        env.sstate_.deprecate(&Source_State::not_deprecated_, 1,
             At_Phrase(*this, env),
             "'!a' is deprecated. Use 'not(a)' instead.");
         return make<Not_Expr>(
@@ -435,7 +435,7 @@ analyse_assoc(Environ& env,
     if (auto id = dynamic_cast<const Identifier*>(&left))
         return make<Assoc>(share(src), Symbol_Expr{share(*id)}, right_expr);
     if (auto string = dynamic_cast<const String_Phrase*>(&left)) {
-        env.analyser_.deprecate(&Source_State::string_colon_deprecated_, 1,
+        env.sstate_.deprecate(&Source_State::string_colon_deprecated_, 1,
             At_Phrase(src, env),
             "\"name\":value is deprecated.\n"
             "Use 'name':value or [#name,value] instead.");
@@ -458,7 +458,7 @@ analyse_stmt(Shared<const Phrase> stmt, Scope& scope, Interp terp)
         return defn->add_to_sequential_scope(scope);
     }
     if (auto vardef = cast<const Var_Definition_Phrase>(stmt)) {
-        scope.analyser_.deprecate(&Source_State::var_deprecated_, 1,
+        scope.sstate_.deprecate(&Source_State::var_deprecated_, 1,
             At_Phrase(*vardef, scope),
             "'var pattern := expr' is deprecated.\n"
             "Use 'local pattern = expr' instead.");
@@ -552,7 +552,7 @@ Where_Phrase::analyse(Environ& env, Interp terp) const
     Shared<Phrase> bindings = right_;
     Shared<const Phrase> bodysrc = left_;
 
-    env.analyser_.deprecate(
+    env.sstate_.deprecate(
         &Source_State::where_deprecated_, 1,
         At_Phrase(*syntax, env),
         "'where' is deprecated. Use 'let' instead.");
@@ -681,7 +681,7 @@ Shared<Meaning> Dot_Phrase::analyse(Environ& env, Interp) const
             Symbol_Expr{id});
     }
     if (auto string = cast<const String_Phrase>(right_)) {
-        env.analyser_.deprecate(
+        env.sstate_.deprecate(
             &Source_State::dot_string_deprecated_, 1,
             At_Phrase(*this, env),
             Source_State::dot_string_deprecated_msg);
@@ -884,7 +884,7 @@ Paren_Phrase::analyse(Environ& env, Interp terp) const
 {
     if (cast<const Empty_Phrase>(body_)) {
         if (terp.is_expr()) {
-            env.analyser_.deprecate(
+            env.sstate_.deprecate(
                 &Source_State::paren_empty_list_deprecated_, 1,
                 At_Phrase(*this, env),
                 "Using '()' as the empty list is deprecated. "
@@ -894,7 +894,7 @@ Paren_Phrase::analyse(Environ& env, Interp terp) const
     }
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
         if (terp.is_expr()) {
-            env.analyser_.deprecate(&Source_State::paren_list_deprecated_, 1,
+            env.sstate_.deprecate(&Source_State::paren_list_deprecated_, 1,
                 At_Phrase(*this, env),
                 "Using '(a,b,c)' as a list is deprecated. "
                 "Use '[a,b,c]' instead.");

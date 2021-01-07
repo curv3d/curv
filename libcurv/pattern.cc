@@ -523,14 +523,14 @@ make_pattern(const Phrase& ph, Environ& env)
     if (auto parens = dynamic_cast<const Paren_Phrase*>(&ph)) {
         std::vector<Shared<Pattern>> items;
         if (isa<Empty_Phrase>(parens->body_)) {
-            env.analyser_.deprecate(
+            env.sstate_.deprecate(
                 &Source_State::paren_empty_list_deprecated_, 1,
                 At_Phrase(ph, env),
                 "Using '()' as the empty list is deprecated. Use '[]' instead.");
             return make<List_Pattern>(share(ph), items);
         }
         if (isa<Comma_Phrase>(parens->body_)) {
-            env.analyser_.deprecate(
+            env.sstate_.deprecate(
                 &Source_State::paren_list_deprecated_, 1,
                 At_Phrase(ph, env),
                 "Pattern '(a,b,c)' is deprecated. Use '[a,b,c]' instead.");

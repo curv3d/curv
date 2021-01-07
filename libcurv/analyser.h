@@ -14,7 +14,7 @@ namespace curv {
 struct Environ
 {
     Environ* parent_;
-    Source_State& analyser_;
+    Source_State& sstate_;
     slot_t frame_nslots_;
     slot_t frame_maxslots_;
 
@@ -22,7 +22,7 @@ struct Environ
     Environ(Source_State& analyser)
     :
         parent_(nullptr),
-        analyser_(analyser),
+        sstate_(analyser),
         frame_nslots_(0),
         frame_maxslots_(0)
     {}
@@ -31,7 +31,7 @@ struct Environ
     Environ(Environ* parent)
     :
         parent_(parent),
-        analyser_(parent->analyser_),
+        sstate_(parent->sstate_),
         frame_nslots_(0),
         frame_maxslots_(0)
     {}
