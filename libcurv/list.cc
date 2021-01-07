@@ -62,21 +62,31 @@ Value Generic_List::val_at(size_t i, const At_Syntax& cx) const
             cx)};
     }
 }
-void Generic_List::prepare_for_amend()
+void Generic_List::amend_at(size_t i, Value newval, const At_Syntax& cx)
 {
-    if (list_->use_count > 1) {
-        if (is_boxed_list()) {
+    if (this->is_boxed_list()) {
+        if (list_->use_count > 1) {
             auto& bl = get_boxed_list();
             list_ = List::make_copy(bl.begin(), bl.size());
         }
-    }
-}
-void Generic_List::amend_at(size_t i, Value newval, const At_Syntax& cx)
-{
-    if (this->is_boxed_list())
         get_boxed_list().at(i) = newval;
-    else if (this->is_string())
-        throw Exception(cx, "Generic_List: can't amend string");
+    }
+    else if (this->is_string()) {
+        if (newval.is_char()) {
+            if (list_->use_count > 1) {
+                auto& str = get_string();
+                list_ = make_string(str.data(), str.size());
+            }
+            get_string().at(i) = newval.to_char_unsafe();
+        } else {
+            auto& str = get_string();
+            auto li = List::make(str.size());
+            for (unsigned j = 0; j < str.size(); ++j)
+                li->at(j) = Value{str[j]};
+            li->at(i) = newval;
+            list_ = std::move(li);
+        }
+    }
     else if (this->is_reactive_value())
         throw Exception(cx, "Generic_List: can't amend symbolic list");
     else

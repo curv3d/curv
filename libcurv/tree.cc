@@ -215,7 +215,6 @@ Value tree_amend(Value tree, Value index, Value elems, const At_Syntax& gcx)
         if (num_is_int(num)) {
             Generic_List glist(tree, Fail::hard, Bad_Collection(lcx));
             int i = num_to_int(num, 0, int(glist.size())-1, Bad_Index(lcx));
-            glist.prepare_for_amend();
             glist.amend_at(i, elems, lcx);
             return glist.get_value();
         }
@@ -260,7 +259,6 @@ Value tree_amend_slice(Value tree, Value index, Value index2, Value elems,
             int i = num_to_int(num, 0, int(glist.size())-1, Bad_Index(lcx));
             Value e = glist.val_at(i,lcx);
             Value ne = tree_amend(e, index2, elems, gcx);
-            glist.prepare_for_amend();
             glist.amend_at(i, ne, lcx);
             return glist.get_value();
         }

@@ -8,6 +8,7 @@
 #include <libcurv/value.h>
 #include <libcurv/tail_array.h>
 #include <libcurv/alist.h>
+#include <libcurv/string.h>
 #include <string>
 #include <vector>
 
@@ -90,6 +91,9 @@ private:
     List& get_boxed_list() {
         return *(List*)(&*list_);
     }
+    String& get_string() {
+        return *(String*)(&*list_);
+    }
     Reactive_Value& get_reactive_value() const {
         return *(Reactive_Value*)(&*list_);
     }
@@ -107,8 +111,7 @@ public:
     size_t size() const noexcept;
     void assert_size(size_t sz, const Context& cx) const;
     Value val_at(size_t i, const At_Syntax&) const;
-    void prepare_for_amend(); // copy list if usecount > 1
-    void amend_at(size_t, Value, const At_Syntax&); // destructive update
+    void amend_at(size_t, Value, const At_Syntax&);
     inline Value get_value() { return {list_}; }
 };
 
