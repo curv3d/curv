@@ -173,6 +173,7 @@ Value tree_fetch_slice(Value tree, Value index, Value index2,
         return tree_fetch_slice(r, path->index2_, index2, gcx);
     }
     else if (auto slice = index.maybe<TSlice>()) {
+        // Rewrite using the associative law of tslice[i,j].
         // This case normally doesn't happen, since islice[i1,i2,i3]
         // is normalized to islice[i1,islice[i2,i3]].
         return tree_fetch_slice(tree, slice->index1_,
@@ -282,24 +283,24 @@ Value tree_amend_slice(Value tree, Value index, Value index2, Value elems,
         }
         return r;
     }
-#if 0
     else if (auto path = index.maybe<TPath>()) {
-        --- amend
         Value e = tree_fetch(tree, path->index1_, gcx);
         Value ne = tree_amend(e, path->index2_, elems, gcx);
-        return tree_amend(tree, path->index1_, ne, gcx);
-        --- fetch_slice
-        Value r = tree_fetch(tree, path->index1_, gcx);
-        return tree_fetch_slice(r, path->index2_, index2, gcx);
+        return tree_amend_slice(tree, path->index1_, index2, ne, gcx);
     }
-    else if (auto sli = index.maybe<TSlice>()) {
-        return tree_amend_slice(tree, sli->index1_, sli->index2_, elems, gcx);
+    else if (auto slice = index.maybe<TSlice>()) {
+        // Rewrite using the associative law of tslice[i,j].
+        // This case is rare; only occurs with tslice[tslice[i,j],k].
+        // Which usually doesn't happen since tslice[i,j,k]
+        // is represented internally as tslice[i,tslice[j,k]].
+        return tree_amend_slice(tree, slice->index1_,
+            Value{make<TSlice>(slice->index2_, index2)},
+            elems, gcx);
     }
     else if (index.maybe<TId>()) {
-        return elems;
+        return tree_amend(tree, index2, elems, gcx);
     }
     // TODO: amend using a reactive index
-#endif
     throw Exception(lcx, stringify("Bad index: ", index));
 }
 Value tree_over(Value tree, Value index,
