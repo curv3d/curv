@@ -19,8 +19,8 @@ make_blend config args =
                         d2 = s2.dist p;
                     in if (d2 <= 0 || d2 <= d1) s2.colour p else s1.colour p;
                 bbox = let bulge = -bmin[0,0];
-                       in [ min[s1.bbox[MIN], s2.bbox[MIN]] - bulge,
-                            max[s1.bbox[MAX], s2.bbox[MAX]] + bulge ];
+                       in [ min[s1.bbox.[MIN], s2.bbox.[MIN]] - bulge,
+                            max[s1.bbox.[MAX], s2.bbox.[MAX]] + bulge ];
                 is_2d = s1.is_2d && s2.is_2d;
                 is_3d = s1.is_3d && s2.is_3d;
             };
@@ -32,8 +32,8 @@ make_blend config args =
                         b = s2.dist p;
                     in bmax[a,b];
                 colour = s1.colour;
-                bbox = [ max[s1.bbox[MIN], s2.bbox[MIN]],
-                         min[s1.bbox[MAX], s2.bbox[MAX]] ];
+                bbox = [ max[s1.bbox.[MIN], s2.bbox.[MIN]],
+                         min[s1.bbox.[MAX], s2.bbox.[MAX]] ];
                 is_2d = s1.is_2d && s2.is_2d;
                 is_3d = s1.is_3d && s2.is_3d;
             };
@@ -112,8 +112,8 @@ pipe d [s1, s2] =
         // Credit: original dist function in GLSL by MERCURY
         dist p = mag[s1.dist p, s2.dist p] - r;
         colour = s1.colour;
-        bbox = [ max[s1.bbox[MIN], s2.bbox[MIN]] - r,
-                 min[s1.bbox[MAX], s2.bbox[MAX]] + r ];
+        bbox = [ max[s1.bbox.[MIN], s2.bbox.[MIN]] - r,
+                 min[s1.bbox.[MAX], s2.bbox.[MAX]] + r ];
         is_2d = s1.is_2d && s2.is_2d;
         is_3d = s1.is_3d && s2.is_3d;
     };
@@ -143,8 +143,8 @@ tongue [ra, rb] [s1, s2] =
         // Credit: original dist function in GLSL by MERCURY
         dist p = min[s1.dist p, max[s1.dist p - ra, abs(s2.dist p)-rb]];
         colour = s1.colour;
-        bbox = [ s1.bbox[MIN] - [ra,ra,ra],
-                 s1.bbox[MAX] + [ra,ra,ra] ];
+        bbox = [ s1.bbox.[MIN] - [ra,ra,ra],
+                 s1.bbox.[MAX] + [ra,ra,ra] ];
         is_2d = s1.is_2d && s2.is_2d;
         is_3d = s1.is_3d && s2.is_3d;
     };

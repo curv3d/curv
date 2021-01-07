@@ -338,6 +338,10 @@ call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f)
         case Ref_Value::ty_abstract_list:
         case Ref_Value::ty_reactive:
           {
+            f.sstate_.deprecate(&Source_State::bracket_index_deprecated_, 1,
+                At_Phrase(*call_phrase, f),
+                "'array[i]' array indexing is deprecated.\n"
+                "Use 'array.[i]' instead.");
             return get_value_at_boxed_slice(funv, arg,
                 At_Phrase(*call_phrase, f));
           }

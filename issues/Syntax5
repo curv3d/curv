@@ -2,7 +2,7 @@ Syntax changes and standard coding style for Curv 0.5
 =====================================================
 * locative patterns
 * indexed locatives: a.[i,j].f@k := ...
-  * Amend: new Locative design supporting slice updates.
+  - Amend: new Locative design supporting slice updates.
 - In statement context, () and (a,b,c) are statements. In expression context,
   they are deprecated list syntax.
 - () as an empty list is deprecated, use [].
@@ -11,24 +11,12 @@ Syntax changes and standard coding style for Curv 0.5
   It is incompatible with (a,b,c) as a statement and , as a first class
   expression sequencing operator.
 - slice rvalue: collection.[i,j,k]
-* deprecate array[i,j]; use array.[i,j] instead.
-  * The deprecation happens at run time. We should only print one such warning
-    per source file, during a run.
-     * Given a Frame, we need to find a run-time deprecation structure
-       associated with the current source file. This doesn't have to be very
-       fast, as it is only triggered in a deprecated code path.
-        + A new entry in the Frame structure.
-        + In the System structure: A stack of Source_State structures.
-        + Frame contains Program_State& which contains System&, Source_State&,
-          expression cache for CSE during symbolic evaluation. Hmm, requires
-          switching out Source_State.
-        + Frame contains Source_State& which contains System&, Program_State&
-          and bracket_index_deprecated_.
-  * This syntax is incompatible with lenses as functions,
+- deprecate array[i,j]; use array.[i,j] instead.
+  - This syntax is incompatible with lenses as functions,
     because [lens1,lens2] is a lens.
-  * This syntax can't be used for lens application because it doesn't work
+  - This syntax can't be used for lens application because it doesn't work
     with records. (Or functions: lens application works on all values.)
-  * The new syntax allows indexing a record with a symbol, replacing
+  - The new syntax allows indexing a record with a symbol, replacing
     the old record."string" syntax.
 * low precedence collection@index operator?
 - deprecate record."string"; use record.[symbol] instead.
