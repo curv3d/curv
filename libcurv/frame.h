@@ -34,9 +34,8 @@ using Frame = Tail_Array<Frame_Base>;
 
 struct Frame_Base
 {
-    // sstate_ provides access to shared state for evaluating the current
-    // source file (Source_State itself), evaluating the current program
-    // (Program_State) and the System interface.
+    // sstate_ contains shared state for processing the current source file,
+    // and provides handles to global state.
     // A reference is stored in every Frame: consider this a VM register.
     Source_State& sstate_;
 
@@ -89,17 +88,11 @@ struct Frame_Base
     Frame_Base(Source_State&, Frame* parent, Shared<const Phrase>, Module*);
 };
 
-// Shared state while running a program.
-struct Program_State
-{
-};
-
 // Shared state while analysing/evaluating a source file.
 // Referenced by Environ (analysis) and Frame (evaluation).
 struct Source_State
 {
     System& system_;
-    Program_State& pstate_;
 
     // If file_frame_ != nullptr, then we are processing a source file due to
     // an evaluation-time call to `file`, and this is the Frame of the `file`
@@ -117,9 +110,7 @@ struct Source_State
     bool where_deprecated_ = false;
     bool bracket_index_deprecated_ = false;
 
-    Source_State(System& sys, Program_State& ps, Frame* ff = nullptr)
-    : system_(sys), pstate_(ps), file_frame_(ff)
-    {}
+    Source_State(System& sys, Frame* ff) : system_(sys), file_frame_(ff) {}
 
     void deprecate(bool Source_State::*, int, const Context&, const String_Ref&);
     static const char dot_string_deprecated_msg[];

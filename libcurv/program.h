@@ -33,7 +33,6 @@ struct Program
     Shared<Phrase> phrase_ = nullptr;
     Shared<Meaning> meaning_ = nullptr;
     Shared<Module_Expr> module_ = nullptr;
-    Program_State pstate_;
     Source_State sstate_;
     std::unique_ptr<Frame> frame_ = nullptr;
     Interp terp_ = Interp::expr();
@@ -46,7 +45,7 @@ struct Program
         scanner_(std::move(source), system, Scanner_Opts()
             .file_frame(opts.file_frame_)
             .skip_prefix(opts.skip_prefix_)),
-        sstate_(system, pstate_, opts.file_frame_)
+        sstate_(system, opts.file_frame_)
     {}
 
     void skip_prefix(unsigned len);
