@@ -44,18 +44,18 @@ add_library(replxx ${ReplxxSrc})
 target_include_directories(replxx
    PUBLIC extern/replxx/include
    PRIVATE extern/replxx/src)
-set_property(TARGET replxx PROPERTY CXX_STANDARD 14)
+set_property(TARGET replxx PROPERTY CXX_STANDARD 17)
 target_compile_definitions(replxx PRIVATE REPLXX_STATIC=1)
 
 # double-conversion library
 file(GLOB DoubleConversionSrc "extern/double-conversion/double-conversion/*.cc")
 add_library(double-conversion ${DoubleConversionSrc})
-set_property(TARGET double-conversion PROPERTY CXX_STANDARD 14)
+set_property(TARGET double-conversion PROPERTY CXX_STANDARD 17)
 
 # glad library, an OpenGL loader
 add_library(glad
     extern/glad/glad/glad.c)
-set_property(TARGET glad PROPERTY CXX_STANDARD 14)
+set_property(TARGET glad PROPERTY CXX_STANDARD 17)
 
 # Dear IMGUI library
 add_library(imgui
@@ -70,7 +70,7 @@ target_include_directories(imgui
 target_link_libraries(imgui PUBLIC glfw glad)
 target_compile_definitions(imgui PUBLIC
     IMGUI_IMPL_OPENGL_LOADER_GLAD )
-set_property(TARGET imgui PROPERTY CXX_STANDARD 14)
+set_property(TARGET imgui PROPERTY CXX_STANDARD 17)
 
 # GL library (OpenGL or mesa or ...)
 if (APPLE)
@@ -104,7 +104,7 @@ find_package(Boost 1.65 REQUIRED COMPONENTS iostreams filesystem system)
 #target_include_directories(imdemo
 #    PUBLIC extern/imgui/examples/example_glfw_opengl3)
 #target_link_libraries(imdemo PUBLIC glfw glad imgui ${LibOpenGL})
-#set_property(TARGET imdemo PROPERTY CXX_STANDARD 14)
+#set_property(TARGET imdemo PROPERTY CXX_STANDARD 17)
 
 # Libraries End
 # ===============================================
@@ -139,7 +139,7 @@ file(GLOB TestSrc "tests/*.cc")
 add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})
 target_link_libraries(tester PUBLIC gtest pthread libcurv libcurv_geom double-conversion Boost::iostreams Boost::filesystem Boost::system)
 
-set_property(TARGET curv curvc libcurv libcurv_geom tester PROPERTY CXX_STANDARD 14)
+set_property(TARGET curv curvc libcurv libcurv_geom tester PROPERTY CXX_STANDARD 17)
 
 set(gccflags "-Wall -Wno-unused-result" )
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${gccflags}" )
