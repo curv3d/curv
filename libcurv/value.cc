@@ -163,8 +163,6 @@ Ternary Value::equal(Value v, const Context& cx) const
         return Ternary((Symbol&)r1 == (Symbol&)*r2);
     case Ref_Value::ty_abstract_list:
         if (r1.subtype_ == r2->subtype_) {
-            // TODO: list containing only characters == string?
-            // not currently constructible, but this could change.
             switch (r1.subtype_) {
             case Ref_Value::sty_string:
                 return Ternary((String&)r1 == (String&)*r2);
@@ -172,7 +170,7 @@ Ternary Value::equal(Value v, const Context& cx) const
                 return ((List&)r1).equal((List&)*r2, cx);
             }
         } else {
-            return Ternary::False;
+            return ((Abstract_List&)r1).aequal((Abstract_List&)*r2, cx);
         }
     case Ref_Value::ty_record:
         return ((Record&)r1).equal((Record&)*r2, cx);

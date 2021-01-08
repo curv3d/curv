@@ -93,6 +93,16 @@ void Generic_List::amend_at(size_t i, Value newval, const At_Syntax& cx)
         throw Exception(cx, "Generic_List: internal error in amend_at");
 }
 
+Ternary Abstract_List::aequal(Abstract_List& a, const Context& cx) const
+{
+    if (size() != a.size()) return Ternary::False;
+    for (unsigned i = 0; i < size(); ++i) {
+        Ternary t = val_at(i).equal(a.val_at(i), cx);
+        if (t != Ternary::True) return t;
+    }
+    return Ternary::True;
+}
+
 const char List_Base::name[] = "list";
 const char Abstract_List::name[] = "list";
 

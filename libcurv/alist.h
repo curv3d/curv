@@ -28,6 +28,7 @@ protected:
 public:
     size_t size() const noexcept { return size_; }
     bool empty() const noexcept { return size_ == 0; }
+    Ternary aequal(Abstract_List& a, const Context& cx) const;
     virtual Value val_at(size_t i) const = 0;
     static const char name[];
 };
