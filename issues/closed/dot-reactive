@@ -1,3 +1,4 @@
+-- reported Aug 16 2020 on the Curv mailing list, bug #101, fixed Aug 17.
 `dot` does not support reactive arguments.
 
 Bug report:
