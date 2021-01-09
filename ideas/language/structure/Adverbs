@@ -3,16 +3,31 @@ K adverbs
 over        f/x     reduce f x
 scan        f\x
 each        f'x     map f x
-eachleft    x f\:y  lmap f x
-eachright   x f/:y  mapr f x
+eachleft    x f\:y  mapl f x    x ~op y
+eachright   x f/:y  mapr f x    x op~ y
 eachprior   x f':y
+
+The most general infix syntax for adverbs is ` syntax.
+Adverbs are ordinary combinators. For example,
+    `mapl mod`
+    `amap2 1 and`
+As a shortcut,
+    ` <postfix> <infix-operator> `
+is an abbreviation of
+    ` <postfix> '<infix-operator>' `
+Eg, `mapl*`
 
 I have encountered several uses for eachleft/eachright in Curv code.
 Are symbolic adverb operators a good idea for Curv?
     *f x        each (or map)
     *>f [x,y]   each right
     <*f [x,y]   each left
+The [[Tilde_Dmap_Smap]] proposal looks like this:
+    f ~ x       each
+    x `f`~ y    each right
+    x ~`f` y    each left
 
+0..999 ~`mod` [3,5] ~~== 0 >> or >> where >> sum
 0..999 >> `<*mod`[3,5] >> `eq`0 >> or >> where >> sum
 0..999 `<*mod`[3,5] `eq`0 >>or >>where >>sum
 

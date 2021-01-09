@@ -1,0 +1,107 @@
+Tilde: Simple Syntax to Map Array Operations across Larger Arrays
+=================================================================
+This is a replacement for the old ranked amap proposal.
+The old 'amap rank F A' is replaced by:
+ * 'smap F A': scalar map: map F onto each scalar in A. It is depth-polymorphic.
+ * 'smap2 F [A1,A2]'. Vectorize a binary scalar operation.
+ * 'dmap depth F A': the depth specifies how deep we descend into the array A
+   to find arguments. Unlike ranked amap, there are no arbitrary restrictions
+   on the shape of the arguments (not all Curv data can be described using a
+   rank). It is *not* depth polymorphic, which is a loss, but it works on any
+   kind of data and any function, which is a gain. It is easier to understand
+   because the rank concept was quite complex (not all families of nested lists
+   have a rank, and not all functions have an argument rank).
+ * The ~ syntax is a compact visual syntax for applying dmap in the most
+   common situations.
+
+The only builtin operations that we vectorize are scalar operations.
+Each builtin scalar operation is implicity smapped.
+* 'phase' only works on vec2, not arrays of vec2.
+* The libcurv Smap feature has no provision for specifying argument ranks,
+  and only works on scalar arguments. Simpler code.
+
+The '~' character is an adverb that can be applied to functions
+and infix operators.
+
+'F ~ x' is 'map F x' or 'dmap 1 F x'
+'F ~~ x' is 'map (map F) x' or 'dmap 2 F x'
+
+'a ~+ b' applies 'eachLeft' to the '+' operator. dmap[1,0]'+'[a,b]
+'a +~ b' applies 'eachRight'. dmap[0,1]'+'[a,b]
+In general, you can add zero or more tildes to the left and right of
+an infix operator token.
+
+x ~>> F     is F ~ x   is map F x
+I don't need F~x syntax.
+
+Prefix ` operators:
+    `foo` x
+    <=> a->a `foo` x
+and
+    `+` 1
+    <=> a->a + 1
+So then,
+    `~>>` f
+    <=> a->a ~>> f
+    <=> map f
+This is awesome for tacit programming, constructing combinator arguments.
+
+The real goal of tacit programming in Curv is to reduce programs to pipelines.
+Pipelines are easy to understand. Pipeline-oriented programming FTW.
+Flattening the operator precedence hierarchy will help with this.
+
+Euler1:
+    1..999 >> filter(n->n `mod` [3,5] ~== 0 >> or) >> sum
+
+You use ~ to vectorize a non-scalar operation.
+But you have to know statically how many levels down you need to traverse
+to get to an element, and that's how many tildes you write.
+
+APL scalar boxes are a further solution. When used with smap, they are depth
+polymorphic, and work on arbitrary data/arbitrary functions, but are more
+complex to use than tilde/dmap because you have to box and unbox arguments.
+Boxes can be added later if needed. See [[Box]].
+
+The 'phase' function is no longer generalized to work on arrays of vec2.
+For specific cases, use: ptlist ~>> phase, ptmatrix ~~>> phase
+
+Get rid of 'equal' and 'unequal', apply ~ to == and != instead.
+
+Here's how we dmap boolean operations over bool32 elements, thereby
+matching the bitwise integer operations in GLSL. Here the goal is to have
+some convenient way of transcribing GLSL into Curv.
+    int a;
+    ivec3 v;
+    v &= a;
+
+    v ~`and`:= a
+
+The ~ syntax is syntactic sugar for the new depth-based 'dmap' combinator.
+    dmap D F A
+If D (depth) is a natural number, descend D levels deep in A (a rank-D array)
+and map F (function) onto those elements. Error if we can't descend that
+far along any branch of A.
+If D is [N1,N2] (pair of nats) then A is a pair of arrays of rank N1, N2.
+Further generalizations of D are deferred.
+
+      a ~*~~ b
+ <=>  a `dmap[1,2]*` b
+ <=>  dmap[1,2] '*' [a,b]
+
+As a special case, map == dmap 1.
+
+I would defer until: flattening most left-associative operators to a single
+precedence, and reifying them (eg, '+' is the name of the plus function).
+
+Terminology
+-----------
+A Jagged Array is a non-rectangular array: nested lists where different elements
+of the same list have different ranks. Jagged arrays do not have a well defined
+rank, unlike rectangular arrays. https://en.wikipedia.org/wiki/Jagged_array
+
+Ranked array is a synonym for rectangular array. Or 'regular array'.
+
+'smap' maps over all *Scalars* in an arbitrary array, including jagged arrays.
+
+'dmap' maps over the elements of an arbitrary array at a specified *Depth*.
+This works on both rectangular and jagged arrays.

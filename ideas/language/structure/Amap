@@ -1,5 +1,7 @@
 Mapping Functions over Arrays
 =============================
+Note: this proposal is superceded by [[Tilde_Smap_Dmap]].
+
 Curv extends scalar operations to operate over arrays, in the manner originally
 defined by APL, and now adopted by numerous array languages, including GPU
 shader languages. This APL feature is implemented in hardware by CPU
@@ -34,8 +36,7 @@ There are two ways to fix this, and modern APLs support both techniques.
        rank 0 arrays.
      * Curv will have labelled values. If we are going to put values in boxes,
        maybe label those boxes to indicate the value's role?
-    In [[Box]] I explore this idea and decide to omit it from Curv in favour
-    of combinators.
+    In [[Box]] I explore this idea.
 
 Note: I don't plan to generalize scalar operations to distribute across records
 (eg, so that {a:1,b:1}+{a:10,b:20}=={a:11,b:21}). It is unusual for all of

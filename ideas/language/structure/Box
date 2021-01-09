@@ -36,5 +36,11 @@ A simple design that satisfies all requirements *except* the APL requirement is
 I need to weigh the cost of adding 'box' as a fundamental new container type
 vs the benefits. K has essentially the same data model as Curv, and doesn't
 provide these kind of boxes. The 'eachleft' and 'eachright' adverbs cover
-common use cases for APL boxes. If K doesn't need this concept, then arguably
-neither does Curv.
+common use cases for APL boxes. If K doesn't need this concept, does Curv?
+
+There is a visual-programming use for scalar boxes (as opposed to [x] boxes).
+In rich text, a scalar box is like Markdown inline `foo` or block ```:
+present a Curv value as code. Use distinctive typography to present the value:
+maybe draw a box around it? The $(foo) string substitution is for interpolating
+an arbitrary value into an error or debug message:
+it should put 'foo' into a scalar box.
