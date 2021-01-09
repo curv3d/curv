@@ -395,64 +395,6 @@ struct Binary_Array_Op
 // Each base class defines the argument and result types of a set of Prims.   //
 //----------------------------------------------------------------------------//
 
-// This Prim accepts arbitrary non-List arguments.
-struct Unary_Scalar_Prim
-{
-    typedef Value scalar_t;
-    static bool unbox(Value a, scalar_t& b, const Context&)
-    {
-        if (a.maybe<List>() || a.maybe<Reactive_Value>()) {
-            return false;
-        } else {
-            b = a;
-            return true;
-        }
-    }
-    static void sc_check_arg(SC_Value a, const Context& cx)
-    {
-        if (!a.type.is_plex())
-            throw Exception(cx, "argument must be a Plex");
-    }
-};
-
-// A primitive that maps [scalar,scalar] -> Bool
-// In SubCurv, each argument is a scalar or vec[2-4].
-struct Binary_Scalar_To_Bool_Prim : public Unary_Scalar_Prim
-{
-    typedef Value left_t, right_t;
-    static bool unbox_left(Value a, left_t& b, const Context& cx)
-    {
-        return unbox(a, b, cx);
-    }
-    static bool unbox_right(Value a, right_t& b, const Context& cx)
-    {
-        return unbox(a, b, cx);
-    }
-    static void sc_check_args(
-        SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
-    {
-        if (!a.type.is_scalar_or_vec()) {
-            throw Exception(cx, stringify(
-                "first argument must be a scalar or vec; instead got ",
-                a.type));
-        }
-        if (!b.type.is_scalar_or_vec()) {
-            throw Exception(cx, stringify(
-                "second argument must be a scalar or vec; instead got ",
-                b.type));
-        }
-        sc_plex_unify(f, a, b, cx);
-    }
-    static SC_Type sc_result_type(SC_Type a, SC_Type b)
-    {
-        SC_Type r = sc_unify_tensor_types(a, b);
-        if (r && r.is_scalar_or_vec())
-            return SC_Type::Bool(r.count());
-        else
-            return {};
-    }
-};
-
 // A primitive mapping Bool -> Num.
 // In SubCurv, argument types are Bool or Bvec but not Bool32.
 struct Unary_Bool_To_Num_Prim

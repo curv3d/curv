@@ -638,52 +638,6 @@ struct Select_Function : public Tuple_Function
     }
 };
 
-struct Equal_Prim : public Binary_Scalar_To_Bool_Prim
-{
-    static const char* name() { return "equal"; }
-    static Value call(Value a, Value b, const At_Syntax &cx)
-    {
-        return eqval<Binary_Op_Expr<Binary_Array_Op<Equal_Prim>>>(
-            a.equal(b, cx), a, b, cx);
-    }
-    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
-    {
-        auto result = f.sc_.newvalue(SC_Type::Bool(x.type.count()));
-        f.sc_.out() << "  " << result.type << " " << result << " = ";
-        if (x.type.is_vec()) {
-            f.sc_.out() << "equal(" << x << "," << y << ")";
-        } else {
-            f.sc_.out() << x << "==" << y;
-        }
-        f.sc_.out() << ";\n";
-        return result;
-    }
-};
-using Equal_Function = Binary_Array_Func<Equal_Prim>;
-
-struct Unequal_Prim : public Binary_Scalar_To_Bool_Prim
-{
-    static const char* name() { return "unequal"; }
-    static Value call(Value a, Value b, const At_Syntax &cx)
-    {
-        return eqval<Binary_Op_Expr<Binary_Array_Op<Unequal_Prim>>>(
-            !a.equal(b, cx), a, b, cx);
-    }
-    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
-    {
-        auto result = f.sc_.newvalue(SC_Type::Bool(x.type.count()));
-        f.sc_.out() << "  " << result.type << " " << result << " = ";
-        if (x.type.is_vec()) {
-            f.sc_.out() << "notEqual(" << x << "," << y << ")";
-        } else {
-            f.sc_.out() << x << "!=" << y;
-        }
-        f.sc_.out() << ";\n";
-        return result;
-    }
-};
-using Unequal_Function = Binary_Array_Func<Unequal_Prim>;
-
 SC_Value Equal_Expr::sc_eval(SC_Frame& f) const
 {
     auto a = sc_eval_op(f, *arg1_);
@@ -1552,8 +1506,6 @@ builtin_namespace()
     FUNCTION("bool32_to_float", Bool32_To_Float_Function),
     FUNCTION("float_to_bool32", Float_To_Bool32_Function),
     FUNCTION("select", Select_Function),
-    FUNCTION("equal", Equal_Function),
-    FUNCTION("unequal", Unequal_Function),
     FUNCTION("dot", Dot_Function),
     FUNCTION("mag", Mag_Function),
     FUNCTION("count", Count_Function),

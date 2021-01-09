@@ -104,11 +104,7 @@ All of the Boolean operations are available in "vectorized" form.
 These are generalized to operate on single Booleans, or lists of
 Booleans, or lists of lists of Booleans, or in general, trees of Booleans.
 
-The equality operators ``==`` and ``!=``
-have vectorized equivalents, the ``equal`` and ``unequal`` functions.
-Note that ``==`` will compare two lists for equality, and return a single
-Boolean result, but you can't do that using ``equal``, because it
-will compare list elements for equality, and return a list of Booleans.
+The equality operators ``==`` and ``!=`` are not vectorized yet.
 
 The order operators ``<``, ``<=``, ``>`` and ``>=`` are vectorized:
 if passed a list of numbers, instead of a single number, they will return

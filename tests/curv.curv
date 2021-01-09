@@ -633,10 +633,6 @@ sc_test {
         select[[false,true], 1, 0] == [0,1];
     '<': _->
         ([1,2,3] < 2) == [#true,#false,#false];
-    'equal': _->
-        equal[1,1] &&
-        equal[[1,2,3],2] == [false,true,false] &&
-        equal[[1,2,3],[2,2,2]] == [false,true,false];
 };
 
 //assert([{a:1},{a:2}].a == [1,2]);
@@ -777,7 +773,6 @@ assert( repr[char 1] == [quot,dol]++"[1]"++[quot] );
 assert( repr("abc"++[1,2,3]) == ""_abc"_++[1,2,3]" );
 assert( repr([1,2,3]++"abc") == "[1,2,3]++"_abc"_" );
 assert( "${dol}" == "$" );
-assert( equal "ab" == false );
 assert( let f[x,y]="$x|$y" in f "ab" == "a|b" );
 let a="abc";
     b=amend 1 42 a;
