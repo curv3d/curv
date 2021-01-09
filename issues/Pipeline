@@ -1,0 +1,38 @@
+Pipeline Oriented Programming
+=============================
+These ideas make it easier to write Curv programs as simple pipelines.
+This is still at the brainstorming stage.
+* Collapse the common left-associative binary algebraic operators to one
+  precedence level. Chaining these operators gives a left-to-right pipeline.
+    <List>  , ;
+    <Item>  low precedence right associative; if/let/for control structures
+    <Pipeline> left associative algebraic operators
+    <Prefix> The unary - operator
+    <Postfix> f x; r.n; a.[i]
+* Reify the common binary algebraic operators. '+' is a function bound
+  in the standard environment; a+b means '+'[a,b].
+* User defined pipeops.
+* Infix pattern operators have higher precedence than pipeline operators.
+    pipeline ::= pattern -> pipeline
+  Except this should be 'pipeline ::= pattern -> item'?
+  You can add ___ >> x -> ___ into a pipeline to capture values at
+  one pipeline stage and reuse them further along.
+* The ~ modifier for mapping infix operators over arrays. [[Tilde_Dmap_Smap]]
+* Generalized ` operators have 4 forms:
+    `postfix`
+    `postfix pipeop`
+    `postfix.pipeop`
+    `pipeop`
+  Rationale:
+  * `postfix` allows you to use named functions and combinator expressions
+    as infix operators. Combinators are the general approach to applying
+    'adverbs' (APL/J/K) to an infix operator.
+  * `postfix pipeop` is sugar for `postfix 'pipeop'` and is used to pass a
+    pipeop to a combinator.
+  * `postfix.pipeop` selects a pipeop from a module and applies it,
+    and is sugar for `postfix.'pipeop'`.
+  * `pipeop` is used for operator sections.
+    Backtick operators can be used prefix, eg:
+      `+`1  <=>  a->a`+`1  <=>  a->a+1
+    So this gives us right sections of infix operators, and it works for
+    making a section of binary '-'.
