@@ -6,7 +6,6 @@
 #define LIBCURV_FRAME_H
 
 #include <libcurv/tail_array.h>
-//#include <libcurv/list.h>
 #include <libcurv/value.h>
 #include <libcurv/slot.h>
 #include <libcurv/module.h>
