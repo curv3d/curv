@@ -355,7 +355,7 @@ parse_ritem(Scanner& scanner)
         // 'param = body where (bindings)' is parsed as
         // 'param = (body where (bindings))'.
         // TODO: change the parse (calling parse_ritem) so that subexpressions
-        // within the 'param' are in the scope of the while.
+        // within the 'param' are in the scope of the 'where'.
         return make<Recursive_Definition_Phrase>(
             std::move(left), tok, parse_item(scanner));
     case Token::k_assign:

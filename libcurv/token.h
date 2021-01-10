@@ -70,6 +70,7 @@ struct Token
             k_var,
             k_where,
             k_while,
+            end_keywords,
         k_symbol,           ///! symbol literal, such as #foo
         k_num,              ///! floating point numeral
         k_hexnum,           ///! hexadecimal numeral

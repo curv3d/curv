@@ -167,6 +167,10 @@ void color_input(std::string const& context, Replxx::colors_t& colors,
 {
   auto source = make<String_Source>("", context);
 
+  // TODO: Use parser to parse the string, using a subclass of Scanner that
+  // colours each token as it is read. This ensures that $(expr) substitutions
+  // in string literals are coloured correctly. If an exception is thrown,
+  // colour the text in the location specified by the exception with red.
   try {
     Scanner scanner{std::move(source), *sys};
 
@@ -176,28 +180,17 @@ void color_input(std::string const& context, Replxx::colors_t& colors,
       Color col;
       Token tok = scanner.get_token();
 
+      if (tok.kind_ > Token::k_ident && tok.kind_ < Token::end_keywords)
+        col = Color::BRIGHTMAGENTA;
+      else
       switch (tok.kind_) {
         case Token::k_end:
           return;
 
-        // keywords
-        case Token::k_by:
-        case Token::k_do:
-        case Token::k_else:
-        case Token::k_for:
-        case Token::k_if:
-        case Token::k_in:
-        case Token::k_let:
-        case Token::k_include:
-        case Token::k_var:
-        case Token::k_where:
-        case Token::k_while:
-          col = Color::BRIGHTMAGENTA;
-          break;
-
         // numerals
         case Token::k_num:
         case Token::k_hexnum:
+        case Token::k_symbol:
           col = Color::BROWN;
           break;
 
@@ -230,6 +223,7 @@ void color_input(std::string const& context, Replxx::colors_t& colors,
         // operators
         case Token::k_power:
         case Token::k_plus:
+        case Token::k_plus_plus:
         case Token::k_minus:
         case Token::k_times:
         case Token::k_over:
