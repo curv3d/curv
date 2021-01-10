@@ -1,4 +1,11 @@
-* Assignment to indexed locative uses amend.
+TODO:
+* Assignment to indexed locatives (New Locatives, amend.)
+
+Not Urgent:
+* Array mapping (smap/dmap)
+  * 'phase' accepts only a vec2 argument.
+  * libcurv Smap and Smap2 replaces Prim framework.
+
 -----
 Binary_Array_Op::call() use Fail
 

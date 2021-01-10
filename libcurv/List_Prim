@@ -3,48 +3,63 @@ List Prim: Towards a better C++ API for constructing list primitives
 Concrete and Symbolic List Values
   A symbolic list value is a Reactive list value, or an SC_Value (sc_call),
   or an sc-typeable List_Expr (sc_call_expr). Symbolic list values have a
-  concrete size and an SC_Type. Support the full range of list operations on
-  symbolic lists, including concat (which will require a rope representation
-  of general lists) and amend.
+  concrete size and an SC_Type. Support all list operations on symbolic lists,
+  including concat and amend.
 
-Abstract List
+Generic List
   An efficient, convenient and abstract C++ API for operating on list Values,
   regardless of their representation (as String, List or Reactive_Value).
   Can support future list types: ropes, bit lists, compact numeric ranges,
   images, voxel grids, meshes.
 
-Composable Amap
-  amap_unary<Rank,Prim> and amap_binary<Rank,Prim> return another Prim.
-  Rank is some abstraction that specifies the argument type, and it is
-  separate from the Prim so you can apply a new Rank to an existing Prim
-  like you can do in APL.
+Composable Smap
+  The smap operators map a Prim over the scalar elements of an array.
+  smap_unary<Prim> and smap_binary<Prim> return another Prim.
 
 SC_Tuple
   Add an SC_Tuple type. Generalize SC_Value to describe tuples and general
   lists, so I don't write different code for an SC_Value argument (sc_call)
   and for an Operation that happens to be a List_Expr (sc_call_expr).
   Unify sc_call_expr into sc_call. Code gen for abstract arrays is easier
-  for WGSL.
+  for WGSL or GLSL 4.3.
 
 Unify SC_Value/Reactive_Value
   So I'm not coding the same logic+type checking for the SC_Value and
   Reactive_Value cases. Unify sc_call into call.
 
-Abstract List
--------------
-Right now Abstract_List is a superclass. That doesn't fit Reactive_Value.
-The abstract interface consists of size(), which is fast, and val_at(),
-which is slow (a virtual function). Let's ignore this and consider
-requirements.
+Performance (fast unary/binary list ops)
 
-Most potential uses of Abstract_List care about trees of nums or bools,
-they don't care about characters, so they don't need to be polymorphic
-over List and String. So maybe we need to use compile time polymorphism
-for efficiency. So Abstract_List<Elem> is a template class. The constructor
-takes a Value and fails if it isn't a list that meets the Elem requirement.
-Then the Value is specialized, where possible, to a typed representation
-with operations that are as fast as feasible given the Elem restriction.
-(Use C++17 and 'if constexpr'.)
+Failure: support Fail semantics.
+
+Generic List Interface
+----------------------
+Generic_List encapsulates a single list value of any type, lets you read
+or write single elements using function calls. For bulk operations over
+many or all elements, it's not fast, and bad for symbolic lists.
+
+And then there are combinators that operate on one or two lists, which can
+have faster type-specific inner loops.
+
+Most potential uses care about trees of nums or bools, they don't care about
+characters, so they don't need to be polymorphic over List and String.
+So use compile time polymorphism for efficiency. Use a template class
+parameterized on <Elem>. The constructor takes a Value and fails if it isn't
+a list that meets the Elem requirement. Then the Value is specialized, where
+possible, to a typed representation with operations that are as fast as
+feasible given the Elem restriction. (Use C++17 and 'if constexpr'.)
+
+Equality comparison:
+  When comparing two Abstract_Lists of different subtypes,
+  if one is a List, then compare them element-by-element using
+   1. a loop over 2 abstract lists (use val_at virtual for each element)
+   2. a subtype-specific 'compare to general list' method (faster elem access)
+
+For numeric list operations, given NaN boxing, it's efficient to apply the
+arithmetic operation first on the raw NaN boxed floats, then switch to the
+general algorithm if the result is NaN. (This trick doesn't quite work for
+the 'max' operation, which isn't normally NaN preserving.)
+
+Overwrite an argument list instead of allocating a result list, when possible?
 
 The Algebra
 -----------

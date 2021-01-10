@@ -1,3 +1,9 @@
+TODO:
+* evaluator: assignment to indexed locative
+* SC: assignment to indexed locative
+* fetch/amend of symbolic values
+* SC supports amend function?
+
 'a@i := n' compiles into 'a := amend i n a':
  * partial eval: if a/i/n are symbolic, then result is symbolic amend expr.
  * interpreter: O(1) element update via COW and move optimization.
@@ -9,8 +15,11 @@
 'a.[i,j]@k := n' is compiled into:
   Amend_Local(a, Path[Slice[i,j],k], n)
 Result of analysing a locative is a local variable and an index path.
-* Perhaps the index (containing paths and slices) needs to be normalized
-  into a form that supports easy evaluation?
+* evaluator: evaluate index expr, call tree_amend
+* SC: initially, only a subset of index expressions are supported.
+  Eg, a path of integers.
+* The entire index language could be supported in SC given some more theory,
+  including a type system for index values.
 
 According to my original design, the Lens API has 3 fundamental operations:
     fetch lens tree         tree@lens
