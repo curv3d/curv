@@ -162,21 +162,26 @@ struct REPL_Environ : public Environ
     }
 };
 
+void set_colour(Replxx::colors_t& colours, Token tok, Replxx::Color col)
+{
+    auto first = std::min(colours.size(), size_t(tok.first_));
+    auto last = std::min(colours.size(), size_t(tok.last_));
+    auto cp = colours.begin();
+    std::fill(cp + first, cp + last, col);
+}
+
 void color_input(std::string const& context, Replxx::colors_t& colors,
     System* sys)
 {
   auto source = make<String_Source>("", context);
+  Scanner scanner{std::move(source), *sys};
+  using Color = Replxx::Color;
 
   // TODO: Use parser to parse the string, using a subclass of Scanner that
   // colours each token as it is read. This ensures that $(expr) substitutions
-  // in string literals are coloured correctly. If an exception is thrown,
-  // colour the text in the location specified by the exception with red.
+  // in string literals are coloured correctly.
   try {
-    Scanner scanner{std::move(source), *sys};
-
     for (;;) {
-      using Color = Replxx::Color;
-
       Color col;
       Token tok = scanner.get_token();
 
@@ -186,6 +191,11 @@ void color_input(std::string const& context, Replxx::colors_t& colors,
       switch (tok.kind_) {
         case Token::k_end:
           return;
+
+        case Token::k_bad_token:
+        case Token::k_bad_utf8:
+          col = Color::ERROR;
+          break;
 
         // numerals
         case Token::k_num:
@@ -247,11 +257,12 @@ void color_input(std::string const& context, Replxx::colors_t& colors,
           col = Color::DEFAULT;
           break;
       }
-
-      auto start = colors.begin();
-      std::fill(start + tok.first_, start + tok.last_, col);
+      set_colour(colors, tok, col);
     }
-  } catch (Exception&) {}
+  } catch (Exception& e) {
+    auto tok = e.loc_.front().token();
+    set_colour(colors, tok, Color::ERROR);
+  }
 }
 
 // REPL_Executor is used to execute a command line program that is a statement.
