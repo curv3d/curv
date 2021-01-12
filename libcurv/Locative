@@ -1,0 +1,66 @@
+New Locatives
+=============
+Old Locatives. Environ::lookup_lvar() returns a Locative, with only an
+update(Operation&) method, but it is currently always a Local_Locative
+with a Value* reference() method.
+
+The original design was to provide an abstract Locative interface that would
+support unboxed typed locatives, which we could update in place without
+extracting the value into a boxed form.
+
+New Locatives.
+Now we use a more functional style, combined with "linear logic" for
+efficient update. The base operations would be:
+    Value fetch() -- in Expression context
+    Value steal() -- May leave the contents undefined (for a local
+        variable anyway). Must call store() to restore normality.
+        If we panic before this happens, we destroyed a local variable,
+        probably doesn't matter.
+    void store(Value)
+For indexed update, we steal, amend then store, moving rather than copying
+the value around.
+
+For an unboxed typed locative, the value needs to be efficiently converted
+to boxed form for a fetch anyway. So plan for that: use a representation that
+makes this cheap. Eg a typed structure is a subclass of Ref_Value with typed
+unboxed fields. Amending a typed structure field with linear logic works how?
+* If the new field value is the correct type, then COW and mutate the field.
+* If the new field value has the wrong type, then
+  * Copy the structure into a DRecord and do the update (amend is blind).
+    Then the store() panics due to a bad field type. But amend doesn't know
+    about the type restriction on its output.
+  * The field update fails: records with typed fields have this restriction.
+    Doesn't this mess up the algebra of records?
+  * Okay, but, if I'm going to implement ADTs, then typed records can exist.
+    At the very least, you can use a special lens with a type restriction to
+    access & update a field, getting the same effect. This "special lens"
+    could be part of the same ADT as the typed record value.
+  This detour doesn't affect the design, can be resolved later.
+
+Preliminary New Locatives
+-------------------------
+Locative
+    Value fetch(Frame& f)
+        The Frame lets us fetch from a slot.
+    void store(Frame& f, Value newval, const Phrase& nvsyntax)
+        The Frame lets us store into a slot.
+        The nvsyntax lets us throw an error if newval is bad:
+        not currently used (Local_Locative accepts any value).
+analyse_indexed_locative(Phrase, Indexed_Locative, env)
+    On success, you get a Locative and a path (std::list of index Expressions).
+    It recurses down to an Identifier.
+Assign_Locative (has a Locative destination and a new_value Expression)
+    loc.store(f, nv->eval(f), *nv->syntax_)
+Assign_Indexed_Locative (has a Locative, index and elems expressions)
+  ::exec(Frame& f, Executor&)
+    index = index_expr->eval(f)
+    elems = elems_expr->eval(f)
+    curval = loc->fetch(f)
+    newval = amend(curval, index, elems, At_Phrase(*syntax_,f))
+    loc->store(f, newval, *elems_expr->syntax_);
+
+Error handling for Assign_Indexed_Locative.
+The syntax we are passing to loc->store is not the phrase that computed newval.
+So this design is screwed up; the error handling needs to be rethought.
+Since the third argument to Locative::store() is ignored anyway, remove it.
+Design something better when the need arises.

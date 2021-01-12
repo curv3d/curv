@@ -941,7 +941,8 @@ struct Locative : public Shared_Base
     :
         syntax_(std::move(syntax))
     {}
-    virtual void store(Frame& f, const Operation&) const = 0;
+
+    // Old Locative API (being phased out)
     virtual Shared<Locative> get_field(
         Environ&, Shared<const Phrase>, Symbol_Expr) = 0;
     virtual Shared<Locative> get_element(
@@ -949,6 +950,10 @@ struct Locative : public Shared_Base
     virtual Shared<Locative> lens_get_element(
         Environ&, Shared<const Phrase>, Shared<Operation>) = 0;
     virtual void sc_print(SC_Frame& f) const;
+
+    // New Locative API
+    virtual Value fetch(Frame&) const = 0;
+    virtual void store(Frame&, Value) const = 0;
 };
 
 // A Boxed Locative represents its state as a mutable object of type Value.
@@ -956,20 +961,27 @@ struct Locative : public Shared_Base
 struct Boxed_Locative : public Locative
 {
     using Locative::Locative;
-    virtual void store(Frame& f, const Operation&) const override;
+
+    // New Locative API
+    virtual Value fetch(Frame&) const override;
+    virtual void store(Frame& f, Value) const override;
+
+    // Old Locative API
     virtual Shared<Locative> get_field(
         Environ&, Shared<const Phrase>, Symbol_Expr) override;
     virtual Shared<Locative> get_element(
         Environ&, Shared<const Phrase>, Shared<Operation>) override;
     virtual Shared<Locative> lens_get_element(
         Environ&, Shared<const Phrase>, Shared<Operation>) override;
+
     // reference: get a pointer to the locative's state.
     // need_value is false if we are just going to immediately overwrite the
     // value without looking at it, or true if we need the value.
     virtual Value* reference(Frame&, bool need_value) const = 0;
 };
 
-// A Locative representing a boxed local variable. Closely related to Local_Data_Ref.
+// A Locative representing a boxed local variable.
+// Closely related to Local_Data_Ref.
 struct Local_Locative : public Boxed_Locative
 {
     Local_Locative(Shared<const Phrase> syntax, slot_t slot)

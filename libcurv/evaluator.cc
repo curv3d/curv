@@ -499,10 +499,15 @@ Scope_Executable::exec(Frame& f) const
     }
 }
 
-void
-Boxed_Locative::store(Frame& f, const Operation& expr) const
+Value
+Boxed_Locative::fetch(Frame& f) const
 {
-    *reference(f,false) = expr.eval(f);
+    return *reference(f,true);
+}
+void
+Boxed_Locative::store(Frame& f, Value val) const
+{
+    *reference(f,false) = val;
 }
 
 Shared<Locative>
@@ -599,7 +604,7 @@ Lens_Locative::reference(Frame& f, bool need_value) const
 void
 Assignment_Action::exec(Frame& f, Executor&) const
 {
-    locative_->store(f, *expr_);
+    locative_->store(f, expr_->eval(f));
 }
 
 Value
