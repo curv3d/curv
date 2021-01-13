@@ -162,12 +162,17 @@ struct REPL_Environ : public Environ
     }
 };
 
+using Color = Replxx::Color;
+
 void set_colour(Replxx::colors_t& colours, Token tok, Replxx::Color col)
 {
+    auto first_white = std::min(colours.size(), size_t(tok.first_white_));
     auto first = std::min(colours.size(), size_t(tok.first_));
     auto last = std::min(colours.size(), size_t(tok.last_));
     auto cp = colours.begin();
     std::fill(cp + first, cp + last, col);
+    // colour comments
+    std::fill(cp + first_white, cp + first, Color::GRAY);
 }
 
 void color_input(std::string const& context, Replxx::colors_t& colors,
@@ -175,7 +180,6 @@ void color_input(std::string const& context, Replxx::colors_t& colors,
 {
   auto source = make<String_Source>("", context);
   Scanner scanner{std::move(source), *sys};
-  using Color = Replxx::Color;
 
   // TODO: Use parser to parse the string, using a subclass of Scanner that
   // colours each token as it is read. This ensures that $(expr) substitutions
@@ -190,6 +194,7 @@ void color_input(std::string const& context, Replxx::colors_t& colors,
       else
       switch (tok.kind_) {
         case Token::k_end:
+          set_colour(colors, tok, Color::GRAY);
           return;
 
         case Token::k_bad_token:
