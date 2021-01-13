@@ -154,7 +154,8 @@ can be written as ``tree.[i,j,k]``.
     tslice[this,i] == tslice[i,this] == i.
     tslice[] == this
 
-.. Idea::
+..
+.. Idea
 ..
 ..   let
 ..     table =
