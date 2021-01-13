@@ -785,5 +785,7 @@ assert({[#a,1]} == {a:1});
 assert([a:1] == [[#a,1]]);
 assert((a:1) == [#a,1]);
 
+exec (file "index.curv");
+
 // script return value:
 in null

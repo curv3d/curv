@@ -1519,7 +1519,7 @@ builtin_namespace()
     FUNCTION("compose", Compose_Function),
 
     // top secret index API (aka lenses)
-    {make_symbol("tid"), make<Builtin_Value>(Value{make<TId>()})},
+    {make_symbol("this"), make<Builtin_Value>(Value{make<This>()})},
     FUNCTION("tslice", TSlice_Function),
     FUNCTION("tpath", TPath_Function),
     FUNCTION("amend", Amend_Function),

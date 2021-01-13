@@ -10,9 +10,9 @@
 
 namespace curv {
 
-struct TId : public Ref_Value
+struct This : public Ref_Value
 {
-    TId() : Ref_Value(Ref_Value::ty_index, Ref_Value::sty_tid) {}
+    This() : Ref_Value(Ref_Value::ty_index, Ref_Value::sty_this) {}
     virtual void print_repr(std::ostream&) const override;
 };
 struct TPath : public Ref_Value

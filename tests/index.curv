@@ -1,14 +1,14 @@
 do
-assert( 42@tid == 42 );
-assert( amend tid 17 42 == 17 );
-assert( [0,1,2]@(tpath[tid,1]) == 1 );
-assert( [0,1,2]@(tpath[1,tid]) == 1 );
-assert( [0,1,2]@(tslice[tid,1]) == 1 );
-assert( [0,1,2]@(tslice[1,tid]) == 1 );
-assert( amend (tpath[tid,1]) 99 [0,1,2] == [0,99,2] );
-assert( amend (tpath[1,tid]) 99 [0,1,2] == [0,99,2] );
-assert( amend (tslice[tid,1]) 99 [0,1,2] == [0,99,2] );
-assert( amend (tslice[1,tid]) 99 [0,1,2] == [0,99,2] );
+assert( 42@this == 42 );
+assert( amend this 17 42 == 17 );
+assert( [0,1,2]@(tpath[this,1]) == 1 );
+assert( [0,1,2]@(tpath[1,this]) == 1 );
+assert( [0,1,2]@(tslice[this,1]) == 1 );
+assert( [0,1,2]@(tslice[1,this]) == 1 );
+assert( amend (tpath[this,1]) 99 [0,1,2] == [0,99,2] );
+assert( amend (tpath[1,this]) 99 [0,1,2] == [0,99,2] );
+assert( amend (tslice[this,1]) 99 [0,1,2] == [0,99,2] );
+assert( amend (tslice[1,this]) 99 [0,1,2] == [0,99,2] );
 
 assert( [1,2,3]@0 == 1 );
 assert( amend 0 17 [1,2,3] == [17,2,3] );

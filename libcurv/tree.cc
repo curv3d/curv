@@ -14,9 +14,9 @@
 
 namespace curv {
 
-void TId::print_repr(std::ostream& out) const
+void This::print_repr(std::ostream& out) const
 {
-    out << "tid";
+    out << "this";
 }
 void TSlice::print_repr(std::ostream& out) const
 {
@@ -30,7 +30,7 @@ Value make_tpath(const Value* list, const Value* endlist)
 {
     switch (endlist - list) {
     case 0:
-        return Value{make<TId>()};
+        return Value{make<This>()};
     case 1:
         return list[0];
     default:
@@ -41,7 +41,7 @@ Value make_tslice(const Value* list, const Value* endlist)
 {
     switch (endlist - list) {
     case 0:
-        return Value{make<TId>()};
+        return Value{make<This>()};
     case 1:
         return list[0];
     default:
@@ -118,7 +118,7 @@ Value tree_fetch(Value tree, Value index, const At_Syntax& gcx)
     else if (auto sli = index.maybe<TSlice>()) {
         return tree_fetch_slice(tree, sli->index1_, sli->index2_, gcx);
     }
-    else if (auto id = index.maybe<TId>()) {
+    else if (auto id = index.maybe<This>()) {
         return tree;
     }
     else if (auto ri = index.maybe<Reactive_Value>()) {
@@ -180,7 +180,7 @@ Value tree_fetch_slice(Value tree, Value index, Value index2,
             Value{make<TSlice>(slice->index2_, index2)},
             gcx);
     }
-    else if (index.maybe<TId>()) {
+    else if (index.maybe<This>()) {
         return tree_fetch(tree, index2, gcx);
     }
 #if 0
@@ -242,7 +242,7 @@ Value tree_amend(Value tree, Value index, Value elems, const At_Syntax& gcx)
     else if (auto sli = index.maybe<TSlice>()) {
         return tree_amend_slice(tree, sli->index1_, sli->index2_, elems, gcx);
     }
-    else if (index.maybe<TId>()) {
+    else if (index.maybe<This>()) {
         return elems;
     }
     // TODO: amend using a reactive index
@@ -295,7 +295,7 @@ Value tree_amend_slice(Value tree, Value index, Value index2, Value elems,
             Value{make<TSlice>(slice->index2_, index2)},
             elems, gcx);
     }
-    else if (index.maybe<TId>()) {
+    else if (index.maybe<This>()) {
         return tree_amend(tree, index2, elems, gcx);
     }
     // TODO: amend using a reactive index

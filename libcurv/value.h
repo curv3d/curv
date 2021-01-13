@@ -61,7 +61,7 @@ struct Ref_Value : public Shared_Base
             sty_num_type,
             sty_list_type,
         ty_index,
-            sty_tid,
+            sty_this,
             sty_tpath,
             sty_tslice
     };
