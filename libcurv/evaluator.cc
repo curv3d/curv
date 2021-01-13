@@ -500,20 +500,14 @@ Scope_Executable::exec(Frame& f) const
 }
 
 Value
-Boxed_Locative::fetch(Frame& f) const
+Local_Locative::fetch(Frame& f) const
 {
-    return *reference(f,true);
+    return f[slot_];
 }
 void
-Boxed_Locative::store(Frame& f, Value val) const
+Local_Locative::store(Frame& f, Value val) const
 {
-    *reference(f,false) = val;
-}
-
-Value*
-Local_Locative::reference(Frame& f,bool) const
-{
-    return &f[slot_];
+    f[slot_] = val;
 }
 
 void

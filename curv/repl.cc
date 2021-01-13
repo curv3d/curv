@@ -115,18 +115,22 @@ struct REPL_Namespace
     }
 };
 
-struct REPL_Locative : public Boxed_Locative
+struct REPL_Locative : public Locative
 {
     Value* ptr_;
     REPL_Locative(Shared<const Phrase> syntax, Value* ptr)
     :
-        Boxed_Locative(syntax),
+        Locative(syntax),
         ptr_(ptr)
     {}
 
-    virtual Value* reference(Frame&, bool need_value) const override
+    virtual Value fetch(Frame&) const override
     {
-        return ptr_;
+        return *ptr_;
+    }
+    virtual void store(Frame&, Value newval) const override
+    {
+        *ptr_ = newval;
     }
 };
 

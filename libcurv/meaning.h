@@ -948,34 +948,19 @@ struct Locative : public Shared_Base
     virtual void sc_print(SC_Frame& f) const;
 };
 
-// A Boxed Locative represents its state as a mutable object of type Value.
-// And reference() returns a pointer to this object.
-struct Boxed_Locative : public Locative
-{
-    using Locative::Locative;
-
-    // New Locative API
-    virtual Value fetch(Frame&) const override;
-    virtual void store(Frame& f, Value) const override;
-
-    // reference: get a pointer to the locative's state.
-    // need_value is false if we are just going to immediately overwrite the
-    // value without looking at it, or true if we need the value.
-    virtual Value* reference(Frame&, bool need_value) const = 0;
-};
-
 // A Locative representing a boxed local variable.
 // Closely related to Local_Data_Ref.
-struct Local_Locative : public Boxed_Locative
+struct Local_Locative : public Locative
 {
     Local_Locative(Shared<const Phrase> syntax, slot_t slot)
     :
-        Boxed_Locative(std::move(syntax)),
+        Locative(std::move(syntax)),
         slot_(slot)
     {}
     slot_t slot_;
+    virtual Value fetch(Frame&) const override;
+    virtual void store(Frame&, Value) const override;
     virtual void sc_print(SC_Frame& f) const override;
-    virtual Value* reference(Frame&,bool) const override;
     virtual SC_Type sc_type(SC_Frame&) const override;
 };
 
