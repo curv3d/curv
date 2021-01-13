@@ -510,95 +510,10 @@ Boxed_Locative::store(Frame& f, Value val) const
     *reference(f,false) = val;
 }
 
-Shared<Locative>
-Boxed_Locative::get_field(
-    Environ& env,
-    Shared<const Phrase> syntax,
-    Symbol_Expr selector)
-{
-    return make<Dot_Locative>(syntax, share(*this), selector);
-}
-
-Shared<Locative>
-Boxed_Locative::get_element(
-    Environ& env,
-    Shared<const Phrase> syntax,
-    Shared<Operation> index)
-{
-    return make<Indexed_Locative>(syntax, share(*this), index);
-}
-
-Shared<Locative>
-Boxed_Locative::lens_get_element(
-    Environ& env,
-    Shared<const Phrase> syntax,
-    Shared<Operation> lens)
-{
-    return make<Lens_Locative>(syntax, share(*this), lens);
-}
-
 Value*
 Local_Locative::reference(Frame& f,bool) const
 {
     return &f[slot_];
-}
-
-Value*
-Dot_Locative::reference(Frame& f, bool need_value) const
-{
-    Value* base = base_->reference(f,true);
-    Shared<Record> base_rec = base->to<Record>(At_Phrase(*base_->syntax_, f));
-    if (base_rec->use_count > 1) {
-        base_rec = base_rec->clone();
-        *base = {base_rec};
-    }
-    Symbol_Ref id = selector_.eval(f);
-    return base_rec->ref_field(id, need_value, At_Phrase(*syntax_, f));
-}
-
-Value*
-Indexed_Locative::reference(Frame& f, bool need_value) const
-{
-    Value* base = base_->reference(f,true);
-    auto ix = index_->eval(f);
-    if (auto base_rec = base->maybe<Record>()) {
-        if (base_rec->use_count > 1) {
-            base_rec = base_rec->clone();
-            *base = {base_rec};
-        }
-        At_Phrase icx(*index_->syntax_, f);
-        auto index_list = ix.to<List>(icx);
-        index_list->assert_size(1, icx);
-        auto key = value_to_symbol(index_list->at(0), icx);
-        return base_rec->ref_field(key, need_value, At_Phrase(*syntax_, f));
-    }
-    Shared<List> base_list = base->to<List>(At_Phrase(*base_->syntax_, f));
-    if (base_list->use_count > 1) {
-        base_list = base_list->clone();
-        *base = {base_list};
-    }
-    return base_list->ref_element(ix, need_value, At_Phrase(*syntax_, f));
-}
-
-Value*
-Lens_Locative::reference(Frame& f, bool need_value) const
-{
-    Value* base = base_->reference(f,true);
-    auto ix = lens_->eval(f);
-    if (auto base_rec = base->maybe<Record>()) {
-        if (base_rec->use_count > 1) {
-            base_rec = base_rec->clone();
-            *base = {base_rec};
-        }
-        auto key = value_to_symbol(ix, At_Phrase(*lens_->syntax_, f));
-        return base_rec->ref_field(key, need_value, At_Phrase(*syntax_, f));
-    }
-    Shared<List> base_list = base->to<List>(At_Phrase(*base_->syntax_, f));
-    if (base_list->use_count > 1) {
-        base_list = base_list->clone();
-        *base = {base_list};
-    }
-    return base_list->ref_lens(ix, need_value, At_Phrase(*syntax_, f));
 }
 
 void

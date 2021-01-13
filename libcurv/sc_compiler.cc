@@ -510,36 +510,6 @@ void Local_Locative::sc_print(SC_Frame& f) const
 {
     f.sc_.out() << f[slot_];
 }
-
-void
-Indexed_Locative::sc_print(SC_Frame& f) const
-{
-    // TODO: ensure that base_ is a vector
-    base_->sc_print(f);
-    int i = 0;
-    // convert index_ to i
-    auto list = cast<List_Expr>(index_);
-    if (list == nullptr || list->size() != 1)
-        throw Exception(At_SC_Phrase(index_->syntax_, f),
-            "expected '[index]' expression");
-    // i = sc_eval_index_expr() might work if we had an SC_Value for base_
-    // TODO: restrict range of i based on size of vector
-    Value ival = sc_constify(*list->at(0), f);
-    i = ival.to_int(0, 3, At_SC_Phrase(index_->syntax_, f));
-    f.sc_.out() << '[' << i << ']';
-}
-void
-Lens_Locative::sc_print(SC_Frame& f) const
-{
-    // TODO: ensure that base_ is a vector
-    base_->sc_print(f);
-    // i = sc_eval_index_expr() might work if we had an SC_Value for base_
-    // TODO: restrict range of i based on size of vector
-    Value ival = sc_constify(*lens_, f);
-    int i = ival.to_int(0, 3, At_SC_Phrase(lens_->syntax_, f));
-    f.sc_.out() << '[' << i << ']';
-}
-
 void
 Locative::sc_print(SC_Frame& f) const
 {

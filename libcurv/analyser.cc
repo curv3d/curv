@@ -735,55 +735,10 @@ Var_Definition_Phrase::as_definition(Environ& env, Fail fl) const
         "Try 'a = b' instead.");
 }
 
-Shared<Locative>
-analyse_locative(Shared<const Phrase> ph, Environ& env, Interp terp)
-{
-    ph = strip_parens(ph);
-    if (auto id = cast<const Identifier>(ph))
-        return env.lookup_lvar(*id, terp.edepth());
-    if (auto dot = cast<const Dot_Phrase>(ph)) {
-        auto base = analyse_locative(dot->left_, env, terp);
-        // TODO: copypasta from Dot_Phrase::analyse
-        // But, terp is handled differently.
-        if (auto id = cast<const Identifier>(dot->right_)) {
-            return base->get_field(env, ph, Symbol_Expr{id});
-        }
-        if (auto string = cast<const String_Phrase>(dot->right_)) {
-            auto str_expr = string->analyse_string(env);
-            return base->get_field(env, ph, Symbol_Expr{str_expr});
-        }
-        if (auto brackets = cast<const Bracket_Phrase>(dot->right_)) {
-            auto index = analyse_op(*dot->right_, env);
-            return base->get_element(env, ph, index);
-        }
-        throw Exception(At_Phrase(*dot->right_, env),
-            "invalid expression after '.'");
-    }
-    if (auto call = cast<const Call_Phrase>(ph)) {
-        if (call->is_juxta()) {
-            auto base = analyse_locative(call->function_, env, terp);
-            auto index = analyse_op(*call->arg_, env);
-            return base->get_element(env, ph, index);
-        }
-    }
-    if (auto at = cast<const Apply_Lens_Phrase>(ph)) {
-        auto base = analyse_locative(at->arg_, env, terp);
-        auto lens = analyse_op(*at->function_, env);
-        return base->lens_get_element(env, ph, lens);
-    }
-    throw Exception(At_Phrase(*ph, env), "not a locative");
-}
-
 Shared<Meaning>
 Assignment_Phrase::analyse(Environ& env, Interp terp) const
 {
-#if 0
-    auto lvar = analyse_locative(left_, env, terp);
-    auto expr = analyse_op(*right_, env);
-    return make<Assignment_Action>(share(*this), lvar, expr);
-#else
     return analyse_assignment(share(*this), env, terp);
-#endif
 }
 
 Shared<Definition>
