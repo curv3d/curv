@@ -447,7 +447,7 @@ sc_test{
   (
     let a = [1,2,3];
     in do
-        a[0] := 17;
+        a.[X] := 17;
         a@1 := 42;
         a.[2] := 99;
     in a
@@ -523,7 +523,7 @@ assert_error(
 (
     local a = [1,2,3];
     local b = a;
-    a[0] := 17;
+    a.[0] := 17;
     a@1 := 42;
     assert(a == [17,42,3] && b == [1,2,3]);
 );
@@ -604,7 +604,7 @@ in sc_test {
     'float_to_bool32': _-> float_to_bool32 1 == bits 1065353216;
     'indexing': _->
         let (ab,cd) = [ff,[f,T]]; in do
-        ab[0] := cd[1]; in let
+        ab.[0] := cd.[1]; in let
         (a,b) = ab;
         (c,d) = cd;
         in [a,b] == ab && [c,d] == cd && xor[ab,cd] == [T,T];

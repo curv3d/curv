@@ -15,6 +15,8 @@
 #include <libcurv/symbol.h>
 #include <libcurv/system.h>
 
+#include <libcurv/newloc.h>
+
 #include <functional>
 
 namespace curv
@@ -775,9 +777,13 @@ analyse_locative(Shared<const Phrase> ph, Environ& env, Interp terp)
 Shared<Meaning>
 Assignment_Phrase::analyse(Environ& env, Interp terp) const
 {
+#if 0
     auto lvar = analyse_locative(left_, env, terp);
     auto expr = analyse_op(*right_, env);
     return make<Assignment_Action>(share(*this), lvar, expr);
+#else
+    return analyse_assignment(share(*this), env, terp);
+#endif
 }
 
 Shared<Definition>

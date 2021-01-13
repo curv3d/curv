@@ -502,8 +502,11 @@ void Null_Action::sc_exec(SC_Frame&) const
 {
 }
 
-void
-Local_Locative::sc_print(SC_Frame& f) const
+SC_Type Local_Locative::sc_type(SC_Frame& f) const
+{
+    return f[slot_].type;
+}
+void Local_Locative::sc_print(SC_Frame& f) const
 {
     f.sc_.out() << f[slot_];
 }

@@ -949,11 +949,12 @@ struct Locative : public Shared_Base
         Environ&, Shared<const Phrase>, Shared<Operation>) = 0;
     virtual Shared<Locative> lens_get_element(
         Environ&, Shared<const Phrase>, Shared<Operation>) = 0;
-    virtual void sc_print(SC_Frame& f) const;
 
     // New Locative API
     virtual Value fetch(Frame&) const = 0;
     virtual void store(Frame&, Value) const = 0;
+    virtual SC_Type sc_type(SC_Frame&) const { return {}; }
+    virtual void sc_print(SC_Frame& f) const;
 };
 
 // A Boxed Locative represents its state as a mutable object of type Value.
@@ -992,6 +993,7 @@ struct Local_Locative : public Boxed_Locative
     slot_t slot_;
     virtual void sc_print(SC_Frame& f) const override;
     virtual Value* reference(Frame&,bool) const override;
+    virtual SC_Type sc_type(SC_Frame&) const override;
 };
 
 // A Locative representing <boxed-locative>.fieldname
