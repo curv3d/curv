@@ -531,6 +531,57 @@ Data_Setter::sc_exec(SC_Frame& f) const
     pattern_->sc_exec(*definiens_, f, f);
 }
 
+Value sc_get_index(SC_Frame& f, Shared<const Operation> index)
+{
+    if (auto k = cast<const Constant>(index))
+        return k->value_;
+    else if (auto slice = cast<const TSlice_Expr>(index)) {
+        if (auto ilist = cast<const List_Expr>(slice->indexes_)) {
+            if (ilist->size() == 1) {
+                if (k = cast<const Constant>(ilist->at(0)))
+                    return k->value_;
+            }
+        }
+    }
+    throw Exception(At_SC_Phrase(index->syntax_, f), "unsupported array index");
+}
+void sc_print_index(SC_Frame& f,
+    SC_Type loctype, Shared<const Phrase> locsyntax,
+    Shared<const Operation> index,
+    SC_Type newvaltype, Shared<const Phrase> newvalsyntax)
+{
+    if (!loctype.is_vec()) {
+        throw Exception(At_SC_Phrase(locsyntax, f), stringify(
+            "Indexed assignment for a variable of type ",loctype,
+            " is not supported"));
+    }
+    Value ival = sc_get_index(f, index);
+    if (ival.is_num()) {
+        auto num = ival.to_num_unsafe();
+        if (num_is_int(num)) {
+            int i = num_to_int(num, 0, loctype.count()-1,
+                At_SC_Phrase(index->syntax_, f));
+            if (newvaltype != loctype.elem_type()) {
+                throw Exception(At_SC_Phrase(newvalsyntax, f),
+                    "Left side of assignment has wrong type");
+            }
+            f.sc_.out() << "[" << i << "]";
+            return;
+        }
+    }
+    throw Exception(At_SC_Phrase(index->syntax_, f), "unsupported array index");
+}
+void Assign_Indexed_Locative::sc_exec(SC_Frame& f) const
+{
+    SC_Value newval = sc_eval_op(f, *newval_);
+    f.sc_.out() << "  ";
+    locative_->sc_print(f);
+    sc_print_index(f,
+        locative_->sc_type(f), locative_->syntax_,
+        index_, newval.type, newval_->syntax_);
+    f.sc_.out() << "="<<newval<<";\n";
+}
+
 char gl_index_letter(Value k, unsigned vecsize, const Context& cx)
 {
     auto num = k.to_num_or_nan();

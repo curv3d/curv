@@ -515,6 +515,14 @@ Assignment_Action::exec(Frame& f, Executor&) const
 {
     locative_->store(f, expr_->eval(f));
 }
+void Assign_Indexed_Locative::exec(Frame& f, Executor&) const
+{
+    auto index = index_->eval(f);
+    auto elems = newval_->eval(f);
+    auto curval = locative_->fetch(f);
+    auto newval = tree_amend(curval, index, elems, At_Phrase(*syntax_,f));
+    locative_->store(f, newval);
+}
 
 Value
 Module_Expr::eval(Frame& f) const
@@ -874,6 +882,20 @@ Symbol_Ref Symbol_Expr::eval(Frame& f) const
         return str->eval_symbol(f);
     auto val = expr_->eval(f);
     return value_to_symbol(val, At_Phrase(*expr_->syntax_, f));
+}
+
+Value TPath_Expr::eval(Frame& f) const
+{
+    std::vector<Value> ivals;
+    for (auto i : indexes_)
+        ivals.push_back(i->eval(f));
+    return make_tpath(&ivals[0], &ivals[ivals.size()]);
+}
+Value TSlice_Expr::eval(Frame& f) const
+{
+    Value ival = indexes_->eval(f);
+    auto ilist = ival.to<List>(At_Phrase(*indexes_->syntax_, f));
+    return make_tslice(ilist->begin(), ilist->end());
 }
 
 } // namespace curv

@@ -989,5 +989,56 @@ struct Assignment_Action : public Operation
     void sc_exec(SC_Frame&) const override;
 };
 
+struct Assign_Indexed_Locative : public Operation
+{
+    Shared<const Locative> locative_;
+    Shared<const Operation> index_;
+    Shared<const Operation> newval_;
+
+    Assign_Indexed_Locative(
+        Shared<const Phrase> syntax,
+        Shared<const Locative> locative,
+        Shared<const Operation> index,
+        Shared<const Operation> newval)
+    :
+        Operation(std::move(syntax)),
+        locative_(std::move(locative)),
+        index_(std::move(index)),
+        newval_(std::move(newval))
+    {}
+
+    virtual void exec(Frame&, Executor&) const override;
+    void sc_exec(SC_Frame&) const override;
+};
+
+struct TPath_Expr : public Just_Expression
+{
+    std::vector<Shared<const Operation>> indexes_;
+
+    TPath_Expr(
+        Shared<const Phrase> syntax,
+        std::vector<Shared<const Operation>> indexes)
+    :
+        Just_Expression(std::move(syntax)),
+        indexes_(std::move(indexes))
+    {}
+
+    virtual Value eval(Frame& f) const override;
+};
+struct TSlice_Expr : public Just_Expression
+{
+    Shared<const Operation> indexes_; // evaluates to a List
+
+    TSlice_Expr(
+        Shared<const Phrase> syntax,
+        Shared<const Operation> indexes)
+    :
+        Just_Expression(std::move(syntax)),
+        indexes_(std::move(indexes))
+    {}
+
+    virtual Value eval(Frame& f) const override;
+};
+
 } // namespace curv
 #endif // header guard

@@ -14,8 +14,7 @@
 #include <libcurv/shared.h>
 #include <libcurv/symbol.h>
 #include <libcurv/system.h>
-
-#include <libcurv/newloc.h>
+#include <libcurv/tree.h>
 
 #include <functional>
 
@@ -735,6 +734,64 @@ Var_Definition_Phrase::as_definition(Environ& env, Fail fl) const
         "Try 'a = b' instead.");
 }
 
+struct Locative_Indexes
+{
+    Shared<Locative> locative_;
+    std::vector<Shared<const Operation>> indexes_;
+};
+void analyse_indexed_locative(
+    Shared<const Phrase> ph, Locative_Indexes& il, Environ& env, Interp terp)
+{
+    ph = strip_parens(ph);
+    if (auto id = cast<const Identifier>(ph))
+        il.locative_ = env.lookup_lvar(*id, terp.edepth());
+    else if (auto dot = cast<const Dot_Phrase>(ph)) {
+        analyse_indexed_locative(dot->left_, il, env, terp);
+        if (auto id = cast<const Identifier>(dot->right_)) {
+            Shared<const Operation> index =
+                make<Constant>(id, id->symbol_.to_value());
+            il.indexes_.push_back(index);
+        }
+        else if (auto brackets = cast<const Bracket_Phrase>(dot->right_)) {
+            auto index = analyse_op(*brackets, env);
+            Shared<const Operation> slice = make<TSlice_Expr>(brackets, index);
+            il.indexes_.push_back(slice);
+        }
+        else {
+            throw Exception(At_Phrase(*dot->right_, env),
+                "invalid expression after '.'");
+        }
+    }
+    else if (auto at = cast<const Apply_Lens_Phrase>(ph)) {
+        analyse_indexed_locative(at->arg_, il, env, terp);
+        auto index = analyse_op(*at->function_, env);
+        il.indexes_.push_back(index);
+    }
+    else throw Exception(At_Phrase(*ph, env), "not a locative");
+}
+Shared<Operation> analyse_assignment(
+    Shared<const Assignment_Phrase> asn, Environ& env, Interp terp)
+{
+    Locative_Indexes il;
+    analyse_indexed_locative(asn->left_, il, env, terp);
+    auto right = analyse_op(*asn->right_, env);
+    if (il.indexes_.empty()) {
+        Shared<const Phrase> ph = asn;
+        Shared<Operation> op =
+            make<Assignment_Action>(ph, il.locative_, right);
+        return op;
+    }
+    else {
+        Shared<const Operation> index;
+        if (il.indexes_.size() == 1)
+            index = il.indexes_.front();
+        else
+            index = make<TPath_Expr>(asn->left_, il.indexes_);
+        Shared<Operation> op =
+            make<Assign_Indexed_Locative>(asn, il.locative_, index, right);
+        return op;
+    }
+}
 Shared<Meaning>
 Assignment_Phrase::analyse(Environ& env, Interp terp) const
 {
