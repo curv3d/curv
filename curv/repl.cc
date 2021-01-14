@@ -47,6 +47,10 @@ extern "C" {
 #include <libcurv/shape.h>
 #include <libcurv/viewer/viewer.h>
 
+#ifdef _WIN32
+    #undef ERROR
+#endif
+
 using namespace curv;
 using replxx::Replxx;
 
