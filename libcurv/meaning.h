@@ -934,6 +934,11 @@ struct Parametric_Expr : public Just_Expression
 };
 
 // A Locative is the phrase on the left side of an assignment statement.
+//
+// TODO: Efficient indexed update using "linear logic".
+// For indexed update, we move the value out of the location (without changing
+// its reference count), use COW to amend the moved value, then store().
+// We need a 'steal' or 'fetch_move' operation.
 struct Locative : public Shared_Base
 {
     Shared<const Phrase> syntax_;

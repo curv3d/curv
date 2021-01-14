@@ -1,5 +1,8 @@
 TODO:
 * Assignment to indexed locatives (New Locatives, amend.)
+  - equality for this,tpath,tslice
+  - algebraic identities for tpath,tslice
+  - clean up 'newloc.*' -- rename files or move code
 
 Not Urgent:
 * Array mapping (smap/dmap)
