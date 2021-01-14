@@ -39,27 +39,49 @@ void TSlice::print_repr(std::ostream& out) const
     out << "]";
 }
 
+template<class T> struct TPath_Builder
+{
+    Value cur_{};
+    void push_back(Value val)
+    {
+        if (val.maybe<This>())
+            ;
+        else if (cur_.is_missing())
+            cur_ = val;
+        else if (auto path = val.maybe<T>()) {
+            push_back(path->index2_);
+            push_back(path->index1_);
+        } else {
+            Shared<T> node = make<T>(val, cur_);
+            cur_ = {node};
+        }
+    }
+    Value build(const Value* begin, const Value* end)
+    {
+        switch (end - begin) {
+        case 0:
+            return Value{make<This>()};
+        case 1:
+            return begin[0];
+        default:
+            for (auto p = end-1; p >= begin; --p)
+                push_back(*p);
+            if (cur_.is_missing())
+                return Value{make<This>()};
+            else
+                return cur_;
+        }
+    }
+};
 Value make_tpath(const Value* list, const Value* endlist)
 {
-    switch (endlist - list) {
-    case 0:
-        return Value{make<This>()};
-    case 1:
-        return list[0];
-    default:
-        return Value{make<TPath>(list[0], make_tpath(list+1,endlist))};
-    }
+    TPath_Builder<TPath> b;
+    return b.build(list, endlist);
 }
 Value make_tslice(const Value* list, const Value* endlist)
 {
-    switch (endlist - list) {
-    case 0:
-        return Value{make<This>()};
-    case 1:
-        return list[0];
-    default:
-        return Value{make<TSlice>(list[0], make_tslice(list+1,endlist))};
-    }
+    TPath_Builder<TSlice> b;
+    return b.build(list, endlist);
 }
 
 struct While_Indexing : public At_Syntax_Wrapper
