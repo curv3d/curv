@@ -11,6 +11,7 @@
 #include <libcurv/reactive.h>
 #include <libcurv/record.h>
 #include <libcurv/string.h>
+#include <libcurv/tree.h>
 
 #include <climits>
 #include <cmath>
@@ -174,6 +175,17 @@ Ternary Value::equal(Value v, const Context& cx) const
         }
     case Ref_Value::ty_record:
         return ((Record&)r1).equal((Record&)*r2, cx);
+    case Ref_Value::ty_index:
+        if (r1.subtype_ != r2->subtype_)
+            return Ternary::False;
+        switch (r1.subtype_) {
+        case Ref_Value::sty_tpath:
+            return ((TPath&)r1).equal((TPath&)*r2, cx);
+        case Ref_Value::sty_tslice:
+            return ((TSlice&)r1).equal((TSlice&)*r2, cx);
+        default:
+            return Ternary::True;
+        }
     default:
         // Outside of the data types, two values are equal if they have
         // the same type.

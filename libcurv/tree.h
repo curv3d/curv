@@ -25,6 +25,10 @@ struct TPath : public Ref_Value
     {}
     Value index1_, index2_;
     virtual void print_repr(std::ostream&) const override;
+    Ternary equal(const TPath& right, const Context& cx) const {
+        return index1_.equal(right.index1_, cx)
+             & index2_.equal(right.index2_, cx);
+    }
 };
 Value make_tpath(const Value* list, const Value* endlist);
 struct TSlice : public Ref_Value
@@ -37,6 +41,10 @@ struct TSlice : public Ref_Value
     {}
     Value index1_, index2_;
     virtual void print_repr(std::ostream&) const override;
+    Ternary equal(const TSlice& right, const Context& cx) const {
+        return index1_.equal(right.index1_, cx)
+             & index2_.equal(right.index2_, cx);
+    }
 };
 Value make_tslice(const Value* list, const Value* endlist);
 
