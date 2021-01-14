@@ -14,18 +14,31 @@
 
 namespace curv {
 
+template<class T> void print_tpath_elems(Value val, std::ostream& out)
+{
+    if (auto path = val.maybe<T>()) {
+        out << path->index1_ << ",";
+        print_tpath_elems<T>(path->index2_, out);
+    } else
+        out << val;
+}
 void This::print_repr(std::ostream& out) const
 {
     out << "this";
 }
-void TSlice::print_repr(std::ostream& out) const
-{
-    out << "tslice [" << index1_ << "," << index2_ << "]";
-}
 void TPath::print_repr(std::ostream& out) const
 {
-    out << "tpath [" << index1_ << "," << index2_ << "]";
+    out << "tpath[" << index1_ << ",";
+    print_tpath_elems<TPath>(index2_, out);
+    out << "]";
 }
+void TSlice::print_repr(std::ostream& out) const
+{
+    out << "tslice[" << index1_ << ",";
+    print_tpath_elems<TSlice>(index2_, out);
+    out << "]";
+}
+
 Value make_tpath(const Value* list, const Value* endlist)
 {
     switch (endlist - list) {
