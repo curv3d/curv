@@ -61,8 +61,10 @@ modules, where the fields represent APIs, not data.
 See ``lib/curv/*.curv`` in the source tree for examples.
 Note that these source files begin and end with ``{`` and ``}``.
 
-**Directory syntax** is used to structure Curv programs consisting of
-multiple source files. See `File_Import`_ for details.
+**Directory syntax** is used to define a module namespace,
+where each module in the namespace is represented by a separate
+source file or directory.
+See `File_Import`_ for details.
 
 .. _`Generators`: Generators.rst
 .. _`Definitions`: Definitions.rst
