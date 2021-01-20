@@ -853,6 +853,7 @@ Value
 Parametric_Expr::eval(Frame& f) const
 {
     At_Phrase cx(*syntax_, f);
+    At_Phrase cxbody(*ctor_->body_->syntax_, f);
     Value func = ctor_->eval(f);
     auto closure = func.maybe<Closure>();
     if (closure == nullptr)
@@ -863,9 +864,9 @@ Parametric_Expr::eval(Frame& f) const
     };
     auto default_arg = record_pattern_default_value(*closure->pattern_,*f2);
     Value res = closure->call({default_arg}, Fail::hard, *f2);
-    auto rec = res.to<Record>(cx);
+    auto rec = res.to<Record>(cxbody);
     auto drec = make<DRecord>();
-    rec->each_field(cx, [&](Symbol_Ref id, Value val) -> void {
+    rec->each_field(cxbody, [&](Symbol_Ref id, Value val) -> void {
         drec->fields_[id] = val;
     });
     // TODO: The `call` function should return another parametric record.
