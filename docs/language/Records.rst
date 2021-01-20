@@ -107,28 +107,57 @@ See `Generators`_ for full details.
 
 Record Operations
 ~~~~~~~~~~~~~~~~~
+In the following examples, ``R`` is a local variable
+containing the record value ``{a: 1, b: 2}``.
+
+``is_record value``
+  True if the value is a record, false otherwise.
+  For example, ``is_record R`` is ``#true``.
+
 ``record . identifier``
   The value of the field named by ``identifier``.
-  Eg, ``r.foo``.
+  For example, ``R.a`` is ``1``.
 
 ``record .[ symbolExpr ]``
   The value of the field named by the symbol after evaluating symbolExpr.
   This allows the field name to be computed at run time.
-  Eg, ``r.[#foo]``.
+  For example, ``R.[#a]`` is ``1``.
+  See `Trees`_ for more information about querying data structures.
+
+``recordVariable . identifier := newValue``
+  Given a local variable containing a record value,
+  update the variable to contain a copy of the record value
+  where the field named ``identifier`` has the value ``newValue``.
+  For example, after executing::
+  
+     R.a := 99
+  
+  then the variable ``R`` will contain ``{a: 99, b: 2}``.
+
+``recordVariable .[ symbolExpr ] := newValue``
+  Given a local variable containing a record value,
+  update the variable to contain a copy of the record value
+  where the field named by the symbol ``symbolExpr`` has the value ``newValue``.
+  For example, after executing::
+  
+     R.[#a] := 99
+  
+  then the variable ``R`` will contain ``{a: 99, b: 2}``.
+  See `Trees`_ for more information about updating data structures.
 
 ``defined (record . identifier)``
   True if a field named ``identifier`` is defined by ``record``, otherwise false.
+  For example, ``defined(R.a)`` is true and ``defined(R.foo)`` is false.
 
 ``defined (record .[ symbolExpr ])``
   Test the field named by the symbol after evaluating symbolExpr.
   If the field exists, return true, otherwise false.
   This allows the field name to be computed at run time.
+  For example, ``defined(R.[#a])`` is true and ``defined(R.[#foo])`` is false.
 
 ``fields record``
   The field names defined by ``record`` (as a list of symbols).
-
-``is_record value``
-  True if the value is a record, false otherwise.
+  For example, ``fields R`` returns ``[#a, #b]``.
 
 ``merge listOfRecords``
   Merge all of the fields defined by the records in ``listOfRecords``
@@ -137,3 +166,5 @@ Record Operations
   Same as::
 
     {for (r in listOfRecords) ...r}
+
+.. _`Trees`: Trees.rst
