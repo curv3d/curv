@@ -310,7 +310,7 @@ Shared<Meaning>
 Unary_Phrase::analyse(Environ& env, Interp) const
 {
     switch (op_.kind_) {
-    case Token::k_not:
+    case Token::k_bang:
         env.sstate_.deprecate(&Source_State::not_deprecated_, 1,
             At_Phrase(*this, env),
             "'!a' is deprecated. Use 'not(a)' instead.");

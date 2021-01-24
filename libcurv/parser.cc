@@ -570,7 +570,7 @@ parse_power(Scanner& scanner)
     switch (tok.kind_) {
     case Token::k_plus:
     case Token::k_minus:
-    case Token::k_not:
+    case Token::k_bang:
     case Token::k_var:
         return make<Unary_Phrase>(tok, parse_power(scanner));
     default:

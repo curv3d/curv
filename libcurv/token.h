@@ -110,7 +110,7 @@ struct Token
         k_less_or_equal,    ///! `<=` operator
         k_greater,          ///! `>` operator
         k_greater_or_equal, ///! `>=` operator
-        k_not,              ///! `!` operator
+        k_bang,             ///! `!` operator
         k_equate,           ///! `=` operator
         k_assign,           ///! `:=` operator
         k_colon_colon,      ///! `::` operator

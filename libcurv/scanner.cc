@@ -402,7 +402,7 @@ quoted_identifier:
             tok.kind_ = Token::k_not_equal;
             ++p;
         } else
-            tok.kind_ = Token::k_not;
+            tok.kind_ = Token::k_bang;
         goto success;
     case '<':
         if (p < last && *p == '=') {

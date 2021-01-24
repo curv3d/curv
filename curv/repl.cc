@@ -258,7 +258,7 @@ void color_input(std::string const& context, Replxx::colors_t& colors,
         case Token::k_less_or_equal:
         case Token::k_greater:
         case Token::k_greater_or_equal:
-        case Token::k_not:
+        case Token::k_bang:
         case Token::k_and:
         case Token::k_or:
         case Token::k_left_call:
