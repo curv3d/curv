@@ -1,21 +1,6 @@
 Curv 0.6: Reactive values work in all circumstances where they should.
 Relies on new compiler/partial evaluator, new type system.
 
-Indexing:
-* generalized locatives using arbitrary index values
-* slice and path operators.
-
-String TODO:
-* locatives: do local a = "abc"; a[0] := 42 in a==[42]++"bc"
-* fix where Lists work but Strings fail:
-  * equal,unequal,Unary_Scalar_Prim
-    equal["foo","fob"] == [#true,#true,#false]
-    See [[List_Prim]]
-    Generic_List class
-* List_Builder allows you to specify how many elements are about to be added,
-  so that it can preallocate in the underlying collection. Calls reserve()
-  on std::vector or std::string. size(), capacity(), reserve(new_capacity).
-
 Update Array documentation: definition of ranked array, ranked function.
 
 * `list[i1,i2,...]` support reactive args
