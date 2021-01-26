@@ -136,16 +136,19 @@ complicated is needed at L1.
    | OpenSCAD    | ``circle(50);``                             |
    +-------------+---------------------------------------------+
    | OpenJSCAD   | ::                                          |
+   |             |                                             |
    |             |   function main() {                         |
    |             |     return circle(50);                      |
    |             |   }                                         |
    +-------------+---------------------------------------------+
    | SolidPython | ::                                          |
+   |             |                                             |
    |             |   from solid import *                       |
    |             |   shape = circle(50)                        |
    |             |   print(scad_render(shape))                 |
    +-------------+---------------------------------------------+
    | SVG         | ::                                          |
+   |             |                                             |
    |             |   <svg xmlns="http://www.w3.org/2000/svg">  |
    |             |   <circle r="50"/>                          |
    |             |   </svg>                                    |
