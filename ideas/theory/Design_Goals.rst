@@ -112,10 +112,10 @@ language, analogous to SVG or JSON.
 
 There is a fixed set of types:
 
- * Plain Old Data types (numbers, symbols, characters, lists and records),
-   which are similar to the JSON data types, and which are used to
-   construct arguments to graphical operations.
- * Graphical data types, such as shapes.
+* Plain Old Data types (numbers, symbols, characters, lists and records),
+  which are similar to the JSON data types, and which are used to
+  construct arguments to graphical operations.
+* Graphical data types, such as shapes.
 
 There is a fixed set of operations for constructing and transforming
 2D and 3D shapes, such as ``circle``, ``cube`` and ``rotate``.
@@ -192,6 +192,7 @@ This level adds imperative features: mutable local variables, a statement
 language that includes assignments, conditionals and loops.
 
 Why?
+
 * Because everybody knows how to write imperative programs.
   Imperative programming comprises a small vocabulary of easy-to-understand
   operations from which you can implement any algorithm. 
@@ -213,28 +214,28 @@ State mutation only occurs at the statement level, at the transition from
 one statement to the next. Expressions do not have side effects.
 All state mutation is expressed using variations of the assignment statement.
 
- 1. There are no mutable objects.
-    We don't need to distinguish between mutable and immutable object types.
-    We don't need mutable and immutable variants of the same abstract data type.
-    Eg, in Python, *tuples* and *strings* are immutable but *lists* are
-    mutable. In Curv, these 3 Python types are represented by a single type
-    of immutable list values.
+1. There are no mutable objects.
+   We don't need to distinguish between mutable and immutable object types.
+   We don't need mutable and immutable variants of the same abstract data type.
+   Eg, in Python, *tuples* and *strings* are immutable but *lists* are
+   mutable. In Curv, these 3 Python types are represented by a single type
+   of immutable list values.
  
- 2. There is no aliasing. Two distinct mutable variable names are guaranteed
-    to refer to disjoint mutable state.
+2. There is no aliasing. Two distinct mutable variable names are guaranteed
+   to refer to disjoint mutable state.
  
- 3. There are no functions or methods that mutate objects (as side effects).
-    We don't need mutating and copying variants of the same abstract operation.
-    Eg, in Python, ``list.sort()`` is a method that sorts a list object
-    by mutating it as a side effect. It doesn't return a result.
-    By contrast, ``sorted(list)`` is a function that returns a sorted list,
-    but doesn't mutate the list object passed as an argument.
-    In Curv, we only need a single ``sort`` function:
+3. There are no functions or methods that mutate objects (as side effects).
+   We don't need mutating and copying variants of the same abstract operation.
+   Eg, in Python, ``list.sort()`` is a method that sorts a list object
+   by mutating it as a side effect. It doesn't return a result.
+   By contrast, ``sorted(list)`` is a function that returns a sorted list,
+   but doesn't mutate the list object passed as an argument.
+   In Curv, we only need a single ``sort`` function:
 
-    * ``sort list`` is an expression that returns a sorted list, with
-      no side effects.
-    * ``list!sort`` is an assignment statement that sorts a list variable
-      in place, with the same efficiency as ``list.sort()`` in Python.
+   * ``sort list`` is an expression that returns a sorted list, with
+     no side effects.
+   * ``list!sort`` is an assignment statement that sorts a list variable
+     in place, with the same efficiency as ``list.sort()`` in Python.
 
 Curv's "functional" approach to mutable state makes imperative code easier
 to write and understand. It simplifies the language, reduces the number of
