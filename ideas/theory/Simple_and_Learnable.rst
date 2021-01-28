@@ -104,7 +104,7 @@ Dynamic Typing
 
   |cartoon|
 
-  .. |cartoon| image: dynamic_typing.jpeg
+  .. |cartoon| image:: dynamic_typing.jpeg
 
   In this cartoon, the two programmers are enjoying themselves in different
   ways. Look at the left panel. Those square tiles are a lot more composable
