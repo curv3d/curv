@@ -59,7 +59,7 @@ Denotative Semantics
   to encode interactive animated graphics. It ought to be a good fit for Curv,
   but it encodes the state of an interactive animation in function closures,
   which reminds us of the problem with lambda calculus. In practice, DCTP
-  it is very complicated, very difficult to understand and visualize.
+  is very complicated, very difficult to understand and visualize.
   For Curv (which is "simple and learnable") it is better to encode animation
   state in data structures, for example as the Elm Architecture does.
 
@@ -187,7 +187,7 @@ in Python (and also in Haskell) by using indentation as syntax. I plan
 to introduce this feature in the next major language revision.
 As in Haskell, indentation as syntax will be optional: the old semicolon based, newline-insensitive syntax will still work.
 
-Finally, researcher Felienne Hermans has empirically discovered the importance
+Researcher Felienne Hermans has empirically discovered the importance
 of "pronounceable syntax", which speeds up learning the syntax of your first
 programming language for most people. The effect works on me as well. I plan
 to make the syntax more pronounceable in the next major revision.
