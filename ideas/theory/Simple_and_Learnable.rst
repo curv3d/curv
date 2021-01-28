@@ -1,20 +1,19 @@
-Design Goals for the Curv Language
-==================================
-Curv is a simple, learnable language for geometric modelling.
+Simplicity and Learnability
+===========================
+Curv is a simple, learnable language for recreational programming
+and generative art. The main focus has been 3D modelling for 3D printing,
+but the intent is to provide general support for 2D and 3D interactive graphics.
+
 This document explains how we unpack the goals of "simplicity"
 and "learnability", and use them to design a new programming language.
 
 Simplicity
 ----------
-High Level
-  Curv simplifies programming by suppressing a lot of low level detail
-  that you need to attend to in mainstream, general purpose languages.
-
 Declarative Semantics
   A declarative language is supposed to be a high level language in which
   you describe the desired end result, instead of a low level language where
   you specify in detail a sequence of steps the machine must perform in order
-  to accomplish the goal. This is vague, but we can make it more specific.
+  to accomplish the goal. This is vague, but we can make it more precise.
 
   In 20th century graphics languages (like Postscript), you used a procedural
   API to create graphics. You would set the values of global variables, such
@@ -26,15 +25,18 @@ Declarative Semantics
   *denotes* the shape that you want to construct. There are shape constructor
   functions, like ``circle`` and ``cube``, which construct primitive shapes.
   And there are shape combinator functions like ``rotate`` and ``intersection``,
-  that take shapes as arguments and return new shapes as results. A Curv
-  program works by composing these shape operations, or more generally,
-  by implementing an algorithm that computes a shape value. Shapes are first
-  class values that can be stored in variables or data structures, passed as
-  arguments to functions, and returned as results.
+  that take shapes as arguments and return new shapes as results.
+  This kind of API is called *denotative*.
+  In Curv, computing shapes is as simple and direct as computing numbers
+  using arithmetic notation.
 
-  This style of programming has been variously branded as "declarative",
-  "functional", and "denotative".
+  Curv is a declarative language, which means two things:
 
+  1. Curv simplifies programming by suppressing a lot of low level detail
+     that you need to attend to in mainstream, general purpose languages.
+  2. Curv is denotative.
+
+Denotative Semantics
   Conal Elliott: By "denotative", I mean founded on a precise, simple,
   implementation-independent, compositional semantics that exactly specifies
   the meaning of each type and building block. The compositional nature of
@@ -43,9 +45,27 @@ Declarative Semantics
   tractable reasoning and thus a foundation for correctness, derivation,
   and optimization.
 
+  Denotative style APIs are simpler and easier to understand *if* the domain
+  (of objects that the expressions denote) is easy to understand. In the
+  case of numbers or geometric shapes, these are very easy to visualize and
+  understand, so the style works really well.
+
+  However, denotative style is not a panacea. Consider the pure lambda
+  calculus, which is a denotative language. Church encoded integers, booleans,
+  lists, etc, are trivially visualized (as lambda expressions) but are hellishly
+  difficult to understand, and nobody wants to program this way. The Haskell
+  Monad pattern is famously difficult to understand, even though it is
+  denotative. "Denotative Continuous Time Programming" (DCTP, Elliott) is a way
+  to encode interactive animated graphics. It ought to be a good fit for Curv,
+  but it encodes the state of an interactive animation in function closures,
+  which reminds us of the problem with lambda calculus. In practice, DCTP
+  it is very complicated, very difficult to understand and visualize.
+  For Curv (which is "simple and learnable") it is better to encode animation
+  state in data structures, for example as the Elm Architecture does.
+
   Equational reasoning, referential transparency, substitution semantics, etc.
 
-Orthogonality and Composability:
+Orthogonality and Composability
   Curv is comprised of a small number of orthogonal features that can be
   composed together without restriction. This simplifies the language and
   eliminates unnecessary complexity, but can also make the language more
@@ -58,6 +78,40 @@ Orthogonality and Composability:
     by using standard interfaces.
   * Remove restrictions on how language elements can be composed.
   * Eliminate syntactic overhead for common compositions.
+
+Dynamic Typing
+  One consequence of Curv's uncompromising focus on orthogonality and
+  composability is that it is *dynamically typed*, at least at the high level.
+  This is the best choice for recreational programming and live programming.
+  You don't want your live programming session to crash due to a type error
+  in code that isn't being executed. Languages for large scale software
+  engineering require different tradeoffs. (Static type checking emerges in
+  the low levels of Curv, where it is needed for high performance code,
+  but it can be hidden away behind high level library interfaces.)
+  
+  Here's why static type checking is bad for simplicity, learnability and
+  composability. The whole point of static type checking is to *prevent
+  composition* if there is chance that a composition might go wrong at
+  run time. This is done using simple, restrictive rules that err on the
+  side of preventing your code from running. In the case of "simply typed"
+  languages, the restrictions are so onerous as to be unacceptable. To work
+  around these problems, the Haskell community (and the type theory community
+  in general) have created ever more complicated and difficult higher order
+  type systems. Haskell has evolved into a language for complexity addicts
+  and for people who enjoy solving difficult puzzles in order to get their
+  code to pass the type checker. And while this can be fun, Curv is optimized
+  for a different *kind* of fun.
+
+  |cartoon|
+
+  .. |cartoon| image: dynamic_typing.jpeg
+
+  In this cartoon, the two programmers are enjoying themselves in different
+  ways. Look at the left panel. Those square tiles are a lot more composable
+  than the jigsaw tiles. Curv is an art language, and that picture
+  is a perfectly valid "cubist" interpretation of a giraffe. When you are
+  making generative art, bugs and unexpected results can be a source of
+  delight and artistic inspiration.
 
 Local Reasoning
   Curv has simple and clear semantics. There is no "spooky action at
@@ -84,8 +138,66 @@ Local Reasoning
     From within the expression language, you cannot cause or observe side
     effects.
 
-Learnability
-------------
+Learnable Syntax
+----------------
+Among academics who study programming language design for teaching
+to beginners, there are two schools of thought: the syntax should look
+like Lisp, or it should look like Python.
+
+Either way, the syntax should be simple. Research suggests that the biggest
+barrier to learning a programming language is the "syntax cliff". Your best
+strategy is to memorize the syntax before you can be productive in learning
+the rest of the language and its APIs. I like the idea of having a grammar
+that "fits on a postcard", like Lisp or Smalltalk, but this is a work in
+progress.
+
+My preference is a syntax that looks more like Python than Lisp.
+Curv is full of associative binary operators, and these are easier
+to reason about when you can write them in infix form. Furthermore,
+high level Curv programming is based on pipelines, where data flows
+from left to right through a series of operations, being transformed
+at each step. The pipeline syntax is based on infix binary operators.
+Some pipelines::
+
+    a + b - c
+    cube >> rotate {angle: 45*deg, axis: Z_axis} >> colour red
+
+Every programming language with infix and unary operators
+has multiple levels of operator precedence. Here are some counts for
+languages that I have measured:
+
+===============  ======================
+Language         # of precedence levels
+===============  ======================
+Smalltalk        6 (unary binary keyword ; := .)
+Curv (Jan 2021)  11
+C                16 (. ! * + >> > == & ^ | && || ?: = , ;)
+===============  ======================
+
+C (and Python) have too many precedence levels: few people can keep them
+straight in their head (I can't). Curv has too many levels as well. To make
+the syntax easier to memorize, and to make pipeline syntax more pipeliny,
+I plan to give the same precedence to all left-associative pipeline operators
+in the next major language revision. The new syntax will have 6 precedence
+levels, moving Curv closer to having a grammar that fits on a postcard.
+
+Another aspect of Python that researchers of learnable syntax love is
+the absence of semicolons at the ends of statements, which is accomplished
+in Python (and also in Haskell) by using indentation as syntax. I plan
+to introduce this feature in the next major language revision.
+As in Haskell, indentation as syntax will be optional: the old semicolon based, newline-insensitive syntax will still work.
+
+Finally, researcher Felienne Hermans has empirically discovered the importance
+of "pronounceable syntax", which speeds up learning the syntax of your first
+programming language for most people. The effect works on me as well. I plan
+to make the syntax more pronounceable in the next major revision.
+
+Felienne has found that the initial height of the syntax cliff can be reduced
+by guiding learners through a series of progressively larger language subsets,
+with more complex syntax introduced at each step. I am considering this.
+
+Learnable Language Subsets
+--------------------------
 Curv is a simple, declarative language for geometric modelling. But Curv is
 also its own extension language. These two goals are potentially in conflict,
 since the extension language requires a certain amount of complexity and
@@ -94,9 +206,8 @@ bureaucracy that we don't want to expose in the modelling language.
 To resolve the conflict, to make it more learnable and easier to use,
 Curv is designed as a tower of increasing larger language subsets.
 You don't need to master the entire language to use one of these subsets.
-Each level has a principled design with simple semantics,
-and is self contained, with no accidental complexity leaking through from
-the lower level dialects.
+Each level has a principled design with simple semantics, and is self contained,
+with no accidental complexity leaking through from the lower level dialects.
 
 Here are the language subsets, of increasing size and complexity:
 
@@ -156,7 +267,7 @@ complicated is needed at L1.
 
 2. Declarative semantics
 
-   Curv has simple, declarative semantics, which makes it easier to learn
+   Curv L1 has simple, declarative semantics, which makes it easier to learn
    and understand. Shape operators are pure functions with no side effects.
    
    This also makes Curv a safe language, in the sense that you can download
