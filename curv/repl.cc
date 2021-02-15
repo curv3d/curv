@@ -343,25 +343,6 @@ struct REPL_Executor : public Operation::Executor
     }
 };
 
-#if 0
--- How does set_completion_callback work?
-void completionHook(char const* context, replxx_completions* lc, int* contextLen, void* ud) {
-	char** examples = (char**)( ud );
-	size_t i;
-
-	int utf8ContextLen = context_len( context );
-	int prefixLen = strlen( context ) - utf8ContextLen;
-	*contextLen = utf8str_codepoint_len( context + prefixLen, utf8ContextLen );
-	for (i = 0;	examples[i] != NULL; ++i) {
-		if (strncmp(context + prefixLen, examples[i], utf8ContextLen) == 0) {
-			replxx_add_completion(lc, examples[i]);
-		}
-	}
-}
-int context_len(const char* prefix) # of characters in the max suffix of prefix
-that are 'word' characters
-#endif
-
 void repl(System* sys, const Render_Opts* render)
 {
 #ifndef _WIN32
