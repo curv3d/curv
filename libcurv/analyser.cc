@@ -1066,4 +1066,10 @@ Predicate_Assertion_Phrase::analyse(Environ& env, Interp) const
         analyse_op(*function_, env));
 }
 
+Shared<Meaning>
+Mutate_Phrase::analyse(Environ& env, Interp) const
+{
+    throw Exception(At_Phrase(*this, env), "not implemented");
+}
+
 } // namespace curv

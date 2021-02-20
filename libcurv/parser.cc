@@ -391,6 +391,7 @@ parse_ritem(Scanner& scanner)
 //  | pipeline >> disjunction
 //  | pipeline ` postfix ` disjunction
 //  | pipeline :: disjunction
+//  | pipeline ! disjunction
 Shared<Phrase>
 parse_pipeline(Scanner& scanner)
 {
@@ -406,6 +407,10 @@ parse_pipeline(Scanner& scanner)
             continue;
         case Token::k_colon_colon:
             left = make<Predicate_Assertion_Phrase>(
+                std::move(left), tok, parse_disjunction(scanner));
+            continue;
+        case Token::k_bang:
+            left = make<Mutate_Phrase>(
                 std::move(left), tok, parse_disjunction(scanner));
             continue;
         case Token::k_backtick:

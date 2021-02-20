@@ -487,6 +487,22 @@ struct Apply_Lens_Phrase : public Call_Phrase
     virtual Shared<Meaning> analyse(Environ&, Interp) const override;
 };
 
+struct Mutate_Phrase : public Call_Phrase
+{
+    Mutate_Phrase(
+        Shared<Phrase> locative,
+        Token op,
+        Shared<Phrase> func)
+    :
+        Call_Phrase(std::move(func), std::move(locative), std::move(op))
+    {}
+    virtual Location location() const override
+    {
+        return arg_->location().ending_at(function_->location().token());
+    }
+    virtual Shared<Meaning> analyse(Environ&, Interp) const override;
+};
+
 struct If_Phrase : public Phrase
 {
     Token if_;

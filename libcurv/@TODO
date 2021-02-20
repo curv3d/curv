@@ -1,3 +1,51 @@
+#"x", #""" character literals.
+
+loc!func1!func2
+  Phrase repr:
+    Mutate_Phrase(loc,bangtok,func) -- nested
+    subclass of Call_Phrase
+  Op repr:
+    Mutate_Action
+      Locative locative_
+      Expr index_ -- or null
+      [callphrase,funcexpr]* transformers_
+  calling a func:
+    What callphrase to use? Use the original Mutate_Phrase created by parser.
+    Each element of transformers_ is a [callphrase,funcexpr] pair.
+  analysis:
+    Instead of a locative_ and an index_, wouldn't it be better to
+    encapsulate an indexed locative in one value? Why hasn't this been done?
+    It's because we want to evaluate an indexed locative into a runtime
+    representation that has fetch and store operations, and this repr doesn't
+    exist yet.
+    * Call it a Reference. The purpose of Reference objects is (1) abstraction
+      and polymorphism, and (2) to pay the cost of evaluating a locative once,
+      when multiple operations (normally 2) will be performed on it, at the
+      cost of allocating an object. The use case is fetch, modify, store.
+    * Maybe Locative::fetch_modify_store(transformer, frame)?
+      Fewer allocations? To implement 'x +:= y' requires allocating (`+` y).
+      To implement 'x!f!g!h' requires allocating 'compose[f,g,h]', which
+      loses the intermediate Call_Phrases for x!f, x!f!g.
+    * Is either form more efficient to compile? I dunno.
+    I will implement Reference.
+
+> void
+> Mutate_Action::exec(Frame& fr, Executor&) const
+> {
+>     Value index;
+>     if (index_) index = index_->eval(fr);
+>     for (auto t : transforms_) {
+>         Value f = t->eval(fr);
+>         if (index) {
+>         } else {
+>             Value val = locative_->fetch(fr);
+>             Value newval = call(f, val, fr);
+>             locative_->store(fr, newval);
+>         }
+>     }
+> }
+
+--------------
 TODO:
 * `without symbolList record`
 
