@@ -903,7 +903,7 @@ Value to_char(Value arg, Fail fl, const Context& cx)
         // List values use a single canonical representation.
         // A non-empty list of only chars is a String, otherwise a List.
         if (list->empty()) return arg;
-        Shared<String> s = make_string(list->size());
+        Shared<String> s = make_uninitialized_string(list->size());
         for (unsigned i = 0; i < list->size(); ++i) {
             TRY_DEF(val, to_char(list->at(i), fl, cx));
             if (val.is_char())

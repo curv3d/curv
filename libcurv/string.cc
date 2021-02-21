@@ -21,7 +21,7 @@ value_to_string(Value val, Fail fl, const Context& cx)
     auto str = val.maybe<const String>();
     if (str) return str;
     auto list = val.maybe<const List>();
-    if (list && list->empty()) return make_string(size_t(0));
+    if (list && list->empty()) return make_uninitialized_string(size_t(0));
     FAIL(fl, nullptr, cx, stringify(val," is not a string"));
 }
 
@@ -34,7 +34,7 @@ maybe_string(Value val, const Context& cx)
 const char String_Base::name[] = "string";
 
 Shared<String>
-make_string(size_t len)
+make_uninitialized_string(size_t len)
 {
     return String::make(len);
 }

@@ -116,7 +116,7 @@ bool is_string(Value);
 Shared<String> make_string(const char* str, size_t len);
 
 // Make an uninitialized curv::String
-Shared<String> make_string(size_t len);
+Shared<String> make_uninitialized_string(size_t len);
 
 // Make a curv::String from a character Range
 inline Shared<String> make_string(Range<const char*> r)
