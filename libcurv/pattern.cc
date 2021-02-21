@@ -448,12 +448,15 @@ symbolize(const Phrase& ph, Environ& env)
     if (auto id = dynamic_cast<const Identifier*>(&ph))
         return id->symbol_;
     if (auto strph = dynamic_cast<const String_Phrase*>(&ph)) {
+        env.sstate_.deprecate(&Source_State::string_colon_deprecated_, 1,
+            At_Phrase(ph, env),
+            "\"name\":pattern is deprecated.\n"
+            "Use 'name':pattern instead.");
         auto val = std_eval(*strph, env);
         auto str = value_to_string(val, Fail::hard, At_Phrase(ph, env));
         return make_symbol(str->data(), str->size());
     }
-    throw Exception(At_Phrase(ph, env),
-        "not an identifier or string literal");
+    throw Exception(At_Phrase(ph, env), "not an identifier");
 }
 
 // A helper function while parsing fields in a record pattern.

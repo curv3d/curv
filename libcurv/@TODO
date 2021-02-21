@@ -1,5 +1,3 @@
-deprecate {"foo":pat} patterns
-
 loc!func1!func2
   Phrase repr:
     Mutate_Phrase(loc,bangtok,func) -- nested
