@@ -146,8 +146,8 @@ assert( amend (tslice[ tslice[[0,1],[1,2]], [0,2] ])
   ]
 );
 
-assert("abc"@1 == char "b");
-assert(amend 1 (char "-") "abc" == "a-c");
+assert("abc"@1 == #"b");
+assert(amend 1 (#"-") "abc" == "a-c");
 assert(amend 1 42 "abc" == "a"++[42]++"c");
 
 in 0

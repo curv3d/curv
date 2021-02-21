@@ -749,7 +749,7 @@ let s = #''_' in
 
 // char and string
 let c=char 42 in assert(is_char c && repr c == "#"_*"_");
-assert(char 36 == char "$");
+assert(char 36 == #"$");
 assert(char[] == [] && char[97] == "a");
 assert("" == [] && repr "" == "[]");
 assert([char 97] == "a" && repr[char 97] == ""_a"_");
@@ -757,16 +757,16 @@ assert(is_string[] && is_string[char 97]);
 assert(concat["ab","cd"] == "abcd");
 assert(concat["a",[1]] == [char 97,1]);
 assert([for (c in "abc") c] == "abc");
-assert("a"++"b" == "ab" && [1]++[2]==[1,2] && "a"++[2]==[char "a",2]);
-assert( "foo"[0] == char "f" && "foobar"[[3,2,4]] == "boa" );
-assert( "abc"@[0,[1,2]] == [char "a","bc"] );
-assert( [..."abc",char "d"] == "abcd" );
-assert( string (char "a") == "a" && string "b" == "b" && string #cd == "cd" );
+assert("a"++"b" == "ab" && [1]++[2]==[1,2] && "a"++[2]==[#"a",2]);
+assert( "foo"[0] == #"f" && "foobar"[[3,2,4]] == "boa" );
+assert( "abc"@[0,[1,2]] == [#"a","bc"] );
+assert( [..."abc",#"d"] == "abcd" );
+assert( string (#"a") == "a" && string "b" == "b" && string #cd == "cd" );
 assert( string "" == "" && string("abc"++[1,2,3]) == "abc[1,2,3]"
         && string([1,2,3]++"abc") == "[1,2,3]abc" );
 assert( "$_" == "$" && ""_" == string #'"' );
-assert( ucode (char "a") == 97 && ucode "12" == [49,50] );
-assert( ucode [char "a","12"] == [97,[49,50]] );
+assert( ucode (#"a") == 97 && ucode "12" == [49,50] );
+assert( ucode [#"a","12"] == [97,[49,50]] );
 assert( is_list "abc" && not(is_list #abc) );
 assert( select [[true,false], "ab", "cd"] == "ad" );
 assert( repr[char 1] == [quot,dol]++"[1]"++[quot] );
@@ -776,7 +776,7 @@ assert( "${dol}" == "$" );
 assert( let f[x,y]="$x|$y" in f "ab" == "a|b" );
 let a="abc";
     b=amend 1 42 a;
-    c=amend 1 (char "b") b;
+    c=amend 1 (#"b") b;
 in assert(a==c);
 
 // associations

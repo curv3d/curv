@@ -892,16 +892,7 @@ Value to_char(Value arg, Fail fl, const Context& cx)
             return missing;
         return Value{char(code)};
     }
-    else if (auto str = arg.maybe<String>()) {
-        if (str->size() != 1) {
-            FAIL(fl, missing, cx,
-                stringify(arg, " is not a string of length 1"));
-        }
-        return Value{str->at(0)};
-    }
     else if (auto list = arg.maybe<List>()) {
-        // List values use a single canonical representation.
-        // A non-empty list of only chars is a String, otherwise a List.
         if (list->empty()) return arg;
         Shared<String> s = make_uninitialized_string(list->size());
         for (unsigned i = 0; i < list->size(); ++i) {
@@ -922,7 +913,7 @@ Value to_char(Value arg, Fail fl, const Context& cx)
     }
     else {
         FAIL(fl, missing, cx,
-            stringify(arg, " is not an integer, string, or list of these"));
+            stringify(arg, " is not an integer, or a list or tree of integers"));
     }
 }
 struct Char_Function : public Function
