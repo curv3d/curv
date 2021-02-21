@@ -776,8 +776,11 @@ assert( "${dol}" == "$" );
 assert( let f[x,y]="$x|$y" in f "ab" == "a|b" );
 let a="abc";
     b=amend 1 42 a;
-    c=amend 1 (#"b") b;
-in assert(a==c);
+    c=amend 1 (#"b") b; // c is a denormalized string
+in (
+    assert(is_string c);
+    assert(a==c);
+);
 
 // associations
 let r={a:1} in assert([...r] == [[#a,1]]);

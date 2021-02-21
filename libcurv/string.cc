@@ -11,8 +11,12 @@ namespace curv {
 bool is_string(Value val)
 {
     if (val.maybe<String>() != nullptr) return true;
-    auto list = val.maybe<List>();
-    return (list && list->empty());
+    if (auto list = val.maybe<List>()) {
+        for (auto c : *list)
+            if (!c.is_char()) return false;
+        return true;
+    }
+    return false;
 }
 
 Shared<const String>
