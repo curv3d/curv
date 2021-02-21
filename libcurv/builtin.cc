@@ -838,10 +838,8 @@ struct Count_Function : public Tuple_Function
     Count_Function(const char* nm) : Tuple_Function(1,nm) {}
     Value tuple_call(Fail fl, Frame& args) const override
     {
-        if (auto list = args[0].maybe<const List>())
+        if (auto list = args[0].maybe<const Abstract_List>())
             return {double(list->size())};
-        if (auto string = args[0].maybe<const String>())
-            return {double(string->size())};
         if (auto re = args[0].maybe<const Reactive_Value>()) {
             if (re->sctype_.is_list())
                 return {double(re->sctype_.count())};

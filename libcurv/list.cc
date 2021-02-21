@@ -226,8 +226,9 @@ void List_Builder::concat(Value val, const Context& cx)
         }
     } else if (auto listval = val.maybe<List>()) {
         if (listval->empty()) return;
-        // A non-empty List is guaranteed to contain 1 non-character,
-        // so we need to switch out of string mode.
+        // A non-empty List is unlikely to contain only characters,
+        // so we switch out of string mode. If this assumption is wrong,
+        // then we generate a denormalized string. TODO?
         if (in_string_) {
             for (auto c : string_)
                 list_.push_back({c});
