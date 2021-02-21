@@ -1,4 +1,4 @@
-#"x", #""" character literals.
+deprecate {"foo":pat} patterns
 
 loc!func1!func2
   Phrase repr:
