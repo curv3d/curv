@@ -25,12 +25,6 @@ value_to_string(Value val, Fail fl, const Context& cx)
     FAIL(fl, nullptr, cx, stringify(val," is not a string"));
 }
 
-Shared<const String>
-maybe_string(Value val, const Context& cx)
-{
-    return val.maybe<const String>();
-}
-
 const char String_Base::name[] = "string";
 
 Shared<String>

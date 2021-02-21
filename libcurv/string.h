@@ -162,9 +162,6 @@ Shared<const String> to_print_string(Value);
 // fail if value is not a string
 Shared<const String> value_to_string(Value, Fail, const Context&);
 
-// return nullptr if value is not a string
-Shared<const String> maybe_string(Value);
-
 struct String_Ref : public Shared<const String>
 {
     String_Ref(const char* str)
