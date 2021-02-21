@@ -6,6 +6,7 @@ important to some data structures. Strings mostly behave like lists or arrays,
 but not exactly, because indexing into a string yields a 1-element string
 instead of a character. The difference between string and list semantics adds
 complexity when you need to view a string as a list of characters.
+
 Curv has a different view of reality.
 
 * Curv has a character type, and the string literal syntax ``"abc"``
@@ -25,20 +26,25 @@ Later, Unicode will be supported.
 .. _`Variants`: Variants.rst
 .. _`List`: List.rst
 
+``#"x"``
+  This is a character literal, where ``x`` can be replaced by any printable
+  ASCII character. Note that space is considered a printable character,
+  but tab is not. There are no escape sequences in a character literal,
+  so ``#"""`` denotes the ``"`` character.
+
 ``char c``
-  Construct a character value.
+  Construct a character value from a Unicode code point.
+  Only ASCII is currently supported.
   
   * The argument ``c`` can be an integer code point between 1 and 127.
     For example, ``char 65`` is the character ``A``.
-  * The argument ``c`` can be a single character string.
-    For example, ``char "A"`` is also the character ``A``.
   * If ``char`` is passed a list of valid arguments, it will return a list
     of results. So ``char`` will convert a list of code points to a string.
     For example, ``char[97,98,99]`` is the string ``"abc"``.
 
 ``ucode c``
   Convert a character to a Unicode code point.
-  For example, ``ucode(char "A")`` is ``65``.
+  For example, ``ucode(#"A")`` is ``65``.
 
   If ``ucode`` is passed a list of valid arguments, it will return a list
   of results.

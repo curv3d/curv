@@ -46,6 +46,12 @@ Symbols
 
   symbol ::= /'#' identifier/
 
+Characters
+~~~~~~~~~~
+::
+
+  character ::= /'#"' [ -~] '"'/
+
 Numerals
 ~~~~~~~~
 ::
@@ -145,7 +151,8 @@ precedence and ``postfix`` being the highest precedence::
     | postfix primary
     | postfix '.' primary
 
-  primary ::= identifier | symbol | numeral | string | parens | brackets | braces
+  primary ::= identifier | symbol | character | numeral | string
+    | parens | brackets | braces
 
   parens ::= '(' list ')'
   brackets ::= '[' list ']'

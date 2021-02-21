@@ -10,7 +10,7 @@ Curv has 6 primitive value types:
 ==============     ============================================
 symbol             ``#foo``, ``#'hello world'``
 number             ``-1, 3.1416, 0xFF``
-character          ``char 65`` or ``char "A"``
+character          ``char 65`` or ``#"A"``
 list               ``[0,1,2]`` or ``"abc"``
 record             ``{name: "Lancelot", quest: "To seek the holy grail", favourite_colour: "blue"}``
 function           ``x -> x+1``

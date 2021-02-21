@@ -697,7 +697,8 @@ parse_string(Scanner& scanner, Token begin)
     }
 }
 
-// primary : symbol | numeral | identifier | string | parens | brackets | braces
+// primary : symbol | character | numeral | identifier | string
+//  | parens | brackets | braces
 // parens : ( list )
 // brackets : [ list ]
 // braces : { list }
