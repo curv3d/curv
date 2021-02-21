@@ -748,7 +748,7 @@ let s = #''_' in
     assert(string s == "'" && repr s == "#''_'" && symbol "'" == s);
 
 // char and string
-let c=char 42 in assert(is_char c && repr c == "char "_*"_");
+let c=char 42 in assert(is_char c && repr c == "#"_*"_");
 assert(char 36 == char "$");
 assert(char[] == [] && char[97] == "a");
 assert("" == [] && repr "" == "[]");

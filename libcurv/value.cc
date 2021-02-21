@@ -87,8 +87,8 @@ const
         out << (to_bool_unsafe() ? "#true" : "#false");
     } else if (is_char()) {
         char c = to_char_unsafe();
-        if (c >= ' ' && c <= '~' && c != '"')
-            out << "char \"" << c << "\"";
+        if (c >= ' ' && c <= '~')
+            out << "#\"" << c << "\"";
         else
             out << "char " << unsigned(c);
     } else if (is_num()) {
