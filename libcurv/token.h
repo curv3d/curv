@@ -72,6 +72,7 @@ struct Token
             k_while,
             end_keywords,
         k_symbol,           ///! symbol literal, such as #foo
+        k_char,             ///! character literal, such as #"a"
         k_num,              ///! floating point numeral
         k_hexnum,           ///! hexadecimal numeral
         k_quote,            ///! `"`

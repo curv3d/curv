@@ -714,6 +714,7 @@ parse_primary(Scanner& scanner, const char* what)
     case Token::k_num:
     case Token::k_hexnum:
     case Token::k_symbol:
+    case Token::k_char:
         return make<Numeral>(*scanner.source_, tok);
     case Token::k_ident:
         return make<Identifier>(*scanner.source_, tok);

@@ -241,6 +241,11 @@ Numeral::eval() const
         auto s = token_to_symbol(r);
         return s.to_value();
       }
+    case Token::k_char:
+      {
+        auto r = location().range();
+        return {r[2]};
+      }
     default:
         die("Numeral::analyse: bad token type");
     }

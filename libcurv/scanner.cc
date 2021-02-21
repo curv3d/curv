@@ -37,6 +37,7 @@ Scanner::get_token()
     const char* p = ptr_;
     const char* first = source_->first;
     const char* last = source_->last;
+    Shared<const String> errmsg = nullptr;
 
     if (string_begin_.kind_ != Token::k_missing) {
         // We are inside a string literal.
@@ -111,11 +112,9 @@ Scanner::get_token()
                 goto success;
             }
             tok = string_begin_;
-            tok.last_ = p - first + 1;
-            tok.kind_ = Token::k_bad_token;
-            ptr_ = p + 1;
-            throw Exception(At_Token(tok, *this),
-                "unterminated string literal");
+            ++p;
+            errmsg = make_string("unterminated string literal");
+            goto error;
         }
         for (;;) {
             if (p == last || *p == '\n' || *p == '"' || *p == 0)
@@ -292,25 +291,42 @@ quoted_identifier:
             break;
         }
         ++p;
-        tok.last_ = p - first;
-        tok.kind_ = Token::k_bad_token;
-        ptr_ = p;
-        throw Exception(At_Token(tok, *this),
-            stringify(illegal_character_message(p[-1]), " in ",
-                first[tok.first_] == '#' ? "symbol" : "quoted identifier"));
+        if (p >= last)
+            errmsg = make_string("quoted identifier is unterminated");
+        else
+            errmsg = stringify(illegal_character_message(p[-1]), " in ",
+                first[tok.first_] == '#' ? "symbol" : "quoted identifier");
+        goto error;
     case '#':
-        // symbol literal
-        tok.kind_ = Token::k_symbol;
-        if (p >= last) goto error;
-        if (*p == '\'') {
-            ++p;
-            goto quoted_identifier;
-        }
-        if (isalpha(*p) || *p == '_') {
-            while (p < last && (isalnum(*p) || *p == '_'))
+        if (p < last) {
+            if (*p == '\'') {
+                tok.kind_ = Token::k_symbol;
                 ++p;
-            goto success;
+                goto quoted_identifier;
+            }
+            if (isalpha(*p) || *p == '_') {
+                tok.kind_ = Token::k_symbol;
+                while (p < last && (isalnum(*p) || *p == '_'))
+                    ++p;
+                goto success;
+            }
+            if (*p == '"') {
+                tok.kind_ = Token::k_char;
+                ++p;
+                if (p < last && *p >= ' ' && *p <= '~') {
+                    ++p;
+                    if (p < last && *p == '"') {
+                        ++p;
+                        goto success;
+                    }
+                }
+                if (p < last) ++p;
+                errmsg = make_string("syntax error in character literal");
+                goto error;
+            }
         }
+        if (p < last) ++p;
+        errmsg = make_string("# not followed by identifier or \"");
         goto error;
     case '(':
         tok.kind_ = Token::k_lparen;
@@ -450,7 +466,8 @@ error:
     tok.last_ = p - first;
     tok.kind_ = Token::k_bad_token;
     ptr_ = p;
-    throw Exception(At_Token(tok, *this), illegal_character_message(p[-1]));
+    throw Exception(At_Token(tok, *this),
+        errmsg ? errmsg : illegal_character_message(p[-1]));
 
 success:
     tok.last_ = p - first;
