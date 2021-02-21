@@ -780,6 +780,7 @@ let a="abc";
 in (
     assert(is_string c);
     assert(a==c);
+    assert(symbol c == #abc);
 );
 
 // associations

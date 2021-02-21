@@ -22,10 +22,19 @@ bool is_string(Value val)
 Shared<const String>
 value_to_string(Value val, Fail fl, const Context& cx)
 {
-    auto str = val.maybe<const String>();
-    if (str) return str;
-    auto list = val.maybe<const List>();
-    if (list && list->empty()) return make_uninitialized_string(size_t(0));
+    if (auto str = val.maybe<const String>())
+        return str;
+    if (auto list = val.maybe<const List>()) {
+        auto str = make_uninitialized_string(list->size());
+        for (unsigned i = 0; i < list->size(); ++i) {
+            Value c = list->at(i);
+            if (c.is_char())
+                str->at(i) = c.to_char_unsafe();
+            else goto error;
+        }
+        return str;
+    }
+  error:
     FAIL(fl, nullptr, cx, stringify(val," is not a string"));
 }
 
