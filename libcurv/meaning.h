@@ -5,18 +5,19 @@
 #ifndef LIBCURV_MEANING_H
 #define LIBCURV_MEANING_H
 
-#include <libcurv/sc_frame.h>
-#include <vector>
-#include <libcurv/tail_array.h>
-#include <libcurv/shared.h>
-#include <libcurv/phrase.h>
-#include <libcurv/value.h>
-#include <libcurv/symbol.h>
-#include <libcurv/list.h>
-#include <libcurv/module.h>
 #include <libcurv/frame.h>
-#include <libcurv/record.h>
+#include <libcurv/list.h>
+#include <libcurv/locative.h>
+#include <libcurv/module.h>
 #include <libcurv/pattern.h>
+#include <libcurv/phrase.h>
+#include <libcurv/record.h>
+#include <libcurv/sc_frame.h>
+#include <libcurv/shared.h>
+#include <libcurv/symbol.h>
+#include <libcurv/tail_array.h>
+#include <libcurv/value.h>
+#include <vector>
 
 namespace curv {
 
@@ -931,42 +932,6 @@ struct Parametric_Expr : public Just_Expression
     {}
 
     virtual Value eval(Frame&) const override;
-};
-
-// A Locative is the phrase on the left side of an assignment statement.
-//
-// TODO: Efficient indexed update using "linear logic".
-// For indexed update, we move the value out of the location (without changing
-// its reference count), use COW to amend the moved value, then store().
-// We need a 'steal' or 'fetch_move' operation.
-struct Locative : public Shared_Base
-{
-    Shared<const Phrase> syntax_;
-    Locative(Shared<const Phrase> syntax)
-    :
-        syntax_(std::move(syntax))
-    {}
-
-    virtual Value fetch(Frame&) const = 0;
-    virtual void store(Frame&, Value) const = 0;
-    virtual SC_Type sc_type(SC_Frame&) const { return {}; }
-    virtual void sc_print(SC_Frame& f) const;
-};
-
-// A Locative representing a boxed local variable.
-// Closely related to Local_Data_Ref.
-struct Local_Locative : public Locative
-{
-    Local_Locative(Shared<const Phrase> syntax, slot_t slot)
-    :
-        Locative(std::move(syntax)),
-        slot_(slot)
-    {}
-    slot_t slot_;
-    virtual Value fetch(Frame&) const override;
-    virtual void store(Frame&, Value) const override;
-    virtual void sc_print(SC_Frame& f) const override;
-    virtual SC_Type sc_type(SC_Frame&) const override;
 };
 
 // 'locative := expression'
