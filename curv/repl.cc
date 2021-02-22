@@ -128,6 +128,10 @@ struct REPL_Locative : public Locative
         ptr_(ptr)
     {}
 
+    virtual Unique<const Reference> getref(Frame&) const override
+    {
+        return make_unique<Ptr_Reference>(ptr_);
+    }
     virtual Value fetch(Frame&) const override
     {
         return *ptr_;

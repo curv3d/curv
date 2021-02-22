@@ -7,7 +7,6 @@
 
 #include <libcurv/frame.h>
 #include <libcurv/list.h>
-#include <libcurv/locative.h>
 #include <libcurv/module.h>
 #include <libcurv/pattern.h>
 #include <libcurv/phrase.h>
@@ -932,6 +931,97 @@ struct Parametric_Expr : public Just_Expression
     {}
 
     virtual Value eval(Frame&) const override;
+};
+
+// a Reference is an abstract pointer to a value or a structured collection
+// of elements within a mutable local variable. It is the 'pointer' version
+// of an index value. A Reference is only valid for a specific stack frame.
+struct Reference
+{
+    virtual ~Reference() = default;
+    virtual Value fetch(const At_Syntax&) const = 0;
+    virtual void store(Value, const At_Syntax&) const = 0;
+};
+
+struct Ptr_Reference : public Reference
+{
+    Ptr_Reference(Value* s) : slot_(s) {}
+    Value* slot_;
+
+    virtual Value fetch(const At_Syntax&) const override;
+    virtual void store(Value, const At_Syntax&) const override;
+};
+
+struct Indexed_Reference : public Reference
+{
+    Indexed_Reference(Unique<const Reference> b, Value i)
+    :
+        base_(move(b)), index_(i)
+    {}
+    Unique<const Reference> base_;
+    Value index_;
+
+    virtual Value fetch(const At_Syntax&) const override;
+    virtual void store(Value, const At_Syntax&) const override;
+};
+
+// A Locative is the phrase on the left side of an assignment statement.
+//
+// TODO: Efficient indexed update using "linear logic".
+// For indexed update, we move the value out of the location (without changing
+// its reference count), use COW to amend the moved value, then store().
+// We need a 'steal' or 'fetch_move' operation.
+struct Locative
+{
+    Locative(Shared<const Phrase> syntax)
+    :
+        syntax_(move(syntax))
+    {}
+    virtual ~Locative() = default;
+    Shared<const Phrase> syntax_;
+
+    virtual Unique<const Reference> getref(Frame&) const = 0;
+    virtual Value fetch(Frame&) const = 0;
+    virtual void store(Frame&, Value) const = 0;
+    virtual SC_Type sc_type(SC_Frame&) const { return {}; }
+    virtual void sc_print(SC_Frame& f) const;
+};
+
+// A Locative representing a boxed local variable.
+// Closely related to Local_Data_Ref.
+struct Local_Locative : public Locative
+{
+    Local_Locative(Shared<const Phrase> syntax, slot_t slot)
+    :
+        Locative(move(syntax)),
+        slot_(slot)
+    {}
+    slot_t slot_;
+
+    virtual Unique<const Reference> getref(Frame&) const override;
+    virtual Value fetch(Frame&) const override;
+    virtual void store(Frame&, Value) const override;
+    virtual void sc_print(SC_Frame& f) const override;
+    virtual SC_Type sc_type(SC_Frame&) const override;
+};
+
+struct Indexed_Locative : public Locative
+{
+    Indexed_Locative(
+        Shared<const Phrase> syntax,
+        Unique<const Locative> b, Shared<const Operation> i)
+    :
+        Locative(move(syntax)),
+        base_(move(b)), index_(move(i))
+    {}
+    Unique<const Locative> base_;
+    Shared<const Operation> index_;
+
+    virtual Unique<const Reference> getref(Frame&) const override;
+    virtual Value fetch(Frame&) const override;
+    virtual void store(Frame&, Value) const override;
+    //virtual void sc_print(SC_Frame& f) const override;
+    //virtual SC_Type sc_type(SC_Frame&) const override;
 };
 
 // 'locative := expression'
