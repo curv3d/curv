@@ -32,7 +32,7 @@ Reactive_Expression::Reactive_Expression(
     const Context& cx)
 :
     Reactive_Value(sty_reactive_expression, sctype),
-    expr_(std::move(expr))
+    expr_(move(expr))
 {
     if (!expr_->pure_) {
         const Operation& exp { *expr };

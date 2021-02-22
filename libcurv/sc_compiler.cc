@@ -29,7 +29,7 @@ struct SC_Data_Ref : public Operation
 {
     SC_Value val_;
     SC_Data_Ref(Shared<const Phrase> src, SC_Value v)
-    : Operation(std::move(src)), val_(v)
+    : Operation(move(src)), val_(v)
     {}
     SC_Value sc_eval(SC_Frame&) const override { return val_; }
     void exec(Frame&, Executor&) const override { }
@@ -100,7 +100,7 @@ SC_Compiler::define_function(
         for (unsigned i = 0; i < params.size(); ++i) {
             param_list->at(i) = make<SC_Data_Ref>(nullptr, params[i]);
         }
-        arg_expr = std::move(param_list);
+        arg_expr = move(param_list);
     }
     auto result = func->sc_call_expr(*arg_expr, nullptr, *f);
     if (result.type != result_type) {

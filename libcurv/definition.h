@@ -23,7 +23,7 @@ struct Definition : public Shared_Base
     Definition(
         Shared<const Phrase> syntax)
     :
-        syntax_(std::move(syntax))
+        syntax_(move(syntax))
     {}
 
     virtual void analyse_sequential(Environ&) = 0;
@@ -64,8 +64,8 @@ struct Function_Definition : public Unitary_Definition
         Shared<Lambda_Phrase> lambda_phrase)
     :
         Unitary_Definition(syntax),
-        name_(std::move(name)),
-        lambda_phrase_(std::move(lambda_phrase))
+        name_(move(name)),
+        lambda_phrase_(move(lambda_phrase))
     {}
 
     virtual void analyse_sequential(Environ&) override;
@@ -91,7 +91,7 @@ struct Data_Definition : public Unitary_Definition
     :
         Unitary_Definition(syntax),
         pattern_(pattern),
-        definiens_phrase_(std::move(definiens))
+        definiens_phrase_(move(definiens))
     {}
 
     virtual void analyse_sequential(Environ&) override;
@@ -111,7 +111,7 @@ struct Include_Definition : public Unitary_Definition
         Shared<Phrase> arg)
     :
         Unitary_Definition(syntax),
-        arg_(std::move(arg))
+        arg_(move(arg))
     {}
 
     virtual void analyse_sequential(Environ&) override;
@@ -132,7 +132,7 @@ struct Test_Definition : public Unitary_Definition
         Shared<Phrase> arg)
     :
         Unitary_Definition(syntax),
-        arg_(std::move(arg))
+        arg_(move(arg))
     {}
 
     virtual void analyse_sequential(Environ&) override;
@@ -147,7 +147,7 @@ struct Test_Definition : public Unitary_Definition
 struct Compound_Definition_Base : public Definition
 {
     Compound_Definition_Base(Shared<const Phrase> syntax)
-    : Definition(std::move(syntax)) {}
+    : Definition(move(syntax)) {}
 
     virtual void analyse_sequential(Environ&) override;
     virtual Shared<Operation> add_to_sequential_scope(Scope&) override;
@@ -240,7 +240,7 @@ struct Recursive_Scope : public Scope
         Environ& parent, bool target_is_module, Shared<const Phrase> syntax)
     :
         Scope(parent),
-        syntax_(std::move(syntax)),
+        syntax_(move(syntax)),
         target_is_module_(target_is_module)
     {
         if (target_is_module)

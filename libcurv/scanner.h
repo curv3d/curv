@@ -41,7 +41,7 @@ struct Scanner
 
     Scanner(Shared<const Source> s, System& system, Scanner_Opts opts = {})
     :
-        source_(std::move(s)),
+        source_(move(s)),
         system_(system),
         file_frame_(opts.file_frame_),
         string_begin_(),

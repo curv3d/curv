@@ -61,7 +61,7 @@ At_Token::At_Token(Token tok, const Phrase& phrase, Environ& env)
 
 At_Token::At_Token(Location loc, Environ& env)
 :
-    loc_{std::move(loc)},
+    loc_{move(loc)},
     system_{env.sstate_.system_},
     file_frame_{env.sstate_.file_frame_}
 {
@@ -69,7 +69,7 @@ At_Token::At_Token(Location loc, Environ& env)
 
 At_Token::At_Token(Location loc, System& sys, Frame* f)
 :
-    loc_{std::move(loc)},
+    loc_{move(loc)},
     system_{sys},
     file_frame_{f}
 {

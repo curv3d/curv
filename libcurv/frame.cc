@@ -14,7 +14,7 @@ Frame_Base::Frame_Base(
 :
     sstate_(sstate),
     parent_frame_(parent),
-    call_phrase_(std::move(src)),
+    call_phrase_(move(src)),
     nonlocals_(nl)
 {}
 

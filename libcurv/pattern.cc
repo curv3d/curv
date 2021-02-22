@@ -226,7 +226,7 @@ struct List_Pattern : public Pattern
     List_Pattern(Shared<const Phrase> s, std::vector<Shared<Pattern>> items)
     :
         Pattern(s),
-        items_(std::move(items))
+        items_(move(items))
     {}
 
     virtual void analyse(Environ& env) override
@@ -318,7 +318,7 @@ struct Record_Pattern : public Pattern
         Shared<const Phrase> fieldname_;
         Field(Shared<const Phrase> syntax, Shared<Pattern> p,
             Shared<const Phrase> d, Shared<const Phrase> n)
-        : syntax_(std::move(syntax)), pat_(p), dsrc_(d), fieldname_(n) {}
+        : syntax_(move(syntax)), pat_(p), dsrc_(d), fieldname_(n) {}
         Field() {}
     };
     Symbol_Map<Field> fields_;
@@ -326,7 +326,7 @@ struct Record_Pattern : public Pattern
     Record_Pattern(Shared<const Phrase> s, Symbol_Map<Field> fields)
     :
         Pattern(s),
-        fields_(std::move(fields))
+        fields_(move(fields))
     {}
 
     virtual void analyse(Environ& env) override
@@ -584,7 +584,7 @@ make_pattern(const Phrase& ph, Environ& env)
             }
             throw Exception(At_Phrase(item, env), "not a field pattern");
         });
-        return make<Record_Pattern>(share(ph), std::move(fields));
+        return make<Record_Pattern>(share(ph), move(fields));
     }
     throw Exception(At_Phrase(ph, env), "not a pattern");
 }

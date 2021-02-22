@@ -84,7 +84,7 @@ void Generic_List::amend_at(size_t i, Value newval, const At_Syntax& cx)
             for (unsigned j = 0; j < str.size(); ++j)
                 li->at(j) = Value{str[j]};
             li->at(i) = newval;
-            list_ = std::move(li);
+            list_ = move(li);
         }
     }
     else if (this->is_reactive_value())

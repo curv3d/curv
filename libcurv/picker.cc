@@ -191,9 +191,9 @@ Uniform_Variable::Uniform_Variable(
     Symbol_Ref name, std::string id, SC_Type sctype, Shared<const Phrase> ph)
 :
     Reactive_Value(Ref_Value::sty_uniform_variable, sctype),
-    name_(std::move(name)),
-    identifier_(std::move(id)),
-    namephrase_(std::move(ph))
+    name_(move(name)),
+    identifier_(move(id)),
+    namephrase_(move(ph))
 {
 }
 

@@ -381,7 +381,7 @@ public:
     /// There's just one assignment operator, and it's by-value.
     /// This is simpler than `const Value&` and `const Value&&`
     /// copy and move assignments, and allegedly the most efficient.
-    /// When possible, use `val = std::move(rhs);` for a non-rvalue rhs
+    /// When possible, use `val = move(rhs);` for a non-rvalue rhs
     /// for efficiency.
     inline Value& operator=(Value rhs) noexcept
     {

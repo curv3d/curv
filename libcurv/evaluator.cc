@@ -324,7 +324,7 @@ call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f)
             };
             f2->func_ = share(*fun);
             fun->tail_call(arg, f2);
-            return tail_eval_frame(std::move(f2));
+            return tail_eval_frame(move(f2));
           }
         case Ref_Value::ty_record:
           {

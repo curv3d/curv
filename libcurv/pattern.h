@@ -26,7 +26,7 @@ struct Pattern : public Shared_Base
     Pattern(Shared<const Phrase> s)
     :
         Shared_Base(),
-        syntax_(std::move(s))
+        syntax_(move(s))
     {}
 
     virtual void add_to_scope(Scope&, unsigned unitno) = 0;

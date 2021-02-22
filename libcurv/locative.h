@@ -24,7 +24,7 @@ struct Locative
     Shared<const Phrase> syntax_;
     Locative(Shared<const Phrase> syntax)
     :
-        syntax_(std::move(syntax))
+        syntax_(move(syntax))
     {}
 
     virtual Value fetch(Frame&) const = 0;
@@ -39,7 +39,7 @@ struct Local_Locative : public Locative
 {
     Local_Locative(Shared<const Phrase> syntax, slot_t slot)
     :
-        Locative(std::move(syntax)),
+        Locative(move(syntax)),
         slot_(slot)
     {}
     slot_t slot_;

@@ -206,7 +206,7 @@ parse_item(Scanner& scanner)
     auto ritem = parse_ritem(scanner);
     Token tok = scanner.get_token();
     if (tok.kind_ == Token::k_where) {
-        return make<Where_Phrase>(std::move(ritem), tok, parse_ritem(scanner));
+        return make<Where_Phrase>(move(ritem), tok, parse_ritem(scanner));
     } else {
         scanner.push_token(tok);
         return ritem;
@@ -357,30 +357,30 @@ parse_ritem(Scanner& scanner)
         // TODO: change the parse (calling parse_ritem) so that subexpressions
         // within the 'param' are in the scope of the 'where'.
         return make<Recursive_Definition_Phrase>(
-            std::move(left), tok, parse_item(scanner));
+            move(left), tok, parse_item(scanner));
     case Token::k_assign:
         if (auto unary = cast<Unary_Phrase>(left)) {
             if (unary->op_.kind_ == Token::k_var) {
                 return make<Var_Definition_Phrase>(
-                    unary->op_, std::move(unary->arg_), tok,
+                    unary->op_, move(unary->arg_), tok,
                     parse_ritem(scanner));
             }
         }
         return make<Assignment_Phrase>(
-            std::move(left), tok, parse_ritem(scanner));
+            move(left), tok, parse_ritem(scanner));
     case Token::k_colon:
       {
         auto tok2 = scanner.get_token();
         scanner.push_token(tok2);
         Shared<Phrase> right = parse_ritem(scanner);
-        return make<Assoc_Phrase>(std::move(left), tok, std::move(right));
+        return make<Assoc_Phrase>(move(left), tok, move(right));
       }
     case Token::k_right_arrow:
         return make<Lambda_Phrase>(
-            std::move(left), tok, parse_ritem(scanner));
+            move(left), tok, parse_ritem(scanner));
     case Token::k_left_call:
         return make<Call_Phrase>(
-            std::move(left), parse_ritem(scanner), tok);
+            move(left), parse_ritem(scanner), tok);
     default:
         scanner.push_token(tok);
         return left;
@@ -402,16 +402,16 @@ parse_pipeline(Scanner& scanner)
         case Token::k_right_call:
             left = make<Call_Phrase>(
                 parse_disjunction(scanner),
-                std::move(left),
+                move(left),
                 tok);
             continue;
         case Token::k_colon_colon:
             left = make<Predicate_Assertion_Phrase>(
-                std::move(left), tok, parse_disjunction(scanner));
+                move(left), tok, parse_disjunction(scanner));
             continue;
         case Token::k_bang:
             left = make<Mutate_Phrase>(
-                std::move(left), tok, parse_disjunction(scanner));
+                move(left), tok, parse_disjunction(scanner));
             continue;
         case Token::k_backtick:
           {
@@ -446,7 +446,7 @@ parse_disjunction(Scanner& scanner)
         switch (tok.kind_) {
         case Token::k_or:
             left = make<Binary_Phrase>(
-                std::move(left), tok, parse_conjunction(scanner));
+                move(left), tok, parse_conjunction(scanner));
             continue;
         default:
             scanner.push_token(tok);
@@ -465,7 +465,7 @@ parse_conjunction(Scanner& scanner)
         switch (tok.kind_) {
         case Token::k_and:
             left = make<Binary_Phrase>(
-                std::move(left), tok, parse_relation(scanner));
+                move(left), tok, parse_relation(scanner));
             continue;
         default:
             scanner.push_token(tok);
@@ -495,7 +495,7 @@ parse_relation(Scanner& scanner)
     case Token::k_greater:
     case Token::k_greater_or_equal:
         return make<Binary_Phrase>(
-            std::move(left), tok, parse_sum(scanner));
+            move(left), tok, parse_sum(scanner));
     case Token::k_range:
     case Token::k_open_range:
       {
@@ -510,7 +510,7 @@ parse_relation(Scanner& scanner)
             step = nullptr;
         }
         return make<Range_Phrase>(
-            std::move(left), tok, std::move(right), tok2, std::move(step));
+            move(left), tok, move(right), tok2, move(step));
       }
     default:
         scanner.push_token(tok);
@@ -530,7 +530,7 @@ parse_sum(Scanner& scanner)
         case Token::k_plus_plus:
         case Token::k_minus:
             left = make<Binary_Phrase>(
-                std::move(left), tok, parse_product(scanner));
+                move(left), tok, parse_product(scanner));
             continue;
         default:
             scanner.push_token(tok);
@@ -550,7 +550,7 @@ parse_product(Scanner& scanner)
         case Token::k_times:
         case Token::k_over:
             left = make<Binary_Phrase>(
-                std::move(left), tok, parse_power(scanner));
+                move(left), tok, parse_power(scanner));
             continue;
         default:
             scanner.push_token(tok);

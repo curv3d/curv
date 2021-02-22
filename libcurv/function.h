@@ -191,8 +191,8 @@ struct Lambda : public Ref_Value
         slot_t nslots)
     :
         Ref_Value(ty_lambda),
-        pattern_(std::move(pattern)),
-        expr_(std::move(expr)),
+        pattern_(move(pattern)),
+        expr_(move(expr)),
         nslots_(nslots)
     {}
 
@@ -215,9 +215,9 @@ struct Closure : public Function
         slot_t nslots)
     :
         Function(nslots),
-        pattern_(std::move(pattern)),
-        expr_(std::move(expr)),
-        nonlocals_(std::move(nonlocals))
+        pattern_(move(pattern)),
+        expr_(move(expr)),
+        nonlocals_(move(nonlocals))
     {}
 
     Closure(
@@ -250,7 +250,7 @@ struct Piecewise_Function : public Function
     Piecewise_Function(std::vector<Shared<const Function>> cases)
     :
         Function(maxslots(cases)),
-        cases_(std::move(cases))
+        cases_(move(cases))
     {}
 
     // call the function during evaluation, with specified argument value.
@@ -271,7 +271,7 @@ struct Composite_Function : public Function
     Composite_Function(std::vector<Shared<const Function>> cases)
     :
         Function(maxslots(cases)),
-        cases_(std::move(cases))
+        cases_(move(cases))
     {}
 
     // call the function during evaluation, with specified argument value.

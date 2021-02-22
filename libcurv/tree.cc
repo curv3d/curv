@@ -255,7 +255,7 @@ Value tree_amend(Value tree, Value index, Value elems, const At_Syntax& gcx)
         }
     }
     else if (auto sym = maybe_symbol(index)) {
-        auto rec = update_drecord(std::move(tree), Bad_Collection(lcx));
+        auto rec = update_drecord(move(tree), Bad_Collection(lcx));
         auto ref = rec->ref_field(sym, false, lcx);
         *ref = elems;
         return {rec};
@@ -299,7 +299,7 @@ Value tree_amend_slice(Value tree, Value index, Value index2, Value elems,
         }
     }
     else if (auto sym = maybe_symbol(index)) {
-        auto rec = update_drecord(std::move(tree), Bad_Collection(lcx));
+        auto rec = update_drecord(move(tree), Bad_Collection(lcx));
         auto ref = rec->ref_field(sym, false, lcx);
         Value ne = tree_amend(*ref, index2, elems, gcx);
         *ref = ne;

@@ -53,7 +53,7 @@ operator<<(std::ostream& out, const List_Base& list)
 inline Shared<List> make_list(size_t size)
 {
     auto list = List::make(size);
-    return {std::move(list)};
+    return {move(list)};
 }
 
 // A Generic_List is any Curv value that denotes a sequence of values.

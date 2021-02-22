@@ -1068,8 +1068,8 @@ struct File_Expr : public Just_Expression
     Shared<Operation> arg_;
     File_Expr(Shared<const Call_Phrase> src, Shared<Operation> arg)
     :
-        Just_Expression(std::move(src)),
-        arg_(std::move(arg))
+        Just_Expression(move(src)),
+        arg_(move(arg))
     {}
     virtual Value eval(Frame& f) const override
     {
@@ -1113,8 +1113,8 @@ struct Print_Action : public Operation
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(std::move(syntax)),
-        arg_(std::move(arg))
+        Operation(move(syntax)),
+        arg_(move(arg))
     {}
     virtual void exec(Frame& f, Executor&) const override
     {
@@ -1140,8 +1140,8 @@ struct Warning_Action : public Operation
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(std::move(syntax)),
-        arg_(std::move(arg))
+        Operation(move(syntax)),
+        arg_(move(arg))
     {}
     virtual void exec(Frame& f, Executor&) const override
     {
@@ -1177,8 +1177,8 @@ struct Error_Operation : public Operation
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(std::move(syntax)),
-        arg_(std::move(arg))
+        Operation(move(syntax)),
+        arg_(move(arg))
     {}
     [[noreturn]] void run(Frame& f) const
     {
@@ -1218,8 +1218,8 @@ struct Exec_Action : public Operation
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(std::move(syntax)),
-        arg_(std::move(arg))
+        Operation(move(syntax)),
+        arg_(move(arg))
     {}
     virtual void exec(Frame& f, Executor&) const override
     {
@@ -1242,8 +1242,8 @@ struct Assert_Action : public Operation
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(std::move(syntax)),
-        arg_(std::move(arg))
+        Operation(move(syntax)),
+        arg_(move(arg))
     {}
     virtual void exec(Frame& f, Executor&) const override
     {
@@ -1275,10 +1275,10 @@ struct Assert_Error_Action : public Operation
         Shared<const String> actual_message,
         Shared<Operation> expr)
     :
-        Operation(std::move(syntax)),
-        expected_message_(std::move(expected_message)),
-        actual_message_(std::move(actual_message)),
-        expr_(std::move(expr))
+        Operation(move(syntax)),
+        expected_message_(move(expected_message)),
+        actual_message_(move(actual_message)),
+        expr_(move(expr))
     {}
 
     virtual void exec(Frame& f, Executor&) const override
@@ -1358,9 +1358,9 @@ struct Defined_Expression : public Just_Expression
         Shared<const Operation> expr,
         Symbol_Expr selector)
     :
-        Just_Expression(std::move(syntax)),
-        expr_(std::move(expr)),
-        selector_(std::move(selector))
+        Just_Expression(move(syntax)),
+        expr_(move(expr)),
+        selector_(move(selector))
     {
     }
 

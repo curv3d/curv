@@ -448,7 +448,7 @@ analyse_module(Definition& def, Environ& env)
     Recursive_Scope scope(env, true, def.syntax_);
     scope.analyse(def);
     return make<Scoped_Module_Expr>(def.syntax_,
-        std::move(scope.executable_));
+        move(scope.executable_));
 }
 
 Function_Setter_Base::Element::Element(slot_t s, Shared<Lambda> l)

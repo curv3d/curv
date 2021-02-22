@@ -54,7 +54,7 @@ struct Module_Base : public Record
     Module_Base(Shared<Dictionary> dictionary)
     :
         Record(sty_module),
-        dictionary_(std::move(dictionary))
+        dictionary_(move(dictionary))
     {}
 
     /// Fetch the contents of slot index `i`, normalize to a proper Value.

@@ -45,7 +45,7 @@ sc_frame_rewrite_message(const SC_Frame* f, Shared<const String> msg)
 }
 
 At_SC_Phrase::At_SC_Phrase(Shared<const Phrase> phrase, SC_Frame& frame)
-: phrase_(std::move(phrase)), call_frame_(frame)
+: phrase_(move(phrase)), call_frame_(frame)
 {}
 
 void

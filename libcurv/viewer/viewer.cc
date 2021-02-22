@@ -68,7 +68,7 @@ Viewer::set_shape(Viewed_Shape shape)
         }
     }
 
-    shape_ = std::move(shape);
+    shape_ = move(shape);
     hud_ = !shape_.param_.empty();
   #if 0
     // describe sliders on stderr (TODO: remove debug code)

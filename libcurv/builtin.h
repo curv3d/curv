@@ -23,7 +23,7 @@ struct Builtin : public Shared_Base
 struct Builtin_Value : public Builtin
 {
     Value value_;
-    Builtin_Value(Value v) : value_(std::move(v)) {}
+    Builtin_Value(Value v) : value_(move(v)) {}
     virtual Shared<Meaning> to_meaning(const Identifier&) const override;
 };
 

@@ -412,8 +412,8 @@ analyse_lambda(
     pattern->add_to_scope(scope, 0);
     auto expr = analyse_op(*right, scope, Interp::expr());
     auto nonlocals = make<Enum_Module_Expr>(src,
-        std::move(scope.nonlocal_dictionary_),
-        std::move(scope.nonlocal_exprs_));
+        move(scope.nonlocal_dictionary_),
+        move(scope.nonlocal_exprs_));
 
     return make<Lambda_Expr>(
         src, pattern, expr, nonlocals, scope.frame_maxslots_);
@@ -530,7 +530,7 @@ analyse_block(
     auto body = analyse_op(*bodysrc, rscope, terp);
     env.frame_maxslots_ = rscope.frame_maxslots_;
     return make<Block_Op>(syntax,
-        std::move(rscope.executable_), std::move(body));
+        move(rscope.executable_), move(body));
 }
 
 Shared<Meaning>
@@ -578,7 +578,7 @@ Where_Phrase::analyse(Environ& env, Interp terp) const
         auto body = analyse_op(*let->body_, rscope, terp);
         env.frame_maxslots_ = rscope.frame_maxslots_;
         return make<Block_Op>(syntax,
-            std::move(rscope.executable_), std::move(body));
+            move(rscope.executable_), move(body));
     }
     if (auto p = cast<const Paren_Phrase>(bindings))
         bindings = p->body_;
@@ -811,18 +811,18 @@ as_definition_iter(
     if (auto id = dynamic_cast<const Identifier*>(&left)) {
         auto lambda = cast<Lambda_Phrase>(right);
         if (lambda)
-            return make<Function_Definition>(std::move(syntax),
-                share(*id), std::move(lambda));
+            return make<Function_Definition>(move(syntax),
+                share(*id), move(lambda));
         else
-            return make<Data_Definition>(std::move(syntax),
-                make_pattern(*id,env), std::move(right));
+            return make<Data_Definition>(move(syntax),
+                make_pattern(*id,env), move(right));
     }
     if (auto call = dynamic_cast<const Call_Phrase*>(&left))
         if (call->is_juxta())
-            return as_definition_iter(env, std::move(syntax), *call->function_,
+            return as_definition_iter(env, move(syntax), *call->function_,
                 make<Lambda_Phrase>(call->arg_, Token(), right));
-    return make<Data_Definition>(std::move(syntax),
-        make_pattern(left,env), std::move(right));
+    return make<Data_Definition>(move(syntax),
+        make_pattern(left,env), move(right));
 }
 Shared<Definition>
 Recursive_Definition_Phrase::as_definition(Environ& env, Fail) const

@@ -85,7 +85,7 @@ struct Shape_Program final : public Shape
     Shape_Program(Program&);
 
     Shape_Program(Source_State& sstate, Shared<const Phrase> nub)
-    : sstate_(sstate), nub_(std::move(nub))
+    : sstate_(sstate), nub_(move(nub))
     {}
 
     // If the value is a shape, fill in the shape fields and return true.

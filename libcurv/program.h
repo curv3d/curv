@@ -42,7 +42,7 @@ struct Program
         System& system,
         Program_Opts opts = {})
     :
-        scanner_(std::move(source), system, Scanner_Opts()
+        scanner_(move(source), system, Scanner_Opts()
             .file_frame(opts.file_frame_)
             .skip_prefix(opts.skip_prefix_)),
         sstate_(system, opts.file_frame_)

@@ -52,7 +52,7 @@ Record::fields() const
         list->at(i) = f->key().to_value();
         ++i;
     }
-    return {std::move(list)};
+    return {move(list)};
 }
 
 std::pair<Symbol_Ref, Value>

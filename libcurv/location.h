@@ -32,8 +32,8 @@ public:
 
     Location(Shared<const Source> source, Token token)
     :
-        source_(std::move(source)),
-        token_(std::move(token))
+        source_(move(source)),
+        token_(move(token))
     {}
 
     /// Modify location to start at 'tok'

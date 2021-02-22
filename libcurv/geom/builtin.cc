@@ -40,8 +40,8 @@ struct SC_Test_Action : public Operation
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(std::move(syntax)),
-        arg_(std::move(arg))
+        Operation(move(syntax)),
+        arg_(move(arg))
     {}
     virtual void exec(Frame& f, Executor&) const override
     {

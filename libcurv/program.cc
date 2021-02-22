@@ -67,7 +67,7 @@ Program::eval()
     } else {
         auto expr = meaning_->to_operation(scanner_.system_,scanner_.file_frame_);
         frame_->next_op_ = &*expr;
-        return tail_eval_frame(std::move(frame_));
+        return tail_eval_frame(move(frame_));
     }
 }
 
