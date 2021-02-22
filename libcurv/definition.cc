@@ -207,13 +207,13 @@ Scope::single_lookup(const Identifier& id)
             b->second.variable_);
     return nullptr;
 }
-Shared<Locative>
+Unique<const Locative>
 Scope::single_lvar_lookup(const Identifier& id)
 {
     auto b = dictionary_.find(id.symbol_);
     if (b != dictionary_.end()) {
         b->second.variable_->is_mutable_ = true;
-        return make<Local_Locative>(share(id), b->second.slot_index_);
+        return make_unique<Local_Locative>(share(id), b->second.slot_index_);
     }
     return nullptr;
 }
@@ -408,7 +408,7 @@ Recursive_Scope::single_lookup(const Identifier& id)
     }
     return nullptr;
 }
-Shared<Locative>
+Unique<const Locative>
 Recursive_Scope::single_lvar_lookup(const Identifier& id)
 {
     auto b = dictionary_.find(id.symbol_);
@@ -418,7 +418,7 @@ Recursive_Scope::single_lvar_lookup(const Identifier& id)
                 stringify(id.symbol_,": not assignable"));
         } else {
             b->second.variable_->is_mutable_ = true;
-            return make<Local_Locative>(share(id), b->second.slot_index_);
+            return make_unique<Local_Locative>(share(id), b->second.slot_index_);
         }
     }
     return nullptr;

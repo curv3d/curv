@@ -186,7 +186,7 @@ struct Scope : public Environ
 
     // Environ protocol
     virtual Shared<Meaning> single_lookup(const Identifier&) override;
-    virtual Shared<Locative> single_lvar_lookup(const Identifier&) override;
+    virtual Unique<const Locative> single_lvar_lookup(const Identifier&) override;
 
     // Scope protocol. Default implementation is for a sequential scope.
     virtual unsigned add_unit(Shared<Unitary_Definition>) { return 0; }
@@ -249,7 +249,7 @@ struct Recursive_Scope : public Scope
 
     // Environ
     virtual Shared<Meaning> single_lookup(const Identifier&) override;
-    virtual Shared<Locative> single_lvar_lookup(const Identifier&) override;
+    virtual Unique<const Locative> single_lvar_lookup(const Identifier&) override;
 
     // Scope
     virtual std::pair<slot_t,Shared<const Scoped_Variable>> add_binding(

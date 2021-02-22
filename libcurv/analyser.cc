@@ -127,7 +127,7 @@ struct Lambda_Scope : public Scope
         }
         return m;
     }
-    virtual Shared<Locative> single_lvar_lookup(const Identifier& id) override
+    virtual Unique<const Locative> single_lvar_lookup(const Identifier& id) override
     {
         return Environ::single_lvar_lookup(id);
     }
@@ -144,7 +144,7 @@ Environ::lookup(const Identifier& id)
     throw Exception(At_Phrase(id, *this), stringify(id.symbol_,": not defined"));
 }
 
-Shared<Locative>
+Unique<const Locative>
 Environ::single_lvar_lookup(const Identifier& id)
 {
     auto m = single_lookup(id);
@@ -155,7 +155,7 @@ Environ::single_lvar_lookup(const Identifier& id)
     return nullptr;
 }
 
-Shared<Locative>
+Unique<const Locative>
 Environ::lookup_lvar(const Identifier& id, unsigned edepth)
 {
     Environ *env = this;
@@ -741,7 +741,7 @@ Var_Definition_Phrase::as_definition(Environ& env, Fail fl) const
 
 struct Locative_Indexes
 {
-    Shared<Locative> locative_;
+    Unique<const Locative> locative_;
     std::vector<Shared<const Operation>> indexes_;
 };
 void analyse_indexed_locative(
@@ -783,7 +783,7 @@ Shared<Operation> analyse_assignment(
     if (il.indexes_.empty()) {
         Shared<const Phrase> ph = asn;
         Shared<Operation> op =
-            make<Assignment_Action>(ph, il.locative_, right);
+            make<Assignment_Action>(ph, move(il.locative_), right);
         return op;
     }
     else {
@@ -793,7 +793,7 @@ Shared<Operation> analyse_assignment(
         else
             index = make<TPath_Expr>(asn->left_, il.indexes_);
         Shared<Operation> op =
-            make<Assign_Indexed_Locative>(asn, il.locative_, index, right);
+            make<Assign_Indexed_Locative>(asn, move(il.locative_), index, right);
         return op;
     }
 }

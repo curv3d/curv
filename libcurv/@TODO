@@ -1,3 +1,24 @@
+* class Reference
+* Reference Locative::getref(Frame&)
+* indexed locative class.
+* There is just one Assign_Action which contains a Locative.
+    ref = loc_->getref(fr);
+    newval = expr_->eval(fr);
+    ref->store(newval);
+* kinds of locatives:
+    Locative -- abstract interface, getref(fr)
+    Local_Locative -- denotes a frame slot
+    Indexed_Locative -- Local_Locative + index expr
+    List_Pattern_Locative -- zero or more Locative
+    Record_Pattern_Locative -- zero or more Locative
+* kinds of Reference:
+    Reference -- abstract interface, fetch() and store(val)
+    Local_Reference -- Value* slot
+    Indexed_Reference -- Value* slot, Value index
+    List_Pattern_Reference
+    Record_Pattern_Reference
+header file: locative.h
+
 loc!func1!func2
   Phrase repr:
     Mutate_Phrase(loc,bangtok,func) -- nested

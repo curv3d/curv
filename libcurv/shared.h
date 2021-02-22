@@ -184,5 +184,10 @@ share(T& obj)
     return Shared<T>(&obj);
 }
 
+//template <class T> using Unique = std::unique_ptr<T>;
+#define Unique std::unique_ptr
+using std::make_unique;
+using std::move;
+
 } // namespace curv
 #endif // header guard

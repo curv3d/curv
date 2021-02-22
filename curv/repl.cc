@@ -157,11 +157,11 @@ struct REPL_Environ : public Environ
             return pg->second->to_meaning(id);
         return nullptr;
     }
-    virtual Shared<Locative> single_lvar_lookup(const Identifier& id) override
+    virtual Unique<const Locative> single_lvar_lookup(const Identifier& id) override
     {
         auto pl = names_.local_.find(id.symbol_);
         if (pl != names_.local_.end())
-            return make<REPL_Locative>(share(id), &pl->second);
+            return make_unique<REPL_Locative>(share(id), &pl->second);
         auto pg = names_.global_.find(id.symbol_);
         if (pg != names_.global_.end())
             throw Exception(At_Phrase(id, *this),

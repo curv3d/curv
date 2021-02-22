@@ -13,8 +13,8 @@
 #include <libcurv/dtostr.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
-#include <libcurv/num.h>
 #include <libcurv/meaning.h>
+#include <libcurv/num.h>
 #include <libcurv/optimizer.h>
 #include <libcurv/picker.h>
 #include <libcurv/prim_expr.h>

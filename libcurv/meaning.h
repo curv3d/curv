@@ -937,39 +937,40 @@ struct Parametric_Expr : public Just_Expression
 // 'locative := expression'
 struct Assignment_Action : public Operation
 {
-    Shared<Locative> locative_;
-    Shared<Operation> expr_;
+    Unique<const Locative> locative_;
+    Shared<const Operation> expr_;
 
     Assignment_Action(
         Shared<const Phrase> syntax,
-        Shared<Locative> locative,
-        Shared<Operation> expr)
+        Unique<const Locative> locative,
+        Shared<const Operation> expr)
     :
-        Operation(std::move(syntax)),
-        locative_(std::move(locative)),
-        expr_(std::move(expr))
+        Operation(move(syntax)),
+        locative_(move(locative)),
+        expr_(move(expr))
     {}
 
     virtual void exec(Frame&, Executor&) const override;
     void sc_exec(SC_Frame&) const override;
 };
 
+// 'locative.[index] := expression'
 struct Assign_Indexed_Locative : public Operation
 {
-    Shared<const Locative> locative_;
+    Unique<const Locative> locative_;
     Shared<const Operation> index_;
     Shared<const Operation> newval_;
 
     Assign_Indexed_Locative(
         Shared<const Phrase> syntax,
-        Shared<const Locative> locative,
+        Unique<const Locative> locative,
         Shared<const Operation> index,
         Shared<const Operation> newval)
     :
-        Operation(std::move(syntax)),
-        locative_(std::move(locative)),
-        index_(std::move(index)),
-        newval_(std::move(newval))
+        Operation(move(syntax)),
+        locative_(move(locative)),
+        index_(move(index)),
+        newval_(move(newval))
     {}
 
     virtual void exec(Frame&, Executor&) const override;

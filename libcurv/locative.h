@@ -19,7 +19,7 @@ namespace curv {
 // For indexed update, we move the value out of the location (without changing
 // its reference count), use COW to amend the moved value, then store().
 // We need a 'steal' or 'fetch_move' operation.
-struct Locative : public Shared_Base
+struct Locative
 {
     Shared<const Phrase> syntax_;
     Locative(Shared<const Phrase> syntax)
