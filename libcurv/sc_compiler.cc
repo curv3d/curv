@@ -502,35 +502,15 @@ void Null_Action::sc_exec(SC_Frame&) const
 {
 }
 
-SC_Type Local_Locative::sc_type(SC_Frame& f) const
-{
-    return f[slot_].type;
-}
-void Local_Locative::sc_print(SC_Frame& f) const
-{
-    f.sc_.out() << f[slot_];
-}
-void
-Locative::sc_print(SC_Frame& f) const
+SC_Type Locative::sc_print(SC_Frame& f) const
 {
     throw Exception(At_SC_Phrase(syntax_, f), "expression is not assignable");
 }
-
-void
-Assignment_Action::sc_exec(SC_Frame& f) const
+SC_Type Local_Locative::sc_print(SC_Frame& f) const
 {
-    SC_Value val = sc_eval_op(f, *expr_);
-    f.sc_.out() << "  ";
-    locative_->sc_print(f);
-    f.sc_.out() << "="<<val<<";\n";
+    f.sc_.out() << f[slot_];
+    return f[slot_].type;
 }
-void
-Data_Setter::sc_exec(SC_Frame& f) const
-{
-    assert(module_slot_ == (slot_t)(-1));
-    pattern_->sc_exec(*definiens_, f, f);
-}
-
 Value sc_get_index(SC_Frame& f, Shared<const Operation> index)
 {
     if (auto k = cast<const Constant>(index))
@@ -545,42 +525,47 @@ Value sc_get_index(SC_Frame& f, Shared<const Operation> index)
     }
     throw Exception(At_SC_Phrase(index->syntax_, f), "unsupported array index");
 }
-void sc_print_index(SC_Frame& f,
-    SC_Type loctype, Shared<const Phrase> locsyntax,
-    Shared<const Operation> index,
-    SC_Type newvaltype, Shared<const Phrase> newvalsyntax)
+SC_Type Indexed_Locative::sc_print(SC_Frame& f) const
 {
-    if (!loctype.is_vec()) {
-        throw Exception(At_SC_Phrase(locsyntax, f), stringify(
-            "Indexed assignment for a variable of type ",loctype,
+    auto basetype = base_->sc_print(f);
+    if (!basetype.is_vec()) {
+        throw Exception(At_SC_Phrase(base_->syntax_, f), stringify(
+            "Indexed assignment for a variable of type ",basetype,
             " is not supported"));
     }
-    Value ival = sc_get_index(f, index);
+    Value ival = sc_get_index(f, index_);
     if (ival.is_num()) {
         auto num = ival.to_num_unsafe();
         if (num_is_int(num)) {
-            int i = num_to_int(num, 0, loctype.count()-1,
-                At_SC_Phrase(index->syntax_, f));
-            if (newvaltype != loctype.elem_type()) {
-                throw Exception(At_SC_Phrase(newvalsyntax, f),
-                    "Left side of assignment has wrong type");
-            }
+            int i = num_to_int(num, 0, basetype.count()-1,
+                At_SC_Phrase(index_->syntax_, f));
             f.sc_.out() << "[" << i << "]";
-            return;
+            return basetype.elem_type();
         }
     }
-    throw Exception(At_SC_Phrase(index->syntax_, f), "unsupported array index");
+    throw Exception(At_SC_Phrase(index_->syntax_, f),
+        "unsupported array index");
 }
-void Assign_Indexed_Locative::sc_exec(SC_Frame& f) const
+
+void
+Assignment_Action::sc_exec(SC_Frame& f) const
 {
-    SC_Value newval = sc_eval_op(f, *newval_);
+    SC_Value val = sc_eval_op(f, *expr_);
     f.sc_.out() << "  ";
-    locative_->sc_print(f);
-    sc_print_index(f,
-        locative_->sc_type(f), locative_->syntax_,
-        index_, newval.type, newval_->syntax_);
-    f.sc_.out() << "="<<newval<<";\n";
+    auto loctype = locative_->sc_print(f);
+    if (val.type != loctype) {
+        throw Exception(At_SC_Phrase(expr_->syntax_, f),
+            "Left side of assignment has wrong type");
+    }
+    f.sc_.out() << "="<<val<<";\n";
 }
+void
+Data_Setter::sc_exec(SC_Frame& f) const
+{
+    assert(module_slot_ == (slot_t)(-1));
+    pattern_->sc_exec(*definiens_, f, f);
+}
+
 
 char gl_index_letter(Value k, unsigned vecsize, const Context& cx)
 {

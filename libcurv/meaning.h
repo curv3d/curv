@@ -983,8 +983,7 @@ struct Locative
     virtual Unique<const Reference> getref(Frame&) const = 0;
     virtual Value fetch(Frame&) const = 0;
     virtual void store(Frame&, Value) const = 0;
-    virtual SC_Type sc_type(SC_Frame&) const { return {}; }
-    virtual void sc_print(SC_Frame& f) const;
+    virtual SC_Type sc_print(SC_Frame& f) const;
 };
 
 // A Locative representing a boxed local variable.
@@ -1001,8 +1000,7 @@ struct Local_Locative : public Locative
     virtual Unique<const Reference> getref(Frame&) const override;
     virtual Value fetch(Frame&) const override;
     virtual void store(Frame&, Value) const override;
-    virtual void sc_print(SC_Frame& f) const override;
-    virtual SC_Type sc_type(SC_Frame&) const override;
+    virtual SC_Type sc_print(SC_Frame& f) const override;
 };
 
 struct Indexed_Locative : public Locative
@@ -1020,8 +1018,7 @@ struct Indexed_Locative : public Locative
     virtual Unique<const Reference> getref(Frame&) const override;
     virtual Value fetch(Frame&) const override;
     virtual void store(Frame&, Value) const override;
-    //virtual void sc_print(SC_Frame& f) const override;
-    //virtual SC_Type sc_type(SC_Frame&) const override;
+    virtual SC_Type sc_print(SC_Frame& f) const override;
 };
 
 // 'locative := expression'
@@ -1038,29 +1035,6 @@ struct Assignment_Action : public Operation
         Operation(move(syntax)),
         locative_(move(locative)),
         expr_(move(expr))
-    {}
-
-    virtual void exec(Frame&, Executor&) const override;
-    void sc_exec(SC_Frame&) const override;
-};
-
-// 'locative.[index] := expression'
-struct Assign_Indexed_Locative : public Operation
-{
-    Unique<const Locative> locative_;
-    Shared<const Operation> index_;
-    Shared<const Operation> newval_;
-
-    Assign_Indexed_Locative(
-        Shared<const Phrase> syntax,
-        Unique<const Locative> locative,
-        Shared<const Operation> index,
-        Shared<const Operation> newval)
-    :
-        Operation(move(syntax)),
-        locative_(move(locative)),
-        index_(move(index)),
-        newval_(move(newval))
     {}
 
     virtual void exec(Frame&, Executor&) const override;

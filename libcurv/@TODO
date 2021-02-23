@@ -1,3 +1,12 @@
+loc!func1!func2
+---------------
+### SC Compiler
+How to compile compound locatives into GLSL code.
+Two phases: analyse Locative, generate typed SC_Locative (IR node).
+Then use SC_Locative to emit one or more assignment statements, given an
+SC_Value.
+
+### Assignment, in interpreter
 * class Reference
 * Reference Locative::getref(Frame&)
 * indexed locative class.
@@ -17,7 +26,23 @@
     Indexed_Reference -- Value* slot, Value index
     List_Pattern_Reference
     Record_Pattern_Reference
-header file: locative.h
+* efficiency of fetch-modify-store:
+    curval = ref->fetch(cx);
+    newval = f(curval);
+    ref->store(newval,cx);
+  using Indexed_Reference:
+    fetch()
+      curval = base_->fetch()
+      return tree_fetch(curval, index_)
+    store(n)
+      curval = base_->fetch()
+      newval = tree_amend(curval, index_, n)
+      base_->store(newval)
+    We fetch curval twice.
+* alternative design. Locative::store(val) and Locative::modify(f).
+  No Locative::fetch(). No Reference values.
+  Doesn't work, Indexed_Locative::modify still needs separate fetch and store
+  for its base_?
 
 loc!func1!func2
   Phrase repr:
@@ -63,6 +88,13 @@ loc!func1!func2
 >         }
 >     }
 > }
+void Mutate_Action::exec(Frame& fr, Executor&) const
+    auto ref = locative_->getref(fr);
+    for (auto t : transforms_)
+        Value f = t->eval(fr);
+        Value val = ref->fetch();
+        Value newval = call_func(f, val, fr);
+        ref->store(newval);
 
 --------------
 TODO:

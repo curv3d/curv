@@ -549,21 +549,16 @@ Indexed_Locative::fetch(Frame& f) const
 void
 Indexed_Locative::store(Frame& f, Value val) const
 {
-    throw Exception(At_Phrase(*syntax_, f), "Indexed_Locative::store");
+    auto index = index_->eval(f);
+    auto curval = base_->fetch(f);
+    auto newval = tree_amend(curval, index, val, At_Phrase(*syntax_,f));
+    base_->store(f, newval);
 }
 
 void
 Assignment_Action::exec(Frame& f, Executor&) const
 {
     locative_->store(f, expr_->eval(f));
-}
-void Assign_Indexed_Locative::exec(Frame& f, Executor&) const
-{
-    auto index = index_->eval(f);
-    auto elems = newval_->eval(f);
-    auto curval = locative_->fetch(f);
-    auto newval = tree_amend(curval, index, elems, At_Phrase(*syntax_,f));
-    locative_->store(f, newval);
 }
 
 Value

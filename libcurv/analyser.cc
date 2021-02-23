@@ -780,22 +780,17 @@ Shared<Operation> analyse_assignment(
     Locative_Indexes il;
     analyse_indexed_locative(asn->left_, il, env, terp);
     auto right = analyse_op(*asn->right_, env);
-    if (il.indexes_.empty()) {
-        Shared<const Phrase> ph = asn;
-        Shared<Operation> op =
-            make<Assignment_Action>(ph, move(il.locative_), right);
-        return op;
-    }
-    else {
+    auto loc = move(il.locative_);
+    if (!il.indexes_.empty()) {
         Shared<const Operation> index;
         if (il.indexes_.size() == 1)
             index = il.indexes_.front();
         else
             index = make<TPath_Expr>(asn->left_, il.indexes_);
-        Shared<Operation> op =
-            make<Assign_Indexed_Locative>(asn, move(il.locative_), index, right);
-        return op;
+        loc = make_unique<Indexed_Locative>(asn->left_, move(loc), index);
     }
+    Shared<Operation> op = make<Assignment_Action>(asn, move(loc), right);
+    return op;
 }
 Shared<Meaning>
 Assignment_Phrase::analyse(Environ& env, Interp terp) const
