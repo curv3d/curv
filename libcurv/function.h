@@ -91,7 +91,7 @@ inline Shared<const Function> value_to_function(Value val, const Context& cx)
 // Call a function or index into a list or string.
 // Implements the Curv juxtaposition operator: `func arg`.
 Value call_func(
-    Value func, Value arg, Shared<const Phrase> call_phrase, Frame& f);
+    Value func, Value arg, Shared<const Phrase> call_phrase, Frame&);
 
 // A Tuple_Function has a single argument, which is a tuple when nargs!=1.
 // Tuple functions with a nargs of 0, 1 or 2 are called like this:

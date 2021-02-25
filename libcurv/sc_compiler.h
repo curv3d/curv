@@ -122,17 +122,17 @@ struct SC_Value_Expr : public Operation
     virtual SC_Value sc_eval(SC_Frame&) const override;
 };
 
-SC_Value sc_eval_op(SC_Frame& f, const Operation& op);
+SC_Value sc_eval_op(SC_Frame&, const Operation& op);
 SC_Value sc_eval_expr(SC_Frame&, const Operation& op, SC_Type);
-SC_Value sc_eval_const(SC_Frame& f, Value val, const Phrase&);
+SC_Value sc_eval_const(SC_Frame&, Value val, const Phrase&);
 SC_Value sc_vec_element(SC_Frame&, SC_Value, int);
-void sc_plex_unify(SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx);
-bool sc_try_extend(SC_Frame& f, SC_Value& a, SC_Type b);
+void sc_plex_unify(SC_Frame&, SC_Value& a, SC_Value& b, const Context& cx);
+bool sc_try_extend(SC_Frame&, SC_Value& a, SC_Type b);
 SC_Value sc_binop(
-    SC_Frame& f, SC_Type rtype, SC_Value x, const char* op, SC_Value y);
+    SC_Frame&, SC_Type rtype, SC_Value x, const char* op, SC_Value y);
 SC_Value sc_bincall(
-    SC_Frame& f, SC_Type rtype, const char* fn, SC_Value x, SC_Value y);
-SC_Value sc_unary_call(SC_Frame& f, SC_Type rtype, const char* fn, SC_Value x);
+    SC_Frame&, SC_Type rtype, const char* fn, SC_Value x, SC_Value y);
+SC_Value sc_unary_call(SC_Frame&, SC_Type rtype, const char* fn, SC_Value x);
 
 } // namespace
 #endif // header guard

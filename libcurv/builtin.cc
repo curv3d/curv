@@ -51,14 +51,14 @@ struct Unary_Array_Func : public Function
 {
     using Function::Function;
     using Op = Unary_Array_Op<Prim>;
-    Value call(Value arg, Fail fl, Frame& f) const override
+    Value call(Value arg, Fail fl, Frame& fm) const override
     {
-        return Op::call(fl, At_Arg(*this, f), arg);
+        return Op::call(fl, At_Arg(*this, fm), arg);
     }
-    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& fm)
     const override
     {
-        return Op::sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
+        return Op::sc_op(At_SC_Arg_Expr(*this, ph, fm), argx, fm);
     }
 };
 
@@ -71,10 +71,10 @@ struct Binary_Array_Func : public Tuple_Function
     {
         return Op::call(fl, At_Arg(*this, args), args[0], args[1]);
     }
-    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& fm)
     const override
     {
-        return Op::sc_op(At_SC_Arg_Expr(*this, ph, f), argx, f);
+        return Op::sc_op(At_SC_Arg_Expr(*this, ph, fm), argx, fm);
     }
 };
 
@@ -83,15 +83,15 @@ struct Monoid_Func final : public Function
 {
     using Function::Function;
     using Op = Binary_Array_Op<Prim>;
-    Value call(Value arg, Fail fl, Frame& f) const override
+    Value call(Value arg, Fail fl, Frame& fm) const override
     {
-        return Op::reduce(fl, At_Arg(*this, f), Prim::zero(), arg);
+        return Op::reduce(fl, At_Arg(*this, fm), Prim::zero(), arg);
     }
-    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& fm)
     const override
     {
-        return Op::sc_reduce(At_SC_Arg_Expr(*this, ph, f),
-            Prim::zero(), argx, f);
+        return Op::sc_reduce(At_SC_Arg_Expr(*this, ph, fm),
+            Prim::zero(), argx, fm);
     }
 };
 
@@ -177,10 +177,10 @@ struct Bit_Prim : public Unary_Bool_To_Num_Prim
 {
     static const char* name() { return "bit"; }
     static Value call(bool b, const Context&) { return {double(b)}; }
-    static SC_Value sc_call(SC_Frame& f, SC_Value arg)
+    static SC_Value sc_call(SC_Frame& fm, SC_Value arg)
     {
-        auto result = f.sc_.newvalue(SC_Type::Num(arg.type.count()));
-        f.sc_.out() << "  " << result.type << " " << result << " = "
+        auto result = fm.sc_.newvalue(SC_Type::Num(arg.type.count()));
+        fm.sc_.out() << "  " << result.type << " " << result << " = "
             << result.type << "(" << arg << ");\n";
         return result;
     }
@@ -192,8 +192,8 @@ struct Func_Name##Prim : public Unary_Num_SCVec_Prim \
 { \
     static const char* name() { return #curv_name; } \
     static Value call(double x, const Context&) { return {c_name(x)}; } \
-    static SC_Value sc_call(SC_Frame& f, SC_Value arg) \
-        { return sc_unary_call(f, arg.type, #glsl_name, arg); } \
+    static SC_Value sc_call(SC_Frame& fm, SC_Value arg) \
+        { return sc_unary_call(fm, arg.type, #glsl_name, arg); } \
 }; \
 using Func_Name = Unary_Array_Func<Func_Name##Prim>; \
 
@@ -226,9 +226,9 @@ struct Phase_Prim : public Unary_Vec2_To_Num_Prim
 {
     static const char* name() { return "phase"; }
     static Value call(Vec2 v, const Context&) { return {atan2(v.y,v.x)}; }
-    static SC_Value sc_call(SC_Frame& f, SC_Value arg) {
-        auto result = f.sc_.newvalue(SC_Type::Num());
-        f.sc_.out() << "  " << result.type << " " << result << " = "
+    static SC_Value sc_call(SC_Frame& fm, SC_Value arg) {
+        auto result = fm.sc_.newvalue(SC_Type::Num());
+        fm.sc_.out() << "  " << result.type << " " << result << " = "
             << "atan(" << arg << ".y," << arg << ".x);\n";
         return result;
     }
@@ -241,8 +241,8 @@ struct Max_Prim : public Binary_Num_SCVec_Prim
     static Value zero() { return {-INFINITY}; }
     static Value call(double x, double y, const Context&)
         { return {std::max(x,y)}; }
-    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
-        { return sc_bincall(f, x.type, "max", x, y); }
+    static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y)
+        { return sc_bincall(fm, x.type, "max", x, y); }
 };
 using Max_Function = Monoid_Func<Max_Prim>;
 
@@ -252,8 +252,8 @@ struct Min_Prim : public Binary_Num_SCVec_Prim
     static Value zero() { return {INFINITY}; }
     static Value call(double x, double y, const Context&)
         { return {std::min(x,y)}; }
-    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
-        { return sc_bincall(f, x.type, "min", x, y); }
+    static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y)
+        { return sc_bincall(fm, x.type, "min", x, y); }
 };
 using Min_Function = Monoid_Func<Min_Prim>;
 
@@ -267,28 +267,28 @@ struct CppName##_Prim : public Binary_Bool_Prim\
     static const char* name() { return Name; } \
     static Value zero() { return {Zero}; }\
     static Value call(bool x, bool y, const Context&) { return {x LogOp y}; }\
-    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)\
+    static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y)\
     {\
-        auto result = f.sc_.newvalue(x.type);\
-        f.sc_.out() << "  " << x.type << " " << result << " = ";\
+        auto result = fm.sc_.newvalue(x.type);\
+        fm.sc_.out() << "  " << x.type << " " << result << " = ";\
         if (x.type.is_bool())\
-            f.sc_.out() << x << #LogOp << y << ";\n";\
+            fm.sc_.out() << x << #LogOp << y << ";\n";\
         else if (x.type.is_bool_or_vec()) {\
             /* In GLSL 4.6, I *think* you can use '&' and '|' instead. */ \
             /* TODO: SubCurv: more efficient and|or in bvec case */ \
             bool first = true;\
-            f.sc_.out() << x.type << "(";\
+            fm.sc_.out() << x.type << "(";\
             for (unsigned i = 0; i < x.type.count(); ++i) {\
-                if (!first) f.sc_.out() << ",";\
+                if (!first) fm.sc_.out() << ",";\
                 first = false;\
-                f.sc_.out() << x << "[" << i << "]"\
+                fm.sc_.out() << x << "[" << i << "]"\
                     << #LogOp << y << "[" << i << "]";\
             }\
-            f.sc_.out() << ")";\
+            fm.sc_.out() << ")";\
         }\
         else\
-            f.sc_.out() << x << #BitOp << y << ";\n";\
-        f.sc_.out() << ";\n";\
+            fm.sc_.out() << x << #BitOp << y << ";\n";\
+        fm.sc_.out() << ";\n";\
         return result;\
     }\
 };\
@@ -302,17 +302,17 @@ struct Xor_Prim : public Binary_Bool_Prim
     static const char* name() { return "xor"; }
     static Value zero() { return {false}; }
     static Value call(bool x, bool y, const Context&) { return {x != y}; }
-    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
+    static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y)
     {
-        auto result = f.sc_.newvalue(x.type);
-        f.sc_.out() << "  " << result.type << " " << result << " = ";
+        auto result = fm.sc_.newvalue(x.type);
+        fm.sc_.out() << "  " << result.type << " " << result << " = ";
         if (x.type.is_bool())
-            f.sc_.out() << x << "!=" << y;
+            fm.sc_.out() << x << "!=" << y;
         else if (x.type.is_bool_or_vec())
-            f.sc_.out() << "notEqual(" << x << "," << y << ")";
+            fm.sc_.out() << "notEqual(" << x << "," << y << ")";
         else // bool32 or vector of bool32
-            f.sc_.out() << x << "^" << y;
-        f.sc_.out() << ";\n";
+            fm.sc_.out() << x << "^" << y;
+        fm.sc_.out() << ";\n";
         return result;
     }
 };
@@ -333,10 +333,10 @@ struct Lshift_Prim : public Shift_Prim
             result->at(i) = {a->at(i-n).to_bool(acx)};
         return {result};
     }
-    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
+    static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y)
     {
-        auto result = f.sc_.newvalue(x.type);
-        f.sc_.out() << "  " << x.type << " " << result << " = "
+        auto result = fm.sc_.newvalue(x.type);
+        fm.sc_.out() << "  " << x.type << " " << result << " = "
             << x << " << int(" << y << ");\n";
         return result;
     }
@@ -358,10 +358,10 @@ struct Rshift_Prim : public Shift_Prim
             result->at(i) = {a->at(i+n).to_bool(acx)};
         return {result};
     }
-    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
+    static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y)
     {
-        auto result = f.sc_.newvalue(x.type);
-        f.sc_.out() << "  " << x.type << " " << result << " = "
+        auto result = fm.sc_.newvalue(x.type);
+        fm.sc_.out() << "  " << x.type << " " << result << " = "
             << x << " >> int(" << y << ");\n";
         return result;
     }
@@ -380,10 +380,10 @@ struct Bool32_Sum_Prim : public Binary_Bool32_Prim
     {
         return {nat_to_bool32(a + b)};
     }
-    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
+    static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y)
     {
-        auto result = f.sc_.newvalue(x.type);
-        f.sc_.out() << "  " << x.type << " " << result << " = "
+        auto result = fm.sc_.newvalue(x.type);
+        fm.sc_.out() << "  " << x.type << " " << result << " = "
             << x << " + " << y << ";\n";
         return result;
     }
@@ -402,10 +402,10 @@ struct Bool32_Product_Prim : public Binary_Bool32_Prim
     {
         return {nat_to_bool32(a * b)};
     }
-    static SC_Value sc_call(SC_Frame& f, SC_Value x, SC_Value y)
+    static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y)
     {
-        auto result = f.sc_.newvalue(x.type);
-        f.sc_.out() << "  " << x.type << " " << result << " = "
+        auto result = fm.sc_.newvalue(x.type);
+        fm.sc_.out() << "  " << x.type << " " << result << " = "
             << x << " * " << y << ";\n";
         return result;
     }
@@ -425,16 +425,16 @@ struct Bool32_To_Nat_Function : public Function
         // No SubCurv support because a Num (32 bit float)
         // cannot hold a Nat (32 bit natural).
         static SC_Type sc_result_type(SC_Type) { return {}; }
-        static SC_Value sc_call(SC_Frame& f, SC_Value x)
+        static SC_Value sc_call(SC_Frame& fm, SC_Value x)
         {
-            throw Exception(At_SC_Frame(f),
+            throw Exception(At_SC_Frame(fm),
                 "bool32_to_nat is not supported by SubCurv");
         }
     };
     static Unary_Array_Op<Prim> array_op;
-    Value call(Value arg, Fail fl, Frame& f) const override
+    Value call(Value arg, Fail fl, Frame& fm) const override
     {
-        return array_op.call(fl, At_Arg(*this, f), arg);
+        return array_op.call(fl, At_Arg(*this, fm), arg);
     }
 };
 
@@ -448,27 +448,27 @@ struct Nat_To_Bool32_Function : public Function
         {
             return {nat_to_bool32(num_to_nat(n, cx))};
         }
-        static SC_Value sc_call(SC_Frame& f, SC_Value x)
+        static SC_Value sc_call(SC_Frame& fm, SC_Value x)
         {
-            throw Exception(At_SC_Frame(f),
+            throw Exception(At_SC_Frame(fm),
                 "nat_to_bool32 can't be called in this context: "
                 "argument must be a constant");
         }
     };
     static Unary_Array_Op<Prim> array_op;
-    Value call(Value arg, Fail fl, Frame& f) const override
+    Value call(Value arg, Fail fl, Frame& fm) const override
     {
-        return array_op.call(fl, At_Arg(*this, f), arg);
+        return array_op.call(fl, At_Arg(*this, fm), arg);
     }
-    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& f)
+    SC_Value sc_call_expr(Operation& argx, Shared<const Phrase> ph, SC_Frame& fm)
     const override
     {
-        At_SC_Arg_Expr cx(*this, ph, f);
+        At_SC_Arg_Expr cx(*this, ph, fm);
         if (auto k = dynamic_cast<const Constant*>(&argx)) {
             unsigned n = num_to_nat(k->value_.to_num(cx), cx);
             auto type = SC_Type::Bool32();
-            auto result = f.sc_.newvalue(type);
-            f.sc_.out() << "  " << type << " " << result << " = "
+            auto result = fm.sc_.newvalue(type);
+            fm.sc_.out() << "  " << type << " " << result << " = "
                 << n << "u;\n";
             return result;
         }
@@ -485,11 +485,11 @@ struct Bool32_To_Float_Prim : public Unary_Bool32_To_Num_Prim
     {
         return {bitcast_nat_to_float(n)};
     }
-    static SC_Value sc_call(SC_Frame& f, SC_Value x)
+    static SC_Value sc_call(SC_Frame& fm, SC_Value x)
     {
         unsigned count = x.type.is_bool32() ? 1 : x.type.count();
-        auto result = f.sc_.newvalue(SC_Type::Num(count));
-        f.sc_.out() << "  " << result.type << " " << result
+        auto result = fm.sc_.newvalue(SC_Type::Num(count));
+        fm.sc_.out() << "  " << result.type << " " << result
             << " = uintBitsToFloat(" << x << ");\n";
         return result;
     }
@@ -503,10 +503,10 @@ struct Float_To_Bool32_Prim : public Unary_Num_To_Bool32_Prim
     {
         return {nat_to_bool32(bitcast_float_to_nat(n))};
     }
-    static SC_Value sc_call(SC_Frame& f, SC_Value x)
+    static SC_Value sc_call(SC_Frame& fm, SC_Value x)
     {
-        auto result = f.sc_.newvalue(SC_Type::Bool32(x.type.count()));
-        f.sc_.out() << "  " << result.type << " " << result
+        auto result = fm.sc_.newvalue(SC_Type::Bool32(x.type.count()));
+        fm.sc_.out() << "  " << result.type << " " << result
             << " = floatBitsToUint(" << x << ");\n";
         return result;
     }
@@ -567,46 +567,46 @@ struct Select_Function : public Tuple_Function
     {
         return select(args[0], args[1], args[2], fl, At_Arg(*this, args));
     }
-    SC_Value sc_tuple_call(SC_Frame& f) const override
+    SC_Value sc_tuple_call(SC_Frame& fm) const override
     {
-        auto cond = f[0];
-        auto consequent = f[1];
-        auto alternate = f[2];
+        auto cond = fm[0];
+        auto consequent = fm[1];
+        auto alternate = fm[2];
         if (!cond.type.is_bool_or_vec()) {
-            throw Exception(At_SC_Tuple_Arg(0,f), stringify(
+            throw Exception(At_SC_Tuple_Arg(0,fm), stringify(
                 "argument is not bool or bool vector; it has type ",
                 cond.type));
         }
         if (consequent.type != alternate.type) {
-            throw Exception(At_SC_Tuple_Arg(1,f), stringify(
+            throw Exception(At_SC_Tuple_Arg(1,fm), stringify(
                 "2nd and 3rd argument of 'select' have different types: ",
                 consequent.type, " and ", alternate.type));
         }
         SC_Value result;
         if (cond.type.is_bool()) {
-            result = f.sc_.newvalue(consequent.type);
-            f.sc_.out() << "  " << result.type << " " << result << " = ";
-            f.sc_.out() << cond << "?" << consequent << ":" << alternate;
+            result = fm.sc_.newvalue(consequent.type);
+            fm.sc_.out() << "  " << result.type << " " << result << " = ";
+            fm.sc_.out() << cond << "?" << consequent << ":" << alternate;
         } else {
             // 'cond' is a boolean vector.
             if (consequent.type.count() == 1) {
                 // Consequent & alternate are scalars. Convert them to vectors.
                 auto T = SC_Type::List(consequent.type, cond.type.count());
-                sc_try_extend(f, consequent, T);
-                sc_try_extend(f, alternate, T);
+                sc_try_extend(fm, consequent, T);
+                sc_try_extend(fm, alternate, T);
             }
             else if (!consequent.type.is_vec()) {
-                throw Exception(At_SC_Tuple_Arg(1,f), stringify(
+                throw Exception(At_SC_Tuple_Arg(1,fm), stringify(
                     "Must be a scalar or vector to match condition argument."
                     " Instead, type is ", consequent.type));
             }
             else if (cond.type.count() != consequent.type.count()) {
-                throw Exception(At_SC_Tuple_Arg(1,f), stringify(
+                throw Exception(At_SC_Tuple_Arg(1,fm), stringify(
                     "Vector length ",consequent.type.count()," does not match"
                     " length of condition vector (", cond.type.count(),")"));
             }
-            result = f.sc_.newvalue(consequent.type);
-            f.sc_.out() << "  " << result.type << " " << result << " = ";
+            result = fm.sc_.newvalue(consequent.type);
+            fm.sc_.out() << "  " << result.type << " " << result << " = ";
             // In GLSL 4.5, this is `mix(alt,cons,cond)` (all args are vectors).
             // Right now, we are locked to GLSL 3.3, so we can't use this.
             // TODO: SubCurv: more efficient `select` for vector case
@@ -618,48 +618,48 @@ struct Select_Function : public Tuple_Function
                 // fail due to floating point approximation). But I saw IQ use
                 // linear interpolation of vectors to implement a 'select' in
                 // WebGL, so maybe this is efficient code.
-                f.sc_.out() << "mix(" << alternate << "," << consequent
+                fm.sc_.out() << "mix(" << alternate << "," << consequent
                     << ",vec" << cond.type.count() << "(" << cond << "))";
             } else {
-                f.sc_.out() << result.type << "(";
+                fm.sc_.out() << result.type << "(";
                 bool atfirst = true;
                 for (unsigned i = 0; i < result.type.count(); ++i) {
-                    if (!atfirst) f.sc_.out() << ",";
+                    if (!atfirst) fm.sc_.out() << ",";
                     atfirst = false;
-                    f.sc_.out() << cond << "[" << i << "] ? "
+                    fm.sc_.out() << cond << "[" << i << "] ? "
                                 << consequent << "[" << i << "] : "
                                 << alternate << "[" << i << "]";
                 }
-                f.sc_.out() << ")";
+                fm.sc_.out() << ")";
             }
         }
-        f.sc_.out() << ";\n";
+        fm.sc_.out() << ";\n";
         return result;
     }
 };
 
-SC_Value Equal_Expr::sc_eval(SC_Frame& f) const
+SC_Value Equal_Expr::sc_eval(SC_Frame& fm) const
 {
-    auto a = sc_eval_op(f, *arg1_);
-    auto b = sc_eval_op(f, *arg2_);
+    auto a = sc_eval_op(fm, *arg1_);
+    auto b = sc_eval_op(fm, *arg2_);
     if (a.type != b.type || a.type.plex_array_rank() > 0) {
-        throw Exception(At_SC_Phrase(syntax_, f),
+        throw Exception(At_SC_Phrase(syntax_, fm),
             stringify("domain error: ",a.type," == ",b.type));
     }
-    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
-    f.sc_.out() <<"  bool "<<result<<" =("<<a<<" == "<<b<<");\n";
+    SC_Value result = fm.sc_.newvalue(SC_Type::Bool());
+    fm.sc_.out() <<"  bool "<<result<<" =("<<a<<" == "<<b<<");\n";
     return result;
 }
-SC_Value Not_Equal_Expr::sc_eval(SC_Frame& f) const
+SC_Value Not_Equal_Expr::sc_eval(SC_Frame& fm) const
 {
-    auto a = sc_eval_op(f, *arg1_);
-    auto b = sc_eval_op(f, *arg2_);
+    auto a = sc_eval_op(fm, *arg1_);
+    auto b = sc_eval_op(fm, *arg2_);
     if (a.type != b.type || a.type.plex_array_rank() > 0) {
-        throw Exception(At_SC_Phrase(syntax_, f),
+        throw Exception(At_SC_Phrase(syntax_, fm),
             stringify("domain error: ",a.type," != ",b.type));
     }
-    SC_Value result = f.sc_.newvalue(SC_Type::Bool());
-    f.sc_.out() <<"  bool "<<result<<" =("<<a<<" != "<<b<<");\n";
+    SC_Value result = fm.sc_.newvalue(SC_Type::Bool());
+    fm.sc_.out() <<"  bool "<<result<<" =("<<a<<" != "<<b<<");\n";
     return result;
 }
 
@@ -678,28 +678,28 @@ struct Dot_Function : public Tuple_Function
     {
         return dot(args[0], args[1], fl, At_Arg(*this, args));
     }
-    SC_Value sc_tuple_call(SC_Frame& f) const override
+    SC_Value sc_tuple_call(SC_Frame& fm) const override
     {
-        auto a = f[0];
-        auto b = f[1];
+        auto a = fm[0];
+        auto b = fm[1];
         if (a.type.is_num_vec() && a.type == b.type)
-            return sc_bincall(f, SC_Type::Num(), "dot", a, b);
+            return sc_bincall(fm, SC_Type::Num(), "dot", a, b);
         if (a.type.is_num_vec() && b.type.is_mat()
             && a.type.count() == b.type.count())
         {
-            return sc_binop(f, a.type, b, "*", a);
+            return sc_binop(fm, a.type, b, "*", a);
         }
         if (a.type.is_mat() && b.type.is_num_vec()
             && a.type.count() == b.type.count())
         {
-            return sc_binop(f, b.type, b, "*", a);
+            return sc_binop(fm, b.type, b, "*", a);
         }
         if (a.type.is_mat() && b.type.is_mat()
             && a.type.count() == b.type.count())
         {
-            return sc_binop(f, a.type, b, "*", a);
+            return sc_binop(fm, a.type, b, "*", a);
         }
-        throw Exception(At_SC_Frame(f), "dot: invalid arguments");
+        throw Exception(At_SC_Frame(fm), "dot: invalid arguments");
     }
 };
 Value Dot_Function::dot(Value a, Value b, Fail fl, const At_Arg& cx) const
@@ -822,13 +822,13 @@ struct Mag_Function : public Tuple_Function
         FAIL(fl, missing, At_Arg(*this, args),
             stringify(args[0],": domain error"));
     }
-    SC_Value sc_tuple_call(SC_Frame& f) const override
+    SC_Value sc_tuple_call(SC_Frame& fm) const override
     {
-        auto arg = f[0];
+        auto arg = fm[0];
         if (!arg.type.is_num_vec())
-            throw Exception(At_SC_Tuple_Arg(0, f), "mag: argument is not a vector");
-        auto result = f.sc_.newvalue(SC_Type::Num());
-        f.sc_.out() << "  float "<<result<<" = length("<<arg<<");\n";
+            throw Exception(At_SC_Tuple_Arg(0, fm), "mag: argument is not a vector");
+        auto result = fm.sc_.newvalue(SC_Type::Num());
+        fm.sc_.out() << "  float "<<result<<" = length("<<arg<<");\n";
         return result;
     }
 };
@@ -846,13 +846,13 @@ struct Count_Function : public Tuple_Function
         }
         FAIL(fl, missing, At_Arg(*this, args), "not a list or string");
     }
-    SC_Value sc_tuple_call(SC_Frame& f) const override
+    SC_Value sc_tuple_call(SC_Frame& fm) const override
     {
-        auto arg = f[0];
+        auto arg = fm[0];
         if (!arg.type.is_list())
-            throw Exception(At_SC_Tuple_Arg(0, f), "count: argument is not a list");
-        auto result = f.sc_.newvalue(SC_Type::Num());
-        f.sc_.out() << "  float "<<result<<" = "<<arg.type.count()<<";\n";
+            throw Exception(At_SC_Tuple_Arg(0, fm), "count: argument is not a list");
+        auto result = fm.sc_.newvalue(SC_Type::Num());
+        fm.sc_.out() << "  float "<<result<<" = "<<arg.type.count()<<";\n";
         return result;
     }
 };
@@ -992,9 +992,9 @@ struct Repr_Function : public Tuple_Function
 struct Match_Function : public Function
 {
     using Function::Function;
-    virtual Value call(Value arg, Fail fl, Frame& f) const override
+    virtual Value call(Value arg, Fail fl, Frame& fm) const override
     {
-        At_Arg ctx0(*this, f);
+        At_Arg ctx0(*this, fm);
         TRY_DEF(list, arg.to<List>(fl, ctx0));
         std::vector<Shared<const Function>> cases;
         for (size_t i = 0; i < list->size(); ++i) {
@@ -1011,9 +1011,9 @@ struct Match_Function : public Function
 struct Compose_Function : public Function
 {
     using Function::Function;
-    virtual Value call(Value arg, Fail fl, Frame& f) const override
+    virtual Value call(Value arg, Fail fl, Frame& fm) const override
     {
-        At_Arg ctx0(*this, f);
+        At_Arg ctx0(*this, fm);
         TRY_DEF(list, arg.to<List>(fl, ctx0));
         std::vector<Shared<const Function>> cases;
         for (size_t i = 0; i < list->size(); ++i) {
@@ -1071,17 +1071,17 @@ struct File_Expr : public Just_Expression
         Just_Expression(move(src)),
         arg_(move(arg))
     {}
-    virtual Value eval(Frame& f) const override
+    virtual Value eval(Frame& fm) const override
     {
         // Each call to `file pathname` has its own stack frame,
         // which permits calls to `file pathname` to appear in stack traces.
         auto& callphrase = dynamic_cast<const Call_Phrase&>(*syntax_);
         std::unique_ptr<Frame> f2 =
-            Frame::make(0, f.sstate_, &f, &callphrase, nullptr);
+            Frame::make(0, fm.sstate_, &fm, &callphrase, nullptr);
         At_Metacall_With_Call_Frame cx("file", 0, *f2);
 
         // construct file pathname from argument
-        Value arg = arg_->eval(f);
+        Value arg = arg_->eval(fm);
         auto argstr = value_to_string(arg, Fail::hard, cx);
         namespace fs = boost::filesystem;
         fs::path filepath;
@@ -1116,11 +1116,11 @@ struct Print_Action : public Operation
         Operation(move(syntax)),
         arg_(move(arg))
     {}
-    virtual void exec(Frame& f, Executor&) const override
+    virtual void exec(Frame& fm, Executor&) const override
     {
-        Value arg = arg_->eval(f);
+        Value arg = arg_->eval(fm);
         auto str = to_print_string(arg);
-        f.sstate_.system_.print(str->c_str());
+        fm.sstate_.system_.print(str->c_str());
     }
 };
 /// The meaning of the phrase `print` in isolation.
@@ -1143,12 +1143,12 @@ struct Warning_Action : public Operation
         Operation(move(syntax)),
         arg_(move(arg))
     {}
-    virtual void exec(Frame& f, Executor&) const override
+    virtual void exec(Frame& fm, Executor&) const override
     {
-        Value arg = arg_->eval(f);
+        Value arg = arg_->eval(fm);
         auto msg = to_print_string(arg);
-        Exception exc{At_Phrase(*syntax_, f), msg};
-        f.sstate_.system_.warning(exc);
+        Exception exc{At_Phrase(*syntax_, fm), msg};
+        fm.sstate_.system_.warning(exc);
     }
 };
 /// The meaning of the phrase `warning` in isolation.
@@ -1180,19 +1180,19 @@ struct Error_Operation : public Operation
         Operation(move(syntax)),
         arg_(move(arg))
     {}
-    [[noreturn]] void run(Frame& f) const
+    [[noreturn]] void run(Frame& fm) const
     {
-        Value val = arg_->eval(f);
+        Value val = arg_->eval(fm);
         auto msg = to_print_string(val);
-        throw Exception{At_Phrase(*syntax_, f), msg};
+        throw Exception{At_Phrase(*syntax_, fm), msg};
     }
-    virtual void exec(Frame& f, Executor&) const override
+    virtual void exec(Frame& fm, Executor&) const override
     {
-        run(f);
+        run(fm);
     }
-    virtual Value eval(Frame& f) const override
+    virtual Value eval(Frame& fm) const override
     {
-        run(f);
+        run(fm);
     }
 };
 /// The meaning of the phrase `error` in isolation.
@@ -1221,9 +1221,9 @@ struct Exec_Action : public Operation
         Operation(move(syntax)),
         arg_(move(arg))
     {}
-    virtual void exec(Frame& f, Executor&) const override
+    virtual void exec(Frame& fm, Executor&) const override
     {
-        arg_->eval(f);
+        arg_->eval(fm);
     }
 };
 struct Exec_Metafunction : public Metafunction
@@ -1245,12 +1245,12 @@ struct Assert_Action : public Operation
         Operation(move(syntax)),
         arg_(move(arg))
     {}
-    virtual void exec(Frame& f, Executor&) const override
+    virtual void exec(Frame& fm, Executor&) const override
     {
-        At_Metacall cx{"assert", 0, *arg_->syntax_, f};
-        bool b = arg_->eval(f).to_bool(cx);
+        At_Metacall cx{"assert", 0, *arg_->syntax_, fm};
+        bool b = arg_->eval(fm).to_bool(cx);
         if (!b)
-            throw Exception(At_Phrase(*syntax_, f), "assertion failed");
+            throw Exception(At_Phrase(*syntax_, fm), "assertion failed");
     }
 };
 struct Assert_Metafunction : public Metafunction
@@ -1281,16 +1281,16 @@ struct Assert_Error_Action : public Operation
         expr_(move(expr))
     {}
 
-    virtual void exec(Frame& f, Executor&) const override
+    virtual void exec(Frame& fm, Executor&) const override
     {
-        Value expected_msg_val = expected_message_->eval(f);
+        Value expected_msg_val = expected_message_->eval(fm);
         auto expected_msg_str =
             value_to_string(expected_msg_val, Fail::hard,
-                At_Phrase(*expected_message_->syntax_, f));
+                At_Phrase(*expected_message_->syntax_, fm));
 
         if (actual_message_ != nullptr) {
             if (*actual_message_ != *expected_msg_str)
-                throw Exception(At_Phrase(*syntax_, f),
+                throw Exception(At_Phrase(*syntax_, fm),
                     stringify("assertion failed: expected error \"",
                         expected_msg_str,
                         "\", actual error \"",
@@ -1301,10 +1301,10 @@ struct Assert_Error_Action : public Operation
 
         Value result;
         try {
-            result = expr_->eval(f);
+            result = expr_->eval(fm);
         } catch (Exception& e) {
             if (*e.shared_what() != *expected_msg_str) {
-                throw Exception(At_Phrase(*syntax_, f),
+                throw Exception(At_Phrase(*syntax_, fm),
                     stringify("assertion failed: expected error \"",
                         expected_msg_str,
                         "\", actual error \"",
@@ -1313,7 +1313,7 @@ struct Assert_Error_Action : public Operation
             }
             return;
         }
-        throw Exception(At_Phrase(*syntax_, f),
+        throw Exception(At_Phrase(*syntax_, fm),
             stringify("assertion failed: expected error \"",
                 expected_msg_str,
                 "\", got value ", result));
@@ -1379,10 +1379,10 @@ struct Defined_Expression : public Just_Expression
         else
             return {false};
     }
-    virtual Value eval(Frame& f) const override
+    virtual Value eval(Frame& fm) const override
     {
-        auto val = expr_->eval(f);
-        auto id = selector_.eval(f);
+        auto val = expr_->eval(fm);
+        auto id = selector_.eval(fm);
         return defined_at(val, id);
     }
 };

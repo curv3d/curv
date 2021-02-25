@@ -45,10 +45,10 @@ template <class Op>
 struct Unary_Op_Expr : public Prefix_Expr_Base
 {
     using Prefix_Expr_Base::Prefix_Expr_Base;
-    virtual Value eval(Frame& f) const override
-      { return Op::call(Fail::hard, At_Phrase(*syntax_, f), arg_->eval(f)); }
-    virtual SC_Value sc_eval(SC_Frame& f) const override
-      { return Op::sc_op(At_SC_Phrase(syntax_,f), *arg_, f); }
+    virtual Value eval(Frame& fm) const override
+      { return Op::call(Fail::hard, At_Phrase(*syntax_, fm), arg_->eval(fm)); }
+    virtual SC_Value sc_eval(SC_Frame& fm) const override
+      { return Op::sc_op(At_SC_Phrase(syntax_,fm), *arg_, fm); }
     virtual void print(std::ostream& out) const override
       { out<<Op::Prim::name()<<"("<<*arg_<<")"; }
 };
@@ -57,12 +57,12 @@ template <class Op>
 struct Binary_Op_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
-    virtual Value eval(Frame& f) const override {
-        return Op::call(Fail::hard, At_Phrase(*syntax_, f),
-            arg1_->eval(f), arg2_->eval(f));
+    virtual Value eval(Frame& fm) const override {
+        return Op::call(Fail::hard, At_Phrase(*syntax_, fm),
+            arg1_->eval(fm), arg2_->eval(fm));
     }
-    virtual SC_Value sc_eval(SC_Frame& f) const override
-      { return Op::sc_call(f, *arg1_, *arg2_, syntax_); }
+    virtual SC_Value sc_eval(SC_Frame& fm) const override
+      { return Op::sc_call(fm, *arg1_, *arg2_, syntax_); }
     static bool idchr(char c)
         { return (c>='a'&&c<='z')||(c>='A'&&c<='Z')||c=='_'; }
     virtual void print(std::ostream& out) const override {
@@ -106,12 +106,12 @@ struct Unary_Array_Op
         FAIL(fl, missing, cx, domain_error(x));
     }
     static SC_Value
-    sc_op(const At_Syntax& cx, Operation& argx, SC_Frame& f)
+    sc_op(const At_Syntax& cx, Operation& argx, SC_Frame& fm)
     {
         // TODO: add array support
-        auto a = sc_eval_op(f, argx);
+        auto a = sc_eval_op(fm, argx);
         Prim::sc_check_arg(a, cx);
-        return Prim::sc_call(f, a);
+        return Prim::sc_call(fm, a);
     }
 
     static Value
@@ -197,21 +197,21 @@ struct Binary_Array_Op
         return result;
     }
     static SC_Value
-    sc_reduce(const At_Syntax& cx, Value zero, Operation& argx, SC_Frame& f)
+    sc_reduce(const At_Syntax& cx, Value zero, Operation& argx, SC_Frame& fm)
     {
         auto list = dynamic_cast<List_Expr*>(&argx);
         if (list) {
             if (list->empty())
-                return sc_eval_const(f, zero, *argx.syntax_);
-            auto first = sc_eval_op(f, *list->at(0));
+                return sc_eval_const(fm, zero, *argx.syntax_);
+            auto first = sc_eval_op(fm, *list->at(0));
             if (list->size() == 1) {
                 Prim::sc_check_arg(first, cx);
                 return first;
             }
             for (unsigned i = 1; i < list->size(); ++i) {
-                auto second = sc_eval_op(f, *list->at(i));
-                Prim::sc_check_args(f, first, second, cx);
-                first = Prim::sc_call(f, first, second);
+                auto second = sc_eval_op(fm, *list->at(i));
+                Prim::sc_check_args(fm, first, second, cx);
+                first = Prim::sc_call(fm, first, second);
             }
             return first;
         }
@@ -222,13 +222,13 @@ struct Binary_Array_Op
             // 2D arrays (SC_Type rank 2) are not supported, because you can't
             // generate a rank 1 array at GPU runtime, for now at least.
             // For a single Vec, this inline expansion of the loop is good.
-            auto arg = sc_eval_op(f, argx);
+            auto arg = sc_eval_op(fm, argx);
             if (arg.type.is_vec()) {
-                auto first = sc_vec_element(f, arg, 0);
+                auto first = sc_vec_element(fm, arg, 0);
                 for (unsigned i = 1; i < arg.type.count(); ++i) {
-                    auto second = sc_vec_element(f, arg, i);
-                    Prim::sc_check_args(f, first, second, cx);
-                    first = Prim::sc_call(f, first, second);
+                    auto second = sc_vec_element(fm, arg, i);
+                    Prim::sc_check_args(fm, first, second, cx);
+                    first = Prim::sc_call(fm, first, second);
                 }
                 return first;
             }
@@ -293,25 +293,25 @@ struct Binary_Array_Op
         throw domain_error(cx,0,x,y);
     }
     static SC_Value
-    sc_op(const At_Syntax& cx, Operation& argx, SC_Frame& f)
+    sc_op(const At_Syntax& cx, Operation& argx, SC_Frame& fm)
     {
         auto list = dynamic_cast<List_Expr*>(&argx);
         if (list && list->size() == 2) {
-            auto first = sc_eval_op(f, *list->at(0));
-            auto second = sc_eval_op(f, *list->at(1));
-            Prim::sc_check_args(f, first, second, cx);
-            return Prim::sc_call(f, first, second);
+            auto first = sc_eval_op(fm, *list->at(0));
+            auto second = sc_eval_op(fm, *list->at(1));
+            Prim::sc_check_args(fm, first, second, cx);
+            return Prim::sc_call(fm, first, second);
         }
         // TODO: Binary_Array_Op::sc_op: accept a 2-vector, 2-array or mat2.
         throw Exception(cx, "expected a list of size 2");
     }
     static SC_Value
-    sc_call(SC_Frame& f, Operation& ax, Operation& ay, Shared<const Phrase> ph)
+    sc_call(SC_Frame& fm, Operation& ax, Operation& ay, Shared<const Phrase> ph)
     {
-        auto x = sc_eval_op(f, ax);
-        auto y = sc_eval_op(f, ay);
-        Prim::sc_check_args(f, x, y, At_SC_Phrase(ph, f));
-        return Prim::sc_call(f, x, y);
+        auto x = sc_eval_op(fm, ax);
+        auto y = sc_eval_op(fm, ay);
+        Prim::sc_check_args(fm, x, y, At_SC_Phrase(ph, fm));
+        return Prim::sc_call(fm, x, y);
     }
 
     static Value
@@ -475,7 +475,7 @@ struct Binary_Bool_Prim
         throw Exception(cx, "argument must be Bool or Bool32");
     }
     static void sc_check_args(
-        SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
+        SC_Frame& /*fm*/, SC_Value& a, SC_Value& b, const Context& cx)
     {
         if (a.type.is_bool_or_vec()) {
             if (b.type.is_bool_or_vec()) {
@@ -584,7 +584,7 @@ struct Binary_Num_SCMat_Prim : public Unary_Num_SCMat_Prim
         return unbox(a, b, cx);
     }
     static void sc_check_args(
-        SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
+        SC_Frame& fm, SC_Value& a, SC_Value& b, const Context& cx)
     {
         if (!a.type.is_num_plex()) {
             throw Exception(At_Index(0, cx),
@@ -596,7 +596,7 @@ struct Binary_Num_SCMat_Prim : public Unary_Num_SCMat_Prim
                 stringify("argument expected to be Num, Vec or Mat; got ",
                     a.type));
         }
-        sc_plex_unify(f, a, b, cx);
+        sc_plex_unify(fm, a, b, cx);
     }
     static SC_Type sc_result_type(SC_Type a, SC_Type b)
     {
@@ -622,7 +622,7 @@ struct Binary_Num_SCVec_Prim : public Unary_Num_SCVec_Prim
         return unbox(a, b, cx);
     }
     static void sc_check_args(
-        SC_Frame& f, SC_Value& a, SC_Value& b, const Context& cx)
+        SC_Frame& fm, SC_Value& a, SC_Value& b, const Context& cx)
     {
         if (!a.type.is_num_or_vec()) {
             throw Exception(At_Index(0, cx),
@@ -632,7 +632,7 @@ struct Binary_Num_SCVec_Prim : public Unary_Num_SCVec_Prim
             throw Exception(At_Index(1, cx),
                 stringify("argument expected to be Num or Vec; got ", a.type));
         }
-        sc_plex_unify(f, a, b, cx);
+        sc_plex_unify(fm, a, b, cx);
     }
     static SC_Type sc_result_type(SC_Type a, SC_Type b)
     {
@@ -676,7 +676,7 @@ struct Shift_Prim
         return b == b;
     }
     static void sc_check_args(
-        SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
+        SC_Frame& /*fm*/, SC_Value& a, SC_Value& b, const Context& cx)
     {
         if (!a.type.is_bool32_or_vec()) {
             throw Exception(At_Index(0, cx),
@@ -766,7 +766,7 @@ struct Binary_Bool32_Prim : public Bool32_Prim
             throw Exception(cx, "argument must be a Bool32 or list of Bool32");
     }
     static void sc_check_args(
-        SC_Frame& /*f*/, SC_Value& a, SC_Value& b, const Context& cx)
+        SC_Frame& /*fm*/, SC_Value& a, SC_Value& b, const Context& cx)
     {
         if (!a.type.is_bool32_or_vec()) {
             throw Exception(At_Index(0, cx),

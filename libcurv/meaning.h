@@ -878,7 +878,7 @@ struct Symbol_Expr
     Shared<const Phrase> syntax() {
         if (id_) return id_; else return expr_->syntax_;
     }
-    Symbol_Ref eval(Frame& f) const;
+    Symbol_Ref eval(Frame&) const;
 };
 
 struct Dot_Expr : public Just_Expression
@@ -983,7 +983,7 @@ struct Locative
     virtual Unique<const Reference> getref(Frame&) const = 0;
     virtual Value fetch(Frame&) const = 0;
     virtual void store(Frame&, Value) const = 0;
-    virtual SC_Type sc_print(SC_Frame& f) const;
+    virtual SC_Type sc_print(SC_Frame&) const;
 };
 
 // A Locative representing a boxed local variable.
@@ -1000,7 +1000,7 @@ struct Local_Locative : public Locative
     virtual Unique<const Reference> getref(Frame&) const override;
     virtual Value fetch(Frame&) const override;
     virtual void store(Frame&, Value) const override;
-    virtual SC_Type sc_print(SC_Frame& f) const override;
+    virtual SC_Type sc_print(SC_Frame&) const override;
 };
 
 struct Indexed_Locative : public Locative
@@ -1018,7 +1018,7 @@ struct Indexed_Locative : public Locative
     virtual Unique<const Reference> getref(Frame&) const override;
     virtual Value fetch(Frame&) const override;
     virtual void store(Frame&, Value) const override;
-    virtual SC_Type sc_print(SC_Frame& f) const override;
+    virtual SC_Type sc_print(SC_Frame&) const override;
 };
 
 // 'locative := expression'
@@ -1053,7 +1053,7 @@ struct TPath_Expr : public Just_Expression
         indexes_(move(indexes))
     {}
 
-    virtual Value eval(Frame& f) const override;
+    virtual Value eval(Frame&) const override;
 };
 struct TSlice_Expr : public Just_Expression
 {
@@ -1067,7 +1067,7 @@ struct TSlice_Expr : public Just_Expression
         indexes_(move(indexes))
     {}
 
-    virtual Value eval(Frame& f) const override;
+    virtual Value eval(Frame&) const override;
 };
 
 } // namespace curv

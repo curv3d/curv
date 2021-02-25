@@ -115,7 +115,7 @@ struct Const_Pattern : public Pattern
     virtual void add_to_scope(Scope& scope, unsigned unitno) override
     {
     }
-    virtual void exec(Value* slots, Value value, const Context& cx, Frame& f)
+    virtual void exec(Value* slots, Value value, const Context& cx, Frame& fm)
     const override
     {
         Ternary ter = value.equal(value_, cx);
@@ -127,7 +127,7 @@ struct Const_Pattern : public Pattern
                 stringify("argument ",value, " cannot be proven equal to ",
                           value_));
     }
-    virtual bool try_exec(Value* slots, Value value, const Context& cx, Frame& f)
+    virtual bool try_exec(Value* slots, Value value, const Context& cx, Frame& fm)
     const override
     {
         Ternary ter = value.equal(value_, cx);
@@ -159,14 +159,14 @@ struct Predicate_Pattern : public Pattern
         return (Call_Phrase*) &*syntax_;
     }
 
-    bool match(Value arg, Frame& f) const
+    bool match(Value arg, Frame& fm) const
     {
         static Symbol_Ref callkey = make_symbol("call");
-        Value val = predicate_expr_->eval(f);
+        Value val = predicate_expr_->eval(fm);
         Value funv = val;
         for (;;) {
             if (!funv.is_ref())
-                throw Exception(At_Phrase(*predicate_phrase_, f),
+                throw Exception(At_Phrase(*predicate_phrase_, fm),
                     stringify(funv,": not a function"));
             Ref_Value& funp( funv.to_ref_unsafe() );
             switch (funp.type_) {
@@ -174,23 +174,23 @@ struct Predicate_Pattern : public Pattern
               {
                 Function* fun = (Function*)&funp;
                 std::unique_ptr<Frame> f2 {
-                    Frame::make(fun->nslots_, f.sstate_, &f,
+                    Frame::make(fun->nslots_, fm.sstate_, &fm,
                         call_phrase(), nullptr)
                 };
                 auto result = fun->call(arg, Fail::hard, *f2);
-                return result.to_bool(At_Phrase(*call_phrase(), f));
+                return result.to_bool(At_Phrase(*call_phrase(), fm));
               }
             case Ref_Value::ty_record:
               {
                 Record* s = (Record*)&funp;
                 if (s->hasfield(callkey)) {
-                    funv = s->getfield(callkey, At_Phrase(*call_phrase(), f));
+                    funv = s->getfield(callkey, At_Phrase(*call_phrase(), fm));
                     continue;
                 }
                 break;
               }
             }
-            throw Exception(At_Phrase(*predicate_phrase_, f),
+            throw Exception(At_Phrase(*predicate_phrase_, fm),
                 stringify(val,": not a function"));
         }
     }
@@ -204,18 +204,18 @@ struct Predicate_Pattern : public Pattern
     {
         pattern_->add_to_scope(scope, unitno);
     }
-    virtual void exec(Value* slots, Value value, const Context& cx, Frame& f)
+    virtual void exec(Value* slots, Value value, const Context& cx, Frame& fm)
     const override
     {
-        if (!match(value, f))
+        if (!match(value, fm))
             throw Exception(cx, stringify("argument ",value, " does not match ",
                 predicate_phrase_->location().range()));
-        pattern_->exec(slots, value, cx, f);
+        pattern_->exec(slots, value, cx, fm);
     }
-    virtual bool try_exec(Value* slots, Value value, const Context& cx, Frame& f)
+    virtual bool try_exec(Value* slots, Value value, const Context& cx, Frame& fm)
     const override
     {
-        return match(value, f) && pattern_->try_exec(slots, value, cx, f);
+        return match(value, fm) && pattern_->try_exec(slots, value, cx, fm);
     }
 };
 
@@ -239,7 +239,7 @@ struct List_Pattern : public Pattern
         for (auto& p : items_)
             p->add_to_scope(scope, unitno);
     }
-    virtual void exec(Value* slots, Value arg, const Context& argcx, Frame& f)
+    virtual void exec(Value* slots, Value arg, const Context& argcx, Frame& fm)
     const override
     {
         Generic_List list(arg, Fail::hard, argcx);
@@ -248,12 +248,12 @@ struct List_Pattern : public Pattern
         for (size_t i = 0; i < n; ++i) {
             items_[i]->exec(
                 slots,
-                list.val_at(i, At_Phrase(*items_[i]->syntax_,f)),
+                list.val_at(i, At_Phrase(*items_[i]->syntax_,fm)),
                 At_Index(i, argcx),
-                f);
+                fm);
         }
     }
-    virtual bool try_exec(Value* slots, Value val, const Context& cx, Frame& f)
+    virtual bool try_exec(Value* slots, Value val, const Context& cx, Frame& fm)
     const override
     {
         Generic_List list(val, Fail::soft, cx);
@@ -264,9 +264,9 @@ struct List_Pattern : public Pattern
         for (size_t i = 0; i < n; ++i) {
             bool matched = items_[i]->try_exec(
                 slots,
-                list.val_at(i, At_Phrase(*items_[i]->syntax_,f)),
+                list.val_at(i, At_Phrase(*items_[i]->syntax_,fm)),
                 At_Index(i, cx),
-                f);
+                fm);
             if (!matched) return false;
         }
         return true;
@@ -342,7 +342,7 @@ struct Record_Pattern : public Pattern
         for (auto& p : fields_)
             p.second.pat_->add_to_scope(scope, unitno);
     }
-    virtual void exec(Value* slots, Value value, const Context& valcx, Frame& f)
+    virtual void exec(Value* slots, Value value, const Context& valcx, Frame& fm)
     const override
     {
         // TODO: Rewrite using a Record iterator.
@@ -354,9 +354,9 @@ struct Record_Pattern : public Pattern
                 if (cmp < 0) {
                     // record is missing a field in the pattern
                     if (p->second.dexpr_) {
-                        auto fval = p->second.dexpr_->eval(f);
+                        auto fval = p->second.dexpr_->eval(fm);
                         p->second.pat_->exec(
-                            slots, fval, At_Field(p->first.c_str(), valcx), f);
+                            slots, fval, At_Field(p->first.c_str(), valcx), fm);
                     } else {
                         throw Exception(valcx, stringify(
                             "record is missing a field named ",p->first));
@@ -367,7 +367,7 @@ struct Record_Pattern : public Pattern
                     // matching field in record and pattern
                     auto fval = record->getfield(p->first,valcx);
                     p->second.pat_->exec(
-                        slots, fval, At_Field(p->first.c_str(), valcx), f);
+                        slots, fval, At_Field(p->first.c_str(), valcx), fm);
                     ++p;
                     return;
                 } else
@@ -379,9 +379,9 @@ struct Record_Pattern : public Pattern
         });
         while (p != fields_.end()) {
             if (p->second.dexpr_) {
-                auto fval = p->second.dexpr_->eval(f);
+                auto fval = p->second.dexpr_->eval(fm);
                 p->second.pat_->exec(
-                    slots, fval, At_Field(p->first.c_str(), valcx), f);
+                    slots, fval, At_Field(p->first.c_str(), valcx), fm);
             } else {
                 throw Exception(valcx, stringify(
                     "record is missing a field named ",p->first));
@@ -389,7 +389,7 @@ struct Record_Pattern : public Pattern
             ++p;
         }
     }
-    virtual bool try_exec(Value* slots, Value value, const Context& cx, Frame& f)
+    virtual bool try_exec(Value* slots, Value value, const Context& cx, Frame& fm)
     const override
     {
         // TODO: Rewrite using a Record iterator.
@@ -404,8 +404,8 @@ struct Record_Pattern : public Pattern
                 if (cmp < 0) {
                     // record is missing a field in the pattern
                     if (p->second.dexpr_) {
-                        auto fval = p->second.dexpr_->eval(f);
-                        p->second.pat_->try_exec(slots, fval, cx, f);
+                        auto fval = p->second.dexpr_->eval(fm);
+                        p->second.pat_->try_exec(slots, fval, cx, fm);
                     } else {
                         success = false;
                     }
@@ -414,7 +414,7 @@ struct Record_Pattern : public Pattern
                 } else if (cmp == 0) {
                     // matching field in record and pattern
                     auto fval = record->getfield(p->first,cx);
-                    p->second.pat_->try_exec(slots, fval, cx, f);
+                    p->second.pat_->try_exec(slots, fval, cx, fm);
                     ++p;
                     return;
                 } else
@@ -424,8 +424,8 @@ struct Record_Pattern : public Pattern
         });
         while (p != fields_.end()) {
             if (p->second.dexpr_) {
-                auto fval = p->second.dexpr_->eval(f);
-                p->second.pat_->try_exec(slots, fval, cx, f);
+                auto fval = p->second.dexpr_->eval(fm);
+                p->second.pat_->try_exec(slots, fval, cx, fm);
             } else {
                 return false;
             }
@@ -603,17 +603,17 @@ Pattern::sc_exec(Operation& expr, SC_Frame& caller, SC_Frame& callee) const
 }
 
 Shared<Record>
-record_pattern_default_value(const Pattern& pat, Frame& f)
+record_pattern_default_value(const Pattern& pat, Frame& fm)
 {
     auto rpat = dynamic_cast<const Record_Pattern*>(&pat);
     if (rpat == nullptr)
-        throw Exception(At_Phrase(*pat.syntax_,f), "not a record pattern");
+        throw Exception(At_Phrase(*pat.syntax_,fm), "not a record pattern");
     auto drec = make<DRecord>();
     for (auto& i : rpat->fields_) {
         if (i.second.dexpr_)
-            drec->fields_[i.first] = i.second.dexpr_->eval(f);
+            drec->fields_[i.first] = i.second.dexpr_->eval(fm);
         else
-            throw Exception(At_Phrase(*i.second.syntax_,f),
+            throw Exception(At_Phrase(*i.second.syntax_,fm),
                 "field pattern has no default value");
     }
     return {drec};
