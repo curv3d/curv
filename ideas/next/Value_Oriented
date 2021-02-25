@@ -1,0 +1,91 @@
+Value Oriented Programming
+==========================
+
+    Curv is a _value oriented language_. All data is represented by immutable
+    values. There are no mutable objects. There are no pointers or object
+    references, hence no concept of object identity. Data is hierarchical,
+    not cyclic. Mutable state is represented using mutable imperative
+    variables, not mutable objects. This design simplifies the language,
+    it makes programs easier to understand, and it has performance benefits.
+
+Objects vs Values
+-----------------
+There are two ways for a programming language to represent data:
+as objects, or as values.
+
+Objects are complicated. Objects may be mutable (although they don't have
+to be), and each object has a unique 'object identity' that is fixed when
+it is created, distinct from the data that it contains.
+
+Values are simple. Values are immutable. Values do not have an 'object
+identity'. A value is indistinguishable from the data it represents.
+
+Object-oriented languages like Smalltalk, Python and Java have object
+reference semantics, where the result of evaluating an expression is
+a reference to an object. (Unlike C, there are no explicit pointers.)
+This style predates OOP; it first appeared in Lisp.
+
+Object/reference semantics add language complexity and cognitive load.
+* Multiple equality operators. There is at least object identity
+  equality vs data equality, but there are often more variants that are
+  blends of the two. (In value semantics, there is only data equality.)
+* Mutability is a property of object types. This creates a need to define
+  mutable and immutable variants of the same abstract type. For example,
+  Python has both lists (mutable) and tuples (immutable). Ruby has strings
+  (mutable) and symbols (immutable). In value semantics, mutation is orthogonal
+  to type, so you don't have this explosion in the number of types.
+* There is also an explosion in the number of operations, where you have
+  mutating and non-mutating variants of many operations. For example, to sort
+  a list, Python has `sorted(a)` (non-mutating) and `a.sort()` (mutating).
+* Object/reference semantics make programs harder to understand.
+  These things are a burden on programmers:
+  mentally keeping track of object identity;
+  keeping track of shared mutable state and aliasing;
+  using non-local reasoning to understand spooky action at a distance.
+
+The worst case scenario (for added complexity and cognitive load) is when
+you represent *all* data as objects. In a value-oriented language, it's a
+simple fact that `2 + 2` equals `4`, no exceptions. But if numbers are
+objects, it's more complicated. There may be multiple objects representing `4`
+with different object identities, and programs may not treat all `4` objects
+the same way. In Smalltalk-80, all data is represented by *mutable* objects,
+and that's even worse. For example, executing `true becomes: false` causes
+the `true` object to become indistinguishable from the `false` object,
+which crashes the system.
+
+Most object/reference languages use a hybrid of value and object semantics.
+So at least true and false have value semantics in most languages.
+
+Value Semantics
+---------------
+Curv has pure value semantics. This is shockingly rare in modern languages,
+and it is even rarer in dynamically typed languages. I hope that through Curv,
+more people will realize that there is an alternative to object semantics.
+
+In Curv, pure value semantics mean a simpler language:
+* Only 1 equality operator is needed.
+* Only 1 list type is needed (we don't need different types for mutable
+  and immutable lists).
+* We don't need to distinguish between mutating and non-mutating variants
+  of operations like 'sort' and 'reverse', and we don't lose any efficiency
+  as a result.
+* The semantics are much simpler, there is less complexity and cognitive
+  load required to understand and write programs.
+
+In Curv, we use mutable variables, not mutable objects, to represent
+changeable state. (There are also pure functional idioms for programming
+with changeable state, and these are supported as well, but imperative
+mutable variables are often easier to reason about in this context.)
+
+Curv has first class function values, which are lexically scoped closures.
+And note that Curv also has mutable imperative variables. Now, if a closure
+were to capture references to non-local mutable variables (as happens in
+most languages), then such functions would acquire object semantics.
+But Curv has pure value semantics, so this doesn't happen. Closures
+have value semantics: they capture the *current value* of non-local
+mutable variables, they don't capture references. This ensures that
+functions are pure values, and it also means that functions are pure:
+the result returned by a function depends only on the argument values.
+In addition, function calls cannot have side effects, because functions
+Thus, Curv's pure value semantics imply that Curv is also a pure
+functional language.

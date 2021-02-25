@@ -32,8 +32,8 @@ Declarative Semantics
 
   Curv is a declarative language, which means two things:
 
-  1. Curv simplifies programming by suppressing a lot of low level detail
-     that you need to attend to in mainstream, general purpose languages.
+  1. Curv is high level: it simplifies programming by suppressing low level
+     detail that you need to attend to in mainstream, general purpose languages.
   2. Curv is denotative.
 
 Denotative Semantics
@@ -78,6 +78,29 @@ Orthogonality and Composability
     by using standard interfaces.
   * Remove restrictions on how language elements can be composed.
   * Eliminate syntactic overhead for common compositions.
+
+  `Shadow worlds`_ are an anti-pattern in programming language design.
+  Instead of using orthogonal design, the language designer creates
+  a DSL (domain specific language) for solving some specific problem,
+  and this DSL contains shadow copies of features from the main language.
+
+  * The DSL may have shadow identifiers for describing objects
+    in the domain, which exist in a shadow namespace separate from the
+    language's principal namespace. This shadow namespace may or may not
+    allow users to define new names, and if so, these user defined names
+    may or may not play well with the language's module system.
+  * The DSL may have a shadow 'if' construct with a different syntax than
+    the principal 'if' construct.
+  * It may have shadow loops, shadow functions, shadow data structures.
+  
+  These shadow constructs are crappy imitations of the principal constructs.
+  They have incompatible syntax, and they suffer from limitations that don't
+  exist in the principal constructs. This creates complexity, not just because
+  you have to learn multiple versions of the same feature, but also because
+  the shadow constructs are not properly composable with features from the
+  main language: you have to learn how to work around the limitations.
+
+.. _`Shadow worlds`: https://gbracha.blogspot.com/2014/09/a-domain-of-shadows.html
 
 Dynamic Typing
   One consequence of Curv's uncompromising focus on orthogonality and
@@ -305,6 +328,11 @@ Level 3: Imperative Modelling Language
 This level adds imperative features: mutable local variables, a statement
 language that includes assignments, conditionals and loops.
 
+You know how, in Haskell, people call monads "programmable semicolons",
+and describe monads as a way to encode imperative algorithms? What if we
+ditch the category theory, and design a pure functional language where
+you can just use imperative idioms directly? That's what Curv is.
+
 Why?
 
 * Because everybody knows how to write imperative programs.
@@ -317,10 +345,15 @@ Why?
   function for each loop. Alternatively, tacit programming with combinators
   is higher level and gives much shorter programs, but you have to master
   a larger vocabulary of combinators and idioms.
+* Imperative programming in Curv eliminates the "functional programming cliff"
+  and the even higher "monad cliff" that you have to surmount in order to
+  begin writing algorithms in pure functional languages like Haskell.
 
 The imperative language features do not destroy Curv's declarative semantics.
 Functions remain pure. Values remain immutable. Expressions remain
-referentially transparent.
+referentially transparent. Statement lists are not themselves declarative,
+but statement lists only occur embedded in an expression, and that expression
+is referentially transparent, etc.
 
 Curv L3 is imperative, but not object-oriented.
 Local variables are mutable, but values are immutable.
@@ -361,11 +394,17 @@ Level 4: Extension Language
 This level completes the Curv language, with features for implementing
 efficient, high level, easy to use library abstractions. This requires some
 of the complexity and bureaucracy of software engineering languages, which
-was omitted from the higher level dialects.
+was omitted from the higher level dialects. One goal is to contain this
+complexity and bureaucracy inside the library abstractions that use it,
+so that it doesn't "leak out" and complicate higher level code that uses
+the library.
 
-* GPU programming.
-* Array programming (linear algebra and data parallelism).
+* GPU programming: goal is to compile a larger subset of Curv into GPU code,
+  generating more efficient code. And support programming with GPU compute
+  kernels. The tech involves partial evaluation, static typing.
+* Array programming (linear algebra and GPU data parallelism).
 * Efficient and compactly represented typed data and typed arrays.
+  Eg, to support pixel arrays, voxel arrays, triangle meshes.
 * Abstract data types.
   Hide implementation details from library users, providing a high level
   interface to library data. Type directed and algebra directed design.

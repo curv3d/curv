@@ -1,0 +1,20 @@
+Plain Old Data
+==============
+
+  "It is better to have 100 functions operate on one data structure
+  than to have 10 functions operate on 10 data structures."
+  -- Alan Perlis, "Epigrams on Programming" (1982)
+
+Curv provides a small number of "universal data types" that are used
+to represent most data. This feature is called Plain Old Data (POD).
+
+POD makes Curv very simple and composable, when compared to mainstream
+programming languages.
+* Composability: Inspired by Lisp S-Expressions, XML, JSON, and similar systems.
+  These data representations are popular precisely because they allow
+  easy interoperability between software components. In Curv, the pervasive
+  use of POD makes everything more composable.
+* Simplicity: There is only 1 kind of number, one kind of list (aka an ordered
+  sequence), and one kind of record, instead of multiple domain-specific
+  versions of each data type, and forcing you to choose between similar
+  alternatives.
