@@ -859,9 +859,9 @@ Predicate_Assertion_Expr::eval(Frame& f) const
     throw Exception(At_Phrase(*syntax_, f), "predicate assertion failed");
 }
 
-Value Parametric_Ctor::call(Value arg, Fail fl, Frame& fr) const
+Value Parametric_Ctor::call(Value arg, Fail fl, Frame& fm) const
 {
-    At_Phrase acx(arg_part(fr.call_phrase_), fr);
+    At_Phrase acx(arg_part(fm.call_phrase_), fm);
     TRY_DEF(arec, arg.to<const Record>(fl, acx));
     auto drec = make<DRecord>();
     // Merge defl_ with arec; fail if arec contains fields not in defl_;
@@ -879,7 +879,7 @@ Value Parametric_Ctor::call(Value arg, Fail fl, Frame& fr) const
         }
     }
     // call parametric record constructor
-    TRY_DEF(rval, ctor_->call({drec}, fl, fr));
+    TRY_DEF(rval, ctor_->call({drec}, fl, fm));
     auto result = update_drecord(rval, acx); // fault on error
     result->fields_[make_symbol("call")] = {ctor_};
     result->fields_[make_symbol("argument")] = {drec};

@@ -142,9 +142,9 @@ struct Is_String_Function : public Function
 struct Is_List_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Fail, Frame& fr) const override
+    Value call(Value arg, Fail, Frame& fm) const override
     {
-        Generic_List glist(arg, Fail::soft, At_Frame(fr));
+        Generic_List glist(arg, Fail::soft, At_Frame(fm));
         return {glist.is_list()};
     }
 };
@@ -167,9 +167,9 @@ struct Is_Primitive_Func_Function : public Function
 struct Is_Func_Function : public Function
 {
     using Function::Function;
-    Value call(Value arg, Fail, Frame& fr) const override
+    Value call(Value arg, Fail, Frame& fm) const override
     {
-        return {maybe_function(arg, At_Arg(*this, fr)) != nullptr};
+        return {maybe_function(arg, At_Arg(*this, fm)) != nullptr};
     }
 };
 
@@ -917,9 +917,9 @@ Value to_char(Value arg, Fail fl, const Context& cx)
 struct Char_Function : public Function
 {
     using Function::Function;
-    virtual Value call(Value arg, Fail fl, Frame& fr) const override
+    virtual Value call(Value arg, Fail fl, Frame& fm) const override
     {
-        return to_char(arg, fl, At_Arg(*this, fr));
+        return to_char(arg, fl, At_Arg(*this, fm));
     }
 };
 Value ucode(Value arg, Fail fl, const Context& cx)
@@ -946,17 +946,17 @@ Value ucode(Value arg, Fail fl, const Context& cx)
 struct Ucode_Function : public Function
 {
     using Function::Function;
-    virtual Value call(Value arg, Fail fl, Frame& fr) const override
+    virtual Value call(Value arg, Fail fl, Frame& fm) const override
     {
-        return ucode(arg, fl, At_Arg(*this, fr));
+        return ucode(arg, fl, At_Arg(*this, fm));
     }
 };
 struct Symbol_Function : public Function
 {
     using Function::Function;
-    virtual Value call(Value arg, Fail fl, Frame& fr) const override
+    virtual Value call(Value arg, Fail fl, Frame& fm) const override
     {
-        At_Arg cx(*this, fr);
+        At_Arg cx(*this, fm);
         TRY_DEF(string, value_to_string(arg, fl, cx));
         for (auto c : *string) {
             if (c <= ' ' || c >= '~') {
@@ -971,7 +971,7 @@ struct Symbol_Function : public Function
 struct String_Function : public Function
 {
     using Function::Function;
-    virtual Value call(Value arg, Fail fl, Frame& fr) const override
+    virtual Value call(Value arg, Fail fl, Frame& fm) const override
     {
         String_Builder sb;
         arg.print_string(sb);
@@ -1030,9 +1030,9 @@ struct Compose_Function : public Function
 struct TSlice_Function : public Function
 {
     using Function::Function;
-    virtual Value call(Value arg, Fail fl, Frame& fr) const override
+    virtual Value call(Value arg, Fail fl, Frame& fm) const override
     {
-        At_Arg cx(*this, fr);
+        At_Arg cx(*this, fm);
         TRY_DEF(list, arg.to<List>(fl, cx));
         return make_tslice(list->begin(), list->end());
     }
@@ -1040,9 +1040,9 @@ struct TSlice_Function : public Function
 struct TPath_Function : public Function
 {
     using Function::Function;
-    virtual Value call(Value arg, Fail fl, Frame& fr) const override
+    virtual Value call(Value arg, Fail fl, Frame& fm) const override
     {
-        At_Arg cx(*this, fr);
+        At_Arg cx(*this, fm);
         TRY_DEF(list, arg.to<List>(fl, cx));
         return make_tpath(list->begin(), list->end());
     }

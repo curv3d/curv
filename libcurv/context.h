@@ -151,10 +151,10 @@ struct At_Arg : public At_Syntax
     const Function& func_;
     Frame& call_frame_;
 
-    At_Arg(const Function& fn, Frame& fr)
+    At_Arg(const Function& fn, Frame& fm)
     :
         func_(fn),
-        call_frame_(fr)
+        call_frame_(fm)
     {}
 
     void get_locations(std::list<Location>& locs) const override;
@@ -177,12 +177,12 @@ struct At_Metacall : public At_Syntax
     const Phrase& arg_;
     Frame& parent_frame_;
 
-    At_Metacall(const char* name, unsigned argpos, const Phrase& arg, Frame& fr)
+    At_Metacall(const char* name, unsigned argpos, const Phrase& arg, Frame& fm)
     :
         name_(name),
         argpos_(argpos),
         arg_(arg),
-        parent_frame_(fr)
+        parent_frame_(fm)
     {}
 
     void get_locations(std::list<Location>& locs) const override;
@@ -201,11 +201,11 @@ struct At_Metacall_With_Call_Frame : public At_Syntax
     unsigned argpos_;
     Frame& call_frame_;
 
-    At_Metacall_With_Call_Frame(const char* name, unsigned argpos, Frame& fr)
+    At_Metacall_With_Call_Frame(const char* name, unsigned argpos, Frame& fm)
     :
         name_(name),
         argpos_(argpos),
-        call_frame_(fr)
+        call_frame_(fm)
     {}
 
     void get_locations(std::list<Location>& locs) const override;
