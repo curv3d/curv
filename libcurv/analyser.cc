@@ -774,28 +774,51 @@ void analyse_indexed_locative(
     }
     else throw Exception(At_Phrase(*ph, env), "not a locative");
 }
-Shared<Operation> analyse_assignment(
-    Shared<const Assignment_Phrase> asn, Environ& env, Interp terp)
+Unique<const Locative> analyse_locative(
+    Shared<const Phrase> ph, Environ& env, Interp terp)
 {
     Locative_Indexes il;
-    analyse_indexed_locative(asn->left_, il, env, terp);
-    auto right = analyse_op(*asn->right_, env);
+    analyse_indexed_locative(ph, il, env, terp);
     auto loc = move(il.locative_);
     if (!il.indexes_.empty()) {
         Shared<const Operation> index;
         if (il.indexes_.size() == 1)
             index = il.indexes_.front();
         else
-            index = make<TPath_Expr>(asn->left_, il.indexes_);
-        loc = make_unique<Indexed_Locative>(asn->left_, move(loc), index);
+            index = make<TPath_Expr>(ph, il.indexes_);
+        loc = make_unique<Indexed_Locative>(ph, move(loc), index);
     }
-    Shared<Operation> op = make<Assignment_Action>(asn, move(loc), right);
-    return op;
+    return loc;
 }
 Shared<Meaning>
 Assignment_Phrase::analyse(Environ& env, Interp terp) const
 {
-    return analyse_assignment(share(*this), env, terp);
+    auto loc = analyse_locative(left_, env, terp);
+    auto right = analyse_op(*right_, env);
+    return make<Assignment_Action>(share(*this), move(loc), right);
+}
+
+void analyse_mutate(
+    Shared<const Phrase> ph,
+    Unique<const Locative>& loc,
+    std::vector<Mutate_Action::XForm>& tx,
+    Environ& env,
+    Interp terp)
+{
+    if (auto muph = cast<const Mutate_Phrase>(ph)) {
+        analyse_mutate(muph->arg_, loc, tx, env, terp);
+        auto func = analyse_op(*muph->function_, env);
+        tx.emplace_back(Mutate_Action::XForm{ph, func});
+    } else
+        loc = analyse_locative(ph, env, terp);
+}
+Shared<Meaning>
+Mutate_Phrase::analyse(Environ& env, Interp terp) const
+{
+    Unique<const Locative> loc = nullptr;
+    std::vector<Mutate_Action::XForm> tx;
+    analyse_mutate(share(*this), loc, tx, env, terp);
+    return make<Mutate_Action>(share(*this), move(loc), move(tx));
 }
 
 Shared<Definition>
@@ -1064,12 +1087,6 @@ Predicate_Assertion_Phrase::analyse(Environ& env, Interp) const
         share(*this),
         analyse_op(*arg_, env),
         analyse_op(*function_, env));
-}
-
-Shared<Meaning>
-Mutate_Phrase::analyse(Environ& env, Interp) const
-{
-    throw Exception(At_Phrase(*this, env), "not implemented");
 }
 
 } // namespace curv

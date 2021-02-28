@@ -983,6 +983,7 @@ struct Locative
     virtual Unique<const Reference> getref(Frame&) const = 0;
     virtual Value fetch(Frame&) const = 0;
     virtual void store(Frame&, Value) const = 0;
+    virtual void mutate(Frame& fm, std::function<Value(Value)> func) const = 0;
     virtual SC_Type sc_print(SC_Frame&) const;
 };
 
@@ -1000,6 +1001,7 @@ struct Local_Locative : public Locative
     virtual Unique<const Reference> getref(Frame&) const override;
     virtual Value fetch(Frame&) const override;
     virtual void store(Frame&, Value) const override;
+    virtual void mutate(Frame& fm, std::function<Value(Value)> func) const override;
     virtual SC_Type sc_print(SC_Frame&) const override;
 };
 
@@ -1018,6 +1020,7 @@ struct Indexed_Locative : public Locative
     virtual Unique<const Reference> getref(Frame&) const override;
     virtual Value fetch(Frame&) const override;
     virtual void store(Frame&, Value) const override;
+    virtual void mutate(Frame& fm, std::function<Value(Value)> func) const override;
     virtual SC_Type sc_print(SC_Frame&) const override;
 };
 
@@ -1039,6 +1042,29 @@ struct Assignment_Action : public Operation
 
     virtual void exec(Frame&, Executor&) const override;
     void sc_exec(SC_Frame&) const override;
+};
+
+// 'locative ! function' means 'locative := function locative'
+struct Mutate_Action : public Operation
+{
+    struct XForm {
+        // A call_phrase of the form `loc!f1!f2!...!fn`.
+        Shared<const Phrase> call_phrase_;
+        // The expression form of the 'fn' phrase from above.
+        Shared<const Operation> func_expr_;
+    };
+    Unique<const Locative> locative_;
+    std::vector<XForm> transformers_; // in the order f1, f2, ...
+    Mutate_Action(
+        Shared<const Phrase> syn,
+        Unique<const Locative> loc,
+        std::vector<XForm> tx)
+    :
+        Operation(move(syn)),
+        locative_(move(loc)),
+        transformers_(move(tx))
+    {}
+    void exec(Frame&, Executor&) const override;
 };
 
 struct TPath_Expr : public Just_Expression

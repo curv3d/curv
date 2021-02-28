@@ -535,6 +535,10 @@ Local_Locative::store(Frame& fm, Value val) const
 {
     fm[slot_] = val;
 }
+void Local_Locative::mutate(Frame& fm, std::function<Value(Value)> func) const
+{
+    fm[slot_] = func(fm[slot_]);
+}
 
 Unique<const Reference>
 Indexed_Locative::getref(Frame& fm) const
@@ -554,11 +558,33 @@ Indexed_Locative::store(Frame& fm, Value val) const
     auto newval = tree_amend(curval, index, val, At_Phrase(*syntax_,fm));
     base_->store(fm, newval);
 }
+void Indexed_Locative::mutate(Frame& fm, std::function<Value(Value)> func) const
+{
+    base_->mutate(fm, [&](Value tree) -> Value {
+        At_Phrase cx(*syntax_, fm);
+        Value index = index_->eval(fm);
+        Value elems = tree_fetch(tree, index, cx);
+        elems = func(elems);
+        return tree_amend(tree, index, elems, cx);
+    });
+}
 
 void
 Assignment_Action::exec(Frame& fm, Executor&) const
 {
     locative_->store(fm, expr_->eval(fm));
+}
+void
+Mutate_Action::exec(Frame& fm, Executor&) const
+{
+    //throw Exception(At_Phrase(*syntax_, fm), "a!b not implemented");
+    locative_->mutate(fm, [&](Value val) -> Value {
+        for (auto& tx : transformers_) {
+            auto func = tx.func_expr_->eval(fm);
+            val = call_func(func, val, tx.call_phrase_, fm);
+        }
+        return val;
+    });
 }
 
 Value

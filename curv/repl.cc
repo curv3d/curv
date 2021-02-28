@@ -140,6 +140,10 @@ struct REPL_Locative : public Locative
     {
         *ptr_ = newval;
     }
+    virtual void mutate(Frame& fm, std::function<Value(Value)> func) const override
+    {
+        *ptr_ = func(*ptr_);
+    }
 };
 
 struct REPL_Environ : public Environ

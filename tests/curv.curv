@@ -791,5 +791,12 @@ assert((a:1) == [#a,1]);
 
 exec (file "index.curv");
 
+(
+    local negate x = -x;
+    local a = 1..3;
+    a!reverse!negate;
+    assert(a == [-3, -2, -1]);
+);
+
 // script return value:
 in null
