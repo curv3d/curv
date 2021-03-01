@@ -933,38 +933,6 @@ struct Parametric_Expr : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
-// a Reference is an abstract pointer to a value or a structured collection
-// of elements within a mutable local variable. It is the 'pointer' version
-// of an index value. A Reference is only valid for a specific stack frame.
-struct Reference
-{
-    virtual ~Reference() = default;
-    virtual Value fetch(const At_Syntax&) const = 0;
-    virtual void store(Value, const At_Syntax&) const = 0;
-};
-
-struct Ptr_Reference : public Reference
-{
-    Ptr_Reference(Value* s) : slot_(s) {}
-    Value* slot_;
-
-    virtual Value fetch(const At_Syntax&) const override;
-    virtual void store(Value, const At_Syntax&) const override;
-};
-
-struct Indexed_Reference : public Reference
-{
-    Indexed_Reference(Unique<const Reference> b, Value i)
-    :
-        base_(move(b)), index_(i)
-    {}
-    Unique<const Reference> base_;
-    Value index_;
-
-    virtual Value fetch(const At_Syntax&) const override;
-    virtual void store(Value, const At_Syntax&) const override;
-};
-
 // A Locative is the phrase on the left side of an assignment statement.
 //
 // TODO: Efficient indexed update using "linear logic".
@@ -980,8 +948,6 @@ struct Locative
     virtual ~Locative() = default;
     Shared<const Phrase> syntax_;
 
-    virtual Unique<const Reference> getref(Frame&) const = 0;
-    virtual Value fetch(Frame&) const = 0;
     virtual void store(Frame&, Value) const = 0;
     virtual void mutate(Frame& fm, std::function<Value(Value)> func) const = 0;
     virtual SC_Type sc_print(SC_Frame&) const;
@@ -998,8 +964,6 @@ struct Local_Locative : public Locative
     {}
     slot_t slot_;
 
-    virtual Unique<const Reference> getref(Frame&) const override;
-    virtual Value fetch(Frame&) const override;
     virtual void store(Frame&, Value) const override;
     virtual void mutate(Frame& fm, std::function<Value(Value)> func) const override;
     virtual SC_Type sc_print(SC_Frame&) const override;
@@ -1017,8 +981,6 @@ struct Indexed_Locative : public Locative
     Unique<const Locative> base_;
     Shared<const Operation> index_;
 
-    virtual Unique<const Reference> getref(Frame&) const override;
-    virtual Value fetch(Frame&) const override;
     virtual void store(Frame&, Value) const override;
     virtual void mutate(Frame& fm, std::function<Value(Value)> func) const override;
     virtual SC_Type sc_print(SC_Frame&) const override;

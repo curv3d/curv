@@ -41,10 +41,10 @@ extern "C" {
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/program.h>
+#include <libcurv/shape.h>
 #include <libcurv/source.h>
 #include <libcurv/system.h>
 
-#include <libcurv/shape.h>
 #include <libcurv/viewer/viewer.h>
 
 #ifdef _WIN32
@@ -67,6 +67,33 @@ bool was_interrupted = false;
     }
 #endif
 
+/// The meaning of a call to `help`, such as `help "foo"`.
+struct Help_Action : public Operation
+{
+    Shared<Operation> arg_;
+    Help_Action(
+        Shared<const Phrase> syntax,
+        Shared<Operation> arg)
+    :
+        Operation(move(syntax)),
+        arg_(move(arg))
+    {}
+    virtual void exec(Frame& fm, Executor&) const override
+    {
+        Value arg = arg_->eval(fm);
+        help(arg, fm.sstate_.system_.console());
+    }
+};
+/// The meaning of the phrase `help` in isolation.
+struct Help_Metafunction : public Metafunction
+{
+    using Metafunction::Metafunction;
+    virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
+    {
+        return make<Help_Action>(share(ph), analyse_op(*ph.arg_, env));
+    }
+};
+
 struct REPL_Namespace
 {
     Namespace global_;
@@ -75,7 +102,10 @@ struct REPL_Namespace
     :
         global_(sys.std_namespace()),
         local_{}
-    {}
+    {
+        global_[make_symbol("help")] =
+            make<Builtin_Meaning<Help_Metafunction>>();
+    }
 
     std::vector<Replxx::Completion> completions(
         std::string const& input, int& contextLen)
@@ -128,14 +158,6 @@ struct REPL_Locative : public Locative
         ptr_(ptr)
     {}
 
-    virtual Unique<const Reference> getref(Frame&) const override
-    {
-        return make_unique<Ptr_Reference>(ptr_);
-    }
-    virtual Value fetch(Frame&) const override
-    {
-        return *ptr_;
-    }
     virtual void store(Frame&, Value newval) const override
     {
         *ptr_ = newval;

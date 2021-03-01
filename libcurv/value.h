@@ -76,6 +76,8 @@ struct Ref_Value : public Shared_Base
 
     /// Print a value like a string.
     virtual void print_string(std::ostream&) const;
+
+    virtual void print_help(std::ostream&) const;
 };
 
 /// A boxed, dynamically typed value in the Curv runtime.
@@ -459,6 +461,8 @@ template<typename T, class... Args> Value make_ref_value(Args&&... args)
     intrusive_ptr_add_ref(ptr);
     return Value(ptr);
 }
+
+void help(Value, std::ostream&);
 
 } // namespace curv
 #endif // header guard

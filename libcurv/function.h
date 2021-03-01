@@ -233,6 +233,8 @@ struct Closure : public Function
         argpos_ = lambda.argpos_;
     }
 
+    void print_help(std::ostream&) const override;
+
     virtual Value call(Value, Fail, Frame&) const override;
     virtual void tail_call(Value, std::unique_ptr<Frame>&) const override;
     virtual bool try_tail_call(Value, std::unique_ptr<Frame>&) const override;
@@ -252,6 +254,8 @@ struct Piecewise_Function : public Function
         Function(maxslots(cases)),
         cases_(move(cases))
     {}
+
+    void print_help(std::ostream&) const override;
 
     // call the function during evaluation, with specified argument value.
     virtual Value call(Value, Fail, Frame&) const override;

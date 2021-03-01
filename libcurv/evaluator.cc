@@ -499,37 +499,6 @@ Scope_Executable::exec(Frame& fm) const
     }
 }
 
-Value Ptr_Reference::fetch(const At_Syntax&) const
-{
-    return *slot_;
-}
-void Ptr_Reference::store(Value val, const At_Syntax&) const
-{
-    *slot_ = val;
-}
-
-Value Indexed_Reference::fetch(const At_Syntax& cx) const
-{
-    auto curval = base_->fetch(cx);
-    return tree_fetch(curval, index_, cx);
-}
-void Indexed_Reference::store(Value elems, const At_Syntax& cx) const
-{
-    auto curval = base_->fetch(cx);
-    auto newval = tree_amend(curval, index_, elems, cx);
-    base_->store(newval, cx);
-}
-
-Unique<const Reference>
-Local_Locative::getref(Frame& fm) const
-{
-    return make_unique<Ptr_Reference>(&fm[slot_]);
-}
-Value
-Local_Locative::fetch(Frame& fm) const
-{
-    return fm[slot_];
-}
 void
 Local_Locative::store(Frame& fm, Value val) const
 {
@@ -540,23 +509,13 @@ void Local_Locative::mutate(Frame& fm, std::function<Value(Value)> func) const
     fm[slot_] = func(fm[slot_]);
 }
 
-Unique<const Reference>
-Indexed_Locative::getref(Frame& fm) const
-{
-    return make_unique<Indexed_Reference>(base_->getref(fm), index_->eval(fm));
-}
-Value
-Indexed_Locative::fetch(Frame& fm) const
-{
-    throw Exception(At_Phrase(*syntax_, fm), "Indexed_Locative::fetch");
-}
 void
 Indexed_Locative::store(Frame& fm, Value val) const
 {
-    auto index = index_->eval(fm);
-    auto curval = base_->fetch(fm);
-    auto newval = tree_amend(curval, index, val, At_Phrase(*syntax_,fm));
-    base_->store(fm, newval);
+    base_->mutate(fm, [&](Value tree) -> Value {
+        auto index = index_->eval(fm);
+        return tree_amend(tree, index, val, At_Phrase(*syntax_, fm));
+    });
 }
 void Indexed_Locative::mutate(Frame& fm, std::function<Value(Value)> func) const
 {

@@ -20,8 +20,8 @@ Y_axis = [0,1,0];
 Z_axis = [0,0,1];
 nl = char 0xA;   // newline character
 tab = char 0x9;  // tab character
-dol = char "$";  // dollar sign character
-quot = char ""_"; // double quote character
+dol = #"$";  // dollar sign character
+quot = #"""; // double quote character
 
 mod[a,m] = a - m * floor(a/m);
 rem[a,m] = a - m * trunc(a/m);
@@ -936,9 +936,8 @@ warp_domain_xy warp shape =
 
 // rotate angle shape -- 2D rotation around the Z axis
 // rotate {angle=,axis=} shape -- 3D rotation around specified axis
-rotate arg shape =
-    arg >> match [
-    a :: is_num ->
+rotate = match [
+    a :: is_num -> shape ->
         let // 2D rotation around the Z axis
             rot2[a,p] = cmul[p, cis a];
             b = if (shape.bbox@MIN@X == -inf || shape.bbox@MIN@Y == -inf
@@ -966,7 +965,7 @@ rotate arg shape =
             is_2d : shape.is_2d,
             is_3d : shape.is_3d,
         };
-    {angle, axis: a} ->
+    {angle, axis: a} -> shape ->
         do
             assert(shape.is_3d);
         in let
