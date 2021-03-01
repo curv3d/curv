@@ -88,9 +88,20 @@ struct Help_Action : public Operation
 struct Help_Metafunction : public Metafunction
 {
     using Metafunction::Metafunction;
+    Shared<Operation> to_operation(System& sys, Frame* f)
+    {
+        throw Exception(At_Phrase(*syntax_, sys, f),
+            "Usage: help <expression>");
+    }
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
-        return make<Help_Action>(share(ph), analyse_op(*ph.arg_, env));
+        auto arg = ph.arg_->analyse(env, Interp::expr());
+        auto op = cast<Operation>(arg);
+        if (!op) {
+            throw Exception(At_Phrase(*ph.arg_, env),
+                "Argument to 'help' is not an expression");
+        }
+        return make<Help_Action>(share(ph), op);
     }
 };
 

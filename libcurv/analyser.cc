@@ -54,9 +54,10 @@ std_eval(const Phrase& ph, Environ& env)
 }
 
 Shared<Operation>
-Meaning::to_operation(System& sys, Frame* f)
+Metafunction::to_operation(System& sys, Frame* f)
 {
-    throw Exception(At_Phrase(*syntax_, sys, f), "not an expression or statement");
+    throw Exception(At_Phrase(*syntax_, sys, f),
+        "This operation must be called with an argument");
 }
 
 Shared<Meaning>

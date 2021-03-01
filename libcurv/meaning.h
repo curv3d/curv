@@ -54,7 +54,7 @@ struct Meaning : public Shared_Base
     Meaning(Shared<const Phrase> syntax) : syntax_(move(syntax)) {}
 
     // These functions are called during semantic analysis.
-    virtual Shared<Operation> to_operation(System&, Frame*);
+    virtual Shared<Operation> to_operation(System&, Frame*) = 0;
     virtual Shared<Meaning> call(const Call_Phrase&, Environ&);
 };
 
@@ -73,6 +73,7 @@ struct Metafunction : public Meaning
 {
     using Meaning::Meaning;
     virtual Shared<Meaning> call(const Call_Phrase&, Environ&) override = 0;
+    virtual Shared<Operation> to_operation(System&, Frame*);
 };
 
 /// An Operation is a fragment of compiled code that "does something" at run

@@ -62,4 +62,9 @@ void Piecewise_Function::print_help(std::ostream& out) const
     }
 }
 
+void Record::print_help(std::ostream& out) const
+{
+    out << "There is no help yet for record " << Value{share(*this)} << "\n";
+}
+
 } // namespace

@@ -22,6 +22,8 @@ struct Record : public Ref_Value
 {
     Record(int subtype) : Ref_Value(ty_record, subtype) {}
 
+    void print_help(std::ostream&) const override;
+
     /// Get the value of a named field, return missing if not defined.
     virtual Value find_field(Symbol_Ref, const Context&) const = 0;
 

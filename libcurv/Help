@@ -1,0 +1,21 @@
+Progress on the REPL 'help' command. Which I am debugging into existence.
+=========================================================================
+
+TODO List
+---------
+curv> help print
+ERROR: Argument to 'help' is not an expression
+1| help print
+        ^^^^^
+Add help for metafunctions.
+
+> help rotate
+* good: it prints both parameter signatures.
+* bad: 'rotate' is no longer a named function. Need 'func' or 'def' keyword.
+* bad: no docstring.
+
+> help cube
+* bad: just dumps the record, looks like gibberish.
+* it's a shape, so print the shape description.
+* it's a function, so print the function interface.
+* it's a record, so print the description of each field?
