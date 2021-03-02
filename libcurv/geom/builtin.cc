@@ -70,6 +70,16 @@ struct SC_Test_Metafunction : public Metafunction
     {
         return make<SC_Test_Action>(share(ph), analyse_op(*ph.arg_, env));
     }
+    virtual void print_help(std::ostream& out) const
+    {
+        out <<
+            "sc_test {tagname1: testfunction1, tagname2: testfunction2, ...}\n"
+            "  Each test function maps an argument (which is ignored) onto a boolean value.\n"
+            "  Execute each test function, and if any test function returns false, report an assertion failure,\n"
+            "  mentioning the tagname in the error message. Each testfunction is evaluated twice,\n"
+            "  once in the interpreter, and once by compiling to native code using the SubCurv compiler.\n"
+            "  This is used to write SubCurv unit tests.\n";
+    }
 };
 
 void add_builtins(System_Impl& sys)

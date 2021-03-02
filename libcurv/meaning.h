@@ -74,6 +74,7 @@ struct Metafunction : public Meaning
     using Meaning::Meaning;
     virtual Shared<Meaning> call(const Call_Phrase&, Environ&) override = 0;
     virtual Shared<Operation> to_operation(System&, Frame*);
+    virtual void print_help(std::ostream&) const = 0;
 };
 
 /// An Operation is a fragment of compiled code that "does something" at run

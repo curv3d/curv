@@ -70,18 +70,24 @@ bool was_interrupted = false;
 /// The meaning of a call to `help`, such as `help "foo"`.
 struct Help_Action : public Operation
 {
-    Shared<Operation> arg_;
+    Shared<Meaning> arg_;
     Help_Action(
         Shared<const Phrase> syntax,
-        Shared<Operation> arg)
+        Shared<Meaning> arg)
     :
         Operation(move(syntax)),
         arg_(move(arg))
     {}
     virtual void exec(Frame& fm, Executor&) const override
     {
-        Value arg = arg_->eval(fm);
-        help(arg, fm.sstate_.system_.console());
+        if (auto mf = cast<Metafunction>(arg_)) {
+            mf->print_help(fm.sstate_.system_.console());
+        } else if (auto op = cast<Operation>(arg_)) {
+            Value arg = op->eval(fm);
+            help(arg, fm.sstate_.system_.console());
+        } else {
+            throw Exception(At_Phrase(*arg_->syntax_, fm), "Bad argument to 'help'");
+        }
     }
 };
 /// The meaning of the phrase `help` in isolation.
@@ -96,12 +102,13 @@ struct Help_Metafunction : public Metafunction
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
         auto arg = ph.arg_->analyse(env, Interp::expr());
-        auto op = cast<Operation>(arg);
-        if (!op) {
-            throw Exception(At_Phrase(*ph.arg_, env),
-                "Argument to 'help' is not an expression");
-        }
-        return make<Help_Action>(share(ph), op);
+        return make<Help_Action>(share(ph), arg);
+    }
+    void print_help(std::ostream& out) const
+    {
+        out <<
+          "help <expression>\n"
+          "  Print help information for the value returned by <expression>.\n";
     }
 };
 

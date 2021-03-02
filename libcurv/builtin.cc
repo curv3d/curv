@@ -1103,6 +1103,13 @@ struct File_Metafunction : public Metafunction
     {
         return make<File_Expr>(share(ph), analyse_op(*ph.arg_, env));
     }
+    virtual void print_help(std::ostream& out) const override
+    {
+        out <<
+            "file <filename>\n"
+            "  Evaluate the program stored in the file named <filename>, and return the resulting value.\n"
+            "  <filename> is a string.\n";
+    }
 };
 
 /// The meaning of a call to `print`, such as `print "foo"`.
@@ -1131,6 +1138,13 @@ struct Print_Metafunction : public Metafunction
     {
         return make<Print_Action>(share(ph), analyse_op(*ph.arg_, env));
     }
+    virtual void print_help(std::ostream& out) const override
+    {
+        out <<
+            "print <message>\n"
+            "  Print a message string on the debug console, followed by newline. If <message> is not a string,\n"
+            "  it is converted to a string using the 'string' function.\n";
+    }
 };
 
 struct Warning_Action : public Operation
@@ -1158,6 +1172,14 @@ struct Warning_Metafunction : public Metafunction
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
         return make<Warning_Action>(share(ph), analyse_op(*ph.arg_, env));
+    }
+    virtual void print_help(std::ostream& out) const override
+    {
+        out <<
+            "warning <message>\n"
+            "  Print a message string on the debug console, preceded by 'WARNING: ',\n"
+            "  followed by newline and then a stack trace. If <message> is not a string,\n"
+            "  it is converted to a string using the 'string' function.\n";
     }
 };
 
@@ -1207,6 +1229,14 @@ struct Error_Metafunction : public Metafunction
     {
         return make<Constant>(syntax_, Value{make<Error_Function>("error")});
     }
+    virtual void print_help(std::ostream& out) const override
+    {
+        out <<
+            "error <message>\n"
+            "  On the debug console, print 'ERROR: ', then the message string, then newline and a stack trace.\n"
+            "  Then terminate the program. If <message> is not a string,\n"
+            "  convert it to a string using the 'string' function.\n";
+    }
 };
 
 // exec(expr) -- a debug action that evaluates expr, then discards the result.
@@ -1232,6 +1262,13 @@ struct Exec_Metafunction : public Metafunction
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override
     {
         return make<Exec_Action>(share(ph), analyse_op(*ph.arg_, env));
+    }
+    virtual void print_help(std::ostream& out) const override
+    {
+        out <<
+            "exec <expression>\n"
+            "  Evaluate the expression and then ignore the result. This is used for calling a function whose only\n"
+            "  purpose is to have a side effect (by executing debug statements) and you don't care about the result.\n";
     }
 };
 
@@ -1260,6 +1297,14 @@ struct Assert_Metafunction : public Metafunction
     {
         auto arg = analyse_op(*ph.arg_, env);
         return make<Assert_Action>(share(ph), arg);
+    }
+    virtual void print_help(std::ostream& out) const override
+    {
+        out <<
+            "assert <condition>\n"
+            "  Evaluate the condition, which must be true or false. If it is true, then nothing happens.\n"
+            "  If it is false, then an assertion failure error message is produced, followed by a stack trace,\n"
+            "  and the program is terminated.\n";
     }
 };
 
@@ -1346,6 +1391,13 @@ struct Assert_Error_Metafunction : public Metafunction
                 "assert_error: expecting 2 arguments");
         }
     }
+    virtual void print_help(std::ostream& out) const override
+    {
+        out <<
+            "assert_error [error_message_string, expression]\n"
+            "  Evaluate the expression argument. Assert that the expression evaluation terminates with an error,\n"
+            "  and that the resulting error message is equal to error_message_string. Used for unit testing.\n";
+    }
 };
 
 struct Defined_Expression : public Just_Expression
@@ -1419,6 +1471,18 @@ struct Defined_Metafunction : public Metafunction
             "defined: argument must be `expression.identifier`"
                 " or `expression.[expression]`"
                 " or `expression@expression`");
+    }
+    virtual void print_help(std::ostream& out) const override
+    {
+        out <<
+            "defined (record . identifier)\n"
+            "  True if a field named identifier is defined by record, otherwise false.\n"
+            "  For example, given 'R={a:1}', then 'defined(R.a)' is true and 'defined(R.foo)' is false.\n"
+            "\n"
+            "defined (record .[ symbolExpr ])\n"
+            "  Test the field named by the symbol after evaluating symbolExpr. If the field exists,\n"
+            "  return true, otherwise false. This allows the field name to be computed at run time.\n"
+            "  For example, 'defined(R.[#a])' is true and 'defined(R.[#foo])' is false.\n";
     }
 };
 
