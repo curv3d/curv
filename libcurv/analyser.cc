@@ -745,13 +745,12 @@ struct Locative_Indexes
     Unique<const Locative> locative_;
     std::vector<Shared<const Operation>> indexes_;
 };
+Unique<const Locative> analyse_locative(Shared<const Phrase>, Environ&, Interp);
 void analyse_indexed_locative(
     Shared<const Phrase> ph, Locative_Indexes& il, Environ& env, Interp terp)
 {
     ph = strip_parens(ph);
-    if (auto id = cast<const Identifier>(ph))
-        il.locative_ = env.lookup_lvar(*id, terp.edepth());
-    else if (auto dot = cast<const Dot_Phrase>(ph)) {
+    if (auto dot = cast<const Dot_Phrase>(ph)) {
         analyse_indexed_locative(dot->left_, il, env, terp);
         if (auto id = cast<const Identifier>(dot->right_)) {
             Shared<const Operation> index =
@@ -773,23 +772,30 @@ void analyse_indexed_locative(
         auto index = analyse_op(*at->function_, env);
         il.indexes_.push_back(index);
     }
-    else throw Exception(At_Phrase(*ph, env), "not a locative");
+    else {
+        il.locative_ = analyse_locative(ph, env, terp);
+    }
 }
 Unique<const Locative> analyse_locative(
     Shared<const Phrase> ph, Environ& env, Interp terp)
 {
-    Locative_Indexes il;
-    analyse_indexed_locative(ph, il, env, terp);
-    auto loc = move(il.locative_);
-    if (!il.indexes_.empty()) {
+    ph = strip_parens(ph);
+    if (auto id = cast<const Identifier>(ph))
+        return env.lookup_lvar(*id, terp.edepth());
+    if (auto id = cast<const Bracket_Phrase>(ph)) {
+        throw Exception(At_Phrase(*ph, env), "[locative] not supported");
+    }
+    if (isa<const Dot_Phrase>(ph) || isa<const Apply_Lens_Phrase>(ph)) {
+        Locative_Indexes il;
+        analyse_indexed_locative(ph, il, env, terp);
         Shared<const Operation> index;
         if (il.indexes_.size() == 1)
             index = il.indexes_.front();
         else
             index = make<TPath_Expr>(ph, il.indexes_);
-        loc = make_unique<Indexed_Locative>(ph, move(loc), index);
+        return make_unique<Indexed_Locative>(ph, move(il.locative_), index);
     }
-    return loc;
+    throw Exception(At_Phrase(*ph, env), "not a locative");
 }
 Shared<Meaning>
 Assignment_Phrase::analyse(Environ& env, Interp terp) const
