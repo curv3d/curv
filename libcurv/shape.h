@@ -72,6 +72,7 @@ struct Shape_Program final : public Shape
     Location location() const;
     System& system() const { return sstate_.system_; }
     Frame* file_frame() const { return sstate_.file_frame_; }
+    const Phrase& nub() const { return *nub_; }
 
     // shape fields, filled in by recognize()
     Shared<Record> record_;

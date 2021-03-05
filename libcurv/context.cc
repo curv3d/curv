@@ -15,10 +15,20 @@ Context::rewrite_message(Shared<const String> msg) const
     return msg;
 }
 
+void
+get_frame_locations(const Frame* f, std::list<Location>& locs)
+{
+    for (; f != nullptr; f = f->parent_frame_)
+        if (f->call_phrase_ != nullptr)
+            locs.push_back(f->call_phrase_->location());
+}
+
+// At_System
 void At_System::get_locations(std::list<Location>& locs) const { }
 System& At_System::system() const { return system_; }
 Frame* At_System::frame() const { return nullptr; }
 
+// At_Frame
 void
 At_Frame::get_locations(std::list<Location>& locs) const
 {
@@ -35,14 +45,7 @@ const Phrase& At_Frame::syntax() const
     return *call_frame_.call_phrase_;
 }
 
-void
-get_frame_locations(const Frame* f, std::list<Location>& locs)
-{
-    for (; f != nullptr; f = f->parent_frame_)
-        if (f->call_phrase_ != nullptr)
-            locs.push_back(f->call_phrase_->location());
-}
-
+// At_Token
 At_Token::At_Token(Token tok, const Scanner& scanner)
 :
     loc_{scanner.source_, tok},
@@ -50,7 +53,6 @@ At_Token::At_Token(Token tok, const Scanner& scanner)
     file_frame_{scanner.file_frame_}
 {
 }
-
 At_Token::At_Token(Token tok, const Phrase& phrase, Environ& env)
 :
     loc_{share(phrase.location().source()), tok},
@@ -58,7 +60,6 @@ At_Token::At_Token(Token tok, const Phrase& phrase, Environ& env)
     file_frame_{env.sstate_.file_frame_}
 {
 }
-
 At_Token::At_Token(Location loc, Environ& env)
 :
     loc_{move(loc)},
@@ -66,7 +67,6 @@ At_Token::At_Token(Location loc, Environ& env)
     file_frame_{env.sstate_.file_frame_}
 {
 }
-
 At_Token::At_Token(Location loc, System& sys, Frame* f)
 :
     loc_{move(loc)},
@@ -74,7 +74,6 @@ At_Token::At_Token(Location loc, System& sys, Frame* f)
     file_frame_{f}
 {
 }
-
 void
 At_Token::get_locations(std::list<Location>& locs) const
 {
@@ -84,30 +83,36 @@ At_Token::get_locations(std::list<Location>& locs) const
 System& At_Token::system() const { return system_; }
 Frame* At_Token::frame() const { return file_frame_; }
 
+// At_Program
+void At_Program::get_locations(std::list<Location>& locs) const
+{
+    locs.push_back(syntax_.location());
+    get_frame_locations(sstate_.file_frame_, locs);
+}
+System& At_Program::system() const { return sstate_.system_; }
+Frame* At_Program::frame() const { return sstate_.file_frame_; }
+const Phrase& At_Program::syntax() const { return syntax_; }
+
+// At_Phrase
 At_Phrase::At_Phrase(Shared<const Phrase> phrase, Frame& call_frame)
 : phrase_(phrase), system_(call_frame.sstate_.system_), frame_(&call_frame)
 {}
-
 At_Phrase::At_Phrase(const Phrase& phrase, Frame& call_frame)
 : phrase_(share(phrase)), system_(call_frame.sstate_.system_),
   frame_(&call_frame)
 {}
-
 At_Phrase::At_Phrase(const Phrase& phrase, System& sys, Frame* frame)
 : phrase_(share(phrase)), system_(sys), frame_(frame)
 {}
-
 At_Phrase::At_Phrase(const Phrase& phrase, Scanner& scanner)
 : phrase_(share(phrase)), system_(scanner.system_), frame_(scanner.file_frame_)
 {}
-
 At_Phrase::At_Phrase(const Phrase& phrase, Environ& env)
 :
     phrase_(share(phrase)),
     system_(env.sstate_.system_),
     frame_(env.sstate_.file_frame_)
 {}
-
 void
 At_Phrase::get_locations(std::list<Location>& locs) const
 {
@@ -124,6 +129,7 @@ const Phrase& At_Phrase::syntax() const
     return *phrase_;
 }
 
+// At_Arg
 void
 At_Arg::get_locations(std::list<Location>& locs) const
 {
@@ -149,7 +155,6 @@ const Phrase& At_Arg::syntax() const
             "Internal error: At_Arg::syntax(): call_phrase_ is null"};
     return *arg_part(call_frame_.call_phrase_);
 }
-
 Shared<const String>
 At_Arg::rewrite_message(Shared<const String> msg) const
 {
@@ -158,6 +163,7 @@ At_Arg::rewrite_message(Shared<const String> msg) const
     return stringify("argument #",func_.argpos_+1," of ",func_.name_,": ",msg);
 }
 
+// At_Metacall
 void
 At_Metacall::get_locations(std::list<Location>& locs) const
 {
@@ -167,13 +173,13 @@ At_Metacall::get_locations(std::list<Location>& locs) const
 System& At_Metacall::system() const { return parent_frame_.sstate_.system_; }
 Frame* At_Metacall::frame() const { return &parent_frame_; }
 const Phrase& At_Metacall::syntax() const { return arg_; }
-
 Shared<const String>
 At_Metacall::rewrite_message(Shared<const String> msg) const
 {
     return stringify("argument #",argpos_+1," of ",name_,": ",msg);
 }
 
+// At_Metacall_With_Call_Frame
 void
 At_Metacall_With_Call_Frame::get_locations(std::list<Location>& locs) const
 {
@@ -196,38 +202,22 @@ At_Metacall_With_Call_Frame::rewrite_message(Shared<const String> msg) const
     return stringify("argument #",argpos_+1," of ",name_,": ",msg);
 }
 
-At_Field::At_Field(const char* fieldname, const Context& parent)
-: fieldname_(fieldname), parent_(parent)
+// At_Field_Syntax
+At_Field_Syntax::At_Field_Syntax(const char* fieldname, const At_Syntax& parent)
+: At_Syntax_Wrapper(parent), fieldname_(fieldname)
 {}
-
-void
-At_Field::get_locations(std::list<Location>& locs) const
-{
-    parent_.get_locations(locs);
-}
-System& At_Field::system() const { return parent_.system(); }
-Frame* At_Field::frame() const { return parent_.frame(); }
-
 Shared<const String>
-At_Field::rewrite_message(Shared<const String> msg) const
+At_Field_Syntax::rewrite_message(Shared<const String> msg) const
 {
     return stringify("at field .",make_symbol(fieldname_),": ",parent_.rewrite_message(msg));
 }
 
-At_Index::At_Index(size_t index, const Context& parent)
-: index_(index), parent_(parent)
+// At_Index_Syntax
+At_Index_Syntax::At_Index_Syntax(size_t index, const At_Syntax& parent)
+: At_Syntax_Wrapper(parent), index_(index)
 {}
-
-void
-At_Index::get_locations(std::list<Location>& locs) const
-{
-    parent_.get_locations(locs);
-}
-System& At_Index::system() const { return parent_.system(); }
-Frame* At_Index::frame() const { return parent_.frame(); }
-
 Shared<const String>
-At_Index::rewrite_message(Shared<const String> msg) const
+At_Index_Syntax::rewrite_message(Shared<const String> msg) const
 {
     return stringify("at index [",index_,"]: ",parent_.rewrite_message(msg));
 }
@@ -243,5 +233,40 @@ Frame* At_Syntax_Wrapper::frame() const
   { return parent_.frame(); }
 const Phrase& At_Syntax_Wrapper::syntax() const
   { return parent_.syntax(); }
+
+At_Field::At_Field(const char* fieldname, const Context& parent)
+: fieldname_(fieldname), parent_(parent)
+{}
+
+// At_Field
+void
+At_Field::get_locations(std::list<Location>& locs) const
+{
+    parent_.get_locations(locs);
+}
+System& At_Field::system() const { return parent_.system(); }
+Frame* At_Field::frame() const { return parent_.frame(); }
+Shared<const String>
+At_Field::rewrite_message(Shared<const String> msg) const
+{
+    return stringify("at field .",make_symbol(fieldname_),": ",parent_.rewrite_message(msg));
+}
+
+// At_Index
+At_Index::At_Index(size_t index, const Context& parent)
+: index_(index), parent_(parent)
+{}
+void
+At_Index::get_locations(std::list<Location>& locs) const
+{
+    parent_.get_locations(locs);
+}
+System& At_Index::system() const { return parent_.system(); }
+Frame* At_Index::frame() const { return parent_.frame(); }
+Shared<const String>
+At_Index::rewrite_message(Shared<const String> msg) const
+{
+    return stringify("at index [",index_,"]: ",parent_.rewrite_message(msg));
+}
 
 } // namespace curv

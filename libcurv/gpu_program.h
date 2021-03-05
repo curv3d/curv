@@ -30,6 +30,7 @@ struct GPU_Program
     Location location() const;
     System& system() const { return sstate_.system_; }
     Frame* file_frame() const { return sstate_.file_frame_; }
+    const Phrase& nub() const { return *nub_; }
 
     void write_json(std::ostream&) const;
     void write_curv(std::ostream&) const;

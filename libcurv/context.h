@@ -134,14 +134,22 @@ struct At_Phrase : public At_Syntax
     virtual const Phrase& syntax() const override;
 };
 
-struct At_Program : public At_Token
+struct At_Program : public At_Syntax
 {
-    // works with curv::Program or curv::Shape_Program
+    Source_State& sstate_;
+    const Phrase& syntax_;
+
+    // works with curv::Program, curv::Shape_Program, curv::GPU_Program
     template <class PROGRAM>
-    explicit At_Program(const PROGRAM& prog)
+    explicit At_Program(PROGRAM& prog)
     :
-        At_Token(prog.location(), prog.system(), prog.file_frame())
+        sstate_(prog.sstate_), syntax_(prog.nub())
     {}
+
+    virtual void get_locations(std::list<Location>& locs) const override;
+    virtual System& system() const override;
+    virtual Frame* frame() const override;
+    virtual const Phrase& syntax() const override;
 };
 
 // Bad argument to a function call.
@@ -215,6 +223,7 @@ struct At_Metacall_With_Call_Frame : public At_Syntax
     virtual const Phrase& syntax() const override;
 };
 
+// A convenience class, to automate the boilerplate of deriving from At_Syntax.
 struct At_Syntax_Wrapper : public At_Syntax
 {
     const At_Syntax& parent_;
@@ -224,6 +233,24 @@ struct At_Syntax_Wrapper : public At_Syntax
     System& system() const override;
     Frame* frame() const override;
     const Phrase& syntax() const override;
+};
+
+struct At_Field_Syntax : public At_Syntax_Wrapper
+{
+    const char* fieldname_;
+
+    At_Field_Syntax(const char* fieldname, const At_Syntax& parent);
+
+    virtual Shared<const String> rewrite_message(Shared<const String>) const override;
+};
+
+struct At_Index_Syntax : public At_Syntax_Wrapper
+{
+    size_t index_;
+
+    At_Index_Syntax(size_t index, const At_Syntax& parent);
+
+    virtual Shared<const String> rewrite_message(Shared<const String>) const override;
 };
 
 struct At_Field : public Context
