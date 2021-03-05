@@ -63,7 +63,7 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Render_Opts& opts)
     static Symbol_Ref picker_key = make_symbol("picker");
 
     // Recognize a parametric shape (it has `argument` and `call` fields).
-    At_System cx{shape.system()};
+    At_Program cx{shape};
     Shared<Record> sh_argument = nullptr;
     if (shape.record_->hasfield(argument_key))
         sh_argument = shape.record_->getfield(argument_key, cx).to<Record>(cx);
