@@ -1,53 +1,6 @@
-loc!func1!func2
----------------
-struct Mutate_Action : public Operation
-{
-    struct XForm {
-        // A call_phrase of the form `loc!f1!f2!...!fn`.
-        Shared<const Phrase> call_phrase_;
-        // The expression form of the 'fn' phrase from above.
-        Shared<const Operation> func_expr_;
-    };
-    Unique<const Locative> locative_;
-    std::vector<XForm> transformers_; // in the order f1, f2, ...
-    Mutate_Action(
-        Shared<const Phrase> syn,
-        Shared<const Operation> loc,
-        std::vector<XForm> tx)
-    :
-        Operation(move(syn)),
-        locative_(move(loc)),
-        transformers_(move(tx))
-    {}
-    void exec(Frame&, Executor&) const override;
-};
-Shared<Operation> Mutate_Phrase::analyse(Environ&, Interp) const
-{
-}
-void Mutate_Action::exec(Frame& fm, Executor&) const
-{
-    locative_->mutate(fm, [&](Value val) -> Value {
-        for (auto& tx : transformers_) {
-            auto func = tx.func_expr_->eval(fm);
-            val = call_func(func, val, tx.call_phrase_, fm);
-        }
-        return val;
-    });
-}
-void Local_Locative::mutate(Frame& fm, std::function<Value(Value)> func) const
-{
-    fm[slot_] = func(fm[slot_]);
-}
-void Indexed_Locative::mutate(Frame& fm, std::function<Value(Value)> func) const
-{
-    base_->mutate(fm, [&](Value tree) -> Value {
-        At_Phrase cx(*syntax_, fm);
-        Value index = index_->eval(fm);
-        Value elems = tree_fetch(tree, index, cx);
-        elems = func(elems);
-        return tree_amend(tree, index, elems, cx);
-    });
-}
+New Locatives
+-------------
+### Efficient Update using COW
 
 ### SC Compiler
 How to compile compound locatives into GLSL code.
@@ -55,95 +8,11 @@ Two phases: analyse Locative, generate typed SC_Locative (IR node).
 Then use SC_Locative to emit one or more assignment statements, given an
 SC_Value.
 
-### Assignment, in interpreter
-* class Reference
-* Reference Locative::getref(Frame&)
-* indexed locative class.
-* There is just one Assign_Action which contains a Locative.
-    ref = loc_->getref(fr);
-    newval = expr_->eval(fr);
-    ref->store(newval);
-* kinds of locatives:
-    Locative -- abstract interface, getref(fr)
-    Local_Locative -- denotes a frame slot
-    Indexed_Locative -- Local_Locative + index expr
-    List_Pattern_Locative -- zero or more Locative
-    Record_Pattern_Locative -- zero or more Locative
-* kinds of Reference:
-    Reference -- abstract interface, fetch() and store(val)
-    Local_Reference -- Value* slot
-    Indexed_Reference -- Value* slot, Value index
-    List_Pattern_Reference
-    Record_Pattern_Reference
-* efficiency of fetch-modify-store:
-    curval = ref->fetch(cx);
-    newval = f(curval);
-    ref->store(newval,cx);
-  using Indexed_Reference:
-    fetch()
-      curval = base_->fetch()
-      return tree_fetch(curval, index_)
-    store(n)
-      curval = base_->fetch()
-      newval = tree_amend(curval, index_, n)
-      base_->store(newval)
-    We fetch curval twice.
-* alternative design. Locative::store(val) and Locative::modify(f).
-  No Locative::fetch(). No Reference values.
-  Doesn't work, Indexed_Locative::modify still needs separate fetch and store
-  for its base_?
+### New Locative Types
+List_Locative -- zero or more Locative
+Record_Locative -- zero or more Locative
 
-loc!func1!func2
-  Phrase repr:
-    Mutate_Phrase(loc,bangtok,func) -- nested
-    subclass of Call_Phrase
-  Op repr:
-    Mutate_Action
-      Locative locative_
-      Expr index_ -- or null
-      [callphrase,funcexpr]* transformers_
-  calling a func:
-    What callphrase to use? Use the original Mutate_Phrase created by parser.
-    Each element of transformers_ is a [callphrase,funcexpr] pair.
-  analysis:
-    Instead of a locative_ and an index_, wouldn't it be better to
-    encapsulate an indexed locative in one value? Why hasn't this been done?
-    It's because we want to evaluate an indexed locative into a runtime
-    representation that has fetch and store operations, and this repr doesn't
-    exist yet.
-    * Call it a Reference. The purpose of Reference objects is (1) abstraction
-      and polymorphism, and (2) to pay the cost of evaluating a locative once,
-      when multiple operations (normally 2) will be performed on it, at the
-      cost of allocating an object. The use case is fetch, modify, store.
-    * Maybe Locative::fetch_modify_store(transformer, frame)?
-      Fewer allocations? To implement 'x +:= y' requires allocating (`+` y).
-      To implement 'x!f!g!h' requires allocating 'compose[f,g,h]', which
-      loses the intermediate Call_Phrases for x!f, x!f!g.
-    * Is either form more efficient to compile? I dunno.
-    I will implement Reference.
-
-> void
-> Mutate_Action::exec(Frame& fr, Executor&) const
-> {
->     Value index;
->     if (index_) index = index_->eval(fr);
->     for (auto t : transforms_) {
->         Value f = t->eval(fr);
->         if (index) {
->         } else {
->             Value val = locative_->fetch(fr);
->             Value newval = call(f, val, fr);
->             locative_->store(fr, newval);
->         }
->     }
-> }
-void Mutate_Action::exec(Frame& fr, Executor&) const
-    auto ref = locative_->getref(fr);
-    for (auto t : transforms_)
-        Value f = t->eval(fr);
-        Value val = ref->fetch();
-        Value newval = call_func(f, val, fr);
-        ref->store(newval);
+### Procedures
 
 --------------
 TODO:

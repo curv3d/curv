@@ -1,14 +1,69 @@
-Progress on the REPL 'help' command. Which I am debugging into existence.
-=========================================================================
+Issues for the REPL 'help' command
+==================================
+Code Duplication:
+  I now have duplicate documentation, between docs/language and libcurv/*.cc
+  This needs to be resolved.
+
+Curried Functions:
+  What documentation is shown for a partially applied function?
+  We don't have 'argument dependent documentation', where arguments are
+  inserted into the documentation. It's too complicated to write generic
+  documentation for the base function, and then to also allow this
+  documentation to be specialized for argument values. Instead, we have static
+  documentation for named API values, and in the partial application case, we
+  show the partial argument list.
+
+Builtin functions:
+  Implement same print_help API as for builtin metafunctions.
+
+Modules:
+  Show name and 1-line summary of each field. Anonymous modules can have
+  documented fields.
+
+Rotate (case study)
+-------------------
+> help rotate
+Function 'rotate':
+
+rotate angle shape
+  Rotate a 2D or 3D shape around the Z axis, counterclockwise, by an angle
+  measured in radians.
+
+rotate {angle, axis} shape
+  Rotate a 3D shape around the specified axis, counterclockwise, by an
+  angle measured in radians.
+
+> help rotate (tau/4):
+Function 'rotate 1.5707963267948966':
+
+rotate angle shape
+  Rotate a 2D or 3D shape around the Z axis, counterclockwise, by an angle
+  measured in radians.
+
+rotate {angle, axis} shape
+  Rotate a 3D shape around the specified axis, counterclockwise, by an
+  angle measured in radians.
+
+Currently, rotate is printed as 'match _'. What is 'help rotate' now?
+> help rotate
+Function match [
+  a :: is_num -> shape ->
+  {angle, axis: a} -> shape ->
+]
+
+I guess we should show the 'match' documentation.
+> help match
+match : pattern matching conditional expressions
+
+match function_list
+  match[f1,f2,...] constructs a new function f whose argument can match any of
+  the parameter patterns in [f1,f2,...]. To evaluate f x, check if x matches
+  the parameter pattern of f1. If so, return f1 x. If not, continue with the
+  remaining functions in the list. If no function accepts the argument x,
+  then the pattern match for f x fails.
 
 TODO List
 ---------
-curv> help print
-ERROR: Argument to 'help' is not an expression
-1| help print
-        ^^^^^
-Add help for metafunctions.
-
 > help rotate
 * good: it prints both parameter signatures.
 * bad: 'rotate' is no longer a named function. Need 'func' or 'def' keyword.
