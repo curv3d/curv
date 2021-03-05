@@ -176,7 +176,7 @@ struct REPL_Locative : public Locative
         ptr_(ptr)
     {}
 
-    virtual void store(Frame&, Value newval) const override
+    virtual void store(Frame&, Value newval, const At_Syntax&) const override
     {
         *ptr_ = newval;
     }

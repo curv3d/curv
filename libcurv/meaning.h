@@ -950,7 +950,7 @@ struct Locative
     virtual ~Locative() = default;
     Shared<const Phrase> syntax_;
 
-    virtual void store(Frame&, Value) const = 0;
+    virtual void store(Frame&, Value, const At_Syntax&) const = 0;
     virtual void mutate(Frame& fm, std::function<Value(Value)> func) const = 0;
     virtual SC_Type sc_print(SC_Frame&) const;
 };
@@ -966,8 +966,8 @@ struct Local_Locative : public Locative
     {}
     slot_t slot_;
 
-    virtual void store(Frame&, Value) const override;
-    virtual void mutate(Frame& fm, std::function<Value(Value)> func) const override;
+    virtual void store(Frame&, Value, const At_Syntax&) const override;
+    virtual void mutate(Frame&, std::function<Value(Value)>) const override;
     virtual SC_Type sc_print(SC_Frame&) const override;
 };
 
@@ -983,9 +983,24 @@ struct Indexed_Locative : public Locative
     Unique<const Locative> base_;
     Shared<const Operation> index_;
 
-    virtual void store(Frame&, Value) const override;
-    virtual void mutate(Frame& fm, std::function<Value(Value)> func) const override;
+    virtual void store(Frame&, Value, const At_Syntax&) const override;
+    virtual void mutate(Frame&, std::function<Value(Value)>) const override;
     virtual SC_Type sc_print(SC_Frame&) const override;
+};
+
+struct List_Locative : public Locative
+{
+    List_Locative(
+        Shared<const Phrase> syntax,
+        std::vector<Unique<const Locative>> locs)
+    :
+        Locative(move(syntax)),
+        locs_(move(locs))
+    {}
+    std::vector<Unique<const Locative>> locs_;
+
+    virtual void store(Frame&, Value, const At_Syntax&) const override;
+    virtual void mutate(Frame&, std::function<Value(Value)>) const override;
 };
 
 // 'locative := expression'

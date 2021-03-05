@@ -500,7 +500,7 @@ Scope_Executable::exec(Frame& fm) const
 }
 
 void
-Local_Locative::store(Frame& fm, Value val) const
+Local_Locative::store(Frame& fm, Value val, const At_Syntax&) const
 {
     fm[slot_] = val;
 }
@@ -510,7 +510,7 @@ void Local_Locative::mutate(Frame& fm, std::function<Value(Value)> func) const
 }
 
 void
-Indexed_Locative::store(Frame& fm, Value val) const
+Indexed_Locative::store(Frame& fm, Value val, const At_Syntax& cx) const
 {
     base_->mutate(fm, [&](Value tree) -> Value {
         auto index = index_->eval(fm);
@@ -529,9 +529,23 @@ void Indexed_Locative::mutate(Frame& fm, std::function<Value(Value)> func) const
 }
 
 void
+List_Locative::store(Frame& fm, Value val, const At_Syntax& valcx) const
+{
+    Generic_List list(val, Fail::hard, valcx);
+    list.assert_size(locs_.size(), valcx);
+    for (unsigned i = 0; i < locs_.size(); ++i) {
+        locs_[i]->store(fm, list.val_at(i, valcx), At_Index_Syntax(i, valcx));
+    }
+}
+void List_Locative::mutate(Frame& fm, std::function<Value(Value)> func) const
+{
+    throw Exception(At_Phrase(*syntax_, fm), "List_Locative::mutate");
+}
+
+void
 Assignment_Action::exec(Frame& fm, Executor&) const
 {
-    locative_->store(fm, expr_->eval(fm));
+    locative_->store(fm, expr_->eval(fm), At_Phrase(*expr_->syntax_, fm));
 }
 void
 Mutate_Action::exec(Frame& fm, Executor&) const

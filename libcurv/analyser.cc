@@ -782,8 +782,12 @@ Unique<const Locative> analyse_locative(
     ph = strip_parens(ph);
     if (auto id = cast<const Identifier>(ph))
         return env.lookup_lvar(*id, terp.edepth());
-    if (auto id = cast<const Bracket_Phrase>(ph)) {
-        throw Exception(At_Phrase(*ph, env), "[locative] not supported");
+    if (auto list = cast<const Bracket_Phrase>(ph)) {
+        std::vector<Unique<const Locative>> locs;
+        each_item(*list->body_, [&](const Phrase& item)->void {
+            locs.push_back(analyse_locative(share(item), env, terp));
+        });
+        return make_unique<List_Locative>(ph, move(locs));
     }
     if (isa<const Dot_Phrase>(ph) || isa<const Apply_Lens_Phrase>(ph)) {
         Locative_Indexes il;
