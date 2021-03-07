@@ -1,6 +1,27 @@
 New Locatives
 -------------
+### New Locative Types
+List_Locative -- zero or more Locative
+Record_Locative -- zero or more Locative
+
+### Locative Code Generation (for Performance)
+A Locative can be used two ways: with := (the store method)
+and with ! (aka mutate). The latter is a 3 step process:
+    m_eval (evaluate subexpressions, store them in slots)
+        Needed because both fetch and store may access these same values.
+    m_fetch (with move semantics)
+    m_store (with move semantics)
+
+Probably store and m_store are the same thing.
+During analysis, a locative may allocate slots for temporary variables.
+In 'a!b', 'a' must be compiled before 'b'.
+
 ### Efficient Update using COW
+* This seems relevant: "Perceus: Garbage Free Reference Counting with Reuse"
+https://www.microsoft.com/en-us/research/uploads/prod/2020/11/perceus-tr-v1.pdf
+* During analysis, it looks like frame_nslots_ goes up but never goes down.
+  This would add additional refs to a Ref_Value object that could defeat COW.
+  How do I test this?
 
 ### SC Compiler
 How to compile compound locatives into GLSL code.
@@ -8,11 +29,20 @@ Two phases: analyse Locative, generate typed SC_Locative (IR node).
 Then use SC_Locative to emit one or more assignment statements, given an
 SC_Value.
 
-### New Locative Types
-List_Locative -- zero or more Locative
-Record_Locative -- zero or more Locative
-
 ### Procedures
+Aliasing:
+* Curv guarantees that, in a given lexical scope, two mutable variables
+  with distinct names are disjoint, meaning that modifying one variable does
+  not modify any other variable. In other words, there is no aliasing.
+* A procedural call like [a,a]!f seems problematic. Say that f is proc[x,y]...
+  Aren't the parameters x and y aliased to the same variable 'a'? In SubCurv,
+  I will need to deal with aliasing restrictions when compiling procedures
+  to WGSL. The answer, for now, is that [a,a]!f is *either* reported as an
+  error, *or* it uses copy-result semantics, with the results being copied
+  left-to-right when a list locative is updated by a mutate operator.
+* Curv may evolve to support uncopyable values, updated using linear logic.
+  Copy-result won't work, so either a run-time error occurs during copying, or
+  a more conservative compile time error is reported about potential aliasing.
 
 --------------
 TODO:
