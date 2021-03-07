@@ -176,13 +176,13 @@ struct REPL_Locative : public Locative
         ptr_(ptr)
     {}
 
+    virtual Value fetch(Frame&) const override
+    {
+        return *ptr_;
+    }
     virtual void store(Frame&, Value newval, const At_Syntax&) const override
     {
         *ptr_ = newval;
-    }
-    virtual void mutate(Frame& fm, std::function<Value(Value)> func) const override
-    {
-        *ptr_ = func(*ptr_);
     }
 };
 

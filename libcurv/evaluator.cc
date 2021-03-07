@@ -499,35 +499,42 @@ Scope_Executable::exec(Frame& fm) const
     }
 }
 
+Value
+Local_Locative::fetch(Frame& fm) const
+{
+    return fm[slot_];
+}
 void
 Local_Locative::store(Frame& fm, Value val, const At_Syntax&) const
 {
     fm[slot_] = val;
 }
-void Local_Locative::mutate(Frame& fm, std::function<Value(Value)> func) const
-{
-    fm[slot_] = func(fm[slot_]);
-}
 
+Value
+Indexed_Locative::fetch(Frame& fm) const
+{
+    Value tree = base_->fetch(fm);
+    Value index = index_->eval(fm);
+    return tree_fetch(tree, index, At_Phrase(*syntax_, fm));
+}
 void
-Indexed_Locative::store(Frame& fm, Value val, const At_Syntax& cx) const
+Indexed_Locative::store(Frame& fm, Value val, const At_Syntax& valcx) const
 {
-    base_->mutate(fm, [&](Value tree) -> Value {
-        auto index = index_->eval(fm);
-        return tree_amend(tree, index, val, At_Phrase(*syntax_, fm));
-    });
-}
-void Indexed_Locative::mutate(Frame& fm, std::function<Value(Value)> func) const
-{
-    base_->mutate(fm, [&](Value tree) -> Value {
-        At_Phrase cx(*syntax_, fm);
-        Value index = index_->eval(fm);
-        Value elems = tree_fetch(tree, index, cx);
-        elems = func(elems);
-        return tree_amend(tree, index, elems, cx);
-    });
+    auto curval = base_->fetch(fm);
+    auto index = index_->eval(fm);
+    auto newval = tree_amend(curval, index, val, At_Phrase(*syntax_,fm));
+    base_->store(fm, newval, valcx);
 }
 
+Value
+List_Locative::fetch(Frame& fm) const
+{
+    Shared<List> list = List::make(locs_.size());
+    for (unsigned i = 0; i < locs_.size(); ++i) {
+        list->at(i) = locs_[i]->fetch(fm);
+    }
+    return Value{list};
+}
 void
 List_Locative::store(Frame& fm, Value val, const At_Syntax& valcx) const
 {
@@ -536,10 +543,6 @@ List_Locative::store(Frame& fm, Value val, const At_Syntax& valcx) const
     for (unsigned i = 0; i < locs_.size(); ++i) {
         locs_[i]->store(fm, list.val_at(i, valcx), At_Index_Syntax(i, valcx));
     }
-}
-void List_Locative::mutate(Frame& fm, std::function<Value(Value)> func) const
-{
-    throw Exception(At_Phrase(*syntax_, fm), "List_Locative::mutate");
 }
 
 void
@@ -550,14 +553,12 @@ Assignment_Action::exec(Frame& fm, Executor&) const
 void
 Mutate_Action::exec(Frame& fm, Executor&) const
 {
-    //throw Exception(At_Phrase(*syntax_, fm), "a!b not implemented");
-    locative_->mutate(fm, [&](Value val) -> Value {
-        for (auto& tx : transformers_) {
-            auto func = tx.func_expr_->eval(fm);
-            val = call_func(func, val, tx.call_phrase_, fm);
-        }
-        return val;
-    });
+    Value val = locative_->fetch(fm);
+    for (auto& tx : transformers_) {
+        auto func = tx.func_expr_->eval(fm);
+        val = call_func(func, val, tx.call_phrase_, fm);
+    }
+    locative_->store(fm, val, At_Phrase(*syntax_,fm));
 }
 
 Value
