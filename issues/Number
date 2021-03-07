@@ -1,0 +1,38 @@
+Numbers
+=======
+A new representation of numbers that fuses the IEEE float64 numbers
+with multiprecision integers. There is only one kind of integer:
+2 and 2.0 are the same, have the same semantics, even if there may be
+two internal int representations. All of the floats whose magnitude >= 2^52
+are fused with the integers, except the infinities. And these integers map to
+exact integer results when used with operations that support exact integer
+semantics.
+
+Floats whose magnitude > 2^53 are mapped to integers with more significant
+figures than the standard Curv printed float representation, and they are
+printed as integers, with no decimal point or exponent. This is a longer
+printed representation, potentially much longer, than printed floats. Eg,
+    >>> 2^100
+    1.2676506002282294e30               -- curv 0.4
+    1267650600228229401496703205376     -- Numbers
+
+The worst case is the largest non-infinite float64:
+    curv> 2^1023
+    8.98846567431158e307
+    89884656743115795386465259539451236680898848947115328636715040578866\
+    33790275048156635423866120376801056005693993569667882939488440720831\
+    12464237153197370621888839467124327426381511098006230470597265414760\
+    42502884419075341171231440736956555270413618581675255342293149119973\
+    622969239858152417678164812112068608
+
+Operations that may return non-float (large integer) results:
+  a + b,  a - b,  a * b,  -a,  abs a
+  integer quotient and remainder, ceil/floor/trunc versions
+  a^b -- semantics? doesn't always return an integer
+
+Other operations, eg trigonometry, convert Numbers to floats first.
+
+Fast + implementation:
+If both arguments are float, then perform float addition. Then, if inexact
+flag is set, and both arguments are integral, then redo using bigints.
+Use portable C++11 <fcenv> functions. Avoid assembly language.

@@ -1,0 +1,240 @@
+Booleans, Bits and Bitstrings
+=============================
+
+Requirements
+------------
+A 'bit' is a binary digit (0 or 1): the basic unit of computer storage.
+A 'Boolean' is a truth value (true or false, sometimes written 0 or 1).
+[From Wiktionary.] Mathworld says: "two-valued Boolean algebra (whose members
+are most commonly denoted 0 and 1, or false and true)".
+A 'bit string' is a list of bits. Wikipedia et al.
+
+Boolean is an algebraic type, with patterns that match true and false.
+
+The Boolean operations are not, and, or, xor, from Boolean algebra.
+These operations apply equally to bits.
+
+In mathematics, the Iverson bracket is a convention for converting boolean
+expressions (eg, of relational operators) to bit values (0 and 1) and then
+performing arithmetic on these bit values (eg, addition and multiplication)
+in order to express mathematical ideas. These idioms also appear in APL and
+subsequent array languages. https://en.wikipedia.org/wiki/Iverson_bracket
+
+There are bit string operations like `bshift` and `bsum` which model hardware
+operations, and are not Boolean operations. They are important in SubCurv.
+
+From array languages and GLSL, we get operations on boolean strings.
+Vectorized relational operators return boolean strings, which can be used
+to select list elements.
+
+In some contexts, we need a compact boolean/bit string representation,
+with 1 bit per element.
+
+Terse syntax for bit string literals. [#true,#true,#false,...] is too much.
+
+Encoding
+--------
+How are Booleans, bits and bit strings encoded in Curv?
+
+In the following ideas, bits are encoded the same as bools, and the conversion
+to integer in #2 and #3 is only for Iverson bracket idioms.
+1. True and false are encoded as 0 and 1, which are also bits. Like APL/K/C99.
+2. True and false are distinct named values which may be explicitly converted
+   to 1 and 0 using the `bit` function. Like Curv 0.4.
+3. True and false are distinct named values that print as "true" and "false",
+   but are coerced to 1 and 0 in arithmetic contexts. Like Python.
+   * If the coercion is only for Iverson bracket, use #2 instead (simpler).
+   * Perhaps 1 and 0 are coerced to Bool in boolean contexts. Why?
+
+Or, bits are encoded as 0,1 and bools are encoded as #false,#true or false,true.
+These are disjoint types.
+* The boolean operations are overloaded over bits and bools.
+  and[#true,#false]=>#false, and[1,0]=>0, and[#true,0] fails.
+  * problem: and[] is undefined.
+* Does bsum work on bool strings or only on bit strings?
+* There are explicit conversions bool->bit and bit->bool.
+* This design violates the Orthogonality and High Level Types principles.
+
+The shortlist of viable encodings:
+* Use 0 and 1.
+* Use symbolic truth values.
+  Provide bit & bool to convert between 0/1 and symbolic truth values.
+  * Use #true and #false
+  * Use true and false (named values)
+
+-----------------------------------------------------------------------------
+A blist is a list of booleans.
+
+Currently we have the following generic blist operations:
+    bit blist => list of bits (integers in range 0..1)
+    bool bitlist => blist          -- not implemented yet
+    and[a,b]
+    or[a,b]
+    xor[a,b]
+    lshift[a,n]
+    rshift[a,n]
+Plus these bool32 operators:
+    bool32_sum
+    bool32_product
+    bool32_to_float  float_to_bool32
+    bool32_to_nat    nat_to_bool32
+
+Common Proposal (shared by Blist and Bitstring proposals):
+ * Replace `lshift` and `rshift` with `bshift n b`.
+   This needs support for curried functions in SubCurv.
+ * Replace `bool32_sum` with `bsum`, it adds 1 or more blists of the same count.
+ * Ditto for `bool32_product`, or remove it.
+ * Implement a compact blist representation, one bit per element.
+
+Blist Proposal:
+ * implement 'bool'.
+ * Add compact blist literals, eg `#1110`, which
+   is equivalent to {#true,#true,#true,#false}.
+
+Bitstrings: consider the Bits not Bools proposal.
+
+Shift operators
+---------------
+    a `lshift` n
+    a `rshift` n
+isn't compatible with a blist pipeline. Consider instead:
+    a >> lshift n
+    a >> rshift n
+or
+    n `lshift` a
+    n `rshift` a
+
+It's also confusing that "right shift" moves the bits to the left,
+when viewed in printed (little endian) order. Solution, use `bshift`
+with an integer argument, where +n means << and -n means >>.
+    a >> bshift n       bshift n a
+    n `bshift` a        bshift [n,a]
+When passing a partial application to a combinator:
+    map (bshift n) a
+    map (`bshift` n) a
+I think the preferred style is curried, unless there are reasons to put the
+two arguments into a pair (homogeneous values, associative binary operator).
+
+The problem with bshift is that when compiling to GLSL or C++, if the
+`n` argument is not a constant, then I need to emit a conditional expression
+that dispatches to << or >> as n is >0 or <0. Mitigating factors:
+* The `n` argument is normally constant.
+* Add a `Nat` type to SubCurv.
+
+Final design:
+    bshift n
+
+literals
+--------
+We could add special syntax for blist literals.
+* K:       1110b
+* SQL-99:  B'1110' or X'E'
+* QNial:   lllo
+* LDAP:    '1110'B
+* Erlang:  Complicated expressions of <<...>>, aimed at describing
+           bit and byte strings in binary file formats and protocols,
+           which are split into fields. Also supports pattern matching.
+* #:       #1110
+           #0xEF00
+  
+I like the idea of supporting either binary or hex blist literals,
+it matches the lib.random source. Using 'b' or 'x' to distinguish
+them seems good. It's good if this *isn't* confused with a numeral.
+
+    b"1110"  x"E"
+
+Problems with hex literals:
+* Hex notation is big endian. Hex bitstring literals copied from programs
+  written in other languages are big-endian integer literals.
+  The blist representation, as a list of booleans, is little endian.
+  The low order bit is the first list element.
+* The array-language blist literals (1110b, lllo) are little-endian:
+  the first element is "1" (true).
+* If we have both binary and hex variants, will the hex be big endian,
+  and will the binary variant be understood by users to be big endian?
+
+So maybe we should convert big-endian hex integers to blists.
+Less confusing when porting code.
+
+Problems with a nat -> blist conversion function (alternative to literals):
+* You have to separately specify the size of the resulting blist.
+  The literal syntax incorporates the size in the number of digits.
+* Won't work for 64 bit blists because ints are 53 bits.
+  So then maybe I need bignums, like 42n in javascript?
+  * I don't like the Javascript semantics. There should not be 2 kinds of
+    integers with different arithmetic properties.
+    How about this: there are two internal number representations:
+    64 bit floats, and bigints. A float that represents an integer whose
+    magnitude is < 2^53 has identical semantics to a bigint with the same
+    value.
+  * Adding bigints is way too big a change to be justified by the problem
+    presented here.
+
+I like the syntax #1110, it solves a useability problem with the
+syntax {#true,#true,#true,#false}. Hex blists have unresolved problems.
+
+I'm not sure about using 0 and 1 to represent #false and #true.
+It looks like this should be a list of binary digits.
+Any alternative would be incomprehensible, though.
+Eg, #|||- instead of #1110.
+
+Bits not Bools
+--------------
+Should the Boolean values be encoded as #true,#false or as 1,0?
+
+In this proposal, the Boolean values are encoded by 1 and 0.
+For compatibility, stdlib defines true=1 and false=0.
+These values are called bits (type Bit).
+A list of bits is called a bit string.
+
+Rationale:
+  A 'bit' is a binary digit (0 or 1): the basic unit of computer storage and
+  the basic unit of information in information theory. A 'Boolean' is a truth
+  value (true or false, sometimes written 0 or 1). From Wiktionary.
+  Mathworld says: "two-valued Boolean algebra (whose members are most commonly
+  denoted 0 and 1, or false and true)".
+
+  Should bits and Booleans be kept separate, with disjoint encodings, or should
+  they be unified?
+  * Algebraically, all of the operations of Boolean algebra (and, or, not, xor)
+    apply equally to bits.
+  * In addition, there are bit string operations like `bshift` and `bsum` which
+    are not Boolean operations.
+
+Benefits:
+* Iverson has shown that there are useful idioms involving arithmetic
+  on truth values, when encoded as 1 and 0. These are useful in pure
+  math (the original context where Iverson developed these ideas), as well as
+  in programming. Knuth endorses the idea and demonstrates some of the idioms.
+* If truth values are represented by an abstract (non-numeric) boolean type,
+  then there need to be conversions between bits and bools.
+* If truth values are represented by bits then these conversion functions
+  are not needed. Also, by not providing two different encodings of
+  truth values, we don't force people to choose between the encodings.
+* The bit literals 0 and 1 are single characters. This makes a big difference
+  in the notation of bit strings. Compare [#true,#true,#true,#false]
+  with [1,1,1,0].
+* The term 'bit string' is widely used and understood.
+  The word 'bits' is used in bit string operations.
+* We'd like a compact representation (1 bit per value) for Boolean strings
+  and bit strings. This is simpler if Boolean and Bit have the same encoding.
+
+Drawbacks:
+* When a function returns 0 or 1, you can't see by looking at the printed
+  value whether it is intended to be a truth value.
+* It's more work in the SubCurv compiler to deduce which variables should
+  have type bool.
+* It's more work to export booleans to JSON (need a schema).
+* -0 == false? Is -0 a bit, accepted by boolean ops?
+
+The syntax #1110 can be introduced as an abbreviation of [1,1,1,0], but
+the need is less urgent than with the #true,#false encoding of truth values.
+
+Replace
+    bool32_to_float  float_to_bool32
+    bool32_to_nat
+    nat_to_bool32
+with
+    bits_to_float32  float32_to_bits
+    bits_to_nat or bits_to_num or num
+    'nat_to_bits n' or 'bits n'

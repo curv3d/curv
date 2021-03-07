@@ -1,0 +1,50 @@
+Arrows are a new kind of Plain Old Data.
+They are a generic primitive data structure representing a kind of ordered pair.
+They are closely related to Symbols.
+
+POD types: symbol, character, number, arrow, record, list
+
+construction:
+    <expression> => <expression>
+    <identifier> : <expression>   -- a: 42 is a synonym for #a => 42
+
+patterns:
+    <identifier> : <pattern>
+    <pattern> => <pattern>
+
+indexing:
+    arrow.[head]  arrow@head
+    arrow.[tail]  arrow@tail
+where `head` and `tail` are opaque, abstract values. Or, alternatively:
+    arrow.head
+    arrow.tail
+But note that arrows are disjoint from records, so is dot notation confusing
+in the context of POD? It depends on what the final ADT mechanism looks like.
+Maybe leave this out of an initial implementation and use pattern matching
+for decomposition.
+
+Arrows are useful wherever the arrow syntax makes sense for constructing
+data structures out of Plain Old Data.
+ * A generic arrow (A=>B) connotes a mapping from the head value A
+   to the tail value B.
+ * An arrow whose head is a symbol has special syntax,
+   and connotes a labelled value.
+
+The recommended POD representation of the constructors of a Haskell algebraic
+data type is:
+  symbols, for niladic constructors
+  arrows, for monadic constructors
+
+Curv uses arrows for:
+ * constructing records. {a: 1, b: 2}
+ * internal representation of picker values (simulating an algebraic data type)
+ * later, sparse arrays are {1=>x,2=>y,7=>k}
+
+Prior art:
+ * Lisp has a primitive _pair_ data type (A . B),
+   and this is used to represent a mapping in a property list.
+   But pairs are also used to build lists, and arrows do not have this function
+   in Curv, where lists are primitive and disjoint from arrows.
+ * C++ has std::pair, used to represent an individual mapping in a std::map
+ * Some simple, dynamically typed, pure functional languages have
+   labelled values as a kind of POD.

@@ -1,3 +1,25 @@
+`polygen` is an interactive GUI (and non-interative CLI tool)
+for converting a 2D or 3D signed distance field (SDF) to 2D polygons
+or a 3D polygon mesh.
+
+The reason it's interactive: polygonization is still a research problem.
+There are multiple algorithms, none are the best for all circumstances,
+and these algorithms have parameters that you need to tweak for best results.
+
+Polygen is intended to be useful outside of Curv.
+Input file formats:
+ *.curv -- invokes 'curv -o cpp'
+ *.cpp --
+ voxel file formats. Which ones?
+  - Something dead easy to generate using just file format documentation.
+  - Something supported by popular tools. ???
+
+VF : VectorField file format
+https://github.com/peeweek/VectorFieldFile
+- Simple, easy to generate using just the file format spec.
+- Unity support:
+  https://docs.unity3d.com/Packages/com.unity.visualeffectgraph@10.2/manual/VectorFields.html
+
 Create a separate sdf-to-poly repo.
 It contains a C++ library for sampling an SDF function
 and generating 2D and 3D polygonal/polyhedral file formats.
@@ -5,3 +27,26 @@ Multiple conversion algorithms and multiple file formats are supported.
 
 Libfive is one of the supported algorithms.
 I want 2D SVG output for doing craft projects.
+
+sdf-to-poly is a generic template library.
+* Given a 2D or 3D signed distance field, convert it to a polygon set
+  or a polyhedron set (generically, a "poly").
+* Given a poly, export it as a graphics file.
+* Maybe some remeshing algorithms?
+  try https://github.com/KaimoHu/2019_CGALRemeshing
+It is generic over the SDF representation and over the poly representation.
+
+There is a fully generic, templatized interface that takes a shape
+and a meshing algorithm and outputs a mesh file in multiple formats.
+Generic data types:
+  DistanceField
+  ColourField
+  Colour
+  Vec2 (2 floats)
+  Vec3 (3 floats)
+  VertexID (an integral type)
+  Triangle (3 VertexIDs)
+  Quad (4 VertexIDs)
+  VertexList (map from VertexID to
+
+sdf2poly::write_stl(

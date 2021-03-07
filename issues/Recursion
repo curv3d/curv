@@ -151,6 +151,10 @@ graph (all the refcounts that are part of a cycle are in the ground state).
 
 Idea (2) is the one I'm going forward with.
 
+Update: I finally found prior art for my "cyclic reference counting" idea.
+J.P.H.Aerts, 1981, "Implementing SASL without garbage collection"
+<https://pure.tue.nl/ws/files/4260710/252975.pdf>
+
 "Weak references" are a technique for breaking cycles so that a cyclic object
 can be reclaimed by conventional refcounting. In this proposal, a recursive
 closure has an uncounted reference to its recursive binding dictionary

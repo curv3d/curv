@@ -1,0 +1,26 @@
+Bugs involving denormalized strings.
+
+Things to fix:
+* is_string
+* value_to_string
+* remove maybe_string, it isn't used
+* look at all code using .maybe<String> and .maybe<const String>
+
+The 'char' function is weird.
+    'char 65' returns $A, a character (scalar).
+    'char [65]' returns "A", a list.
+    'char [$A]' returns $A, a character (scalar).  -- This is messed up.
+
+To make it less messed up, consider an alternate syntax for constructing
+characters 'by name' instead of 'by code point'.
+
+ 1. Use symbols to construct characters by name.
+        char #A
+        char #'A'
+ 2. Introduce a syntax for character literals.
+        #"A"
+        #""" (no escapes), not #""_" -- can allow latter as special case
+        #" "
+        char 13 or nl -- use this for unprintable characters
+    The no-escapes syntax means no special case, better syntax for printing
+    the " or ' character. Vs char ""_" or char #''_'.
