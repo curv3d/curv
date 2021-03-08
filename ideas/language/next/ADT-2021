@@ -1,0 +1,303 @@
+Abstract Data Types proposal for 2021
+=====================================
+Plain Old Data is used in L1-L3 for structured app data. Simple, no need
+to define new data types.
+
+L4 introduces abstract data types, which can be used by library interfaces
+as a more expressive and more efficient representation than POD data,
+at the expense of more complexity/bureaucracy in defining the library.
+* Simpler interface for library users. Data prints as a constructor expression,
+  rather than as a (potentially more complex) internal representation.
+* Can use constructors for pattern matching.
+* API is abstract, independent of internal representation, doesn't change
+  if internal rep changes.
+* Parsing a POD specification for an app value into an ADT value performs
+  validation once, and now we have a tagged abstract value that can be quickly
+  type checked when it is passed to further functions. The ADT rep may be
+  more efficient in other ways: compact unboxed representation.
+* Generic operations over any ADT that implements the right interface,
+  using multiple dispatch on ADT type tags.
+* Define new graphical values.
+
+Examples: Colour, Shape, Index
+
+From POD to ADT
+---------------
+Two ways to represent app data: POD, or abstract data types.
+Can we minimize the complexity of having two ways to do it?
+How much does the code change when you migrate from POD to ADT?
+
+The constructors need to change, because the constructors are the essence
+of the difference.
+
+The process of defining an ADT could generate a conversion function
+that converts POD to abstract data, and you could invoke this conversion
+automatically on monomorphic function arguments using a transform pattern.
+One motivation for performing this conversion is that we are parsing general
+data down to a restricted representation that is more efficient.
+(Web link: Parse, don't validate.)
+
+Goal: Converting a POD based set of constructors and operations for an
+app data type to an ADT is a matter of adding annotations, extra code
+(bureaucracy) to the original code, without refactoring it or changing the
+public interface much.
+
+Sums and Products
+-----------------
+In this proposal, we have two mechanisms for defining concrete ADTs (those
+with constructors): sums and products, or, enums and structs.
+ * Enums are based on Haskell sum types. There are multiple variants (or
+   constructors); each has a name, and optionally, an argument.
+ * Structs are record-like ADTs where the instances have publically accessible
+   fields.
+   Supports OOP-like ADTs, and also named modules for modular programming.
+
+Information Hiding
+------------------
+In modular ADTs, there is a representation, which is hidden,
+and there is an abstract interface composed of constructors and operations.
+A module exports the interface as functions and other bindings. It exports
+an opaque type name, which is bound inside the module to a repr type.
+A module signature describes just the interface.
+
+In Haskell, there are 'data' types, which don't hide information, and there
+are type classes, which provide an abstract interface that can be implemented
+by multiple data types.
+
+C++ class members have 'access control': private, protected, public.
+Which feels complicated and authoritarian. CLOS and Clojure say that access
+control is an unnecessary complication that impedes debugging and gets in the
+way of programming: this is better for free spirits and anarchists. This whole
+dialectic seems to lose the point of what we want to accomplish. We want to
+write generic algorithms coded to abstract interfaces that can be implemented
+by multiple data types. We want the language to help us define, document and use
+these abstract interfaces, and help us write multiple implementations of these
+interfaces. A C++ class definition typically *complects* the interface and the
+implementation, using access control markers to distinguish the two.
+
+The Haskell approach seems better than the C++ approach. There is no 'access
+control' and no complecting of interface with implementation. Interfaces to
+abstract types are always kept separate from implementations.
+
+Patterns and Displays
+---------------------
+Here's a requirement that I don't see well handled by other languages.
+
+An abstract type has one or more constructors. When you print an abstract
+value, it is displayed as a constructor expression. You can use constructor
+expressions as patterns. Constructors are abstract; they can hide a
+representation that differs from the constructor argument.
+
+Standard Haskell doesn't do this. Type classes can contain abstract
+constructors, but these are not part of a type's identity, and you can't
+pattern match on them. Some related GHC Haskell extensions:
+ * View Patterns. A new pattern syntax:
+      expression -> pattern
+   "Apply the expression to whatever we're trying to match against, then match
+   the result of that application against the pattern." Same as my transform
+   patterns (pattern <: expression). Usage: you export view functions along
+   with your abstract type, and use the view function to convert the argument
+   into something pattern matchable. For my use case, you would define
+   abstract constructors and view functions in pairs with related names.
+ * Pattern Synonyms. Name abstraction over patterns. ?
+
+By default, in the simple case (when we aren't hiding the representation),
+an ADT has constructors, instances print as constructor expressions, and
+you can use constructor patterns that match on the same expression that the
+value prints as. This is automatic behaviour, no bureaucracy like
+'deriving show' is required.
+
+In the more complicated case, when the representation is different from the
+constructor argument, then you need to write 2 functions (a constructor and
+a reverse constructor that maps a value to its constructor argument). These
+two functions are bundled inside a single value, so that the constructor
+value can also be used in a pattern.
+
+Schemas
+-------
+Using a schema, you can validate and normalize POD data. Once the data
+is parsed, validated and normalized, it is tagged, to record the fact
+that this data is already validated.
+* Tagging saves time if the same data is later validated again using the same
+  schema.
+* The Abstract Data Type feature (Algebras and Theories) is layered on top
+  of this data tagging mechanism.
+* Tagging permits a further optimization: Curv's optimizing compiler can detect
+  patterns in the schema and use that information to convert the data into a
+  more compact and efficient representation. This storage optimization is
+  critical for processing large amounts of graphical data efficiently on a GPU.
+
+Schemas allow you to separate the logic of validating and normalizing data
+from the logic of processing data. Interleaving these two things in a function
+is messy, especially when it causes the processing logic to be obscured by
+the validation and error handling logic.
+
+Library functions should validate their arguments before the body of the
+function is evaluated. If a validation error occurs deep in the evaluation
+of a library function call, then the user will need to pick through a stack
+trace and understand the implementation of the function in order to interpret
+the error message.
+
+Schemas can be used to convert an external data representation like JSON
+into validated and idiomatic Curv data structures.
+
+"A function that does not parse all of its input up front runs the risk of
+ acting on a valid portion of the input, discovering a different portion is
+ invalid, and suddenly needing to roll back whatever modifications it already
+ executed to maintain consistency." (from Parse don't validate)
+I think this will be relevant to the mechanisms used by Curv for efficiently
+updating a large data structure without copying it. Preserving the state
+needed for rollback can be expensive.
+
+More quotes:
+ * Use a data structure that makes illegal states unrepresentable.
+ * Get your data into the most precise representation you need as early as you
+   can.
+ * Write functions on the data representation you wish you had, not the data
+   representation you are given.
+
+Prior art and inspirations:
+* https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/
+   "A parser is a function that consumes less-structured input and produces
+    more-structured output. Parsing fails if the data isn't valid. Parsers
+    allow discharging checks on input up front, right on the boundary between
+    a program and the outside world, and once those checks have been performed,
+    they never need to be checked again."
+* Schema DSLs for JSON, XML, Clojure
+
+Tagged Data
+-----------
+Tagged, validated POD data is not abstract data. This is not data abstraction,
+because that entails hiding or ignoring the representation, and operating on
+the data purely through an abstract interface. Data abstraction also enables
+generic algorithms, aka polymorphism, where the same abstract interface
+is implemented for multiple different data representations.
+
+But tagged data doesn't hide the representation of the original POD data,
+it just restricts its domain.
+
+It is my hope that validating and normalizing POD data, and tagging it,
+doesn't prevent the resulting tagged data from being used as input to
+other functions that expect untagged POD data.
+
+What happens when you amend a tagged, validated data structure? Do you get an
+error if you attempt to violate the constraints placed by the tag? Or does
+amend always return untagged POD data? There is obvious utility to an amend
+operation that preserves the schema.
+
+Suppose you define a mutable local variable and specify a schema tag in the
+variable definition. What happens when you assign the variable? There is
+obvious utility in an assignment operation that preserves the schema and errors
+out if the schema is violated by the new value.
+
+But now we've added complexity. We have generic operations on tagged data that
+behave differently when given untagged data with the same POD structure.
+(Should we provide both typed and untyped variants of amend?)
+
+Every kind of POD value can be tagged with a schema, including scalars.
+
+Are there tagged functions?
+What is a function schema?
+ * Simply typed function schemas will cover the GPU/graphics cases,
+   but aren't generally powerful enough.
+ * A dependently typed function schema, where the schema contains a function
+   that maps the arg value to the required result type, is powerful enough.
+How is it enforced?
+ * The schema could wrap a function value, failing on bad arg values,
+   and panicing on bad return values. This is known to be expensive
+   (a paper I read on gradual typing). Plus you don't get enforcement at the
+   time the function is passed as an argument, but only later when it is called.
+ * Early run time enforcement would produce better errors.
+ * Compile time enforcement would be cool.
+ * Gradual typing systems also need to solve this problem. Look at their tech.
+
+Gradual Typing is No Good
+-------------------------
+Curv has "optional type declarations". Some dynamic languages have these,
+but purely for performance benefits. There is no promise of sound static type
+checking. Eg, Common Lisp, or I think Julia.
+
+Gradual Typing is a typing discipline for hybrid languages that support both
+statically typed code (that doesn't go wrong at run time), and dynamically
+typed code (with no type declarations), with trivial interoperability between
+the two. It has become quite trendy: Python and Javascript (via Typescript)
+both support it. When a dynamically typed function calls a statically typed
+function, the argument values need to be checked. For scalars, we can perform
+the check at the function entry point, but for functions and data structures,
+a proxy is wrapped around the function or data structure that encodes "blame"
+information and performs type checks on function calls or element access,
+reporting an error if the function or data structure has the wrong type. This
+run time checking at the dynamic->static interface is very expensive. So
+TypeScript simply doesn't do the checking. The benefits are for large
+industrial programming teams that want static type checking.
+ * Performance hits of 100x have been reported for some Typed Racket programs.
+   A more optimized design gets the hit down to 2.5x in good cases. No good.
+   Adding type declarations should make the code faster!
+
+My goals for any hybrid static/dynamic typing system are higher performance
+and better error reporting at the dynamic->static interface, and Gradual
+Typing can't do this. So it is no good for Curv.
+
+High Performance Schema Enforcement
+-----------------------------------
+Since Gradual Typing proxies are so expensive at runtime, we need a better
+alternative for enforcing schemas. A high performance alternative would
+*convert* the function or data structure to an efficient statically typed
+representation, and for best performance, we want to push this conversion
+as high up the call stack as possible, so that it is done once, instead of
+multiple times (which also follows the Parse Don't Validate methodology).
+Don't want the conversion to happen each time through a loop, if the conversion
+can be hoisted out of the loop, for example. Hoisting also makes the error
+reporting happen earlier, at a higher level in the code, closer to where the
+bug is.
+
+Automatically hoisting type conversions requires a smart compiler.
+
+Let the user perform explicit type conversions. Then the user can do their
+own hoisting, and we have a cheap solution before the smart compiler is ready.
+See "Schema API" for details.
+
+Schema API
+----------
+A Schema value may be called as a function:
+    schema podvalue
+This validates that the podvalue conforms to the schema, or fails.
+The result is a tagged representation of podvalue which may be represented
+using a compact, efficient representation, but behaves the same way when
+used with POD operations.
+
+A schema function is idempotent. The rationale is, you can use either of
+the patterns:
+    name :: schema
+    name <: schema
+to bind a name to a value that matches a schema.
+* `:: schema` requires the argument to be a tagged value whose tag
+  is the schema or a subtype of the schema.
+* `<: schema` converts the argument to a tagged value, if not already tagged.
+
+A tagged value usually prints as a constructor expression:
+    schema podvalue
+The exception is for schemas like `Num` which already describe all of the
+values in a particular POD type. `Num 42` just returns `42`, with no
+additional tagging.
+
+Compound schema values may be bound as named values, in which case you get
+a nominally typed schema, and tagged values print using that schema name.
+
+I guess we can create a nominal schema equivalent to Num,
+but with a different name, and you can use it to create tagged numbers.
+
+Proposal 1
+----------
+We begin with named modules and functions, from [[modular/Named]].
+
+An "abstract value" prints as a constructor expression, where the constructor
+is user defined. Named modules & functions (above) are examples.
+You can pattern match on the constructor expression.
+
+We have two mechanisms for defining concrete ADTs (those with constructors):
+sums and products. These mechanisms do not hide the type's representation:
+all state is exposed via public APIs.
+ * Sums: like Haskell algebraic data types. Each variant in the sum
+   has a named constructor with an optional argument.
+ * Products: These are named modules (as above).

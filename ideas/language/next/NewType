@@ -1,0 +1,56 @@
+User Defined Types
+==================
+Informally, a type is a set of values, together with a set of common
+operations supported by all of the values.
+
+In Curv the modelling language (levels 1-3), there's no need for a
+formal way to define new types -- the added complexity isn't worth it.
+Use built-in types to structure your data, and functions to define operations.
+Types are implicit, part of the documentation.
+
+In Curv the extension language (level 4), we need a formal way to define new
+types. The extra complexity of defining types is used internally by libraries,
+to achieve two benefits: performance, and abstraction.
+
+An instance of an explicitly defined type comprises two things: a type tag,
+and a payload value. The type tag attests that the payload value is a member
+of the type's value set, and we can efficiently test the type tag at run time.
+The performance of type tag testing enables some design patterns that might
+otherwise be too expensive.
+
+When you define a new type, you define one or more constructors.
+An instance of your type is created using a constructor expression:
+    <constructor-name>
+    <constructor-name> <argument-expression>...
+Instances remember the constructor expression that was used to create them.
+An instance of a user defined type is printed as a constructor expression.
+Constructor patterns may be used to match instances of the type.
+
+Instances contain a tag that identifies their type.
+There is an associated predicate/schema for type testing.
+All types are disjoint. Subtyping is implemented at a higher level
+by the ADT mechanism, not here.
+
+Two mechanisms for defining types: sums and products (or, enums and structs).
+ * Enums are based on Haskell sum types. There are multiple constructors;
+   each has a name, and optionally, an argument.
+ * Structs are named record types whose instances have public fields.
+   Supports OOP-like ADTs, and also named modules for modular programming.
+
+Proposal 1: Focus on Constructors
+---------------------------------
+Forget about 'types', here is some definition syntax for defining constructors,
+which are named values.
+
+These cover the Haskell vocabulary of 'data' and 'newtype':
+    term <id>
+    term <id> <schema>...
+These are for named modules and functors, for modular programming:
+    module <id> = <module>
+    module <id> <param>... = <module>
+
+What's missing:
+* Equality and equivalence.
+* Grouping multiple constructors into a single 'type'.
+* How do you migrate from POD based application data types to constructor
+  based application data types?

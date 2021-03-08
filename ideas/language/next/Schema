@@ -1,0 +1,298 @@
+Schemas
+=======
+Schemas are used to validate and normalize POD data. A schema is a partial
+function on input data, failing for data that doesn't validate. Use cases:
+* To separate the code that processes input data from the code that validates
+  and normalizes it. We report errors early, with high level error messages,
+  rather than deep in the processing code, leaving the user to decode a stack
+  trace. The code is cleaner because the processing logic is not obscured by
+  error handling logic.
+* To convert POD between different representations:
+  * To map POD onto a compact, efficient representation (eg typed arrays).
+  * To import JSON and other POD-like data formats as Curv data.
+* Schemas are like reified patterns: they have the same power to match
+  and normalize data. They can be used to abstract over patterns,
+  when used with the :: and <: pattern operators.
+  * Provide ability to pass patterns around as values, build them up
+    incrementally from subpatterns.
+    * LLVM::PatternMatch interface might be good to look at.
+
+A schema is an idempotent function. The range is a strict subset of the domain
+if there are any normalizations, otherwise the domain and range are the same.
+The range is intended to be the value set of a type.
+* Rationale for idempotence: using a schema as a parameter type in a
+  collection of operations on the same type. Passing an argument from one
+  operation to another involves re-validating it.
+* Idempotence might be too limiting for some use cases: Converting between
+  different representations. Amortizing the traversal cost of validating a
+  data structure by performing a transformation at the same time.
+
+The initial goal is to describe efficient GPU data structures.
+More sources of inspiration:
+* JSON-Schema.org
+* contracts in Racket: https://docs.racket-lang.org/guide/contracts.html
+
+Use Case Analysis
+-----------------
+Kinds of schemas:
+* Predicate. Identity function. The value may be converted to a more
+  efficient representation, but the value itself doesn't change: the result
+  compares equal to the argument.
+  * Cheap, just a tag test.
+  * Expensive, eg is_prime, or requires full tree traversal.
+* Normalizer. Idempotent function (range is subset of domain).
+* Transformer (convert one schema to another while validating).
+
+Use cases:
+* function parameter
+* 'parametric' parameter
+* mutable variable definition
+* tagged type parameter
+* converting a POD data structure to a compact typed representation
+* importing JSON
+
+### is_string, x :: String
+A 'predicate'. Possible implementations:
+1. True if value has string tag, or if value is list with no non-char items.
+   There is a separate operation to convert to compact string rep, 'as String'.
+2. As above, but cache the work of determining stringness.
+   Conversion to compact string rep is automatic.
+   * A List is: value header + size + array ptr.
+     We store an item type: char, nonchar, unknown.
+     After mutating a list element, the item type is set to unknown.
+     If is_string determines an unknown list contains only characters,
+     then it is mutated to be a string (copying the data), otherwise itemtype
+     is set to nonchar.
+   This will speed up some workflows, slow down others. I think the benefits
+   are rare enough to not merit the complexity. This idea doesn't scale to
+   eliminate all need for explicit conversions to compact reps.
+
+Schemas are not Types
+---------------------
+Defining a schema does not define a new type. See [[NewType]] for that.
+Schemas can include arbitrary data constraints (eg, range constraints
+on numbers) that can't be described by mainstream type systems.
+Schemas can normalize input data, eg supplying default values for
+record fields, and types don't do this. A schema is a partial function
+on input data, failing for data that doesn't validate.
+
+Compact Typed Data
+------------------
+Schemas can be used to convert POD data into a compact, efficient
+representation. This is needed for efficiently manipulating large
+graphical data structures (eg, pixel arrays, voxel grids, triangle meshes).
+
+There is already the beginnings of this feature in the Curv interpreter.
+Records have three different internal representations, hidden from the user.
+Lists may have multiple internal representations (eg, array of ASCII characters
+vs array of boxed Values vs a numeric range represented as a triple).
+But from the user's perspective, these varying representations are hidden from
+the language semantics, and lists are lists. This means that if you amend a
+list of characters (represented compactly) by changing one element to a
+non-character, then the list is reformatted into a boxed Value array.
+This is appropriate for Curv L2, which is a very high level language.
+POD is POD. It is not complex. It has simple semantics.
+
+In Curv L4, we need different semantics. We need typed arrays and typed data
+structures that preserve their type constraints when they are updated.
+Some extra complexity and bureaucracy is added at L4 to support this.
+* For code that is internal to a library, use variables with type declarations,
+  and type inference?
+* For data from library APIs used at L1, use ADTs instead of POD data?
+
+Function Schemas
+----------------
+It will be valuable to support function schemas. The easy case is a
+schema for a simply-typed function, `domain_schema => range_schema`.
+Two approaches:
+ 1. Create a wrapper around the function that checks the argument on the
+    way in and checks the result on the way out. This is expensive if the
+    function is called many times. Used by the original implementation of
+    Gradual Typing (where it is called a proxy), and seems also to be used
+    by Racket contracts. The measured performance hit for gradual typing
+    is extreme.
+ 2. `SC_Func(domain_schema => range_schema)` describes a simply-typed function
+    that can run on a GPU. We use the SC compiler to specialize the function's
+    code for the given argument type (monomorphization) and fail if the result
+    type of the monomorphic function is incorrect. Only a subset of Curv is
+    supported. Very high performance if we can arrange to only compile the
+    function once. The resulting function is equivalent to the input function,
+    will run in the interpreter. Another example of a schema converting a value
+    to an equivalent but more efficient representation.
+
+New Curv will use this to validate and normalize the distance and colour
+function arguments of `make_shape`.
+
+Rationale
+---------
+Using a schema, you can validate and normalize POD data. Once the data
+is parsed, validated and normalized, it is tagged, to record the fact
+that this data is already validated.
+* Tagging saves time if the same data is later validated again using the same
+  schema.
+* The Abstract Data Type feature (Algebras and Theories) is layered on top
+  of this data tagging mechanism.
+* Tagging permits a further optimization: Curv's optimizing compiler can detect
+  patterns in the schema and use that information to convert the data into a
+  more compact and efficient representation. This storage optimization is
+  critical for processing large amounts of graphical data efficiently on a GPU.
+
+Schemas allow you to separate the logic of validating and normalizing data
+from the logic of processing data. Interleaving these two things in a function
+is messy, especially when it causes the processing logic to be obscured by
+the validation and error handling logic.
+
+Library functions should validate their arguments before the body of the
+function is evaluated. If a validation error occurs deep in the evaluation
+of a library function call, then the user will need to pick through a stack
+trace and understand the implementation of the function in order to interpret
+the error message.
+
+Schemas can be used to convert an external data representation like JSON
+into validated and idiomatic Curv data structures.
+
+"A function that does not parse all of its input up front runs the risk of
+ acting on a valid portion of the input, discovering a different portion is
+ invalid, and suddenly needing to roll back whatever modifications it already
+ executed to maintain consistency." (from Parse don't validate)
+I think this will be relevant to the mechanisms used by Curv for efficiently
+updating a large data structure without copying it. Preserving the state
+needed for rollback can be expensive.
+
+More quotes:
+ * Use a data structure that makes illegal states unrepresentable.
+ * Get your data into the most precise representation you need as early as you
+   can.
+ * Write functions on the data representation you wish you had, not the data
+   representation you are given.
+
+Prior art and inspirations:
+* https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/
+   "A parser is a function that consumes less-structured input and produces
+    more-structured output. Parsing fails if the data isn't valid. Parsers
+    allow discharging checks on input up front, right on the boundary between
+    a program and the outside world, and once those checks have been performed,
+    they never need to be checked again."
+* Schema DSLs for JSON, XML, Clojure
+
+Tagged Data
+-----------
+Tagged, validated POD data is not abstract data. This is not data abstraction,
+because that entails hiding or ignoring the representation, and operating on
+the data purely through an abstract interface. Data abstraction also enables
+generic algorithms, aka polymorphism, where the same abstract interface
+is implemented for multiple different data representations.
+
+But tagged data doesn't hide the representation of the original POD data,
+it just restricts its domain.
+
+It is my hope that validating and normalizing POD data, and tagging it,
+doesn't prevent the resulting tagged data from being used as input to
+other functions that expect untagged POD data.
+
+What happens when you amend a tagged, validated data structure? Do you get an
+error if you attempt to violate the constraints placed by the tag? Or does
+amend always return untagged POD data? There is obvious utility to an amend
+operation that preserves the schema.
+
+Suppose you define a mutable local variable and specify a schema tag in the
+variable definition. What happens when you assign the variable? There is
+obvious utility in an assignment operation that preserves the schema and errors
+out if the schema is violated by the new value.
+
+But now we've added complexity. We have generic operations on tagged data that
+behave differently when given untagged data with the same POD structure.
+(Should we provide both typed and untyped variants of amend?)
+
+Every kind of POD value can be tagged with a schema, including scalars.
+
+Are there tagged functions?
+What is a function schema?
+ * Simply typed function schemas will cover the GPU/graphics cases,
+   but aren't generally powerful enough.
+ * A dependently typed function schema, where the schema contains a function
+   that maps the arg value to the required result type, is powerful enough.
+How is it enforced?
+ * The schema could wrap a function value, failing on bad arg values,
+   and panicing on bad return values. This is known to be expensive
+   (a paper I read on gradual typing). Plus you don't get enforcement at the
+   time the function is passed as an argument, but only later when it is called.
+ * Early run time enforcement would produce better errors.
+ * Compile time enforcement would be cool.
+ * Gradual typing systems also need to solve this problem. Look at their tech.
+
+Gradual Typing is No Good
+-------------------------
+Curv has "optional type declarations". Some dynamic languages have these,
+but purely for performance benefits. There is no promise of sound static type
+checking. Eg, Common Lisp, or I think Julia.
+
+Gradual Typing is a typing discipline for hybrid languages that support both
+statically typed code (that doesn't go wrong at run time), and dynamically
+typed code (with no type declarations), with trivial interoperability between
+the two. It has become quite trendy: Python and Javascript (via Typescript)
+both support it. When a dynamically typed function calls a statically typed
+function, the argument values need to be checked. For scalars, we can perform
+the check at the function entry point, but for functions and data structures,
+a proxy is wrapped around the function or data structure that encodes "blame"
+information and performs type checks on function calls or element access,
+reporting an error if the function or data structure has the wrong type. This
+run time checking at the dynamic->static interface is very expensive. So
+TypeScript simply doesn't do the checking. The benefits are for large
+industrial programming teams that want static type checking.
+ * Performance hits of 100x have been reported for some Typed Racket programs.
+   A more optimized design gets the hit down to 2.5x in good cases. No good.
+   Adding type declarations should make the code faster!
+
+My goals for any hybrid static/dynamic typing system are higher performance
+and better error reporting at the dynamic->static interface, and Gradual
+Typing can't do this. So it is no good for Curv.
+
+High Performance Schema Enforcement
+-----------------------------------
+Since Gradual Typing proxies are so expensive at runtime, we need a better
+alternative for enforcing schemas. A high performance alternative would
+*convert* the function or data structure to an efficient statically typed
+representation, and for best performance, we want to push this conversion
+as high up the call stack as possible, so that it is done once, instead of
+multiple times (which also follows the Parse Don't Validate methodology).
+Don't want the conversion to happen each time through a loop, if the conversion
+can be hoisted out of the loop, for example. Hoisting also makes the error
+reporting happen earlier, at a higher level in the code, closer to where the
+bug is.
+
+Automatically hoisting type conversions requires a smart compiler.
+
+Let the user perform explicit type conversions. Then the user can do their
+own hoisting, and we have a cheap solution before the smart compiler is ready.
+See "Schema API" for details.
+
+Schema API
+----------
+A Schema value may be called as a function:
+    schema podvalue
+This validates that the podvalue conforms to the schema, or fails.
+The result is a tagged representation of podvalue which may be represented
+using a compact, efficient representation, but behaves the same way when
+used with POD operations.
+
+A schema function is idempotent. The rationale is, you can use either of
+the patterns:
+    name :: schema
+    name <: schema
+to bind a name to a value that matches a schema.
+* `:: schema` requires the argument to be a tagged value whose tag
+  is the schema or a subtype of the schema.
+* `<: schema` converts the argument to a tagged value, if not already tagged.
+
+A tagged value usually prints as a constructor expression:
+    schema podvalue
+The exception is for schemas like `Num` which already describe all of the
+values in a particular POD type. `Num 42` just returns `42`, with no
+additional tagging.
+
+Compound schema values may be bound as named values, in which case you get
+a nominally typed schema, and tagged values print using that schema name.
+
+I guess we can create a nominal schema equivalent to Num,
+but with a different name, and you can use it to create tagged numbers.

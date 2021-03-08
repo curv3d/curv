@@ -1,0 +1,54 @@
+Orthogonality and Composability
+===============================
+Curv is comprised of a small number of orthogonal features that can be
+composed together without restriction. This simplifies the language and
+eliminates unnecessary complexity, but can also make the language more
+expressive by eliminating barriers to composition.
+
+Strategies for orthogonal design:
+* Unify features that are almost the same, but with unnecessary differences.
+* Split up features that do two things at once into separate features
+  that can be composed.
+* Eliminate the need to write "glue" code when composing language elements,
+  by using standard interfaces.
+* Remove restrictions on how language elements can be composed.
+* Eliminate syntactic overhead for common compositions.
+
+Orthogonal programming language design is *incredibly difficult*.
+The problem is that no mainstream programming language is designed
+this way, and it's so much easier to copy existing designs than it is
+to create something new.
+
+Shadow Worlds
+-------------
+`Shadow worlds`_ are an anti-pattern in programming language design.
+Instead of using orthogonal design, the language designer creates
+a DSL (domain specific language) for solving some specific problem,
+and this DSL contains shadow copies of features from the main language.
+
+* The DSL may have shadow identifiers for describing objects
+  in the domain, which exist in a shadow namespace separate from the
+  language's principal namespace. This shadow namespace may or may not
+  allow users to define new names, and if so, these user defined names
+  may or may not play well with the language's module system.
+* The DSL may have a shadow 'if' construct with a different syntax than
+  the principal 'if' construct.
+* It may have shadow loops, shadow functions, shadow data structures.
+
+These shadow constructs are crappy imitations of the principal constructs.
+They have incompatible syntax, and they suffer from limitations that don't
+exist in the principal constructs. This creates complexity, not just because
+you have to learn multiple versions of the same feature, but also because
+the shadow constructs are not properly composable with features from the
+main language: you have to learn how to work around the limitations.
+
+.. _`Shadow worlds`: https://gbracha.blogspot.com/2014/09/a-domain-of-shadows.html
+
+Orthogonal Data Types
+---------------------
+
+Orthogonal Operations
+---------------------
+
+Single Namespace
+----------------

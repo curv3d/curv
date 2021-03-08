@@ -1,0 +1,26 @@
+High Level Types
+================
+Most mainstream programming languages are low level, because they
+conflate the type of a value with its representation (ie, memory layout).
+
+Since there are multiple representations for each high level, general purpose
+type, this means the user is presented with multiple language types for
+each high level type, and is forced to choose up front between an array of
+almost identical choices in order to do just about anything.
+
+Forcing users to choose between an array of almost identical alternatives
+is bad (for Curv, the modelling language) because it increases cognitive load.
+
+Numbers are a good example.
+Most languages distinguish between '2' and '2.0'. Abstractly, these are
+both representations of the integer 'two', but they have different types
+and obey different laws of arithmetic. I will repeat: there are two kinds
+of integers that obey different laws of arithetic. In order to do even the
+simplest arithmetic, the user must understand this distinction and choose
+between the two different kinds of integers each time they type an integer
+into a program.
+
+The right time to be making this kind of decision is when you are
+optimizing some code for performance. You shouldn't be forced to
+make these decisions up front, because up front complexity is bad,
+and most Curv code doesn't need this level of performance optimization.

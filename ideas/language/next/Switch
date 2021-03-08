@@ -1,0 +1,108 @@
+Pattern Matching Switch Statement
+=================================
+Rationale: The `match` function does not provide good syntax for a pattern
+matching conditional statement, due to the lack of functions that capture
+references to mutable variables. So we need magic syntax, a switch statement.
+
+Syntax:
+    switch Expr
+    case Pattern then Phrase
+    ...
+The phrase arguments may be expressions, statements, generators, just like
+the if-then-else operator. The alternating keyword syntax supports offside
+syntax.
+
+This syntax competes with the `match` function for conditional expressions.
+
+Pattern syntax for a number? Ideas:
+    case 42 then ...
+    case -42 then ...
+    case == 42 then ...
+    case _ == 42 then ...
+    case x when x == 42 then ...
+
+Pattern syntax for element of a numeric range? Ideas:
+    case x `elem` (1..10) then ...
+    case `elem` (1..10) then ...
+    case x when x `elem` (1..10) then ...
+
+Theory:
+  * elem[val,list] is true if val is an element of list.
+  * '<func> <pattern>' is a constructor pattern.
+  * '<pattern> <binop> <expr>' is a predicate pattern,
+    matching if '<arg> <binop> <expr>' is true.
+  * '<binop> <expr>' is an abbreviation of '_ <binop> <expr>'.
+  * '`<postfix>` <arg>' is a partial function, === 'x->x `<postfix> <arg>'.
+
+Previous Brainstorming
+----------------------
+Ideas for the syntax.
+
+Ada.
+    case Expr is
+      when Pattern => Statement
+      ...
+    end case
+Modula 2.
+    CASE expr OF
+      pattern : statement
+    | pattern : statement
+    ...
+    ELSE statement
+    END
+ooRex
+    select
+    when Expr then Stmt
+    ...
+    end
+Haskell
+    case Expr { Pat1 -> Expr1; ... }
+
+Syntax Proposals
+----------------
+A keyword separates the pattern from the statement so that
+we can use 'keyword:' to trigger indentation as syntax.
+
+If I use 'when' as a pattern guard then I can't use it to introduce a case
+in a switch statement.
+
+    switch Expr
+    case Pattern then Statement
+    ...
+
+I chose 'then' to separate Pattern from Statement.
+ * It suggests a branch in a conditional, as in if-then-else.
+ * It's the only keyword I can find in RosettaCode used for this purpose.
+   I can find 'when..then..' and 'case..then..'.
+ * I considered 'do', but:
+   * 'do' suggests an imperative statement follows. In a generator,
+     the statement may actually be an expression.
+   * 'do' may suggest iteration.
+   * There's a good chance we want to generalize this to support expressions.
+
+What about the cost of converting between 'switch' and 'match'?
+
+    Expr >> match [ Pat1 -> Expr1, ... ]
+    switch Expr [ Pat1 -> Stmt1, ... ]
+
+The problem here is adding a ':' after '->' to trigger indentation-as-syntax.
+It looks funny.
+
+    switch Expr [:
+      Pat1 ->:
+        Stmt1
+      Pat2 ->:
+        Stmt2
+    ]
+
+Other ideas:
+
+    case Expr
+    when Pattern do Statement
+    ...
+
+    switch Expr
+    when Pattern do Statement
+    ...
+
+

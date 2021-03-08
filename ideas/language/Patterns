@@ -185,6 +185,8 @@ New Pattern Types:
     a recursive reference. Example is a recursive 'eval' function that matches
     expression patterns and uses <: to evaluate operands in pattern matches.
       eval = match [{plus: [a <: eval, b <: eval]} -> a+b, ...]
+  * In GHC Haskell, 'func -> pat' is a "view pattern". Free variables in "func"
+    may be bound on the left, eg by previous items in a list or record pattern.
   * <: is left associative with the same precedence as :: and <<.
     `pat <: cast1 <: cast2` equals `(pat <: cast1) <: cast2`.
     The argument is processed first by cast2, then the output of that goes into
@@ -196,6 +198,14 @@ New Pattern Types:
   * 'pat == expr', 'pat != expr', 'pat < expr', ... -- relational op predicates
   * 'pat `elem` listexpr' -- range patterns, like 'x `elem` 1..10'.
   * Equality patterns, `== expr`, see above.
+
+What happens if I use a lens in a transform pattern?
+(Let's assume that this works, that the lens is applied to the argument value.)
+Then, for example,
+    x <: 1
+binds 'x' to element 1 of a list argument. Also,
+    x <: 0 && y <: 1 && z <: 2
+has a similar effect to [x,y,z]. Could also use the syntax 'x @ 1'.
 
 "Pattern Guards and Transformational Patterns", Simon Peyton Jones
 

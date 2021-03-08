@@ -13,11 +13,12 @@ colour space it belongs to. Colour is complicated. Sorry.
 
 Colour spaces are denoted by named values in Curv.
 Here is a curated list of the most useful colour spaces for Curv to support:
-* linRGB
+* linRGB or sRGB.linear
 * sRGB
 * sRGB.HSV
-* LAB
-* LAB.HCL
+* Oklab, Oklab.hcl
+? LAB
+? LAB.HCL
 
 You can call a colour space like a function, passing a list of colour space
 coordinates, and it will construct a colour value. Note that in Curv, colour
@@ -116,7 +117,7 @@ Is HWB useful for interpolating colours, creating gradients, etc?
 
 LAB
 ---
-The CIE LAB colour space is perceptually uniform: a given step size produces
+The CIE LAB colour space is perceptually uniform(*): a given step size produces
 the same amount of perceptually change anywhere in the coordinate space.
 * L is lightness (absolute brightness).
 * A is the red-green axis.
@@ -145,6 +146,8 @@ to be interoperable with this large ecosystem.
 
 Accurate sRGB-XYZ colour conversion matrices:
 https://lobste.rs/s/1xvuxw/rgb_xyz_conversion_matrix_accuracy
+
+(*) Except that it isn't _completely_ uniform. See Oklab for a better space.
 
 LAB.HCL
 -------
@@ -190,6 +193,27 @@ CIE LUV colourspace. I will call this HCL(uv). It is implemented by the
 <http://hclwizard.org/> promotes this version of HCL, without making it clear
 that it is different from the LAB version of HCL.
 
+Oklab
+-----
+Contra to what I said above about CIE LAB, LAB has problems. The most
+noticeable is that if you mix blue with white then the hue turns purple,
+and this is not desirable (even if it does mimic human colour perception).
+There have been multiple proposals for a LAB replacement, but there is
+so far no clear winner. However, Oklab is a leading candidate: it fixes the
+blue/purple problem, is designed for computer graphics and fast GPU computation.
+
+https://bottosson.github.io/posts/oklab/
+* Introducing Oklab.
+https://raphlinus.github.io/color/2021/01/18/oklab-critique.html
+* No perfect perceptual colour space is possible, because that would require
+  flattening a non-Euclidean space into a Euclidean space without distortions.
+
+Gamut clipping using Oklab:
+https://bottosson.github.io/posts/gamutclipping/
+
+interesting critique and technical discussion:
+https://news.ycombinator.com/item?id=25525726
+
 Compositing
 -----------
 Compositing should always be done in the linRGB colour space.
@@ -230,3 +254,5 @@ and uses D50 as the white point for the LAB colour space. D50 is warmer (or
 yellower) than D65. "Daylight" light bulbs sold in North America are roughly
 equivalent to D50. CSS level 4 defines a `gray` function, and the grey colours
 it generates are based on D50, even though sRGB has a D65 white point.
+
+Oklab uses D65 for compatibility with sRGB.

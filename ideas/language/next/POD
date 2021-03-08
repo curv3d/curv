@@ -1,0 +1,24 @@
+POD: Plain Old Data
+===================
+Plain Old Data is a set of 6 general purpose data types that can be used
+to describe any kind of data.
+
+Inspiration for POD is drawn from multiple sources: Lisp S-Expressions,
+JSON, the K programming language, and others.
+
+Unlike other implementations of POD, Curv explicitly supports algebraic
+data structures: both sums and products.
+
+POD has 6 data types:
+    scalar types: symbol, number, character
+    collection types: arrow, list, record
+
+A "product" data structure is a collection of values.
+Lists, records and arrows are used to represent products.
+
+Unlike JSON, there is no primitive "string" type. Instead,
+there is a character type, and there are lists of characters.
+
+A "sum" data structure is one of a set of named alternatives.
+An "alternative" is either a label (a symbol value like `#foo`)
+or it is a labeled value (an arrow value like `foo: 42`, aka `#foo => 42`).

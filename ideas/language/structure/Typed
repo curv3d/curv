@@ -185,11 +185,13 @@ you would also need to input when writing code.
 Typed Arrays
 ------------
 A string is a typed list of characters. So that's already in the language.
+[Not any more.]
 
 If I want to be completely consistent, I can reimplement strings
 as untyped character lists. A list that just happens to consist entirely of
 characters will be printed using quoted string syntax. There would be no
 distinction between "" and [], they would both print as [].
+[This is now implemented. List semantics are now simpler and more general.]
 
 In most APL dialects, there is more than one empty list. There are various
 typed empty lists. In K, a matrix is just a list of vectors, but that means

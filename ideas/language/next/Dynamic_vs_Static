@@ -1,0 +1,35 @@
+Dynamic vs Static Typing
+========================
+Is Curv dynamically typed or statically typed? The answer is yes.
+
+There is a false dichotomy, popular in the programming community,
+which states that every programming language is either dynamically
+typed or statically typed. To explore why this dichotomy is false,
+I'll give descriptions of the stereotypical statically typed and
+dynamically typed language, together with the ideological beliefs
+associated with these stereotypes. Then I'll note that many existing
+languages don't fit into either stereotype. In the case of Curv,
+neither stereotype is capable of satisfying Curv's design requirements.
+I'll close with a style of typing that does meet Curv's requirements.
+
+The Stereotype of the "Statically Typed Language"
+--------------------------------------------------
+
+The Stereotype of the "Dynamically Typed Language"
+--------------------------------------------------
+
+Curv
+----
+Instead of "type checking", let's call it input data validation.
+A function must validate its arguments. Eg,
+* The 'abs' function must validate that its argument is a number.
+* A JSON parsing function must validate that its argument is a character
+  string containing valid JSON data.
+
+If a function is passed a bad argument value that is not in its domain, then
+the function call fails. If no arrangement is made to handle the failure,
+then the failure is converted to a panic, which terminates the process.
+
+If the compiler can prove, at compile time, that a panic will happen 
+at run time, then the compiler is permitted to report the panic at compile
+time, instead of waiting until run time.

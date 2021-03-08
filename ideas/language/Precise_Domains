@@ -14,6 +14,12 @@ error messages and stack traces. A function with a precise domain can be
 used for pattern matching (matching any value in the function's domain).
 This proposal also supports error handling.
 
+["Parse, Don't Validate" describes how to use Type Directed Design to better
+ accomplish this goal. Data is validated as early as possible, by "parsing"
+ it into a new representation in which invalid states cannot be represented.
+ This new representation has a Type which can be used as a function domain.
+ https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/]
+
 A function call has one of the following results:
  * success: returns a value.
  * fail: the argument is not a member of the function's domain.
@@ -412,3 +418,16 @@ quote:
     Yes. So do Coq and Agda and many other theorem provers.
 
 This game of "simplifying the domain" also works in Curv.
+
+Imperative Failure Handling
+---------------------------
+I would like a more user friendly API for failure handling. Brainstorming:
+ * Duplicate the libcurv failure API in Curv. Make it work in imperative code:
+   eg, fail from the body of a pure procedure. (But not in impure procedures
+   containing generators, because procedure call failure must be atomic.)
+ * An operation for failing from within the body of a function.
+   It must link the failure to a specific named function parameter
+   (plus an index to specify which component of the argument value was bad).
+ * Maybe and Either types in Curv which represent failure-or-a-value.
+   Operations to convert both ways between actual failure semantics in a
+   function call, vs reified failure.

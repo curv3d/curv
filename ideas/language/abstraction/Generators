@@ -27,6 +27,9 @@ Pattern-matching conditionals over generators:
     Function call is ambiguous: either an expression or a generator.
     Generator functions are just functions: is_func is true.
 
+    UPDATE: This idea has the "cognitive dissonance" problem described
+    by [[effects/Procedures]].
+
  3. A unevaluated generator is #[generator], which is evaluated
     using '... <unevaluated generator>'.
     Then write
@@ -38,3 +41,7 @@ Pattern-matching conditionals over generators:
     A generator thunk has predicate `is_generator`.
     Could use a generator thunk as an argument to my 'linear union' operator.
     Or see the [[structure/Procedural_Data]] essay.
+
+    UPDATE: The #[generator] syntax (with is_generator) is semantically
+    equivalent to the Action proposal (action <generator> && is_action),
+    since all statements are generators.

@@ -3,7 +3,8 @@ GPU programming languages
 * AnyDSL/Impala: LLVM/CUDA/OpenCL partial evaluation; static types; imperative
     http://compilers.cs.uni-saarland.de/papers/anydsl.pdf
     https://anydsl.github.io/
-* Spiral: CUDA/Windows: partial evaluation staged dynamic->static
+* Spiral: CUDA via .NET: partial evaluation staged dynamic->static below,
+  F# type system above. https://github.com/mrakgr/The-Spiral-Language
 * Futhark: futhark-lang.org: CUDA&OpenCL; static types; pure functional
 * Scopes: https://scopes.readthedocs.io/en/latest/
     multi-stage compilation. LLVM, SPIR-V, GLSL output. Static types; imperative

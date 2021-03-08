@@ -1,0 +1,59 @@
+The HyUI integrates the features of a REPL, an editor, and a hypertext browser
+like Hyper.
+
+When you start the HyUI, you can immediately type Curv code, and execute it,
+and see the result (similar to a REPL).
+
+This result could be a short textual result, like a number. It could be a
+large textual result, that you view by scrolling or by a folding tree browser.
+It could be hypertext, in which case you can click on links etc. It could
+be 3D graphics. It could contain 3D graphics as hypertext elements.
+
+The Curv code you typed can extend over multiple lines.
+It can be repeatedly edited and re-evaluated, updating the result (live coding).
+
+You can evaluate an expression to produce some data: you can store a copy of
+that data then edit it.
+
+In the current Curv REPL, you always start fresh with the same state, which
+includes a modifiable workspace of named variables. In the HyUI, there is
+persistent state.
+
+Prior Art
+---------
+Rob Pike's ACME system is an inspiration. It has the expressiveness I want.
+What's interesting:
+ * It is a multi-pane text editor fused with a text based shelleditor language.
+ * Tiling window manager integrated into the UI.
+ * Textual commands can be embedded ad hoc in documents, then executed in a
+   rich variety of ways, and this is the only way to execute commands, outside
+   of the fixed 3-button mouse-chord interaction language and some WM gestures.
+ * You can embed commands in any kind of textual document, like a Go source
+   file (in Russ Cox's example), or a TODO list, etc. Use them as hypertext
+   links, task automation, text editing commands, etc.
+ * I guess that in Plan 9, the editorshell and the window manager were separate
+   components, integrated using the Plan 9 file system. In the Linux port,
+   they are part of the same app.
+
+HyperCard: like ACME with graphics, in that a HyperCard stack is an editable
+document containing short commands that can be executed, mixed with
+non-executable content. Differences: run vs edit mode; the commands don't
+permanently modify the stack (I think?); HyperCard has contents and code
+hidden away that can be opened in edit mode. Acme is flat text, no modes,
+all text is always visible, editable & executable.
+
+TiddlyWiki: the data model is interesting.
+  A tiddler is the fundamental unit of information. Like a wiki page (rich text
+  with a title and links), but generalized with many types, and representing
+  code and data as well as text. A tiddler is a record with a set of fields;
+  the Title field is required.
+
+  Philosophy: to maximise re-use by slicing information up into the smallest
+  semantically meaningful units with rich modelling of relationships between
+  them. Then we use aggregation and composition to weave the fragments together
+  to present narrative stories.
+
+  TiddlyWiki provides an algebra for tiddlers, a concise way of expressing
+  and exploring the relationships between items of information:
+    links, tags, lists & filters, ...
+

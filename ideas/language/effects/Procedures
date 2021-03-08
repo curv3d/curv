@@ -2,20 +2,219 @@ A procedure is a lambda-abstraction of a statement.
 
 Benefits:
 * Make it possible to replace any use of `for` with tail recursion.
-  -- There is a `for` generator and a `for` statement. Different.
 * Make it possible to use `match` in any context where `if` is legal.
-  Eg, in a list comprehension. But this is generators. See [[Generators]].
+  Eg, in a list comprehension.
 * Once I have an interactive debugger, and a rich set of actions for
   controlling the debugger, then procedures are used as debugger scripts.
 * print, error, warning, assert become values.
 * Another step in making it easier to port imperative code?
 
-Generators are not Statements
+Brainstorming results (so far):
+* An action value is an unevaluated generator or debug action.
+* `!<action>` is a generator/statement that invokes an action.
+* A mutator function abstracts a statement wrt mutable variables.
+  Now called a 'procedure': see [[next/Proc]].
+* Switch statement.
+
+See [[abstraction/Generators]] for a somewhat opposing view.
+
+Proposal #1: Generic Phrase Abstraction
+---------------------------------------
+A simple approach is to declare that functions, ie
+    pattern -> phrase
+are generic across expressions, generators and statements, just as
+the 'if' and 'let' operators are generic across these phrase types.
+Tennent's "principle of equivalence" is fulfilled (let/function equivalence).
+These values are generically called 'functions', and is_func is true.
+
+So now print, warning, error, etc, are first class function values,
+without any syntax change. The weirdness in the 'error' implementation
+is removed. 'exec' is now obsolete.
+
+For a statement function that doesn't need parameters, we use the convention
+that the argument is []. Which corresponds to () in Haskell, the Unit type.
+No such convention is needed by the 'proc' proposal. But this convention will
+be familiar from most mainstream languages, so it won't impede learning.
+
+Function call is overloaded: a funcall is an expression, generator or statement.
+Call_Expr is replaced by Call_Op which has ::eval and ::exec.
+No need for the '!proc' syntax from the 'proc' proposal. Again, funcall syntax
+for a procedure call will be familiar from mainstream languages.
+
+Mutator functions have a statement or generator as a body.
+    mf x
+is a function call where the argument value 'x' is bound to a mutable
+local variable in the body of 'mf', which is executed in action context.
+    loc!mf
+is a statement that mutates the 'loc' argument and may also generate values.
+
+It is possible to write combinators that are generic across phrase types,
+where the 'phrase type' of a function call can depend on the argument.
+I'm not sure how useful this is, although 'match' is an example.
+
+Concerning imperative combinators, such as a 'while' function:
+Curv isn't a GP imperative language -- closures do not capture references
+to mutable variables. Mutator functions provide a 'functional' way to
+accomplish the same things. Maybe like
+    local total = 0;
+    local i = 1;
+    [i,total]!mywhile ([i,_]=>i < 10) ([i,total]=>(total+:=i; i+:=1))
+
+Critique of Proposal #1
+-----------------------
+It bothers me (at a gut level) that a function call phrase like 'f x'
+is either an expression or statement, but I can't tell by looking.
+It feels like ad-hoc overloading.
+
+It also bothers me to put a print statement like [..., print "foo", ...]
+into a list expression, possibly for the same reason. Maybe I prefer
+    [..., !print "foo", ...]
+
+The problem is that in every other hybrid functional/imperative language,
+starting with Lisp and Algol 68, and in the ML family, a procedure is
+represented by a function with side effects that returns the Unit value.
+So [..., print "foo", ...] would add the Unit value as a list element.
+In every other language, the function call syntax returns a value, which is
+ignored in imperative context. Proposal #1 creates cognitive dissonance.
+
+Is there a solid mathematical basis for this preference?
+Do I get better algebraic properties if function calls are always expressions?
+Maybe I should create a denotational semantics for Curv.
+
+Function call overloading breaks algebraic laws.
+`compose[f,g,h]`: f & g must be expression functions, h may be a
+non-expression function, but if it is, then id is not a right identity.
+The `proc` proposal avoids this by distinguishing procs from functions.
+
+If 'f x' is not guaranteed to be an expression, then my plan to produce
+more precise blame in error messages by examining the syntax of a function
+call argument breaks down when I encounter a function call expression as
+an item in a list constructor argument. (There would still be a breakdown for
+a procedure call in a list ctor, generating an unknown # of values.)
+
+Classifying all function varieties as 'is_func', without a specific subtype
+for expression functions, limits checking of function arguments.
+
+Since debugger interaction is not classified as a side effect, expression
+functions are a subtype of general functions. The former return a value,
+the latter can generate zero or more values. The kind of function that
+returns 0 values may also want classification, since that's the only kind
+you can call from a 'do' clause. So 'is_gfunc' is the general case of a
+generator function, 'is_func' is an expression function, and 'is_proc' is
+a gfunc that produces zero values.
+
+In order to define 'is_gfunc', 'is_func' and 'is_proc', we need to be able
+to deduce these types from a lambda expression. We need:
+ * different syntax for gfunc, func and procedure call, and do type inference
+   on the lambda body, or
+ * different syntax for gfunc, func and procedure literals.
+
+Proposal #2: Action Values
 -----------------------------
+This is a delta from prop #1 that fixes the cognitive dissonance problem.
+The body of a function is an expression.
+I'm ignoring the distinction between generator and statement abstractions.
+
+An action value is:
+    action <generator>
+    action <statement>
+Functions and procedures are orthogonal. You can use 'x->action <stmt>'
+to abstract over subexpression 'x' in a statement. To call an action, use:
+    !<action>
+Note that `!` is kind of a replacement for `exec`, but not really, since
+it is a generator. See below.
+'print', 'warning' etc become functions that return actions. So you write:
+    !print "hello world"
+Predicate: `is_action`.
+
+An action cannot capture a reference to a nonlocal mutable variable, so actions
+are not a true abstraction over imperative statements. However, they are a true
+abstraction over generators and debug effects. They are semantically equivalent
+to the generator values of [[abstraction/Generators]].
+
+Semantically, an action is like a mutator function
+that mutates an Executor argument (eg, adding items to a list or record).
+
+Distinguishing Generator abstractions from Debug Action abstractions
+--------------------------------------------------------------------
+At various times I have wanted this design to support a clean distinction
+between an unevaluated generator vs an unevaluated debug action, with
+different value types and different invocation syntaxes.
+
+I think that I have pretty much accomplished this with proposal #2.
+* An unevaluated generator is an action value. The syntax
+    !<action>
+  generates 0 or more values (and can also have debug side effects, but that
+  is also true for functions).
+* An unevaluated debug action is a mutator function with [] as its parameter.
+  The syntax
+    []!<debug function>
+  invokes it, causing debug effects, but not generating any values.
+  I do not have a predicate for this (functions whose domain is the single
+  value []).
+
+Logically, if I want to partition reality in this way, then the syntax
+for a print statement should be
+    []!print "hello world"
+Bletch.
+
+Another idea is to provide two syntaxes for invoking an action:
+    !<action>   -- guaranteed not to generate any values
+    ...<action> -- generates 0 or more values
+
+A possible benefit of making 'debug action' a subtype of 'generator'
+is polymorphism. You can use 'print "hello"' as an empty generator,
+in any context requiring a generator argument.
+
+What kind of generic code benefits from representing a debug action
+as a unit function (from [] to [])? You can compose them with `compose`.
+
+Proposal:
+* A generator value is a linear function from List_Builder to List_Builder.
+  Record_Builder is a subtype of List_Builder.
+* A debug action is an identity function with side effects. This makes them
+  maximally generic: they can be inserted into any sequential execution
+  sequence.
+  * Debug actions can be composed using `compose`.
+  * Can be composed between two functions: `compose[f,print "foo",g]`
+  * A debug action is compatible with a generator value.
+  * A debug action is compatible with any mutator function, and can be
+    inserted into any chain of mutator functions:
+      x!reverse!print "hello"!to_lower
+* The syntax `!<lfun>` invokes a linear function to transform the "current
+  state" in an imperative context, which could be '[]' (in the head of a
+  begin expression), or could be a list or record builder, or could be something
+  else in the future. In the "programmable semicolon" future of Curv, an
+  action is a linear function that transforms the current state of a statement
+  list. Debug actions and generators are two special cases of actions.
+
+Switch Statement
+----------------
+None of these allows `match` to provide nice syntax for a switch statement,
+in the case where the switch arms mutate local variables. You need to write
+    a!x>>match [
+        1 -> a=>a:=1;
+        2 -> a=>a:=2;
+        ...
+    ]
+which is boilerplatey in its need to repeat the list of variables being
+modified in each arm of the conditional.
+
+Shader language has a switch so I suppose that SubCurv needs a switch.
+
+Generators are not Statements?
+------------------------------
 A generator is a generalized expression, part of the declarative language.
 A statement is part of the imperative language. We should have different
 constructs for an unevaluated generator and an unevaluated statement.
-The latter is a procedure. The former is something else, maybe a lazy list.
+The latter is a procedure. The former is something else, maybe a lazy list?
+
+But: There are also generator statements. And I want 'mutating generators'
+so that I can use a state machine to drive a generator. To invoke an MG, use
+    yield loc!mg
+which mutates a locative and also inserts values into the generator output.
+I don't like 'loc!mg' by itself because there's no syntactic indication that
+values are generated.
 
 Kinds of Procedures (Dec 2020)
 ------------------------------

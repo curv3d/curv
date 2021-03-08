@@ -42,5 +42,5 @@ There is a visual-programming use for scalar boxes (as opposed to [x] boxes).
 In rich text, a scalar box is like Markdown inline `foo` or block ```:
 present a Curv value as code. Use distinctive typography to present the value:
 maybe draw a box around it? The $(foo) string substitution is for interpolating
-an arbitrary value into an error or debug message:
-it should put 'foo' into a scalar box.
+an arbitrary value into an error or debug message: it should put 'foo' into
+a scalar box, so that a character value doesn't just merge into the string.

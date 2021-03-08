@@ -6,7 +6,8 @@ Value Oriented Programming
     references, hence no concept of object identity. Data is hierarchical,
     not cyclic. Mutable state is represented using mutable imperative
     variables, not mutable objects. This design simplifies the language,
-    it makes programs easier to understand, and it has performance benefits.
+    and makes programs easier to understand. It simplifies the implementation
+    and improves performance.
 
 Objects vs Values
 -----------------
@@ -89,3 +90,85 @@ the result returned by a function depends only on the argument values.
 In addition, function calls cannot have side effects, because functions
 Thus, Curv's pure value semantics imply that Curv is also a pure
 functional language.
+
+Performance
+-----------
+Value semantics are simple, giving more opportunities to
+optimize performance while simplifying implementation.
+
+Unlike mutable objects, immutable values do not have an object identity,
+so the implementation doesn't need to (expensively) maintain this identity.
+Normally there is exactly one copy of a mutable object in memory, at a known
+address, and that's how you maintain identity. But values can be copied.
+They can be copied between the CPU and the GPU without changing their identity,
+which is important in a language that tries to make the boundary between
+CPU and GPU computation transparent. The representation of a value can be
+changed dynamically by copying the data to a more efficient representation
+based on operations performed. In Javascript and some other OOP languages,
+JIT compilers can dynamically change the representation of code to speed
+up execution, but it's harder to do this trick with objects, due to the
+need to preserve identity.
+
+Mutable objects must be garbage collected, which is complex and requires
+global analysis. Values can be reference counted, which is simple and
+local. Reference counting supports efficient update of large immutable
+data structures using Copy On Write. This works with simple, well known
+data structures like arrays: complex "persistent" or "functional" data
+structures are not required.
+
+Mutable objects are very expensive on a GPU, where many compute units run in
+parallel with shared access to the same object, because objects must be
+stored centrally and locking must be used to access them. Values are cheap,
+because they can be copied to storage that is local to a compute unit.
+
+More Ideas
+----------
+* Pointers are the gotos of data structures.
+* Hierarchical data structures (no cycles).
+* Assignment uses copy semantics, not reference semantics.
+* Efficient incremental update of data structures using RC and COW.
+* Variables are guaranteed disjoint (no aliasing is possible).
+* Programming design patterns that are compatible with hierarchical data,
+  or methodologies which encourage its use:
+  * "Out of the Tar Pit" http://curtclifton.net/papers/MoseleyMarks06a.pdf
+  * The first GUI (Smalltalk) was written in the first OOP language (Smalltalk).
+    OOP initially became popular in the early 1980's as a way to implement
+    GUIs. But now there are better ways to implement GUIs and interactive
+    computer graphics, and these new methods are based on value-oriented
+    programming.
+    * Data Oriented Programming.
+      Separate functions from data. Use generic data structures.
+      Functions are free-standing and more generic, more general purpose,
+      because they are not bound to a class.
+      Data is structured in a way that makes it simple to process.
+      Avoids complexities and maintenance burdens of object-oriented design.
+      and shared mutable state via networks of mutable objects.
+      This term seems to be used only by a few people, and is mostly used to
+      describe what is unique about Clojure. Clojure uses functional
+      data structures to achieve efficient update of immutable data structures,
+      so the DOP people think this is essential. Other than the Clojure
+      specific aspects, it seems to be the same as value-oriented programming.
+      From video "data oriented programming in practice" 16:00 mark.
+      * "data is a first class citizen" 1. Separate code from data. Don't
+        encapsulate code + data into OOP objects. 2. Represent data with
+        generic data structures. 3. Do not mutate data (values are immutable).
+      * Functions are stateless. Do not capture program state in closures;
+        keep the state outside of closures, and pass all state as function
+        arguments. Reduces system complexity.
+      * "Represent data with generic data structures". Don't use a
+        large number of abstract types for modelling application data, plus
+        functions that only work on specific ADTs. Generic operations can
+        be used instead of writing a lot of boilerplate operation code
+        inside the ADTs or Java classes.
+      * Hierarchical data. Index data using paths, which are pure data
+        (eg, can be sent over a network).
+    * Data Oriented Design
+      In video game programming, a form of value-oriented programming where
+      you focus on the layout of data in memory and optimize for processor
+      cache performance.
+    * Entity component systems (used in video games).
+    * Unidirectional dataflow architecture (used in some forms of FRP).
+      State changes flow in one direction, parent to child.
+      Immutable values, pure functions, acyclic data enable:
+      ease of debugging, easy undo, time travel debugging.
+      * Lager UI framework

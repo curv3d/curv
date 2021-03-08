@@ -1,5 +1,13 @@
 = A Machine Code JIT Compiler for Curv
 
+Here is a list of JIT libraries in 2021: https://github.com/vnmakarov/mir
+* LLVM and libgccjit are huge and very slow.
+* MIR looks amazing (tiny 10K LOC C, fast, competitive performance)
+  But (2021/Feb) is unstable and unreleased. And a hobby project.
+* Cranelift has institutional support (used in firefox, rustc).
+  70K LOC Rust. The use of Rust makes this a huge dependency.
+* ... see mir readme for more
+
 == Which JIT library to use?
 LLVM is the dominant JIT library. But it has a serious problem:
 compilation is too slow for interactive use. Also, there are

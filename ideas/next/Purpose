@@ -1,0 +1,40 @@
+Curv is a simple, learnable and expressive language for creative coding
+and generative art. The original focus was 3D modelling for 3D printing.
+The new design supports 2D and 3D interactive graphics, and a wider range
+of recreational and expressive coding. Beyond this, Curv is also its own
+implementation language, so it has much in common with general purpose
+languages.
+
+Curv is designed for artists, artisans and hobbyists. It is a language for
+self-expression. Curv programs embody the vision of a single self-motivated
+individual, with that person doing most or all of the coding. This means
+that Curv has very different requirements from an industrial programming
+language like Java or Go.
+
+Curv gets out of your way and lets you express ideas as simply as possible,
+whereas an industrial language imposes bureaucracy and boilerplate to
+manage huge code bases and coordinate the efforts of a large team of workers.
+
+Ideas:
+* Curv is optimized for fun.
+* Curv is an instrument of thought. It is a notation for expressing and
+  communicating algorithmic ideas.
+* Curv is a language for writing beautiful code.
+  Beautiful code lacks ugliness. Ugliness in code is everything that puts an
+  unnecessary load on our brain: complexity, inconsistency.
+* Curv is small, simple and consistent. You can learn the language quickly
+  and hold it all in your head.
+* Curv lets you write terse, elegant programs, making it easier for you to
+  hold a program all in your head.
+* Curv rewards mastery.
+* Idioms, not features.
+  * Most languages are bloated and weak. They are designed as a loosely coupled
+    collection of 'features'. Each 'feature' is a like a domain-specific
+    language (DSL) for solving a particular problem. Learning one feature or
+    DSL doesn't help you predict how another feature works.
+  * Curv is lean and powerful. It is designed as a small set of orthogonal
+    primitives that can be composed freely. These primitives are used
+    everywhere, in all 'feature' domains. Instead of learning features,
+    you learn idioms, which are ways of composing primitives to solve problems
+    within a feature domain.
+

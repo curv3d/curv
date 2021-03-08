@@ -1,0 +1,14 @@
+Code that fits your brain -- Adam Tornhill
+
+Beauty is the absence of ugliness. We are designed to find beauty attractive,
+and this transfers to technology, UIs and code.
+
+Beautiful code lacks ugliness. Ugliness in code is everything that puts an
+unnecessary load on our brain. Complexity, inconsistency.
+
+Working memory. Vital for reasoning about code. A limited resource: 3-7 items.
+How to increase it: chunking. Each chunk is a pattern of smaller items.
+Chunks are hierarchical.
+    Memory is hierarchical. Memory works by categorizing things, creating
+    hierarchical classifications.
+        To make programs easy to understand, we need to leverage this.

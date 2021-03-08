@@ -23,16 +23,25 @@ Each builtin scalar operation is implicity smapped.
 The '~' character is an adverb that can be applied to functions
 and infix operators.
 
-'F ~ x' is 'map F x' or 'dmap 1 F x'
-'F ~~ x' is 'map (map F) x' or 'dmap 2 F x'
-
 'a ~+ b' applies 'eachLeft' to the '+' operator. dmap[1,0]'+'[a,b]
 'a +~ b' applies 'eachRight'. dmap[0,1]'+'[a,b]
 In general, you can add zero or more tildes to the left and right of
 an infix operator token.
 
-x ~>> F     is F ~ x   is map F x
-I don't need F~x syntax.
+x ~>> F      is map F x
+
+x >>~ [f,g]  is [f x, g x]
+  Although, if we are consistent about vectorizing all scalar primitives,
+  then x >> [f,g] should also work, since functions are scalars.
+
+'a ~+~ b' requires a and b to be lists of the same size.
+(Maybe a ~`dot`~ b is a more realistic example.)
+Same as: dmap[1,1]'+'[a,b].
+In APL, you'd do this using boxes. How do you do this in K?
+Will nested eachleft/eachright work? No.
+    [1,2] ~+~ [3,4]
+    ~'+'~ [[1,2],[3,4]] => [1+3,2+4]
+    eachleft '+' [[1,2],[3,4]] => [1+[3,4],2+[3,4]]
 
 Prefix ` operators:
     `foo` x

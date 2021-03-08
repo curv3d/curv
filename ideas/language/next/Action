@@ -1,0 +1,101 @@
+Actions
+=======
+An action value is an unevaluated generator or debug action.
+Use cases:
+ * Abstracting over generators or debug actions.
+ * Defining a generator recursively.
+ * Using `match` to define a generator.
+ * Once I have an interactive debugger, and a rich set of actions for
+   controlling the debugger, then user-defined actions are debugger scripts.
+ * print, error, and warning become values.
+
+Constructor:
+    action <generator>
+    action <statement>
+An action body may contain recursive references.
+
+To call an action in a statement or generator context, use:
+    !<action>
+
+Note that `!` is a generalization of (and replacement for) `exec`.
+It's more general because `!a` is a generator.
+
+`print` and `warning` become functions that return actions. So you write:
+    !print "hello world"
+
+This eliminates the confusion in previous versions of Curv, where you write
+'print a' in a generator context, and it doesn't behave like a function call,
+it doesn't produce a value. In mainstream languages, 'print' would be an
+impure function that returns the unit value, and adding a call to 'print'
+in the middle of a list constructor would add a value to the list.
+The new syntax makes it clear that `!print msg` is not an ordinary function
+call expression.
+
+`error` becomes an ordinary function (no magic required). You can write:
+    !error "oops"
+in a statement or generator context, and it works because error does not return.
+
+Predicate: `is_action`.
+
+Semantics
+---------
+Actions are intended to be a generalized mechanism for causing effects.
+For now, they can cause debug effects, and produce values in a generator.
+Later, other effects may be supported.
+
+Semantically, an action value is a linear function that maps an Executor
+value (containing the state of an imperative computation) onto another
+Executor value. This follows from the libcurv implementation of actions
+(Operation::exec).
+
+The syntax `!<action>` invokes this linear function to transform the current
+state of an imperative execution context.
+
+A generator action maps a List_Builder value onto another List_Builder value
+(following libcurv). Record_Builder is a subtype of List_Builder.
+
+A debug action is an identity function with side effects (the Executor value
+may have any type, and is not interpreted). This makes debug actions maximally
+composable: they can be inserted into any sequential execution sequence.
+ * Insert into a pipeline: stuff >> print msg >> rest of pipeline
+ * Insert into a list of functions to be composed: `compose[f,print "foo",g]`
+ * Insert into a generator: [a, !print msg, b]
+ * Insert into a variable transform chain: x!reverse!print "hello"!to_lower
+
+Maybe we can implement actions as functions once the ADT mechanism is complete.
+
+Discussion
+----------
+An action cannot capture a reference to a nonlocal mutable variable, so actions
+are not a true abstraction over imperative statements. However, they are a true
+abstraction over generators and debug effects. They are semantically equivalent
+to unevaluated generators right now (but may become more general later).
+
+Use procedures to abstract over mutable variable references in a statement.
+
+Maybe it is better to have two syntaxes for executing an action:
+    ! <pure-action>
+    ... <general-action>
+The '!' variant is for "pure" actions which have no effect, other than
+debug effects. The implicit imperative state (eg for generators)
+is not modified in the '!' case. The more verbose '...' operator allows
+the action to modify the implicit imperative state, and tells the reader this
+is happening. Rationale:
+ * Comes from my general concern about: making inputs to functions explicit,
+   and enabling you to understand data dependencies using local reasoning.
+ * This helps in computing blame for a function call argument when only the
+   argument syntax is available. When we are trying to identify the n-th
+   element of a list in a list constructor phrase (syntax only), we know that
+   '!a' cannot contribute any list elements. Humans can benefit from the same
+   syntactic reasoning.
+ * This is related to a discussion in [[Proc]] about generator procedures,
+   where this line of thought is extended to 'pure' procedures (which are
+   pure functions) and 'pure' variable updates (which only modify the variable,
+   not the imperative state).
+
+What if I need a function-like abstraction that both returns a value, and
+produces values like a generator? Functions in Curv do not have side effects.
+However,
+* My function can return an action along with another value. So I call the
+  function, destructure the result, then invoke the resulting action.
+* If there are generator procedures, use them. See [[Proc]].

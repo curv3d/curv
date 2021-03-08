@@ -1,5 +1,43 @@
 Ideas for non-backward-compatible syntax changes.
 
+Pipeline Precedence
+-------------------
+What is the precedence of >> relative to other left-associative infix operators?
+* lower than postfix expressions. The left arg of >> is normally postfix.
+* a >> b * c --- (a >> b) * c
+* a >> b + c --- (a >> b) + c
+* a >> b == c -- (a >> b) == c
+* a >> b && c -- (a >> b) && c
+* a >> b `foo` c -- (a >> b) `foo` c, in most cases, unless `foo` returns func
+* -a >> b -- (-a) >> b
+
+Pipeline precedence should be between power and product.
+>> :: @ have the same precedence.
+
+What about `foo` precedence? Currently it is very low, between ritem and
+disjunction. It was intended to have the same precedence as >> so that you
+could write cube >> colour red `union` sphere >> move [1,2,3]
+ie use `foo` as a pipeline operator.
+
+I really wanna collapse all the left-associative precedences between pipeline
+and product into a single precedence level. The result will be:
+    <list> , ;
+    <item>
+    <pipeline>  >> `foo` || && == + * ^ @
+    <prefix>
+    <postfix>
+
+Note: If index values become functions, then a>>b and a@b will have the same
+semantics *and* same precedence in expression context.
+
+Lambda Precedence
+-----------------
+Maybe change -> to have postfix precedence on the left and item on the right.
+Then you write
+    some pipeline >> x -> rest of pipeline with x captured
+This is a tradeoff since parameters with infix pattern operators
+now need parentheses, this affects match expressions.
+
 Postfix Expressions
 -------------------
 There is an ease-of-use issue in expressions like:

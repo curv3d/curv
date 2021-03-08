@@ -1,0 +1,114 @@
+Procedures
+==========
+A procedure abstracts a statement with respect to mutable variables.
+
+Constructor syntax:
+    proc <locative-pattern> do <statement>
+
+A procedure may contain recursive references and use tail recursion.
+
+A procedure is a 'linear function'. It's really just a function. To call it,
+you initialize the mutable variables described by the <locative-pattern> with
+the argument. Then you execute the <statement>, which modifies the parameter
+variables. Then the parameter variables contain the result of the function
+call. It's a 'linear function' because the imperative semantics allow you
+to directly specify an algorithm for efficiently updating a data structure
+without copying it.
+
+This is like defining a procedure with call-by-reference parameters in
+an imperative language that supports this feature. If you need a mix of
+call-by-value and call-by-reference parameters, then use curried functions
+to add initial call-by-value parameters to a procedure. Eg,
+    a -> b -> proc x do ...
+
+Here is a new statement syntax for assigning variables:
+    <locative-pattern> ! <function>
+is equivalent to
+    <locative-pattern> := <function> <locative-pattern>
+Eg,
+    x!negate
+    x!reverse
+If <function> is a procedure, then we expect the variable to be updated
+in place by the <statement> in the procedure, without copying its value.
+
+In imperative languages, it is idiomatic to create two versions of each
+function that can be efficiently implemented by mutating its argument:
+a functional version, and a mutating version.
+* In Scheme, '(reverse x)' vs '(reverse! x)'.
+* In Python, 'reversed(x)' vs 'x.reverse()'.
+In Curv, there is only one 'reverse' function, and the syntax shows
+unambiguously whether mutation is occurring or not.
+    x >> reverse
+    x!reverse
+
+You can chain this syntax:
+    <locative-pattern> ! <function1> ! <function2> !...
+Eg,
+    x!reverse!negate
+This is inspired by the syntax used in object oriented languages to run a
+chain of mutator methods on an object. Curv supports a similar programming
+style, except instead of mutable objects it uses mutable variables, and
+instead of methods, it uses functions.
+
+For example, compare the Haskell `qsort` algorithm, commonly given as an
+example of the terseness of high level functional programming, vs the real
+quicksort algorithm, which works in place (without copying array data) and has
+better performance. Both can be coded in Curv. The Curv version uses simple,
+well known imperative operations from the core language, and does not rely
+on monads, functional compiler optimizations, or other complex abstractions.
+
+Generator Procedures
+--------------------
+Suppose I create a statement generator that uses a state machine (represented
+by mutable variables) to produce values. How do I abstract over that statement?
+
+With the current design, you need to separate the state machine updates
+from the code that produces the values. First call a procedure that updates
+the state, then call a function mapping the state onto an action, and run
+the action. If the resulting code is cleaner and easier to understand using
+local reasoning, then maybe this is an acceptable restriction? (I'm not sure.)
+
+A "generator procedure" is one that mutates its argument *and* produces values
+like a generator. It's just an abstraction over some mutable variables in a
+statement generator. The insight here is that a procedure should not be
+prevented from abstracting over a statement just because the statement
+contains generators.
+
+A generator procedure GP isn't a function, because it has a side effect.
+Even in the case of
+    myvar!GP
+I feel there is a hidden side effect. There is nothing in the statement syntax
+to indicate that the Executor state is being modified. The basic principle of
+Curv is: no side effects, all the inputs to a function call are explicit.
+
+Maybe this syntax
+    ... myvar!GP
+is better? It permits local syntactic reasoning about the inputs to GP,
+so you can understand what state is being modified. See the Discussion
+of `...` in [[Action]]. We distinguish pure procedures (which are pure
+functions, and only have debug effects) from impure procedures (which
+can modify the implicit imperative state, and are not functions, and
+can only be invoked in the context of `... x!P`).
+
+In Place Atomic Update
+----------------------
+A procedure call can efficiently update a data structure in place.
+
+A procedure call can fail (such that the caller can handle the failure).
+Failure can occur after an argument has been mutated, eg due to a
+transform pattern in the parameter section.
+
+When a procedure call fails, it fails atomically. It is not possible to
+observe a partial update of a data structure after such a failure.
+
+'x!myproc' is equivalent to 'x := myproc x'. This is implemented by *moving*
+the contents of x to the argument slot of myproc (leaving x temporarily set
+to the missing Value), then *moving* the result returned by myproc into x.
+Moving a value does not copy it or modify its reference count.
+
+A procedure can safely fail or panic when it is part way through mutating
+its argument, because in-place updates only happen when the procedure has
+*consumed* its argument (the argument's refcount is 1: there are no other
+references to the value, hence on failure, nobody can observe the partially
+modified data structure). Otherwise, due to copy-on-write, the procedure
+is mutating a private copy.
