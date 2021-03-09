@@ -16,6 +16,10 @@ Probably store and m_store are the same thing.
 During analysis, a locative may allocate slots for temporary variables.
 In 'a!b', 'a' must be compiled before 'b'.
 
+I might produce better code if the Curv compiler worked like the proposed
+SubCurv compiler: generate SSA variables (representing evaluated expressions),
+which are possibly constant, before assigning them to slots/registers.
+
 ### Efficient Update using COW
 * This seems relevant: "Perceus: Garbage Free Reference Counting with Reuse"
 https://www.microsoft.com/en-us/research/uploads/prod/2020/11/perceus-tr-v1.pdf
