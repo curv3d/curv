@@ -142,8 +142,9 @@ const
     } else {
         auto scarg = sc_eval_op(fm, arg);
         if (!scarg.type.is_vec())
-            throw Exception(At_SC_Phrase(arg.syntax_, fm),
-                "function call argument is not a vector");
+            throw Exception(At_SC_Phrase(arg.syntax_, fm), stringify(
+                "function call argument is not a vector (has type ",
+                scarg.type,")"));
         if (scarg.type.count() != nargs_)
             throw Exception(At_SC_Phrase(arg.syntax_, fm), stringify(
                 "wrong number of arguments (got ",scarg.type.count(),
