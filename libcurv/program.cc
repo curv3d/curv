@@ -44,12 +44,12 @@ const
     return *nub_phrase(phrase_);
 }
 
-Location
+Src_Loc
 Program::location()
 const
 {
     if (phrase_ == nullptr) {
-        return Location{
+        return Src_Loc{
             scanner_.source_,
             Token{unsigned(scanner_.ptr_ - scanner_.source_->begin()),
                   unsigned(scanner_.source_->size())}};

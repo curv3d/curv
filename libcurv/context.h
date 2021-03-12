@@ -6,7 +6,7 @@
 #define LIBCURV_CONTEXT_H
 
 #include <list>
-#include <libcurv/location.h>
+#include <libcurv/func_loc.h>
 #include <libcurv/frame.h>
 
 namespace curv {
@@ -14,7 +14,6 @@ namespace curv {
 struct Phrase;
 struct Environ;
 struct Scanner;
-struct Function;
 struct System;
 
 /// The primary use of a Context is to describe the source code Location and
@@ -61,7 +60,7 @@ struct System;
 struct Context
 {
     virtual ~Context() {}
-    virtual void get_locations(std::list<Location>&) const = 0;
+    virtual void get_locations(std::list<Func_Loc>&) const = 0;
     virtual Shared<const String> rewrite_message(Shared<const String>) const;
     virtual System& system() const = 0;
     virtual Frame* frame() const = 0;
@@ -73,25 +72,25 @@ struct At_System : public Context
 
     At_System(System& system) : system_(system) {}
 
-    virtual void get_locations(std::list<Location>& locs) const override;
+    virtual void get_locations(std::list<Func_Loc>& locs) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
 };
 
-void get_frame_locations(const Frame* f, std::list<Location>& locs);
+void get_frame_locations(const Frame* f, std::list<Func_Loc>& locs);
 
 struct At_Token : public Context
 {
-    Location loc_;
+    Src_Loc loc_;
     System& system_;
     Frame* file_frame_;
 
     At_Token(Token, const Scanner&);
     At_Token(Token, const Phrase&, Environ&);
-    At_Token(Location, Environ&);
-    At_Token(Location, System&, Frame* = nullptr);
+    At_Token(Src_Loc, Environ&);
+    At_Token(Src_Loc, System&, Frame* = nullptr);
 
-    virtual void get_locations(std::list<Location>&) const override;
+    virtual void get_locations(std::list<Func_Loc>&) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
 };
@@ -109,7 +108,7 @@ struct At_Frame : public At_Syntax
 
     At_Frame(Frame& frame) : call_frame_(frame) {}
 
-    virtual void get_locations(std::list<Location>& locs) const override;
+    virtual void get_locations(std::list<Func_Loc>& locs) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
     virtual const Phrase& syntax() const override;
@@ -128,7 +127,7 @@ struct At_Phrase : public At_Syntax
     At_Phrase(const Phrase& phrase, Scanner& scanner);
     At_Phrase(const Phrase& phrase, Environ& env);
 
-    virtual void get_locations(std::list<Location>& locs) const override;
+    virtual void get_locations(std::list<Func_Loc>& locs) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
     virtual const Phrase& syntax() const override;
@@ -146,7 +145,7 @@ struct At_Program : public At_Syntax
         sstate_(prog.sstate_), syntax_(prog.nub())
     {}
 
-    virtual void get_locations(std::list<Location>& locs) const override;
+    virtual void get_locations(std::list<Func_Loc>& locs) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
     virtual const Phrase& syntax() const override;
@@ -165,7 +164,7 @@ struct At_Arg : public At_Syntax
         call_frame_(fm)
     {}
 
-    void get_locations(std::list<Location>& locs) const override;
+    void get_locations(std::list<Func_Loc>& locs) const override;
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
@@ -193,7 +192,7 @@ struct At_Metacall : public At_Syntax
         parent_frame_(fm)
     {}
 
-    void get_locations(std::list<Location>& locs) const override;
+    void get_locations(std::list<Func_Loc>& locs) const override;
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
@@ -216,7 +215,7 @@ struct At_Metacall_With_Call_Frame : public At_Syntax
         call_frame_(fm)
     {}
 
-    void get_locations(std::list<Location>& locs) const override;
+    void get_locations(std::list<Func_Loc>& locs) const override;
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
@@ -229,7 +228,7 @@ struct At_Syntax_Wrapper : public At_Syntax
     const At_Syntax& parent_;
     At_Syntax_Wrapper(const At_Syntax& cx) : parent_(cx) {}
     Shared<const String> rewrite_message(Shared<const String> s) const override;
-    void get_locations(std::list<Location>& locs) const override;
+    void get_locations(std::list<Func_Loc>& locs) const override;
     System& system() const override;
     Frame* frame() const override;
     const Phrase& syntax() const override;
@@ -260,7 +259,7 @@ struct At_Field : public Context
 
     At_Field(const char* fieldname, const Context& parent);
 
-    virtual void get_locations(std::list<Location>&) const override;
+    virtual void get_locations(std::list<Func_Loc>&) const override;
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
@@ -273,7 +272,7 @@ struct At_Index : public Context
 
     At_Index(size_t index, const Context& parent);
 
-    virtual void get_locations(std::list<Location>&) const override;
+    virtual void get_locations(std::list<Func_Loc>&) const override;
     virtual Shared<const String> rewrite_message(Shared<const String>) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;

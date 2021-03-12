@@ -9,7 +9,7 @@
 namespace curv {
 
 void
-At_SC_Frame::get_locations(std::list<Location>& locs) const
+At_SC_Frame::get_locations(std::list<Func_Loc>& locs) const
 {
     get_sc_frame_locations(&call_frame_, locs);
 }
@@ -23,11 +23,11 @@ At_SC_Frame::rewrite_message(Shared<const String> msg) const
 }
 
 void
-get_sc_frame_locations(const SC_Frame* f, std::list<Location>& locs)
+get_sc_frame_locations(const SC_Frame* f, std::list<Func_Loc>& locs)
 {
     for (; f != nullptr; f = f->parent_frame_) {
         if (f->call_phrase_ != nullptr)
-            locs.push_back(f->call_phrase_->location());
+            locs.emplace_back(f->call_phrase_->location());
         if (f->root_context_ != nullptr)
             f->root_context_->get_locations(locs);
     }
@@ -49,10 +49,10 @@ At_SC_Phrase::At_SC_Phrase(Shared<const Phrase> phrase, SC_Frame& frame)
 {}
 
 void
-At_SC_Phrase::get_locations(std::list<Location>& locs) const
+At_SC_Phrase::get_locations(std::list<Func_Loc>& locs) const
 {
     if (phrase_)
-        locs.push_back(phrase_->location());
+        locs.emplace_back(phrase_->location());
     get_sc_frame_locations(&call_frame_, locs);
 }
 System& At_SC_Phrase::system() const { return call_frame_.sc_.system_; }
@@ -65,7 +65,7 @@ At_SC_Phrase::rewrite_message(Shared<const String> msg) const
     return sc_frame_rewrite_message(&call_frame_, msg);
 }
 
-void At_SC_Tuple_Arg::get_locations(std::list<Location>& locs) const
+void At_SC_Tuple_Arg::get_locations(std::list<Func_Loc>& locs) const
 {
     get_sc_frame_locations(&call_frame_, locs);
 }
@@ -80,9 +80,9 @@ At_SC_Tuple_Arg::rewrite_message(Shared<const String> msg) const
 }
 
 void
-At_SC_Arg_Expr::get_locations(std::list<Location>& locs) const
+At_SC_Arg_Expr::get_locations(std::list<Func_Loc>& locs) const
 {
-    locs.push_back(arg_part(call_phrase_)->location());
+    locs.emplace_back(arg_part(call_phrase_)->location());
     get_sc_frame_locations(&parent_frame_, locs);
 }
 Shared<const String>

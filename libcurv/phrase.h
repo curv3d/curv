@@ -29,7 +29,7 @@ struct Interp;
 /// Goals for the syntax tree data structure:
 /// * Cheap to construct (small footprint, no semantic analysis that could be
 ///   delayed until JIT compile time).
-/// * Can reconstruct its Location in the source code, for error reporting.
+/// * Can reconstruct its location in the source code, for error reporting.
 ///   This doesn't need to be fast.
 /// * Preserves the original source code in full, which means preserving all of
 ///   the original tokens and white space. So a syntax tree can be used for any
@@ -38,7 +38,7 @@ struct Interp;
 struct Phrase : public Shared_Base
 {
     virtual ~Phrase() {}
-    virtual Location location() const = 0;
+    virtual Src_Loc location() const = 0;
     virtual Shared<Definition> as_definition(Environ&, Fail) const;
     virtual Shared<Meaning> analyse(Environ&, Interp terp) const = 0;
 };
@@ -47,9 +47,9 @@ struct Phrase : public Shared_Base
 /// that encapsulate a single token.
 struct Token_Phrase : public Phrase
 {
-    Location loc_;
+    Src_Loc loc_;
     Token_Phrase(const Source& s, Token tok) : loc_(share(s), move(tok)) {}
-    virtual Location location() const override { return loc_; }
+    virtual Src_Loc location() const override { return loc_; }
 };
 struct Identifier final : public Token_Phrase
 {
@@ -74,23 +74,23 @@ struct Numeral final : public Token_Phrase
 
 struct Segment_Phrase : public Shared_Base
 {
-    virtual Location location() const = 0;
+    virtual Src_Loc location() const = 0;
     virtual Shared<Segment> analyse(Environ&, Interp) const = 0;
 };
 struct String_Segment_Phrase : public Segment_Phrase
 {
-    Location loc_;
+    Src_Loc loc_;
     String_Segment_Phrase(const Source& s, Token tok)
     : loc_(share(s), move(tok)) {}
-    virtual Location location() const override { return loc_; }
+    virtual Src_Loc location() const override { return loc_; }
     virtual Shared<Segment> analyse(Environ&, Interp) const override;
 };
 struct Char_Escape_Phrase : public Segment_Phrase
 {
-    Location loc_;
+    Src_Loc loc_;
     Char_Escape_Phrase(const Source& s, Token tok)
     : loc_(share(s), move(tok)) {}
-    virtual Location location() const override { return loc_; }
+    virtual Src_Loc location() const override { return loc_; }
     virtual Shared<Segment> analyse(Environ&, Interp) const override;
 };
 struct Ident_Segment_Phrase : public Segment_Phrase
@@ -98,7 +98,7 @@ struct Ident_Segment_Phrase : public Segment_Phrase
     Shared<const Phrase> expr_;
     Ident_Segment_Phrase(Shared<const Phrase> expr)
     : expr_(move(expr)) {}
-    virtual Location location() const override { return expr_->location(); }
+    virtual Src_Loc location() const override { return expr_->location(); }
     virtual Shared<Segment> analyse(Environ&, Interp) const override;
 };
 struct Paren_Segment_Phrase : public Segment_Phrase
@@ -106,7 +106,7 @@ struct Paren_Segment_Phrase : public Segment_Phrase
     Shared<const Phrase> expr_;
     Paren_Segment_Phrase(Shared<const Phrase> expr)
     : expr_(move(expr)) {}
-    virtual Location location() const override { return expr_->location(); }
+    virtual Src_Loc location() const override { return expr_->location(); }
     virtual Shared<Segment> analyse(Environ&, Interp) const override;
 };
 struct Bracket_Segment_Phrase : public Segment_Phrase
@@ -114,7 +114,7 @@ struct Bracket_Segment_Phrase : public Segment_Phrase
     Shared<const Phrase> expr_;
     Bracket_Segment_Phrase(Shared<const Phrase> expr)
     : expr_(move(expr)) {}
-    virtual Location location() const override { return expr_->location(); }
+    virtual Src_Loc location() const override { return expr_->location(); }
     virtual Shared<Segment> analyse(Environ&, Interp) const override;
 };
 struct Brace_Segment_Phrase : public Segment_Phrase
@@ -122,12 +122,12 @@ struct Brace_Segment_Phrase : public Segment_Phrase
     Shared<const Phrase> expr_;
     Brace_Segment_Phrase(Shared<const Phrase> expr)
     : expr_(move(expr)) {}
-    virtual Location location() const override { return expr_->location(); }
+    virtual Src_Loc location() const override { return expr_->location(); }
     virtual Shared<Segment> analyse(Environ&, Interp) const override;
 };
 struct String_Phrase_Base : public Phrase
 {
-    Location begin_;
+    Src_Loc begin_;
     Token end_;
 
     String_Phrase_Base(const Source& s, Token begin, Token end)
@@ -136,7 +136,7 @@ struct String_Phrase_Base : public Phrase
         end_(move(end))
     {}
 
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         return begin_.ending_at(end_);
     }
@@ -154,7 +154,7 @@ struct Unary_Phrase : public Phrase
     {}
     Token op_;
     Shared<Phrase> arg_;
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         return arg_->location().starting_at(op_);
     }
@@ -175,7 +175,7 @@ struct Binary_Phrase : public Phrase
     Shared<Phrase> left_;
     Token op_;
     Shared<Phrase> right_;
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         return left_->location().ending_at(right_->location().token());
     }
@@ -246,7 +246,7 @@ struct Recursive_Definition_Phrase : public Phrase
     Shared<Phrase> left_;
     Token op_;
     Shared<Phrase> right_;
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         return left_->location().ending_at(right_->location().token());
     }
@@ -268,7 +268,7 @@ struct Var_Definition_Phrase : public Phrase
     Shared<Phrase> left_;
     Token op_;
     Shared<Phrase> right_;
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         return right_->location().starting_at(var_);
     }
@@ -287,7 +287,7 @@ struct Assignment_Phrase : public Phrase
     Shared<Phrase> left_;
     Token op_;
     Shared<Phrase> right_;
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         return left_->location().ending_at(right_->location().token());
     }
@@ -296,11 +296,11 @@ struct Assignment_Phrase : public Phrase
 
 struct Empty_Phrase : public Phrase
 {
-    Location begin_;    // zero length location at start of phrase
+    Src_Loc begin_;    // zero length location at start of phrase
 
-    Empty_Phrase(Location begin) : begin_(move(begin)) {}
+    Empty_Phrase(Src_Loc begin) : begin_(move(begin)) {}
 
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         return begin_;
     }
@@ -326,7 +326,7 @@ struct Separator_Phrase : public Phrase
 
     Separator_Phrase() {}
 
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         const Arg& last = args_.back();
         return args_.front().expr_->location().ending_at(
@@ -364,7 +364,7 @@ struct Delimited_Phrase : public Phrase
     : lparen_(lparen), body_(move(body)), rparen_(rparen)
     {}
 
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         return body_->location().starting_at(lparen_).ending_at(rparen_);
     }
@@ -398,7 +398,7 @@ struct Program_Phrase : public Phrase
     : body_(move(body)), end_(end)
     {}
 
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         return body_->location().ending_at(end_);
     }
@@ -443,7 +443,7 @@ struct Call_Phrase : public Phrase
         return op_.kind_ == Token::k_missing;
     }
 
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         if (op_.kind_ == Token::k_backtick)
             return arg_->location();
@@ -464,7 +464,7 @@ struct Predicate_Assertion_Phrase : public Call_Phrase
     :
         Call_Phrase(move(predicate), move(arg), move(op))
     {}
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         return arg_->location().ending_at(function_->location().token());
     }
@@ -480,7 +480,7 @@ struct Apply_Lens_Phrase : public Call_Phrase
     :
         Call_Phrase(move(lens), move(value), move(op))
     {}
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         return arg_->location().ending_at(function_->location().token());
     }
@@ -496,7 +496,7 @@ struct Mutate_Phrase : public Call_Phrase
     :
         Call_Phrase(move(func), move(locative), move(op))
     {}
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         return arg_->location().ending_at(function_->location().token());
     }
@@ -525,7 +525,7 @@ struct If_Phrase : public Phrase
         else_expr_(else_expr)
     {}
 
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         if (else_expr_ == nullptr)
             return then_expr_->location().starting_at(if_);
@@ -553,7 +553,7 @@ struct Control_Phrase : public Phrase
         body_(body)
     {}
 
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         return body_->location().starting_at(keyword_);
     }
@@ -594,7 +594,7 @@ struct For_Phrase : public Phrase
     {}
 
     virtual Shared<Meaning> analyse(Environ&, Interp) const override;
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         return body_->location().starting_at(keyword_);
     }
@@ -622,7 +622,7 @@ struct Parametric_Phrase : public Phrase
         body_(body)
     {}
 
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         return body_->location().starting_at(keyword_);
     }
@@ -649,7 +649,7 @@ struct Range_Phrase : public Phrase
     Shared<Phrase> last_;
     Token op2_;
     Shared<Phrase> step_;
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         if (step_ != nullptr) {
             return first_->location().ending_at(step_->location().token());
@@ -680,7 +680,7 @@ struct Let_Phrase : public Phrase
     {}
 
     virtual Shared<Meaning> analyse(Environ&, Interp) const override;
-    virtual Location location() const override
+    virtual Src_Loc location() const override
     {
         return body_->location().starting_at(let_);
     }

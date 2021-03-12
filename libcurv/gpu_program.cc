@@ -21,7 +21,7 @@ GPU_Program::GPU_Program(Program& prog)
     is_3d_ = false;
 }
 
-Location
+Src_Loc
 GPU_Program::location() const
 {
     return nub_->location();

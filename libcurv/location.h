@@ -8,7 +8,6 @@
 #include <libcurv/source.h>
 #include <libcurv/token.h>
 #include <libcurv/range.h>
-#include <libcurv/shared.h>
 #include <ostream>
 
 namespace curv {
@@ -21,26 +20,26 @@ namespace curv {
 /// the filename, line/column numbers, the line of text containing the
 /// error with a ^ under the first character of the text range,
 /// and an IDE can highlight the text range containing the error.
-struct Location
+struct Src_Loc
 {
 private:
     Shared<const Source> source_;
     Token token_;
 
 public:
-    Location() {}
+    Src_Loc() {}
 
-    Location(Shared<const Source> source, Token token)
+    Src_Loc(Shared<const Source> source, Token token)
     :
         source_(move(source)),
         token_(move(token))
     {}
 
     /// Modify location to start at 'tok'
-    Location starting_at(Token tok) const;
+    Src_Loc starting_at(Token tok) const;
 
     /// Modify location to end at 'tok'
-    Location ending_at(Token tok) const;
+    Src_Loc ending_at(Token tok) const;
 
     /// Source where error occurred.
     const Source& source() const { return *source_; }
@@ -54,13 +53,11 @@ public:
     /// Range of characters within source where error occurred.
     Range<const char*> range() const;
 
-    /// Output the location part of an exception message (no final newline).
-    /// The `colour` flag enables colour text using ANSI ESC sequences.
-    void write(std::ostream&, bool colour, bool many) const;
+    /// Output the lines of source code containing the location,
+    /// with underlining.
+    void write_code(std::ostream&, bool colour) const;
 
-    void write_json(std::ostream&) const;
-
-    /// Line and column information for a Location
+    /// Line and column information for a Src_Loc
     ///
     /// Line and column numbers begin at 0.
     /// [start_column_num,end_column_num) is a half-open range.

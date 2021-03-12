@@ -55,7 +55,7 @@ struct Program
 
     const Phrase& nub() const;
 
-    Location location() const;
+    Src_Loc location() const;
     System& system() const { return scanner_.system_; }
     Frame* file_frame() const { return scanner_.file_frame_; }
 

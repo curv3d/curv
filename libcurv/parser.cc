@@ -76,7 +76,7 @@ parse_list(Scanner& scanner)
     if (is_list_end_token(tok.kind_)) {
         Token begin = tok;
         begin.last_ = begin.first_;
-        return make<Empty_Phrase>(Location{scanner.source_, begin});
+        return make<Empty_Phrase>(Src_Loc{scanner.source_, begin});
     }
     if (tok.kind_ == Token::k_semicolon)
         return parse_semicolons(scanner, nullptr);
@@ -153,7 +153,7 @@ parse_semicolons(Scanner& scanner, Shared<Phrase> firstitem)
     if (firstitem == nullptr) {
         Token empty = tok;
         empty.last_ = empty.first_;
-        firstitem = make<Empty_Phrase>(Location{scanner.source_, empty});
+        firstitem = make<Empty_Phrase>(Src_Loc{scanner.source_, empty});
     }
     auto semis = make<Semicolon_Phrase>();
     semis->args_.push_back({firstitem, tok});
@@ -163,14 +163,14 @@ parse_semicolons(Scanner& scanner, Shared<Phrase> firstitem)
             scanner.push_token(tok);
             Token etok = tok;
             etok.last_ = etok.first_;
-            auto empty = make<Empty_Phrase>(Location{scanner.source_, etok});
+            auto empty = make<Empty_Phrase>(Src_Loc{scanner.source_, etok});
             semis->args_.push_back({empty, etok});
             return semis;
         }
         if (tok.kind_ == Token::k_semicolon) {
             Token etok = tok;
             etok.last_ = etok.first_;
-            auto empty = make<Empty_Phrase>(Location{scanner.source_, etok});
+            auto empty = make<Empty_Phrase>(Src_Loc{scanner.source_, etok});
             semis->args_.push_back({empty, tok});
             continue;
         }

@@ -27,7 +27,7 @@ struct GPU_Program
     bool recognize(Value, Render_Opts);
 
     // abstract interface to PROGRAM classes (see At_Program)
-    Location location() const;
+    Src_Loc location() const;
     System& system() const { return sstate_.system_; }
     Frame* file_frame() const { return sstate_.file_frame_; }
     const Phrase& nub() const { return *nub_; }

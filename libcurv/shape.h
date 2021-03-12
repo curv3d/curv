@@ -69,7 +69,7 @@ struct Shape_Program final : public Shape
     // describes the source code for the shape expression
     Shared<const Phrase> nub_;
 
-    Location location() const;
+    Src_Loc location() const;
     System& system() const { return sstate_.system_; }
     Frame* file_frame() const { return sstate_.file_frame_; }
     const Phrase& nub() const { return *nub_; }

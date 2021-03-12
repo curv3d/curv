@@ -53,7 +53,7 @@ Value Param::eval(Value defl)
         }
         return prog.eval();
     } else {
-        loc_ = Location{make<Source>(params_.config_.filename_), Token{}};
+        loc_ = Src_Loc{make<Source>(params_.config_.filename_), Token{}};
         return value_.config;
     }
 }
@@ -104,7 +104,7 @@ int Param::to_enum(const std::vector<const char*>& e)
 void Param::unknown_parameter() const
 {
     if (value_.opt) {
-        Location loc{
+        Src_Loc loc{
             make<String_Source>("", stringify("-O ",name_,"=",value_.opt)),
             {3, unsigned(3+name_.size())}};
         if (params_.format_.empty()) {
@@ -120,9 +120,9 @@ void Param::unknown_parameter() const
     }
 }
 
-void Param::get_locations(std::list<Location>& locs) const
+void Param::get_locations(std::list<Func_Loc>& locs) const
 {
-    locs.push_back(loc_);
+    locs.emplace_back(loc_);
 }
 
 Shared<const String> Param::rewrite_message(Shared<const String> msg) const

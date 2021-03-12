@@ -28,9 +28,10 @@ struct At_Path : public Context
         path_(path)
     {}
 
-    virtual void get_locations(std::list<Location>& locs) const override
+    virtual void get_locations(std::list<Func_Loc>& locs) const override
     {
-        locs.emplace_back(make<Source>(path_.string().c_str()), Token{});
+        locs.emplace_back(
+            Src_Loc(make<Source>(path_.string().c_str()), Token{}));
     }
     virtual System& system() const override
     {

@@ -27,7 +27,7 @@ Shape_Program::Shape_Program(
     is_3d_ = false;
 }
 
-Location Shape_Program::location() const
+Src_Loc Shape_Program::location() const
 {
     return nub_->location();
 }

@@ -16,7 +16,7 @@ struct At_SC_Frame : public Context
 
     At_SC_Frame(SC_Frame& frame) : call_frame_(frame) {}
 
-    virtual void get_locations(std::list<Location>& locs) const override;
+    virtual void get_locations(std::list<Func_Loc>& locs) const override;
     Shared<const String> rewrite_message(Shared<const String>) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
@@ -30,7 +30,7 @@ struct At_SC_Phrase : public At_Syntax
 
     At_SC_Phrase(Shared<const Phrase> phrase, SC_Frame& frame);
 
-    virtual void get_locations(std::list<Location>& locs) const override;
+    virtual void get_locations(std::list<Func_Loc>& locs) const override;
     Shared<const String> rewrite_message(Shared<const String>) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
@@ -47,7 +47,7 @@ struct At_SC_Tuple_Arg : public Context
 
     At_SC_Tuple_Arg(size_t i, SC_Frame& f) : tuple_index_(i), call_frame_(f) {}
 
-    void get_locations(std::list<Location>& locs) const override;
+    void get_locations(std::list<Func_Loc>& locs) const override;
     Shared<const String> rewrite_message(Shared<const String>) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
@@ -73,14 +73,14 @@ struct At_SC_Arg_Expr : public At_Syntax
     Shared<const Phrase> call_phrase_;
     SC_Frame& parent_frame_;    // The CALLER's frame. This call has no frame.
 
-    virtual void get_locations(std::list<Location>& locs) const override;
+    virtual void get_locations(std::list<Func_Loc>& locs) const override;
     Shared<const String> rewrite_message(Shared<const String>) const override;
     virtual System& system() const override;
     virtual Frame* frame() const override;
     virtual const Phrase& syntax() const override;
 };
 
-void get_sc_frame_locations(const SC_Frame* f, std::list<Location>& locs);
+void get_sc_frame_locations(const SC_Frame* f, std::list<Func_Loc>& locs);
 Shared<const String> sc_frame_rewrite_message(
     const SC_Frame*, Shared<const String>);
 

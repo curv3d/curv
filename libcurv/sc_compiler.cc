@@ -518,7 +518,7 @@ Value sc_get_index(SC_Frame& fm, Shared<const Operation> index)
     else if (auto slice = cast<const TSlice_Expr>(index)) {
         if (auto ilist = cast<const List_Expr>(slice->indexes_)) {
             if (ilist->size() == 1) {
-                if (k = cast<const Constant>(ilist->at(0)))
+                if ((k = cast<const Constant>(ilist->at(0))))
                     return k->value_;
             }
         }

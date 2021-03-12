@@ -2,16 +2,17 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/location.h>
+#include <libcurv/func_loc.h>
 
 #include <libcurv/ansi_colour.h>
 #include <libcurv/format.h>
+#include <libcurv/function.h>
 #include <libcurv/json.h>
 
 namespace curv {
 
-Location::Line_Info
-Location::line_info() const
+Src_Loc::Line_Info
+Src_Loc::line_info() const
 {
     // The line/col of a character position is ambiguous, if the position
     // points at the next position after a newline. Cases:
@@ -137,26 +138,9 @@ putsrcline(
 }
 
 void
-Location::write(std::ostream& out, bool colour, bool many) const
+Src_Loc::write_code(std::ostream& out, bool colour) const
 {
-    // TODO: more expressive and helpful diagnostics.
-    // Inspiration: http://clang.llvm.org/diagnostics.html
-    // and http://elm-lang.org/blog/compiler-errors-for-humans
-
-    if (source_->no_contents()) {
-        out << "at file \"" << filename() << "\"";
-        return;
-    }
-
     auto info = line_info();
-
-    // Output filename and line number, followed by newline.
-    if (many || !filename().empty()) {
-        out << "at";
-        if (!filename().empty())
-            out << " file \"" << filename() << "\"";
-        out << ":\n";
-    }
 
     // Output underlined program text. No final newline.
     // Inspired by http://elm-lang.org/blog/compiler-errors-for-humans
@@ -188,44 +172,73 @@ Location::write(std::ostream& out, bool colour, bool many) const
 }
 
 void
-Location::write_json(std::ostream& out) const
+Func_Loc::write(std::ostream& out, bool colour, bool many) const
 {
-    if (source_->no_contents()) {
+    // TODO: more expressive and helpful diagnostics.
+    // Inspiration: http://clang.llvm.org/diagnostics.html
+    // and http://elm-lang.org/blog/compiler-errors-for-humans
+
+    if (srcloc_.source().no_contents()) {
+        out << "at file \"" << srcloc_.filename() << "\"";
+        return;
+    }
+
+    // Output filename and function name, followed by newline.
+    if (many || !srcloc_.filename().empty() || (func_ && func_->name_)) {
+        out << "at";
+        if (!srcloc_.filename().empty())
+            out << " file \"" << srcloc_.filename() << "\"";
+        if (func_) {
+            out << " function " << func_->name_;
+            for (unsigned i = 0; i < func_->argpos_; ++i)
+                out << " _";
+        }
+        out << ":\n";
+    }
+
+    // Output underlined program text. No final newline.
+    srcloc_.write_code(out, colour);
+}
+
+void
+Func_Loc::write_json(std::ostream& out) const
+{
+    if (srcloc_.source().no_contents()) {
         out << "{";
         out << "\"filename\":";
-        write_json_string(filename().c_str(), out);
+        write_json_string(srcloc_.filename().c_str(), out);
         out << "}";
         return;
     }
 
-    auto info = line_info();
+    auto info = srcloc_.line_info();
 
-    out << "{\"start\":{\"char\":" << token().first_
+    out << "{\"start\":{\"char\":" << srcloc_.token().first_
         << ",\"line_begin\":" << info.start_line_begin
         << ",\"line\":" << info.start_line_num
         << ",\"column\":" << info.start_column_num
-        << "},\"end\":{\"char\":" << token().last_
+        << "},\"end\":{\"char\":" << srcloc_.token().last_
         << ",\"line\":" << info.end_line_num
         << ",\"column\":" << info.end_column_num
         << "}";
-    if (!filename().empty()) {
+    if (!srcloc_.filename().empty()) {
         out << ",\"filename\":";
-        write_json_string(filename().c_str(), out);
+        write_json_string(srcloc_.filename().c_str(), out);
     }
     out << "}";
 }
 
 Range<const char*>
-Location::range() const
+Src_Loc::range() const
 {
     return Range<const char*>(
         source_->first + token_.first_, source_->first + token_.last_);
 }
 
-Location
-Location::starting_at(Token tok) const
+Src_Loc
+Src_Loc::starting_at(Token tok) const
 {
-    Location loc = *this;
+    Src_Loc loc = *this;
     if (tok.kind_ != Token::k_missing) {
         loc.token_.first_white_ = tok.first_white_;
         loc.token_.first_ = tok.first_;
@@ -234,10 +247,10 @@ Location::starting_at(Token tok) const
     return loc;
 }
 
-Location
-Location::ending_at(Token tok) const
+Src_Loc
+Src_Loc::ending_at(Token tok) const
 {
-    Location loc = *this;
+    Src_Loc loc = *this;
     if (tok.kind_ != Token::k_missing) {
         loc.token_.last_ = tok.last_;
         loc.token_.kind_ = Token::k_phrase;

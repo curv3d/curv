@@ -73,7 +73,7 @@ struct Metafunction : public Meaning
 {
     using Meaning::Meaning;
     virtual Shared<Meaning> call(const Call_Phrase&, Environ&) override = 0;
-    virtual Shared<Operation> to_operation(System&, Frame*);
+    virtual Shared<Operation> to_operation(System&, Frame*) override;
     virtual void print_help(std::ostream&) const = 0;
 };
 

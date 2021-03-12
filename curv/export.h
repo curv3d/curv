@@ -56,7 +56,7 @@ struct Param : public curv::Context
     const Export_Params& params_;
     const std::string& name_;
     const Export_Params::PValue& value_;
-    curv::Location loc_;
+    curv::Src_Loc loc_;
 
     // First, ye must evaluate the parameter.
     // If the parameter was specified as a command line option `-Ofoo`
@@ -80,7 +80,7 @@ struct Param : public curv::Context
     // an Exception, using the Param as a context. But throw not
     // before calling eval(), because the Param is not yet initialized
     // as a Context.
-    virtual void get_locations(std::list<curv::Location>&) const override;
+    virtual void get_locations(std::list<curv::Func_Loc>&) const override;
     virtual curv::Shared<const curv::String> rewrite_message(
         curv::Shared<const curv::String>) const override;
     virtual curv::System& system() const override;

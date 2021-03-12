@@ -94,7 +94,7 @@ struct Help_Action : public Operation
 struct Help_Metafunction : public Metafunction
 {
     using Metafunction::Metafunction;
-    Shared<Operation> to_operation(System& sys, Frame* f)
+    Shared<Operation> to_operation(System& sys, Frame* f) override
     {
         throw Exception(At_Phrase(*syntax_, sys, f),
             "Usage: help <expression>");
@@ -104,7 +104,7 @@ struct Help_Metafunction : public Metafunction
         auto arg = ph.arg_->analyse(env, Interp::expr());
         return make<Help_Action>(share(ph), arg);
     }
-    void print_help(std::ostream& out) const
+    void print_help(std::ostream& out) const override
     {
         out <<
           "help <expression>\n"
@@ -321,7 +321,7 @@ void color_input(std::string const& context, Replxx::colors_t& colors,
       set_colour(colors, tok, col);
     }
   } catch (Exception& e) {
-    auto tok = e.loc_.front().token();
+    auto tok = e.loc_.front().srcloc_.token();
     set_colour(colors, tok, Color::ERROR);
   }
 }

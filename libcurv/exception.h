@@ -8,7 +8,7 @@
 #include <exception>
 #include <list>
 #include <ostream>
-#include <libcurv/location.h>
+#include <libcurv/func_loc.h>
 #include <libcurv/string.h>
 
 namespace curv {
@@ -95,7 +95,7 @@ struct Context;
 struct Exception : public Exception_Base
 {
     // TODO: use std::shared_ptr so copy-ctor doesn't throw?
-    std::list<Location> loc_;
+    std::list<Func_Loc> loc_;
 
     Exception(const Context& cx, String_Ref msg);
 

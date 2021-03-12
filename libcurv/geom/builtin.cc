@@ -70,7 +70,7 @@ struct SC_Test_Metafunction : public Metafunction
     {
         return make<SC_Test_Action>(share(ph), analyse_op(*ph.arg_, env));
     }
-    virtual void print_help(std::ostream& out) const
+    virtual void print_help(std::ostream& out) const override
     {
         out <<
             "sc_test {tagname1: testfunction1, tagname2: testfunction2, ...}\n"
