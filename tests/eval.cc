@@ -356,7 +356,7 @@ TEST(curv, eval)
         "6");
     FAILALL("let f=x->x x in f 0",
         "0: not a function\n"
-        "at:\n"
+        "at function f:\n"
         "1| let f=x->x x in f 0\n"
         "            ^         \n"
         "at:\n"

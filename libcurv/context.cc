@@ -15,25 +15,28 @@ Context::rewrite_message(Shared<const String> msg) const
     return msg;
 }
 
+Shared<const Function> gfunc(const Frame* fm)
+{
+    if (fm == nullptr)
+        return nullptr;
+    return fm->func_;
+}
+
 Shared<const Function> in_func(const Frame& fm)
 {
-  #if 1
-    return nullptr;
-  #elif 0
-    if (fm.parent_frame_ == nullptr)
+    if (auto p = fm.parent_frame_)
+        return p->func_;
+    else
         return nullptr;
-    return fm.parent_frame_->func_;
-  #else
-    return fm.func_;
-  #endif
 }
 
 void
 get_frame_locations(const Frame* f, std::list<Func_Loc>& locs)
 {
-    for (; f != nullptr; f = f->parent_frame_)
+    for (; f != nullptr; f = f->parent_frame_) {
         if (f->call_phrase_ != nullptr)
             locs.emplace_back(in_func(*f), f->call_phrase_->location());
+    }
 }
 
 // At_System
@@ -129,7 +132,7 @@ At_Phrase::At_Phrase(const Phrase& phrase, Environ& env)
 void
 At_Phrase::get_locations(std::list<Func_Loc>& locs) const
 {
-    if (phrase_) locs.emplace_back(phrase_->location());
+    if (phrase_) locs.emplace_back(gfunc(frame_), phrase_->location());
     get_frame_locations(frame_, locs);
 }
 System& At_Phrase::system() const { return system_; }

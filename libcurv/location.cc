@@ -188,7 +188,7 @@ Func_Loc::write(std::ostream& out, bool colour, bool many) const
         out << "at";
         if (!srcloc_.filename().empty())
             out << " file \"" << srcloc_.filename() << "\"";
-        if (func_) {
+        if (func_ && func_->name_) {
             out << " function " << func_->name_;
             for (unsigned i = 0; i < func_->argpos_; ++i)
                 out << " _";
