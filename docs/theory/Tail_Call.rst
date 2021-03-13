@@ -16,21 +16,21 @@ This means you can use tail calls to efficiently implement iteration.
 Here is an example in Curv::
 
   let
-    fac_loop(n,a) = if (n <= 1) a else fac_loop(n-1,n*a);
-    factorial n = fac_loop(n,1);
+    fac_loop[n,a] = if (n <= 1) a else fac_loop[n-1,n*a];
+    factorial n = fac_loop[n,1];
   in
     factorial 10
 
 There are two tail calls in this program.
-The first is the recursive tail call ``fac_loop(n-1,n*a)``
+The first is the recursive tail call ``fac_loop[n-1,n*a]``
 which implements the tail-recursive loop that computes a factorial.
-The second is the body of the ``factorial`` function itself: ``fac_loop(n,1)``.
+The second is the body of the ``factorial`` function itself: ``fac_loop[n,1]``.
 This means that the function call ``factorial 10`` only requires a single stack
 frame on the function call stack.
 
 In the functional programming community,
-efficient implementation of tail calls is considered to be a fundamental requirement
-for functional programming languages.
+efficient implementation of tail calls is considered to be
+a fundamental requirement for functional programming languages.
 Curv meets this requirement.
 
 Definition of a Tail Call
@@ -47,24 +47,26 @@ A tail context is defined as follows:
 Shortened Stack Traces
 ----------------------
 Although TCO is a requirement for functional languages, it is controversial
-in the imperative programming community. Lua does it. But Guido doesn't want it in Python
-(he considers it "unpythonic"). The Javascript standards committee tried to add it to Javascript ES6
-in 2015, but there was a developer rebellion: Google implemented it in Chrome, then reverted the change.
+in the imperative programming community. Lua does it. But Guido doesn't want it
+in Python (he considers it "unpythonic"). The Javascript standards committee
+tried to add it to Javascript ES6 in 2015, but there was a developer rebellion:
+Google implemented it in Chrome, then reverted the change.
 
 What could be the problem?
-TCO eliminates frames from the call stack, which means that it shortens stack traces
-that are used for debugging. Adding TCO to an existing imperative language is a non-starter
-for this reason: after the change, stack traces have less information, which the existing dev
-community sees as a loss. Few people support the change, because nobody is writing
-the kind of functional code that benefits from this change. They can't, because without TCO, tail recursive
-loops exhaust the stack and crash your program.
+TCO eliminates frames from the call stack, which means that it shortens stack
+traces that are used for debugging. Adding TCO to an existing imperative
+language is a non-starter for this reason: after the change, stack traces
+have less information, which the existing dev community sees as a loss. Few
+people support the change, because nobody is writing the kind of functional
+code that benefits from this change. They can't, because without TCO, tail
+recursive loops exhaust the stack and crash your program.
 
-On the flip side, if you actually do write code in a functional style, using tail recursive
-loops, then you don't want each iteration of a loop to appear in your stack traces.
-You get huge stack traces that are full of noise.
+On the flip side, if you actually do write code in a functional style, using
+tail recursive loops, then you don't want each iteration of a loop to appear
+in your stack traces. You get huge stack traces that are full of noise.
 
-Curv has TCO, which means stack traces are shorter than they would be without TCO.
-If this turns out to be a real problem for debugging,
+Curv has TCO, which means stack traces are shorter than they would be
+without TCO. If this turns out to be a real problem for debugging,
 we will investigate ways to mitigate it.
 
 Note that it's really easy to suppress TCO on a case-by-case basis.
@@ -102,23 +104,22 @@ So the second step is to optimize the ``while`` loops that we generate into
 ``for`` loops when that is feasible. Without this optimization, developers will
 still need to avoid self-tail-recursion in favour of imperative style loops.
 
-A possible third step is support general tail recursion for mutually recursive functions.
-This is pretty complex, and I don't know another language that attempts this.
-You would need to identify groups of functions that recursively call each other
-(a mutual recursion group),and inline expand all of the functions of each group into
-a single uber-function. Each uber-function has an outer ``while`` loop,
-and uses variables and a state machine to keep track of which function
-is currently executing within the uber-function.
+A possible third step is support general tail recursion for mutually recursive
+functions. This is pretty complex, and I don't know another language
+that attempts this. You would need to identify groups of functions that
+recursively call each other (a mutual recursion group),and inline expand all
+of the functions of each group into a single uber-function. Each uber-function
+has an outer ``while`` loop, and uses variables and a state machine to keep
+track of which function is currently executing within the uber-function.
 
-This use of ``while`` loops and variables to simulate a state machine is slower
-than hand-written imperative code, especially on a GPU.
-So you want to optimize this code to get rid of the variables.
-This is possible, but quite complicated.
-This is equivalent to converting a control flow graph (CFG) into high level
-structured control statements (if, while, for) using an algorithm like Relooper or Stackifier.
-Emscripten does this, but "The Relooper is the most complex module in Emscripten".
-Cheerp uses an improved version of Stackifier, which generates efficient code,
-faster than Relooper.
+This use of ``while`` loops and variables to simulate a state machine is
+slower than hand-written imperative code, especially on a GPU. So you want
+to optimize this code to get rid of the variables. This is possible, but
+quite complicated. This is equivalent to converting a control flow graph
+(CFG) into high level structured control statements (if, while, for) using
+an algorithm like Relooper or Stackifier. Emscripten does this, but "The
+Relooper is the most complex module in Emscripten". Cheerp uses an improved
+version of Stackifier, which generates efficient code, faster than Relooper.
 
 References
 ----------
