@@ -9,21 +9,14 @@
 
 namespace curv {
 
-Frame_Base::Frame_Base(
-    Source_State& sstate, Frame* parent, Shared<const Phrase> src, Module* nl)
+Frame_Base::Frame_Base(Source_State& sstate, Frame* parent,
+    Shared<const Function> caller, Shared<const Phrase> src)
 :
     sstate_(sstate),
     parent_frame_(parent),
-    call_phrase_(move(src)),
-    nonlocals_(nl)
-{}
-
-Shared<const Function> Frame_Base::caller() const
+    caller_(caller),
+    call_phrase_(move(src))
 {
-    if (auto p = parent_frame_)
-        return p->func_;
-    else
-        return nullptr;
 }
 
 } // namespaces

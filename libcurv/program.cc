@@ -33,8 +33,8 @@ Program::compile(Environ& env)
     } else {
         meaning_ = phrase_->analyse(env, terp_);
     }
-    frame_ = {Frame::make(env.frame_maxslots_,
-        sstate_, scanner_.file_frame_, nullptr, nullptr)};
+    frame_ = {Frame::make(env.frame_maxslots_, sstate_, scanner_.file_frame_,
+        nullptr, nullptr)};
 }
 
 const Phrase&

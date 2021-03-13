@@ -320,7 +320,8 @@ call_func(Value func, Value arg, Shared<const Phrase> call_phrase, Frame& fm)
           {
             Function* fun = (Function*)&funp;
             std::unique_ptr<Frame> f2 {
-                Frame::make(fun->nslots_, fm.sstate_, &fm, call_phrase, nullptr)
+                Frame::make(fun->nslots_, fm.sstate_, &fm,
+                    fm.func_, call_phrase)
             };
             f2->func_ = share(*fun);
             fun->tail_call(arg, f2);
@@ -366,9 +367,8 @@ tail_call_func(
         case Ref_Value::ty_function:
           {
             Function* fun = (Function*)&funp;
-            fm = Frame::make(
-                fun->nslots_, fm->sstate_, fm->parent_frame_,
-                call_phrase, nullptr);
+            fm = Frame::make(fun->nslots_, fm->sstate_, fm->parent_frame_,
+                fm->func_, call_phrase);
             fm->func_ = share(*fun);
             fun->tail_call(arg, fm);
             return;
@@ -897,7 +897,8 @@ Parametric_Expr::eval(Frame& fm) const
         throw Exception(cx, "internal error in Parametric_Expr");
     Shared<const Phrase> call_phrase = syntax_; // TODO?
     std::unique_ptr<Frame> f2 {
-        Frame::make(closure->nslots_, fm.sstate_, &fm, call_phrase, nullptr)
+        Frame::make(closure->nslots_, fm.sstate_, &fm,
+            fm.func_, call_phrase)
     };
     auto default_arg = record_pattern_default_value(*closure->pattern_,*f2);
     Value res = closure->call({default_arg}, Fail::hard, *f2);

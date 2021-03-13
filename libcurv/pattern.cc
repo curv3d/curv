@@ -175,7 +175,7 @@ struct Predicate_Pattern : public Pattern
                 Function* fun = (Function*)&funp;
                 std::unique_ptr<Frame> f2 {
                     Frame::make(fun->nslots_, fm.sstate_, &fm,
-                        call_phrase(), nullptr)
+                        fm.func_, call_phrase())
                 };
                 auto result = fun->call(arg, Fail::hard, *f2);
                 return result.to_bool(At_Phrase(*call_phrase(), fm));

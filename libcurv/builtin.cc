@@ -1077,7 +1077,7 @@ struct File_Expr : public Just_Expression
         // which permits calls to `file pathname` to appear in stack traces.
         auto& callphrase = dynamic_cast<const Call_Phrase&>(*syntax_);
         std::unique_ptr<Frame> f2 =
-            Frame::make(0, fm.sstate_, &fm, &callphrase, nullptr);
+            Frame::make(0, fm.sstate_, &fm, fm.func_, &callphrase);
         At_Metacall_With_Call_Frame cx("file", 0, *f2);
 
         // construct file pathname from argument

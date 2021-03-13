@@ -89,12 +89,12 @@ Shape_Program::recognize(Value val, Render_Opts* opts)
     bbox_ = BBox::from_value(bbox_val, At_Field("bbox", cx));
 
     dist_fun_ = value_to_function(dist_val, At_Field("dist", cx));
-    dist_frame_ = Frame::make(
-        dist_fun_->nslots_, sstate_, nullptr, nullptr, nullptr);
+    dist_frame_ = Frame::make(dist_fun_->nslots_, sstate_, nullptr,
+        nullptr, nullptr);
 
     colour_fun_ = value_to_function(colour_val, At_Field("colour", cx));
-    colour_frame_ = Frame::make(
-        colour_fun_->nslots_, sstate_, nullptr, nullptr, nullptr);
+    colour_frame_ = Frame::make(colour_fun_->nslots_, sstate_, nullptr,
+        nullptr, nullptr);
 
     Value render_val = r->find_field(render_key, cx);
     if (!render_val.is_missing()) {

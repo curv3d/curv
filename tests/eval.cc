@@ -249,6 +249,7 @@ TEST(curv, eval)
     SUCCESS("sqrt << sqrt 16", "2");
     FAILALL("let f=[]->sqrt(true);\nin f[]",
         "argument #1 of sqrt: #true: domain error\n"
+        "at function f:\n"
         "1| let f=[]->sqrt(true);\n"
         "                 ^^^^^^ "
         /* removed due to tail call optimization

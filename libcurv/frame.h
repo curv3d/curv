@@ -42,18 +42,6 @@ struct Frame_Base
     /// a stack trace and by the debugger. It is not used during evaluation.
     Frame* parent_frame_;
 
-    /// If this is a function call frame, then call_phrase_ is the source code
-    /// for the function call, otherwise it's nullptr.
-    ///
-    /// Program frames do not have a call_phrase_. If the call_phrase_ is null,
-    /// then the frame does not appear in a stack trace.
-    ///
-    /// In the common case, *call_phrase_ is a Call_Phrase. However, in the
-    /// case of a builtin function B that takes a function F as an argument,
-    /// there is no Call_Phrase in Curv source code where F is called, so
-    /// Call_Phrase is a best effort approximation, such as the call to B.
-    Shared<const Phrase> call_phrase_;
-
     /// Slot array containing the values of nonlocal bindings.
     ///
     /// This is:
@@ -68,10 +56,28 @@ struct Frame_Base
     const Operation* next_op_;
     Value result_;
 
-    // A counted reference to `func_` is held in order to keep the 'nonlocals_'
-    // and 'next_op_' objects alive. Is nullptr if not a function call frame.
-    // Used by caller().
+    // If this is a function call frame, then `func_` is the function that
+    // was called. Otherwise, nullptr. Used to initialize caller_.
+    // When calling a Closure, a counted reference to `func_` keeps
+    // the 'nonlocals_' and 'next_op_' objects alive.
     Shared<const Function> func_;
+
+    // If this is a function call frame (call_phrase_ != nullptr), then caller_
+    // is a function whose definition lexically encloses the call_phrase_.
+    // Otherwise it is nullptr. Used to print stack traces.
+    Shared<const Function> caller_;
+
+    /// If this is a function call frame, then call_phrase_ is the source code
+    /// for the function call, otherwise it's nullptr.
+    ///
+    /// Program frames do not have a call_phrase_. If the call_phrase_ is null,
+    /// then the frame does not appear in a stack trace.
+    ///
+    /// In the common case, *call_phrase_ is a Call_Phrase. However, in the
+    /// case of a builtin function B that takes a function F as an argument,
+    /// there is no Call_Phrase in Curv source code where F is called, so
+    /// Call_Phrase is a best effort approximation, such as the call to B.
+    Shared<const Phrase> call_phrase_;
 
     // Tail array, containing the slots used for local bindings:
     // function arguments, block bindings and other local, temporary values.
@@ -85,12 +91,8 @@ struct Frame_Base
         return array_[i];
     }
 
-    Frame_Base(Source_State&, Frame* parent, Shared<const Phrase>, Module*);
-
-    // If this is a function call frame (call_phrase_ != nullptr), then caller()
-    // returns a function whose definition lexically encloses the call phrase.
-    // Otherwise it returns nullptr. Used to print stack traces.
-    Shared<const Function> caller() const;
+    Frame_Base(Source_State&, Frame* parent,
+        Shared<const Function>, Shared<const Phrase>);
 };
 
 // Shared state while analysing/evaluating a source file.

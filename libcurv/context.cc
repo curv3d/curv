@@ -27,7 +27,7 @@ get_frame_locations(const Frame* f, std::list<Func_Loc>& locs)
 {
     for (; f != nullptr; f = f->parent_frame_) {
         if (f->call_phrase_ != nullptr)
-            locs.emplace_back(f->caller(), f->call_phrase_->location());
+            locs.emplace_back(f->caller_, f->call_phrase_->location());
     }
 }
 
@@ -143,7 +143,7 @@ At_Arg::get_locations(std::list<Func_Loc>& locs) const
 {
     if (call_frame_.call_phrase_ != nullptr) {
         auto arg = arg_part(call_frame_.call_phrase_);
-        locs.emplace_back(call_frame_.caller(), arg->location());
+        locs.emplace_back(call_frame_.caller_, arg->location());
         // We only dump the stack starting at the parent call frame,
         // for cosmetic reasons. It looks stupid to underline one of the
         // arguments in a function call, and on the next line,
