@@ -15,19 +15,11 @@ Context::rewrite_message(Shared<const String> msg) const
     return msg;
 }
 
-Shared<const Function> gfunc(const Frame* fm)
+Shared<const Function> frame_func(const Frame* fm)
 {
     if (fm == nullptr)
         return nullptr;
     return fm->func_;
-}
-
-Shared<const Function> in_func(const Frame& fm)
-{
-    if (auto p = fm.parent_frame_)
-        return p->func_;
-    else
-        return nullptr;
 }
 
 void
@@ -35,7 +27,7 @@ get_frame_locations(const Frame* f, std::list<Func_Loc>& locs)
 {
     for (; f != nullptr; f = f->parent_frame_) {
         if (f->call_phrase_ != nullptr)
-            locs.emplace_back(in_func(*f), f->call_phrase_->location());
+            locs.emplace_back(f->caller(), f->call_phrase_->location());
     }
 }
 
@@ -132,7 +124,7 @@ At_Phrase::At_Phrase(const Phrase& phrase, Environ& env)
 void
 At_Phrase::get_locations(std::list<Func_Loc>& locs) const
 {
-    if (phrase_) locs.emplace_back(gfunc(frame_), phrase_->location());
+    if (phrase_) locs.emplace_back(frame_func(frame_), phrase_->location());
     get_frame_locations(frame_, locs);
 }
 System& At_Phrase::system() const { return system_; }
@@ -151,7 +143,7 @@ At_Arg::get_locations(std::list<Func_Loc>& locs) const
 {
     if (call_frame_.call_phrase_ != nullptr) {
         auto arg = arg_part(call_frame_.call_phrase_);
-        locs.emplace_back(in_func(call_frame_), arg->location());
+        locs.emplace_back(call_frame_.caller(), arg->location());
         // We only dump the stack starting at the parent call frame,
         // for cosmetic reasons. It looks stupid to underline one of the
         // arguments in a function call, and on the next line,

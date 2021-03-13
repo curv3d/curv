@@ -69,7 +69,8 @@ struct Frame_Base
     Value result_;
 
     // A counted reference to `func_` is held in order to keep the 'nonlocals_'
-    // and 'next_op_' objects alive.
+    // and 'next_op_' objects alive. Is nullptr if not a function call frame.
+    // Used by caller().
     Shared<const Function> func_;
 
     // Tail array, containing the slots used for local bindings:
@@ -85,6 +86,11 @@ struct Frame_Base
     }
 
     Frame_Base(Source_State&, Frame* parent, Shared<const Phrase>, Module*);
+
+    // If this is a function call frame (call_phrase_ != nullptr), then caller()
+    // returns a function whose definition lexically encloses the call phrase.
+    // Otherwise it returns nullptr. Used to print stack traces.
+    Shared<const Function> caller() const;
 };
 
 // Shared state while analysing/evaluating a source file.

@@ -18,4 +18,12 @@ Frame_Base::Frame_Base(
     nonlocals_(nl)
 {}
 
+Shared<const Function> Frame_Base::caller() const
+{
+    if (auto p = parent_frame_)
+        return p->func_;
+    else
+        return nullptr;
+}
+
 } // namespaces
