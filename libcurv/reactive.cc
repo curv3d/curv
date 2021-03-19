@@ -26,6 +26,11 @@ Ternary Reactive_Value::equal(Value val) const
     return Ternary::Unknown;
 }
 
+void Reactive_Value::print_help(std::ostream& out) const
+{
+    out << "Reactive value, type=" << sctype_ << "\n";
+}
+
 Reactive_Expression::Reactive_Expression(
     SC_Type sctype,
     Shared<Operation> expr,
