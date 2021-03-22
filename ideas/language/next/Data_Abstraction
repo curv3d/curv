@@ -1,0 +1,238 @@
+Data Abstraction
+================
+Informally, a type is a set of values plus a set of operations on those values.
+
+We can formalize this. In Curv, all data is represented by immutable values,
+and all operations are represented by pure functions. Thus, we can represent
+informal types as Algebras. An Algebra is a set of values, a set of
+constructors and operations on those values, and a set of axioms (or laws)
+which fully specify the semantics of the operations.
+
+Data abstraction is when you hide or ignore the representation of the values
+in an algebra's value set, and write code solely in terms of the operations.
+The axioms are the contract that you write the code against.
+
+If we ignore the representation of the values in an algebra, and we ignore
+the implementation of the operations, then what's left is the signatures of
+the constructors and operations, and the axioms. This is a Theory, and it
+can be thought of as the type of an Algebra. It turns out that multiple
+Algebras can implement the same Theory.
+
+Generic programming is when you implement generic algorithms over
+abstract data types (algebras), using only operations provided by the
+Algebra's theory. Then the algorithm is generic across multiple data types.
+
+Popular programming languages provide many different _mechanisms_ that can
+be used to implement abstract data types and generic algorithms.
+For example,
+  * Class based Object Oriented Programming with single dispatch
+    and multiple inheritance (implementation inheritance, and protocol
+    or interface inheritance). Objects contain both data and operations.
+  * The Common Lisp Object System (CLOS), with generic functions that
+    support multiple dispatch using a global dispatch table.
+  * Haskell Type Classes. A type class is essentially a theory, although
+    you can't formally specify the axioms. A type class instance is essentially
+    an algebra. Type class instances permit only one implementation of a theory
+    per data type.
+
+These mechanisms can be quite complicated.
+But Curv is a very high level language: simple and abstract.
+I want to abstract over these data abstraction mechanisms, and provide
+a high level abstract notation for data abstraction and generic programming.
+Ideally, this notation should hide which data abstraction mechanism is being
+used.
+
+Labelled Value Constructors
+---------------------------
+Cases:
+* Nilary constructor.
+* Simple constructor with arguments. The arguments are the data representation.
+* Fancy constructor, with a bidirectional transformation between the arguments
+  and the internal representation.
+
+Labelled values are printed as constructor expressions, which when evaluated
+in the right context, exactly reproduce the original value.
+Constructor expressions can be used in pattern matching.
+Two labelled values compare equal only if they have the same constructor
+expression.
+
+This is the first step in providing data abstraction.
+* In Curv 0.4, a shape is a record containing {dist,colour,bbox,is_2d,is_3d}
+  fields. So `cube 10` is such a record, and by examining the record,
+  you don't know anything about the shape's provenance.
+* But if `cube 10` is a labelled value, then it prints as `cube{d: 10}`,
+  you can pattern match on it, it has sensible equality semantics,
+  and you can use `cube 10 .d` to query the diameter.
+
+Algebras
+--------
+An Algebra is a module that denotes a set of values together with a set of
+operations on those values. More specifically, an Algebra contains one or more
+constructors that generate the value set, plus a predicate for the value set,
+plus a set of operations.
+
+An Algebra also has a set of axioms that describe its semantics, but for now
+that will be represented by documentation.
+
+The constructors need not be labelled values.
+
+Labelled constructors within an Algebra can be local to that Algebra, or they
+can be defined in another module. This flexibility is crucial.
+
+A Labelled Algebra is restricted to have labelled value constructors.
+
+Theories
+--------
+A Theory is like the type or signature of an Algebra. A Theory contains
+constructor names and operation names and axioms, and declares
+signatures for constructors and operations, but doesn't contain
+an implementation. The operation signatures are needed to implement
+dispatch of overloaded operators (see Abstract Values).
+They are also used to validate Algebras (see below).
+
+A Theory can inherit from other Theories (multiple inheritance).
+
+There is a predicate for testing if an Algebra implements a Theory.
+In the case of Theory inheritance, the Algebra is also considered to implement
+the super-theories of the Theory it is declared to implement.
+
+There is a predicate for testing if an abstract value implements a Theory.
+
+An Algebra can be declared to implement a Theory, and some checking is done.
+If a formal parameter is to be bound to an Algebra, you can specify
+a Theory as a parameter type. So this gives us checked Algebra parameters,
+needed for the Better Error Messages feature.
+
+Generic Programming
+-------------------
+I see two approaches to generic programming.
+
+* Extrinsic: The mapping from the value (containing the representation)
+  to the algebra (containing the operations) is outside of the value.
+  This means that multiple implementations of same Theory can be associated
+  with a value. Eg, a Number can be part of a Monoid in multiple ways.
+  While this seems more flexible, it doesn't support heterogenous lists.
+  Requires more boilerplate and bureaucracy, and the use cases are not very
+  common.
+
+* Intrinsic: The mapping from the value to the algebra is internal to the value.
+  This means you can have overloaded operators that choose the right
+  implementation, with no boilerplate or bureaucracy. Very convenient.
+  Plus heterogenous lists. We would use this approach for Shapes.
+
+Algebra Passing Style
+---------------------
+This is a variety of extrinsic generic programming.
+
+You can write generic algorithms on simple data using local semantics, if you
+explicitly pass algebras around as arguments, using "Scrap Your Typeclasses"
+(value level) or "SML Modules" (module level).
+ * No additional language features are needed to support this.
+ * Is verbose, boilerplatey.
+ * Doesn't support heterogenous lists of generic values.
+
+Intrinsic Generic Programming
+-----------------------------
+This is the more popular and important kind.
+Dynamic languages provide multiple implementations of this, by exposing
+complex and arbitrary *mechanisms* (more complexity than is needed to solve
+the problem).
+ * class-based single dispatch OOP with multiple inheritance
+ * SELF prototypes and delegation
+ * Javascript prototypes
+ * CLOS classes and generic functions with multiple dispatch
+I'd rather focus on the requirements and hide the mechanisms behind simple,
+high level syntax. Try to use data abstraction and algebra driven design
+to simplify intrinsic generic programming.
+
+Requirements:
+* Abstract syntax for invoking an overloaded operation.
+  It better be function call syntax 'f(x)', rather than 'x.f()' or the like.
+  We want to write simple generic code and hide the implementation details
+  of how intrinsic operations are dispatched.
+* Supports binary operators, and more generally, supports multiple dispatch
+  within a single-sorted algebra.
+* Optional: multiple-dispatch for multi-sorted algebras (more than one carrier
+  set in the algebra).
+* Supports heterogenous lists.
+* You can add a new constructor to an existing Theory, without modifying the
+  Theory. Eg, add a new Shape type.
+* Pattern matching over the constructors that implement a Theory. Since this
+  set of constructors is freely extensible, there has to be a default clause.
+* You can add a new Theory to an existing constructor, without modifying the
+  constructor. Optional? Solves the Expression Problem. Eg, define a SVG
+  exporter for Shapes with different code for different shape constructors.
+  It could be a function that switches on shape constructors. Or it could be
+  a more distributed design, where the author of a new shape constructor can
+  implement an SVG_Export method.
+* Given a value, query the theories that it supports.
+  Could be used by the IDE for suggesting completions to a function call,
+  in the context of 'shape >> ?'.
+
+An implementation of abstract values with intrinsic algebras
+------------------------------------------------------------
+Abstract values are labelled values (they contain a constructor name).
+
+Theories (participating in this scheme) are labelled values.
+
+Constructor and theory names are used to look up algebras when resolving
+an overloaded operator. See below.
+
+For modularity, an overload declaration linking a constructor to an algebra
+is only permitted in the module defining the constructor, or in the module
+defining the theory.
+
+Which means we need to define what module identity is.
+* A 20th century idea: there is no internet, just your local machine.
+  Constructing a module causes the side effect of allocating a module id
+  unique to the current address space. Not referentially transparent.
+  Doesn't work if you have functors (functions that generate modules),
+  because you need F x and F y to be the *same* module if x==y.
+* An earlier idea: named modules have a file or URL at the root of their
+  name path. This makes the name globally unique. It also separates Curv into
+  an "inner" and "outer" language, in which named modules, constructors and
+  algebras are only defined in the outer language.
+* A modern idea (git, IPFS, Unison): a module identity is a hash.
+  Two copies of the same module, with the same source code, have the same
+  hash, so they are identical. This is referentially transparent, and
+  it does not split Curv into an inner and outer language. Two versions
+  of a module with different code will have distinct identities. There
+  is no merging of module identity based on semantic versioning. Two
+  copies of the identical library code obtained from different URLs
+  will be equivalent, thus we don't depend on URL identity to determine
+  value and module identity. This also works for function identity. A
+  full description of a labelled value (that describes identity) needs
+  to include a hash. Value descriptions containing these hashes can be
+  transmitted across a network while preserving full value semantics.
+
+Given an overloaded operator call 'T.f x', we need to use the constructor of x
+and the theory T to look up an algebra A of type T, so we can call 'A.f x'
+* Case 1: the constructor is part of the algebra A.
+  The overloading happens in the module the algebra is defined.
+  Alternate wording: constructors and algebra are defined in same module.
+* Case 2: the constructors are external to the algebra.
+  The overloading happens in the module the theory is defined.
+If the algebra and theory modules are mutually recursive, then conflicting
+overload definitions are possible, which must be reported as an error.
+This can only happen inside a single package, as the package graph is acyclic.
+The important thing is to make impossible conflicts between packages.
+
+In case 1, the mapping could be stored in the constructor/value.
+In case 2, the mapping could be stored in the theory.
+This has local semantics. There is no requirement for a global dispatch table
+(except maybe as a cache for performance reasons).
+
+Syntax
+------
+
+Shapes
+------
+There are many shape constructors supporting the same generic operations,
+so we need a Shape Theory, and we need to choose a method of binding an
+algebra to a shape value that supports heterogenous lists.
+Shapes are abstract values. A shape value can be identified as such
+in a purely local way, by examining the value.
+
+'cube n = box [n,n,n]' is simple and works.
+What if I upgrade 'cube' to a labelled constructor, with extra properties
+due to 'cube' being a subtype of 'box' with extra symmetries?
