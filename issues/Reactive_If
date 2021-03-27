@@ -1,0 +1,100 @@
+A more general (and harder to fix) version of this bug
+is found in github issue #110.
+
+regular_polygon fails with a reactive argument
+----------------------------------------------
+curv> poly = parametric n :: int_slider(3,12) = 5 in regular_polygon n
+curv> poly
+2D shape 2.35114×2.23607
+ERROR: ((<param n>-(2*floor((<param n>/2))))==0) is not a boolean
+at file "/home/doug/res/src/curv2/lib/curv/std.curv":
+1358|               if (mod(reps,2)==0) inradius else circumradius,
+                        ^^^^^^^^^^^^^^
+at file "/home/doug/res/src/curv2/lib/curv/std.curv":
+430|         mitred d = half_plane{d: d/2, normal: [0,-1]}
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+431|                    >> repeat_radial n;
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+at:
+1| poly = parametric n :: int_slider(3,12) = 5 in regular_polygon n
+                                                  ^^^^^^^^^^^^^^^^^
+
+The problem is here (std.curv, first stack frame):
+bbox = [
+            [ -max_x,
+              -inradius,
+              shape.bbox[MIN,Z] ],
+            [ max_x,
+              if (mod(reps,2)==0) inradius else circumradius,
+              shape.bbox[MAX,Z] ]
+        ];
+
+The if phrase is being executed using If_Else_Op::exec(), and this method
+does not support a reactive boolean condition. It is calling Value::to_bool()
+on the condition, which aborts in the reactive case.
+
+Progressively Better Fixes
+--------------------------
+0. Terrible Hack
+I can replace 'if (reactivebool) num1 else num2' in list expressions
+with 'id(if...)' and it works. This works for regular_polygon,
+but not for all of the code in #110.
+
+1. Expression Statements
+During analysis, we classify all operations as expressions or statements.
+This is something I wanted to do anyway, for Better Error Messages (mapping
+an indexed list argument onto a precise source location).
+
+When an if-else expression is execed (in a list constructor), then we
+call the eval code, which handles reactive conditions. This fixes all of
+the cases that are fixed by the Terrible Hack.
+
+2. Reactive Generators
+Add SubCurv support for fixed-length element generators.
+An SC Statement Type is a list of SC_Type. Or it is just a regular
+SC_Type, a list or tuple, if we support 0- and 1- length lists and tuples.
+
+If_Else_Op::exec() analyzes both branches *as statements* and assigns
+an SC Statement Type to each. The types must match (both generate same #
+of elements of same types). It outputs a reactive statement possessing that
+statement type.
+
+Depends on #1.
+
+How do we append this reactive generator to a list during normal execution?
+* Break it up into separate values? Does that potentially eliminate
+  opportunities for SIMD operations in SubCurv? Maybe not... First we generate
+  a SSA variable X for a vector variable (which could use SIMD operations),
+  then we reference X.[0], X.[1]... when constructing the list.
+  This is probably okay.
+* Use a rope data structure to represent lists.
+  This is a radical change.
+
+3. Tolerant IR
+When a parametric body is compiled into SubCurv IR, code that isn't SubCurv
+compiler produces non-SubCurv-compatible IR, it doesn't cause a fatal error.
+This incompatible IR may be pruned later anyway, before code is generated.
+This suggests an IR generation phase separate from GLSL code generation.
+
+In the given example, where non-subcurv-compatible code is in the bbox
+definition, the code compiles anyway (no error). The GLSL doesn't depend
+on the bbox anyway, so we are good. In short, eliminates a useless error.
+
+4. Recompile on Param Change
+Do not impose subcurv restrictions on a parametric body.
+If SubCurv can't compile the body, then regenerate the GLSL whenever a
+parameter changes.
+* This idea is related to the fact that GPU drivers or games can recompile
+  shaders when a parameter changes.
+* Use partial evaluation to do as much work as possible in advance,
+  before the frame loop starts.
+* So, we partially evaluate using subcurv, generating typed IR for as much
+  of the parametric body as possible, reducing parameters to uniform variable
+  references as much as possible. However, there may be a residue that can't
+  be SubCurv compiled, comprising interpretive code with unreduced parameter
+  references.
+* This requires an IR that uniformly represents both typed SubCurv trees
+  and untyped Curv trees.
+
+Produces tolerant IR (as in #3), and then uses it to make the shape viewer
+work in adverse situations. Provides a less performant fallback when #2 fails.

@@ -1,0 +1,30 @@
+More Efficient Lists (Multiple Representations)
+===============================================
+With some inspiration from here:
+https://github.com/apple/swift/blob/main/docs/Arrays.rst
+
+3 kinds of fixed-arrays: general, character, bit. Represented as a Tail_Array.
+
+3 kinds of Flex arrays, like std::vector. Data is stored in a fixed-array,
+which may have unused elements at the end.
+This is used in a List_Executor to accumulate values produced by a generator.
+(But if the number of elements produced by a generator is known at compile
+time, then we preallocate a fixed-array of the correct size.)
+There are O(1) push and pop operations that add/remove elements at the end
+of a list, and which convert fixed-arrays to flex-arrays.
+
+3 kinds of Array slice. Used to efficiently implement head and tail operations,
+for iterating over a list in Lisp-style. For [a,...b] patterns.
+For list slicing using contiguous ranges.
+
+Numeric range.
+
+Plus reactive lists.
+
+There is a `compactify` operation for converting a list to a fixed-array
+representation, copying the data if necessary. Semantically it is the identity
+function on lists.
+
+Should I be using Ropes in my flex-array data structure?
+Efficient concatenation of arrays with different representations,
+instead of extracting all elements and convert them to boxed values.

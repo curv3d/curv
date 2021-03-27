@@ -1,6 +1,18 @@
-Numbers
-=======
-A new representation of numbers that fuses the IEEE float64 numbers
+Big Integers
+============
+This feature adds support for arbitrary precision exact integer arithmetic,
+*without* splitting the POD Number type into two distinct types with conflicting
+rules for integer arithmetic.
+
+Is this needed in Curv? The initial idea was to provide operations for
+converting arbitrary bit strings to and from integers, which was inspired
+by writing the Noise library. A possible future requirement for SubCurv,
+or for interoperability with external data and APIs, is to support 64 bit
+integer types, so I'd need contiguous integers up to 2^64-1. More generally,
+many dynamically typed languages have bigints, and they are nice to have
+for recreational programming.
+
+Proposed: a new representation of numbers that fuses the IEEE float64 numbers
 with multiprecision integers. There is only one kind of integer:
 2 and 2.0 are the same, have the same semantics, even if there may be
 two internal int representations. All of the floats whose magnitude >= 2^52
