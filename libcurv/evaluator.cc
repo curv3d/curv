@@ -205,25 +205,28 @@ If_Else_Op::eval(Frame& fm) const
         else
             return arg3_->eval(fm);
     }
-    auto re = cond.maybe<Reactive_Value>();
-    if (re && re->sctype_.is_bool()) {
-        Value a2 = arg2_->eval(fm);
-        Value a3 = arg3_->eval(fm);
-        SC_Type t2 = sc_type_of(a2);
-        SC_Type t3 = sc_type_of(a3);
-        if (t2 == t3) {
-            return {make<Reactive_Expression>(
-                t2,
-                make<If_Else_Op>(
-                    share(*syntax_),
-                    to_expr(cond, *arg1_->syntax_),
-                    to_expr(a2, *arg2_->syntax_),
-                    to_expr(a3, *arg3_->syntax_)),
-                At_Phrase(*syntax_, fm))};
+    if (auto re = cond.maybe<Reactive_Value>()) {
+        if (re->sctype_.is_bool()) {
+            Value a2 = arg2_->eval(fm);
+            Value a3 = arg3_->eval(fm);
+            SC_Type t2 = sc_type_of(a2);
+            SC_Type t3 = sc_type_of(a3);
+            if (t2 == t3) {
+                return {make<Reactive_Expression>(
+                    t2,
+                    make<If_Else_Op>(
+                        share(*syntax_),
+                        to_expr(cond, *arg1_->syntax_),
+                        to_expr(a2, *arg2_->syntax_),
+                        to_expr(a3, *arg3_->syntax_)),
+                    At_Phrase(*syntax_, fm))};
+            }
+            throw Exception(At_Phrase(*syntax_, fm),
+                stringify("then and else expressions have mismatched types: ",
+                    t2," and ",t3));
         }
-        throw Exception(At_Phrase(*syntax_, fm),
-            stringify("then and else expressions have mismatched types: ",
-                t2," and ",t3));
+        throw Exception(cx, stringify(
+            cond, " is not a boolean (has type ",re->sctype_,")"));
     }
     throw Exception(cx, stringify(cond, " is not a boolean"));
 }

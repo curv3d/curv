@@ -3,6 +3,7 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/analyser.h>
+#include <libcurv/function.h>
 #include <libcurv/sc_compiler.h>
 #include <libcurv/sc_context.h>
 
@@ -22,12 +23,18 @@ At_SC_Frame::rewrite_message(Shared<const String> msg) const
     return sc_frame_rewrite_message(&call_frame_, msg);
 }
 
+Shared<const Function> sc_frame_caller(const SC_Frame& f)
+{
+    if (auto pf = f.parent_frame_)
+        return pf->func_;
+    return nullptr;
+}
 void
 get_sc_frame_locations(const SC_Frame* f, std::list<Func_Loc>& locs)
 {
     for (; f != nullptr; f = f->parent_frame_) {
         if (f->call_phrase_ != nullptr)
-            locs.emplace_back(f->call_phrase_->location());
+            locs.emplace_back(sc_frame_caller(*f), f->call_phrase_->location());
         if (f->root_context_ != nullptr)
             f->root_context_->get_locations(locs);
     }
@@ -52,7 +59,7 @@ void
 At_SC_Phrase::get_locations(std::list<Func_Loc>& locs) const
 {
     if (phrase_)
-        locs.emplace_back(phrase_->location());
+        locs.emplace_back(call_frame_.func_, phrase_->location());
     get_sc_frame_locations(&call_frame_, locs);
 }
 System& At_SC_Phrase::system() const { return call_frame_.sc_.system_; }
@@ -82,7 +89,8 @@ At_SC_Tuple_Arg::rewrite_message(Shared<const String> msg) const
 void
 At_SC_Arg_Expr::get_locations(std::list<Func_Loc>& locs) const
 {
-    locs.emplace_back(arg_part(call_phrase_)->location());
+    locs.emplace_back(sc_frame_caller(parent_frame_),
+        arg_part(call_phrase_)->location());
     get_sc_frame_locations(&parent_frame_, locs);
 }
 Shared<const String>

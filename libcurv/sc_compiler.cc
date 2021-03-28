@@ -91,7 +91,7 @@ SC_Compiler::define_function(
     }
 
     // function body
-    auto f = SC_Frame::make(0, *this, &cx, nullptr, nullptr);
+    auto f = SC_Frame::make(0, *this, &cx, nullptr, nullptr, nullptr);
     Shared<Operation> arg_expr;
     if (params.size() == 1)
         arg_expr = make<SC_Data_Ref>(nullptr, params[0]);
@@ -204,7 +204,7 @@ sc_put_value(Value val, SC_Type ty, const At_SC_Phrase& cx, std::ostream& out)
 {
     if (auto re = val.maybe<Reactive_Expression>()) {
         auto f2 = SC_Frame::make(0, cx.call_frame_.sc_, nullptr,
-            &cx.call_frame_, &*cx.phrase_);
+            &cx.call_frame_, nullptr, &*cx.phrase_);
         auto result = sc_eval_op(*f2, *re->expr_);
         out << result;
     }

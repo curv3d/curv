@@ -15,6 +15,7 @@ namespace curv {
 struct Context;
 struct SC_Compiler;
 struct Phrase;
+struct Function;
 
 /// An SSA variable used during SC code generation.
 struct SC_Value
@@ -59,6 +60,10 @@ struct SC_Frame_Base
     /// If not null, then the phrase creates a stack trace entry.
     Shared<const Phrase> call_phrase_;
 
+    // If this is a function call frame, then `func_` is the function that
+    // was called. Otherwise, nullptr. Used to print stack traces.
+    Shared<const Function> func_;
+
     /// Slot array containing the values of nonlocal bindings.
     ///
     /// This is:
@@ -82,12 +87,14 @@ struct SC_Frame_Base
         SC_Compiler& sc,
         const Context* cx,
         SC_Frame* parent,
+        Shared<const Function> func,
         Shared<const Phrase> src)
     :
         sc_(sc),
         root_context_(cx),
         parent_frame_(parent),
         call_phrase_(move(src)),
+        func_(move(func)),
         nonlocals_(nullptr)
     {}
 };

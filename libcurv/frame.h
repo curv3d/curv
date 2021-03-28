@@ -58,6 +58,7 @@ struct Frame_Base
 
     // If this is a function call frame, then `func_` is the function that
     // was called. Otherwise, nullptr. Used to initialize caller_.
+    // Used to print stack traces (At_Phrase only).
     // When calling a Closure, a counted reference to `func_` keeps
     // the 'nonlocals_' and 'next_op_' objects alive.
     Shared<const Function> func_;
@@ -92,7 +93,7 @@ struct Frame_Base
     }
 
     Frame_Base(Source_State&, Frame* parent,
-        Shared<const Function>, Shared<const Phrase>);
+        Shared<const Function> caller, Shared<const Phrase> call_phrase);
 };
 
 // Shared state while analysing/evaluating a source file.
