@@ -133,7 +133,7 @@ const
         share(*this), call_phrase);
     if (nargs_ == 1)
         (*f2)[0] = sc_eval_op(fm, arg);
-    else if (auto list = dynamic_cast<List_Expr*>(&arg)) {
+    else if (auto list = cast_list_expr(arg)) {
         if (list->size() != nargs_)
             throw Exception(At_SC_Phrase(arg.syntax_, fm), stringify(
                 "wrong number of arguments (got ",list->size(),

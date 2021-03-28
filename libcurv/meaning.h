@@ -470,6 +470,17 @@ struct Paren_List_Expr_Base : public List_Expr_Base
 };
 using Paren_List_Expr = Tail_Array<Paren_List_Expr_Base>;
 
+// Used by the SubCurv compiler, which treats List_Expr and Paren_List_Expr
+// identically. TODO: remove when (a,b,c) is no longer an expression.
+inline Shared<const List_Expr> cast_list_expr(const Operation& op)
+{
+    if (auto le = dynamic_cast<const List_Expr*>(&op))
+        return share(*le);
+    if (auto ple = dynamic_cast<const Paren_List_Expr*>(&op))
+        return share(*(const List_Expr*)ple);
+    return nullptr;
+}
+
 struct Record_Expr : public Just_Expression
 {
     Shared<const Operation> fields_;

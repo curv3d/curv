@@ -435,7 +435,7 @@ Value sc_constify(const Operation& op, SC_Frame& fm)
         assert(b != fm.nonlocals_->dictionary_->end());
         return fm.nonlocals_->get(b->second);
     }
-    else if (auto list = dynamic_cast<const List_Expr*>(&op)) {
+    else if (auto list = cast_list_expr(op)) {
         Shared<List> listval = List::make(list->size());
         for (size_t i = 0; i < list->size(); ++i) {
             (*listval)[i] = sc_constify(*(*list)[i], fm);
@@ -516,7 +516,7 @@ Value sc_get_index(SC_Frame& fm, Shared<const Operation> index)
     if (auto k = cast<const Constant>(index))
         return k->value_;
     else if (auto slice = cast<const TSlice_Expr>(index)) {
-        if (auto ilist = cast<const List_Expr>(slice->indexes_)) {
+        if (auto ilist = cast_list_expr(*slice->indexes_)) {
             if (ilist->size() == 1) {
                 if ((k = cast<const Constant>(ilist->at(0))))
                     return k->value_;
@@ -717,7 +717,7 @@ SC_Value Call_Expr::sc_eval(SC_Frame& fm) const
         if (!scval.type.is_list())
             throw Exception(At_SC_Phrase(func_->syntax_, fm),
                 stringify("type ", scval.type, ": not an array or function"));
-        auto list = cast<List_Expr>(arg_);
+        auto list = cast_list_expr(*arg_);
         if (list == nullptr)
             throw Exception(At_SC_Phrase(arg_->syntax_, fm),
                 "expected '[index]' expression");
@@ -752,7 +752,7 @@ SC_Value Slice_Expr::sc_eval(SC_Frame& fm) const
     if (!scval.type.is_list())
         throw Exception(At_SC_Phrase(arg1_->syntax_, fm),
             stringify("type ", scval.type, ": not an array"));
-    auto list = cast<List_Expr>(arg2_);
+    auto list = cast_list_expr(*arg2_);
     if (list == nullptr)
         throw Exception(At_SC_Phrase(arg2_->syntax_, fm),
             "expected '[index]' expression");
