@@ -1,5 +1,29 @@
-A more general (and harder to fix) version of this bug
-is found in github issue #110.
+There are multiple reports of SubCurv errors caused by if expressions and if
+statements where the condition is a reactive expression. This arises when
+using the 'parametric' feature, but would also arise when using 'time'.
+
+Examples:
+
+* 'if (reactive) number else number' as an element of a list constructor.
+  The 'if' is interpreted as a statement (element generator).
+  If_Else_Op::exec() aborts if the condition is reactive.
+  This happens a lot in bbox initializers throughout the shape library.
+  Workaround is to use 'id(if (reactive) num else num)' in this context.
+
+* issue #110: union[if (reactive) shape, ...]
+
+* Angelo, mailing list: if (reactive) shape else shape
+  More specifically, he wrote:
+    let f = if (reactive) shape_transformer else shape_transformer
+    in f shape
+
+Since 'parametric' and 'time' are part of the modelling language, my goal
+is to allow the full Curv language to be used in 'time' expressions
+and in the body of 'parametric'. However, 'dist' and 'colour' functions are
+part of the implementation language, and they are restricted to SubCurv.
+
+It would be desirable to enforce the SubCurv restriction on dist and colour
+when make_shape is called (early error reporting).
 
 regular_polygon fails with a reactive argument
 ----------------------------------------------
@@ -33,14 +57,14 @@ The if phrase is being executed using If_Else_Op::exec(), and this method
 does not support a reactive boolean condition. It is calling Value::to_bool()
 on the condition, which aborts in the reactive case.
 
-Progressively Better Fixes
---------------------------
 0. Terrible Hack
+----------------
 I can replace 'if (reactivebool) num1 else num2' in list expressions
 with 'id(if...)' and it works. This works for regular_polygon,
 but not for all of the code in #110.
 
 1. Expression Statements
+------------------------
 During analysis, we classify all operations as expressions or statements.
 This is something I wanted to do anyway, for Better Error Messages (mapping
 an indexed list argument onto a precise source location).
@@ -50,6 +74,7 @@ call the eval code, which handles reactive conditions. This fixes all of
 the cases that are fixed by the Terrible Hack.
 
 2. Reactive Generators
+----------------------
 Add SubCurv support for fixed-length element generators.
 An SC Statement Type is a list of SC_Type. Or it is just a regular
 SC_Type, a list or tuple, if we support 0- and 1- length lists and tuples.
@@ -71,8 +96,9 @@ How do we append this reactive generator to a list during normal execution?
   This is a radical change.
 
 3. Tolerant IR
+--------------
 When a parametric body is compiled into SubCurv IR, code that isn't SubCurv
-compiler produces non-SubCurv-compatible IR, it doesn't cause a fatal error.
+compatible produces non-SubCurv-compatible IR, it doesn't cause a fatal error.
 This incompatible IR may be pruned later anyway, before code is generated.
 This suggests an IR generation phase separate from GLSL code generation.
 
@@ -80,7 +106,8 @@ In the given example, where non-subcurv-compatible code is in the bbox
 definition, the code compiles anyway (no error). The GLSL doesn't depend
 on the bbox anyway, so we are good. In short, eliminates a useless error.
 
-4. Recompile on Param Change
+4a. Recompile on Param Change
+-----------------------------
 Do not impose subcurv restrictions on a parametric body.
 If SubCurv can't compile the body, then regenerate the GLSL whenever a
 parameter changes.
@@ -98,3 +125,78 @@ parameter changes.
 
 Produces tolerant IR (as in #3), and then uses it to make the shape viewer
 work in adverse situations. Provides a less performant fallback when #2 fails.
+
+4b. Lift some per-frame work into the CPU
+-----------------------------------------
+Subexpressions that depend on reactive parameters, but not on dist/colour
+coordinate arguments, can be evaluated in the CPU, when slider values change,
+instead of in the GPU. This is probably more efficient (CPUs are faster at
+single-threaded compute), and its also more general, since the entire Curv
+language is available in the CPU. Evaluating subexpressions and stuffing data
+into a buffer has to be faster than regenerating and recompiling the shader.
+
+We can't stuff executable code into a GPU buffer, so this won't work in all
+cases. See 4a.
+
+5. Full Parametric Curv
+-----------------------
+It would be desirable to enforce the SubCurv restriction on dist and colour
+when make_shape is called (early error reporting). How does this work?
+* New Curv has 'typed values' which are labelled with a compound static
+  type expression. This lets you quickly test that a compound value conforms
+  to a type without traversing the entire structure. This was originally for
+  large compact arrays, but the idea also works for functions.
+* A function type like Vec3=>Num is a SubCurv function type. The function
+  can't be recursive, there may be other limitations.
+* make_shape will require the dist and colour functions to have type
+  'Vec3=>Num'. If the argument is a typed function labelled with this type,
+  then the argument checking happens quickly. If the argument is an untyped
+  closure, then it is converted to a typed value, which means generating a
+  new body with typed Operation nodes, and recursively type checking (and
+  possibly converting) the nonlocals. Bottom up type inference is used.
+  The type checking is accomplished without calling the function, which is
+  unlike the approach used in gradual typing, where you wrap the function
+  in another function that tests arguments on the way in, and tests the
+  result on the way out. This GT approach is known to have bad performance.
+  The GT approach also delays checking of the argument function: argument
+  checking can't happen at function entry, it happens later, possibly after
+  the function call has returned, which means poorer error messages.
+* My approach is also potentially expensive, because the same untyped lambda
+  body can get type checked repeatedly. A typical make_shape expression:
+    sphere r =
+        make_shape {
+            distance = p -> mag p - r,
+            ... };
+  The distance function is copied and checked on each call to sphere &
+  make_shape, specializing the lambda to different values of the nonlocal r.
+  This would be less expensive in a statically typed language, as the type
+  checking happens once during analysis.
+* However, in this typical usage of make_shape, it looks like we could do
+  some of this work during analysis. 'make_shape' is a constant, its argument
+  is a record literal, the distance field is a function literal.
+  During analysis, resolve the symbol make_shape. It's a constant function,
+  so we attempt to type-check its argument. Part of this type checking will
+  entail type checking the distance function literal and attaching a
+  Vec3=>Num type tag to it. Since we are doing this during analysis, we
+  don't know the value of the nonlocal 'r', but for the type check to succeed,
+  we need 'r' to be a Num. So we need to add a run-time assertion that r is
+  a Num. This assertion could be attached to the distance function construction
+  expression. But we try to lift it as high as possible. It ends up attached
+  to the 'sphere' formal parameter.
+* This will look different with Algebraic Data Abstraction.
+* You can also use optional type annotations in sphere.
+
+Because parametric bodies and time expressions can use the full Curv language,
+nonlocals captured by dist and colour can be symbolic expressions of reactive
+variables, using the full Curv language. How does this work?
+* We apply SubCurv types to these nonlocals.
+* If the type is data, then we could compute the expressions on the CPU and
+  pass the values to the GPU through buffers or uniform variables. See 4b.
+* If the type is a function, then we could recompile the shader when the
+  prerequisite parameters change. See 4a.
+* If it's really the full Curv language, then the type checking may happen
+  at run time? And how do we report run-time errors in CPU evaluated code
+  while running an animation? Like a GUI programmed in a dynamic language?
+  (Print to the debug console, or pop up a dialog box with the error?)
+  Enter the debugger, preferably: fix the code then continue running the
+  animation.
