@@ -141,7 +141,7 @@ target_link_libraries(tester PUBLIC gtest pthread libcurv libcurv_geom double-co
 
 set_property(TARGET curv curvc libcurv libcurv_geom tester PROPERTY CXX_STANDARD 17)
 
-set(gccflags "-Wall -Wno-unused-result" )
+set(gccflags "-Wall -Wno-unused-result -fopenmp" )
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${gccflags}" )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${gccflags}" )
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${sanitize} -O1" )

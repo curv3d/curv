@@ -16,6 +16,7 @@
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
 #include <libcurv/die.h>
+#include <omp.h>
 
 using openvdb::Vec3s;
 using openvdb::Vec3d;
@@ -231,7 +232,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
     // I assume each distance value is in the centre of a voxel.
     auto accessor = grid->getAccessor();
     if (cshape != nullptr) {
-        // TODO: use multiple threads, since cshape->dist is thread safe.
+        #pragma omp parallel for // uses multiple threads, since cshape->dist is thread safe.
         for (int x = voxelrange_min.x(); x <= voxelrange_max.x(); ++x) {
             for (int y = voxelrange_min.y(); y <= voxelrange_max.y(); ++y) {
                 for (int z = voxelrange_min.z(); z <= voxelrange_max.z(); ++z) {
