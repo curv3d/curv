@@ -16,6 +16,7 @@
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
 #include <libcurv/die.h>
+#include <omp.h>
 
 using openvdb::Vec3s;
 using openvdb::Vec3d;
@@ -202,11 +203,13 @@ void export_mesh(Mesh_Format format, curv::Value value,
         int(ceil(shape.bbox_.ymax/voxelsize)) + 2,
         int(ceil(shape.bbox_.zmax/voxelsize)) + 2);
 
+    int vx = voxelrange_max.x() - voxelrange_min.x() + 1;
+    int vy = voxelrange_max.y() - voxelrange_min.y() + 1;
+    int vz = voxelrange_max.z() - voxelrange_min.z() + 1;
+
     std::cerr
-        << "vsize="<<voxelsize<<": "
-        << (voxelrange_max.x() - voxelrange_min.x() + 1) << "*"
-        << (voxelrange_max.y() - voxelrange_min.y() + 1) << "*"
-        << (voxelrange_max.z() - voxelrange_min.z() + 1)
+        << "vsize=" << voxelsize << ": "
+        << vx << "*"  << vy << "*" << vz
         << " voxels. Use '-O vsize=N' to change voxel size.\n";
     std::cerr.flush();
 
@@ -231,12 +234,25 @@ void export_mesh(Mesh_Format format, curv::Value value,
     // I assume each distance value is in the centre of a voxel.
     auto accessor = grid->getAccessor();
     if (cshape != nullptr) {
-        // TODO: use multiple threads, since cshape->dist is thread safe.
+        auto voxels = std::make_unique<float[]>(vx * vy *vz);
+        #pragma omp parallel for // uses multiple threads, since cshape->dist is thread safe.
         for (int x = voxelrange_min.x(); x <= voxelrange_max.x(); ++x) {
             for (int y = voxelrange_min.y(); y <= voxelrange_max.y(); ++y) {
                 for (int z = voxelrange_min.z(); z <= voxelrange_max.z(); ++z) {
-                    accessor.setValue(openvdb::Coord{x,y,z},
-                        cshape->dist(x*voxelsize, y*voxelsize, z*voxelsize, 0.0));
+                    int i = (x - voxelrange_min.x()) * vy * vz
+                        + (y - voxelrange_min.y()) * vz
+                        + (z - voxelrange_min.z());
+                    voxels[i] = cshape->dist(x*voxelsize, y*voxelsize, z*voxelsize, 0.0);
+                }
+            }
+        }
+        for (int x = voxelrange_min.x(); x <= voxelrange_max.x(); ++x) {
+            for (int y = voxelrange_min.y(); y <= voxelrange_max.y(); ++y) {
+                for (int z = voxelrange_min.z(); z <= voxelrange_max.z(); ++z) {
+                    int i = (x - voxelrange_min.x()) * vy * vz
+                        + (y - voxelrange_min.y()) * vz
+                        + (z - voxelrange_min.z());
+                    accessor.setValue(openvdb::Coord{x,y,z}, voxels[i]);
                 }
             }
         }
