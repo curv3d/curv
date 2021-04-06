@@ -123,13 +123,22 @@ file(GLOB Src "curv/*.c" "curv/*.cc")
 add_executable(curv ${Src})
 target_compile_definitions(curv PRIVATE REPLXX_STATIC=1)
 
-set(link_libraries_common_to_all_OS libcurv_geom libcurv imgui glfw glad ${LibOpenGL} replxx double-conversion Boost::iostreams Boost::filesystem Boost::system ${LibOpenVDB} Half tbb pthread)
-
 if (MSYS)
-    target_link_libraries(curv PUBLIC ${link_libraries_common_to_all_OS})
+    set(LibDl "")
 else ()
-    target_link_libraries(curv PUBLIC ${link_libraries_common_to_all_OS} dl)
+    set(LibDl "dl")
 endif ()
+if (APPLE)
+    set(LibOmp "omp")
+else ()
+    set(LibOmp "")
+endif ()
+set(Libs
+    libcurv_geom libcurv imgui glfw glad ${LibOpenGL} replxx double-conversion
+    Boost::iostreams Boost::filesystem Boost::system ${LibOpenVDB} Half tbb
+    pthread ${LibDl} ${LibOmp})
+
+target_link_libraries(curv PUBLIC ${Libs})
 
 file(GLOB CurvcSrc "curvc/*.cc")
 add_executable(curvc EXCLUDE_FROM_ALL ${CurvcSrc})
@@ -141,7 +150,12 @@ target_link_libraries(tester PUBLIC gtest pthread libcurv libcurv_geom double-co
 
 set_property(TARGET curv curvc libcurv libcurv_geom tester PROPERTY CXX_STANDARD 17)
 
-set(gccflags "-Wall -Wno-unused-result -fopenmp" )
+if (APPLE)
+    set(ompflags "-Xpreprocessor -fopenmp")
+else ()
+    set(ompflags "-fopenmp")
+endif ()
+set(gccflags "-Wall -Wno-unused-result ${ompflags}" )
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${gccflags}" )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${gccflags}" )
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${sanitize} -O1" )
