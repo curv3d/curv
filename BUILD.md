@@ -78,6 +78,7 @@ For troubleshooting, look at [issue #88](https://github.com/curv3d/curv/issues/8
   * `brew install gedit`
   * `brew install ilmbase openexr tbb`
   * `brew install glm`
+  * `brew install libomp`
   * `cd ~`
   * `git clone --recursive https://github.com/curv3d/curv`
   * `cd curv`
