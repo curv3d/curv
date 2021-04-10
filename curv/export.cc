@@ -236,6 +236,24 @@ void export_gpu(Value value,
     gprog.write_curv(ofile.ostream());
 }
 
+void export_jgpu(Value value,
+    Program& prog, const Export_Params& params, Output_File& ofile)
+{
+    Render_Opts opts;
+    for (auto& i : params.map_) {
+        Param p{params, i};
+        if (!parse_render_param(p, opts))
+            p.unknown_parameter();
+    }
+
+    ofile.open();
+    At_Program cx(prog);
+    GPU_Program gprog(prog);
+    if (!gprog.recognize(value, opts))
+        throw Exception(cx, "not a shape");
+    gprog.write_json(ofile.ostream());
+}
+
 // wrapper that exports image sequences if requested
 void export_all_png(
     const Shape_Program& shape,
@@ -393,6 +411,8 @@ std::map<std::string, Exporter> exporters = {
     {"x3d", {export_x3d, "X3D colour mesh file (3D shape only)",
              describe_colour_mesh_opts}},
     {"gpu", {export_gpu, "compiled GPU program, in Curv format (shape only)",
+        describe_render_opts}},
+    {"jgpu", {export_jgpu, "compiled GPU program, in JSON format (shape only)",
         describe_render_opts}},
     {"json", {export_json, "JSON expression", describe_no_opts}},
     {"cpp", {export_cpp, "C++ source file (shape only)", describe_no_opts}},
