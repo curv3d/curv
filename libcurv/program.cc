@@ -65,7 +65,7 @@ Program::eval()
         throw Exception(At_Phrase(*phrase_, scanner_),
             "definition found; expecting an expression");
     } else {
-        auto expr = meaning_->to_operation(sstate_.system_,sstate_.file_frame_);
+        auto expr = meaning_->to_operation(sstate_);
         frame_->next_op_ = &*expr;
         return tail_eval_frame(move(frame_));
     }
@@ -77,7 +77,7 @@ Program::exec(Operation::Executor& ex)
     if (module_) {
         return module_->eval_module(*frame_);
     } else {
-        auto op = meaning_->to_operation(sstate_.system_,sstate_.file_frame_);
+        auto op = meaning_->to_operation(sstate_);
         op->exec(*frame_, ex);
         return nullptr;
     }

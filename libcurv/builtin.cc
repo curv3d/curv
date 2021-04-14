@@ -1225,7 +1225,7 @@ struct Error_Metafunction : public Metafunction
     {
         return make<Error_Operation>(share(ph), analyse_op(*ph.arg_, env));
     }
-    virtual Shared<Operation> to_operation(System&, Frame*) override
+    virtual Shared<Operation> to_operation(Source_State&) override
     {
         return make<Constant>(syntax_, Value{make<Error_Function>("error")});
     }

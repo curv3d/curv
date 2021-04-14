@@ -112,6 +112,9 @@ At_Phrase::At_Phrase(const Phrase& phrase, Frame& call_frame)
 At_Phrase::At_Phrase(const Phrase& phrase, System& sys, Frame* frame)
 : phrase_(share(phrase)), system_(sys), frame_(frame)
 {}
+At_Phrase::At_Phrase(const Phrase& phrase, Source_State& ss)
+: phrase_(share(phrase)), system_(ss.system_), frame_(ss.file_frame_)
+{}
 At_Phrase::At_Phrase(const Phrase& phrase, Scanner& scanner)
 : phrase_(share(phrase)), system_(scanner.sstate_.system_), frame_(scanner.sstate_.file_frame_)
 {}

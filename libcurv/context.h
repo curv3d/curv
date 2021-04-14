@@ -124,6 +124,7 @@ struct At_Phrase : public At_Syntax
     At_Phrase(Shared<const Phrase> phrase, Frame& call_frame);
     At_Phrase(const Phrase& phrase, Frame& call_frame);
     At_Phrase(const Phrase& phrase, System& sys, Frame* frame);
+    At_Phrase(const Phrase& phrase, Source_State&);
     At_Phrase(const Phrase& phrase, Scanner& scanner);
     At_Phrase(const Phrase& phrase, Environ& env);
 

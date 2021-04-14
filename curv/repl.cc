@@ -94,9 +94,9 @@ struct Help_Action : public Operation
 struct Help_Metafunction : public Metafunction
 {
     using Metafunction::Metafunction;
-    Shared<Operation> to_operation(System& sys, Frame* f) override
+    Shared<Operation> to_operation(Source_State& sstate) override
     {
-        throw Exception(At_Phrase(*syntax_, sys, f),
+        throw Exception(At_Phrase(*syntax_, sstate),
             "Usage: help <expression>");
     }
     virtual Shared<Meaning> call(const Call_Phrase& ph, Environ& env) override

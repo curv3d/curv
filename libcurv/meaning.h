@@ -54,7 +54,7 @@ struct Meaning : public Shared_Base
     Meaning(Shared<const Phrase> syntax) : syntax_(move(syntax)) {}
 
     // These functions are called during semantic analysis.
-    virtual Shared<Operation> to_operation(System&, Frame*) = 0;
+    virtual Shared<Operation> to_operation(Source_State&) = 0;
     virtual Shared<Meaning> call(const Call_Phrase&, Environ&);
 };
 
@@ -73,7 +73,7 @@ struct Metafunction : public Meaning
 {
     using Meaning::Meaning;
     virtual Shared<Meaning> call(const Call_Phrase&, Environ&) override = 0;
-    virtual Shared<Operation> to_operation(System&, Frame*) override;
+    virtual Shared<Operation> to_operation(Source_State&) override;
     virtual void print_help(std::ostream&) const = 0;
 };
 
@@ -113,7 +113,7 @@ struct Operation : public Meaning
     bool pure_ = false;
 
     // These functions are called during semantic analysis.
-    virtual Shared<Operation> to_operation(System&, Frame*);
+    virtual Shared<Operation> to_operation(Source_State&);
     virtual Shared<Meaning> call(const Call_Phrase&, Environ&);
 
     // An object that is used to execute a statement,

@@ -37,8 +37,7 @@ const char Source_State::dot_string_deprecated_msg[] =
 Shared<Operation>
 analyse_op(const Phrase& ph, Environ& env, Interp terp)
 {
-    return ph.analyse(env, terp)
-        ->to_operation(env.sstate_.system_, env.sstate_.file_frame_);
+    return ph.analyse(env, terp)->to_operation(env.sstate_);
 }
 
 // Evaluate the phrase as a constant expression in the builtin environment.
@@ -54,9 +53,9 @@ std_eval(const Phrase& ph, Environ& env)
 }
 
 Shared<Operation>
-Metafunction::to_operation(System& sys, Frame* f)
+Metafunction::to_operation(Source_State& sstate)
 {
-    throw Exception(At_Phrase(*syntax_, sys, f),
+    throw Exception(At_Phrase(*syntax_, sstate),
         "This operation must be called with an argument");
 }
 
@@ -67,7 +66,7 @@ Meaning::call(const Call_Phrase&, Environ& env)
 }
 
 Shared<Operation>
-Operation::to_operation(System&, Frame*)
+Operation::to_operation(Source_State&)
 {
     return share(*this);
 }

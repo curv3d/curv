@@ -14,6 +14,6 @@ Refactoring.
 
 Refactor: use Source_State instead of [System, file_frame] pair
 + in Scanner
-- in to_operation()
++ in to_operation()
 - in At_Token
 - in At_Phrase
