@@ -109,9 +109,6 @@ At_Phrase::At_Phrase(const Phrase& phrase, Frame& call_frame)
 : phrase_(share(phrase)), system_(call_frame.sstate_.system_),
   frame_(&call_frame)
 {}
-At_Phrase::At_Phrase(const Phrase& phrase, System& sys, Frame* frame)
-: phrase_(share(phrase)), system_(sys), frame_(frame)
-{}
 At_Phrase::At_Phrase(const Phrase& phrase, Source_State& ss)
 : phrase_(share(phrase)), system_(ss.system_), frame_(ss.file_frame_)
 {}
