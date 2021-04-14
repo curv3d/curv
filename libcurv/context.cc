@@ -57,8 +57,8 @@ const Phrase& At_Frame::syntax() const
 At_Token::At_Token(Token tok, const Scanner& scanner)
 :
     loc_{scanner.source_, tok},
-    system_{scanner.system_},
-    file_frame_{scanner.file_frame_}
+    system_{scanner.sstate_.system_},
+    file_frame_{scanner.sstate_.file_frame_}
 {
 }
 At_Token::At_Token(Token tok, const Phrase& phrase, Environ& env)
@@ -113,7 +113,7 @@ At_Phrase::At_Phrase(const Phrase& phrase, System& sys, Frame* frame)
 : phrase_(share(phrase)), system_(sys), frame_(frame)
 {}
 At_Phrase::At_Phrase(const Phrase& phrase, Scanner& scanner)
-: phrase_(share(phrase)), system_(scanner.system_), frame_(scanner.file_frame_)
+: phrase_(share(phrase)), system_(scanner.sstate_.system_), frame_(scanner.sstate_.file_frame_)
 {}
 At_Phrase::At_Phrase(const Phrase& phrase, Environ& env)
 :

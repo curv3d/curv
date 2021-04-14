@@ -235,7 +235,8 @@ void color_input(std::string const& context, Replxx::colors_t& colors,
     System* sys)
 {
   auto source = make<String_Source>("", context);
-  Scanner scanner{std::move(source), *sys};
+  Source_State sstate{*sys, nullptr};
+  Scanner scanner{std::move(source), sstate};
 
   // TODO: Use parser to parse the string, using a subclass of Scanner that
   // colours each token as it is read. This ensures that $(expr) substitutions

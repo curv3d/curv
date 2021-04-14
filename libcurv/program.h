@@ -29,11 +29,11 @@ struct Program_Opts
 
 struct Program
 {
+    Source_State sstate_;
     Scanner scanner_;
     Shared<Phrase> phrase_ = nullptr;
     Shared<Meaning> meaning_ = nullptr;
     Shared<Module_Expr> module_ = nullptr;
-    Source_State sstate_;
     std::unique_ptr<Frame> frame_ = nullptr;
     Interp terp_ = Interp::expr();
 
@@ -42,10 +42,9 @@ struct Program
         System& system,
         Program_Opts opts = {})
     :
-        scanner_(move(source), system, Scanner_Opts()
-            .file_frame(opts.file_frame_)
-            .skip_prefix(opts.skip_prefix_)),
-        sstate_(system, opts.file_frame_)
+        sstate_(system, opts.file_frame_),
+        scanner_(move(source), sstate_, Scanner_Opts()
+            .skip_prefix(opts.skip_prefix_))
     {}
 
     void skip_prefix(unsigned len);
@@ -56,8 +55,8 @@ struct Program
     const Phrase& nub() const;
 
     Src_Loc location() const;
-    System& system() const { return scanner_.system_; }
-    Frame* file_frame() const { return scanner_.file_frame_; }
+    System& system() const { return sstate_.system_; }
+    Frame* file_frame() const { return sstate_.file_frame_; }
 
     Shared<Module> exec(Operation::Executor&);
 

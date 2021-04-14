@@ -19,7 +19,7 @@ void
 Program::compile(const Namespace* names)
 {
     if (names == nullptr)
-        names = &scanner_.system_.std_namespace();
+        names = &sstate_.system_.std_namespace();
     Builtin_Environ env{*names, sstate_};
     compile(env);
 }
@@ -33,7 +33,7 @@ Program::compile(Environ& env)
     } else {
         meaning_ = phrase_->analyse(env, terp_);
     }
-    frame_ = {Frame::make(env.frame_maxslots_, sstate_, scanner_.file_frame_,
+    frame_ = {Frame::make(env.frame_maxslots_, sstate_, sstate_.file_frame_,
         nullptr, nullptr)};
 }
 
@@ -65,7 +65,7 @@ Program::eval()
         throw Exception(At_Phrase(*phrase_, scanner_),
             "definition found; expecting an expression");
     } else {
-        auto expr = meaning_->to_operation(scanner_.system_,scanner_.file_frame_);
+        auto expr = meaning_->to_operation(sstate_.system_,sstate_.file_frame_);
         frame_->next_op_ = &*expr;
         return tail_eval_frame(move(frame_));
     }
@@ -77,7 +77,7 @@ Program::exec(Operation::Executor& ex)
     if (module_) {
         return module_->eval_module(*frame_);
     } else {
-        auto op = meaning_->to_operation(scanner_.system_,scanner_.file_frame_);
+        auto op = meaning_->to_operation(sstate_.system_,sstate_.file_frame_);
         op->exec(*frame_, ex);
         return nullptr;
     }
