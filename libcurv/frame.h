@@ -120,7 +120,7 @@ struct Source_State
 
     Source_State(System& sys, Frame* ff) : system_(sys), file_frame_(ff) {}
 
-    void deprecate(bool Source_State::*, int, const Context&, const String_Ref&);
+    void deprecate(bool Source_State::*, int, const Context&, String_Ref);
     static const char dot_string_deprecated_msg[];
 };
 

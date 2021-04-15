@@ -162,6 +162,10 @@ Shared<const String> to_print_string(Value);
 // fail if value is not a string
 Shared<const String> value_to_string(Value, Fail, const Context&);
 
+// A function that takes a string as an argument
+// can declare the formal parameter as `String_Ref str`.
+// All of the different string types used by libcurv are acceptable
+// as arguments, and converted internally to `Shared<const String>`.
 struct String_Ref : public Shared<const String>
 {
     String_Ref(const char* str)

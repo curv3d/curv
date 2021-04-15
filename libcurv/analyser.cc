@@ -22,7 +22,7 @@ namespace curv
 {
 
 void Source_State::deprecate(bool Source_State::* flag, int lvl,
-    const Context& cx, const String_Ref& msg)
+    const Context& cx, String_Ref msg)
 {
     if (system_.depr_ >= lvl && (system_.verbose_ || !((*this).*flag))) {
         system_.warning(Exception{cx, msg});
