@@ -6,10 +6,7 @@
 #define LIBCURV_PROGRAM_H
 
 #include <libcurv/analyser.h>
-#include <libcurv/builtin.h>
-#include <libcurv/filesystem.h>
 #include <libcurv/frame.h>
-#include <libcurv/list.h>
 #include <libcurv/meaning.h>
 #include <libcurv/module.h>
 #include <libcurv/scanner.h>
@@ -18,49 +15,69 @@
 
 namespace curv {
 
-struct Program_Opts
-{
-    Frame* file_frame_ = nullptr;
-    Program_Opts& file_frame(Frame* f) { file_frame_=f; return *this; }
-
-    unsigned skip_prefix_ = 0;
-    Program_Opts& skip_prefix(unsigned n) { skip_prefix_=n; return *this; }
-};
-
+// A Program is an object that is used to compile and run a Curv program.
+// Since libcurv has no global variables, the 'global' state used to compile
+// and run a program is created and managed by Program.
+// After the program has been evaluated to a Value, the Program retains the
+// program's source code and execution context, so that this context can be
+// used to report a bad value error, via the At_Program context type.
+//
+// A Program progresses through 4 phases.
+//  1. Construction. Constructs `sstate_`, the Source_State object,
+//     containing global variables for compilation and runtime.
+//  2. Compilation. Call one of the `compile()` methods to compile the
+//     program's source code. Initializes `phrase_`, containing the parse
+//     tree of the source code. Initializes internal members that
+//     represent the executable form of the program.
+//  3. Run the program by calling `eval()` or `exec()`.
+//  4. After calling eval() to get a value, use At_Program(prog) as an
+//     Exception context to report a bad value.
 struct Program
 {
-    Source_State sstate_;
-    Scanner scanner_;
-    Shared<Phrase> phrase_ = nullptr;
+    Source_State sstate_;               // initialized by constructor
+    Shared<Phrase> phrase_ = nullptr;   // initialized by compile()
+private:
+    // compiled program representation, initialized by compile()
     Shared<Meaning> meaning_ = nullptr;
     Shared<Module_Expr> module_ = nullptr;
     std::unique_ptr<Frame> frame_ = nullptr;
-    Interp terp_ = Interp::expr();
 
-    Program(
-        Shared<const Source> source,
-        System& system,
-        Program_Opts opts = {})
+public:
+    /*
+     * 1. construct the Program
+     */
+    Program(System& sys, Frame* file_frame = nullptr)
     :
-        sstate_(system, opts.file_frame_),
-        scanner_(move(source), sstate_, Scanner_Opts()
-            .skip_prefix(opts.skip_prefix_))
+        sstate_(sys, file_frame)
     {}
 
-    void skip_prefix(unsigned len);
+    /*
+     * 2. compile the Program
+     */
+    // This is the general interface for compiling source code.
+    // Several special-case shortcuts are also provided.
+    void compile(Shared<const Source>, Scanner_Opts, Environ&, Interp);
 
-    void compile(const Namespace* names = nullptr);
-    void compile(Environ&);
+    // This shortcut leaves out Scanner_Opts,
+    // which only one specialized client uses.
+    void compile(Shared<const Source>, Environ&, Interp);
 
-    const Phrase& nub() const;
+    // Compile an expression using the std_namespace. The common case.
+    void compile(Shared<const Source>);
 
-    Src_Loc location() const;
-    System& system() const { return sstate_.system_; }
-    Frame* file_frame() const { return sstate_.file_frame_; }
+    // Compile an expression using the std_namespace and a Scanner_Opts.
+    void compile(Shared<const Source>, Scanner_Opts);
 
+    /*
+     * 3. run the compiled Program
+     */
     Shared<Module> exec(Operation::Executor&);
-
     Value eval();
+
+    /*
+     * 4. use the Program to report errors
+     */
+    const Phrase& nub() const;
 };
 
 } // namespace curv

@@ -92,10 +92,10 @@ System_Impl::System_Impl(std::ostream& console)
 void System_Impl::load_library(String_Ref path)
 {
     auto file = make<File_Source>(move(path), At_System{*this});
-    Program prog{move(file), *this};
-    prog.compile();
+    Program prog{*this};
+    prog.compile(move(file));
     auto stdlib = prog.eval();
-    auto m = stdlib.to<Module>(At_Phrase(*prog.phrase_, prog.sstate_));
+    auto m = stdlib.to<Module>(At_Program(prog));
     for (auto b : *m)
         std_namespace_[b.first] = make<Builtin_Value>(b.second);
 }

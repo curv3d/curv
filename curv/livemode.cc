@@ -173,10 +173,10 @@ poll_file(
         } else {
             // evaluate file.
             try {
+                curv::Program prog{*sys};
                 auto file = curv::make<curv::File_Source>(
-                    curv::make_string(filename), curv::At_System{*sys});
-                curv::Program prog{std::move(file), *sys};
-                prog.compile();
+                    filename, curv::At_System{*sys});
+                prog.compile(std::move(file));
                 auto value = prog.eval();
                 curv::GPU_Program gprog{prog};
                 if (gprog.recognize(value, *opts)) {

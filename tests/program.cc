@@ -23,8 +23,8 @@ Value
 skip_prefix(const char* src, unsigned len)
 {
     auto source = make<String_Source>("", src);
-    Program prog{source, sys, Program_Opts().skip_prefix(len)};
-    prog.compile();
+    Program prog{sys};
+    prog.compile(source, Scanner_Opts().skip_prefix(len));
     return prog.eval();
 }
 

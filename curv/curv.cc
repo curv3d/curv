@@ -337,8 +337,8 @@ main(int argc, char** argv)
                 curv::make_string(filename), curv::At_System{sys});
         }
 
-        curv::Program prog{std::move(source), sys};
-        prog.compile();
+        curv::Program prog{sys};
+        prog.compile(std::move(source));
         auto value = prog.eval();
 
         if (exporter != exporters.end()) {

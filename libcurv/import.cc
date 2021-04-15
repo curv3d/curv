@@ -42,16 +42,15 @@ Value import(const Filesystem::path& path, const Context& cx)
 Value curv_import(const Filesystem::path& path, const Context& cx)
 {
     System& sys{cx.system()};
-    auto source = make<File_Source>(make_string(path.string().c_str()), cx);
-    Program prog{move(source), sys,
-        Program_Opts().file_frame(cx.frame())};
+    auto source = make<File_Source>(path.string().c_str(), cx);
+    Program prog{sys, cx.frame()};
     auto filekey = Filesystem::canonical(path);
     auto& active_files = sys.active_files_;
     if (active_files.find(filekey) != active_files.end())
         throw Exception{cx,
             stringify("illegal recursive reference to file ",path)};
     Active_File af(active_files, filekey);
-    prog.compile();
+    prog.compile(move(source));
     return prog.eval();
 }
 

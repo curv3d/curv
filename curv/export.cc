@@ -38,11 +38,8 @@ Value Param::eval(Value defl)
     if (value_.opt) {
         auto src = make<String_Source>("",
             stringify("-O ",name_,"=",value_.opt));
-        Program prog(
-            src,
-            params_.system_,
-            Program_Opts().skip_prefix(4+name_.size()));
-        prog.compile();
+        Program prog(params_.system_);
+        prog.compile(src, Scanner_Opts().skip_prefix(4+name_.size()));
         auto nub = nub_phrase(prog.phrase_);
         loc_ = nub->location();
         if (isa<const Empty_Phrase>(nub)) {

@@ -438,11 +438,10 @@ void repl(System* sys, const Render_Opts* render)
             rx.history_add(line);
 
         try {
+            Program prog{*sys};
             auto source = make<String_Source>("", line);
-            Program prog{std::move(source), *sys};
-            prog.terp_ = Interp::stmt(1);
             REPL_Environ env(names, prog.sstate_);
-            prog.compile(env);
+            prog.compile(source, env, Interp::stmt(1));
             executor.start_command();
             auto bindings = prog.exec(executor);
             executor.end_command(prog);

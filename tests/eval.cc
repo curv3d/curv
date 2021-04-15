@@ -65,8 +65,8 @@ struct Evaluator
             sconsole.str("");
             sconsole.clear(); // Clear state flags.
             auto source = make<String_Source>("", text);
-            Program prog{std::move(source), make_system()};
-            prog.compile();
+            Program prog{make_system()};
+            prog.compile(std::move(source));
 
             String_Builder buf;
             Test_Executor executor(buf);
