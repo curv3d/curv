@@ -77,7 +77,7 @@ public:
     /*
      * 4. use the Program to report errors
      */
-    const Phrase& nub() const;
+    const Phrase& syntax() const;
 };
 
 } // namespace curv

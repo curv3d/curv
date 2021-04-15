@@ -21,16 +21,10 @@ GPU_Program::GPU_Program(Program& prog)
     is_3d_ = false;
 }
 
-Src_Loc
-GPU_Program::location() const
-{
-    return nub_->location();
-}
-
 bool
 GPU_Program::recognize(Value val, Render_Opts opts)
 {
-    if (location().source().type_ == Source::Type::gpu) {
+    if (syntax().location().source().type_ == Source::Type::gpu) {
         // Note: throw exception if val is not a GPU program.
         static Symbol_Ref is_2d_key = make_symbol("is_2d");
         static Symbol_Ref is_3d_key = make_symbol("is_3d");

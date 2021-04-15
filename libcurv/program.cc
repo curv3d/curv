@@ -51,7 +51,7 @@ Program::compile(Shared<const Source> source, Scanner_Opts scopts)
 }
 
 const Phrase&
-Program::nub()
+Program::syntax()
 const
 {
     return *nub_phrase(phrase_);

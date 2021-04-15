@@ -27,11 +27,6 @@ Shape_Program::Shape_Program(
     is_3d_ = false;
 }
 
-Src_Loc Shape_Program::location() const
-{
-    return nub_->location();
-}
-
 BBox
 BBox::from_value(Value val, const Context& cx)
 {

@@ -66,6 +66,8 @@ struct Context
     virtual Frame* frame() const = 0;
 };
 
+void get_frame_locations(const Frame* f, std::list<Func_Loc>& locs);
+
 struct At_System : public Context
 {
     System& system_;
@@ -76,8 +78,6 @@ struct At_System : public Context
     virtual System& system() const override;
     virtual Frame* frame() const override;
 };
-
-void get_frame_locations(const Frame* f, std::list<Func_Loc>& locs);
 
 struct At_Token : public Context
 {
@@ -142,7 +142,7 @@ struct At_Program : public At_Syntax
     template <class PROGRAM>
     explicit At_Program(PROGRAM& prog)
     :
-        sstate_(prog.sstate_), syntax_(prog.nub())
+        sstate_(prog.sstate_), syntax_(prog.syntax())
     {}
 
     virtual void get_locations(std::list<Func_Loc>& locs) const override;

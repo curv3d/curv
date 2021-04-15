@@ -64,15 +64,11 @@ struct Shape_Program final : public Shape
     // is_shape is initially false, becomes true after recognize() succeeds.
     bool is_shape() const { return is_2d_ || is_3d_; }
 
+    // implement PROGRAM api for use with At_Program
     Source_State& sstate_;
-
-    // describes the source code for the shape expression
-    Shared<const Phrase> nub_;
-
-    Src_Loc location() const;
+    Shared<const Phrase> nub_; // source code of shape expression
     System& system() const { return sstate_.system_; }
-    Frame* file_frame() const { return sstate_.file_frame_; }
-    const Phrase& nub() const { return *nub_; }
+    const Phrase& syntax() const { return *nub_; }
 
     // shape fields, filled in by recognize()
     Shared<Record> record_;
