@@ -21,6 +21,7 @@ extern "C" {
 #include <libcurv/die.h>
 #include <libcurv/exception.h>
 #include <libcurv/gpu_program.h>
+#include <libcurv/import.h>
 #include <libcurv/output_file.h>
 #include <libcurv/progdir.h>
 #include <libcurv/program.h>
@@ -329,16 +330,14 @@ main(int argc, char** argv)
         }
 
         // batch mode
-        curv::Shared<curv::Source> source;
-        if (expr) {
-            source = curv::make<curv::String_Source>("", filename);
-        } else {
-            source = curv::make<curv::File_Source>(
-                curv::make_string(filename), curv::At_System{sys});
-        }
-
         curv::Program prog{sys};
-        prog.compile(std::move(source));
+        if (expr) {
+            auto source = curv::make<curv::String_Source>("", filename);
+            prog.compile(std::move(source));
+        } else {
+            curv::import(curv::Filesystem::path(filename),
+                prog, curv::At_System(sys));
+        }
         auto value = prog.eval();
 
         if (exporter != exporters.end()) {
