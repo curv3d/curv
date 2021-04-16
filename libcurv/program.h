@@ -38,6 +38,7 @@ struct Program
     Shared<Phrase> phrase_ = nullptr;   // initialized by compile()
 private:
     // compiled program representation, initialized by compile()
+    Value value_{};
     Shared<Meaning> meaning_ = nullptr;
     Shared<Module_Expr> module_ = nullptr;
     std::unique_ptr<Frame> frame_ = nullptr;
@@ -54,7 +55,7 @@ public:
     /*
      * 2. compile the Program
      */
-    // This is the general interface for compiling source code.
+    // This is the general interface for compiling Curv source code.
     // Several special-case shortcuts are also provided.
     void compile(Shared<const Source>, Scanner_Opts, Environ&, Interp);
 
@@ -67,6 +68,10 @@ public:
 
     // Compile an expression using the std_namespace and a Scanner_Opts.
     void compile(Shared<const Source>, Scanner_Opts);
+
+    // The source is a file whose format is not Curv source code.
+    // It denotes a literal constant whose value was determined by the caller.
+    void compile(Filesystem::path, Source::Type, Value);
 
     /*
      * 3. run the compiled Program

@@ -13,14 +13,14 @@
 
 namespace curv {
 
-Value import(const Filesystem::path& path, const Context& cx)
+void import(const Filesystem::path& path, Program& prog, const Context& cx)
 {
     System& sys{cx.system()};
 
     // If file is a directory, use directory import.
     boost::system::error_code errcode;
     if (Filesystem::is_directory(path, errcode))
-        return dir_import(path, cx);
+        return dir_import(path, prog, cx);
     if (errcode)
         throw Exception(cx, stringify(path,": ",errcode.message()));
 
@@ -32,31 +32,40 @@ Value import(const Filesystem::path& path, const Context& cx)
     // Import file based on extension
     auto importp = sys.importers_.find(ext);
     if (importp != sys.importers_.end())
-        return (*importp->second)(path, cx);
+        return (*importp->second)(path, prog, cx);
     else {
         // If extension not recognized, it defaults to a Curv program.
-        return curv_import(path, cx);
+        return curv_import(path, prog, cx);
     }
 }
 
-Value curv_import(const Filesystem::path& path, const Context& cx)
+Value
+import_value(Importer imp, const Filesystem::path& path, const Context& cx)
 {
-    System& sys{cx.system()};
-    auto source = make<File_Source>(path.string().c_str(), cx);
-    Program prog{sys, cx.frame()};
-    auto filekey = Filesystem::canonical(path);
-    auto& active_files = sys.active_files_;
+    boost::system::error_code errcode;
+    auto filekey = Filesystem::canonical(path, errcode);
+    if (errcode)
+        throw Exception(cx, stringify(path,": ",errcode.message()));
+    auto& active_files = cx.system().active_files_;
     if (active_files.find(filekey) != active_files.end())
         throw Exception{cx,
             stringify("illegal recursive reference to file ",path)};
     Active_File af(active_files, filekey);
-    prog.compile(move(source));
+
+    Program prog(cx.system(), cx.frame());
+    imp(path, prog, cx);
     return prog.eval();
 }
 
-Value dir_import(const Filesystem::path& dir, const Context& cx)
+void curv_import(const Filesystem::path& path, Program& prog, const Context& cx)
 {
-    return {make<Dir_Record>(dir, cx)};
+    prog.compile(make<File_Source>(path.string(), cx));
+}
+
+void dir_import(const Filesystem::path& dir, Program& prog, const Context& cx)
+{
+    Value val = {make<Dir_Record>(dir, cx)};
+    prog.compile(dir, Source::Type::directory, val);
 }
 
 }

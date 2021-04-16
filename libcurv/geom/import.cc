@@ -8,7 +8,7 @@
 
 namespace curv { namespace geom {
 
-Value import_png(const Filesystem::path &path, const Context& cx)
+void import_png(const Filesystem::path &path, Program&, const Context& cx)
 {
     (void) path;
     throw Exception(cx, ".PNG file import is not implemented");

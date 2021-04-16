@@ -48,7 +48,7 @@ load_config(const At_Path& cx)
 {
     int r = access(cx.path_.string().c_str(), R_OK);
     if (r == 0)
-        return import(cx.path_, cx).to<Record>(cx);
+        return import_value(import, cx.path_, cx).to<Record>(cx);
     if (errno == ENOENT)
         return nullptr;
     throw Exception(cx, strerror(errno));

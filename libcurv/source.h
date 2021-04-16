@@ -26,7 +26,7 @@ struct Context;
 /// in which case error messages only report the file name.
 struct Source : public Shared_Base, public Range<const char*>
 {
-    enum class Type { curv, gpu };
+    enum class Type { curv, gpu, directory };
 
     Shared<const String> name_;
     Type type_ = Type::curv;
@@ -36,9 +36,9 @@ protected:
         Range(f,l), name_(move(name))
     {}
 public:
-    Source(String_Ref name)
+    Source(String_Ref name, Type type = Type::curv)
     :
-        Range(nullptr,nullptr), name_(move(name))
+        Range(nullptr,nullptr), name_(move(name)), type_(type)
     {}
     bool no_name() const { return name_->empty(); }
     bool no_contents() const { return first == nullptr; }

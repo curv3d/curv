@@ -15,6 +15,22 @@
 
 namespace curv {
 
+struct File_Phrase : public Phrase
+{
+    Src_Loc loc_;
+    File_Phrase(const Filesystem::path& path, Source::Type type)
+    :
+        loc_{make<Source>(path.string(), type), Token{}}
+    {
+    }
+    virtual Src_Loc location() const override { return loc_; }
+    virtual Shared<Meaning> analyse(Environ& env, Interp) const override
+    {
+        throw Exception(At_Phrase(*this, env),
+            "internal error: File_Phrase::analyse");
+    }
+};
+
 void
 Program::compile(Shared<const Source> source, Scanner_Opts scopts,
     Environ& env, Interp terp)
@@ -50,6 +66,13 @@ Program::compile(Shared<const Source> source, Scanner_Opts scopts)
     compile(move(source), scopts, env, Interp::expr());
 }
 
+void
+Program::compile(Filesystem::path path, Source::Type type, Value val)
+{
+    value_ = val;
+    phrase_ = make<File_Phrase>(path, type);
+}
+
 const Phrase&
 Program::syntax()
 const
@@ -60,7 +83,9 @@ const
 Value
 Program::eval()
 {
-    if (module_ != nullptr) {
+    if (value_)
+        return value_;
+    else if (module_ != nullptr) {
         throw Exception(At_Program(*this),
             "definition found; expecting an expression");
     } else {
@@ -73,7 +98,10 @@ Program::eval()
 Shared<Module>
 Program::exec(Operation::Executor& ex)
 {
-    if (module_) {
+    if (value_) {
+        ex.push_value(value_, At_Program(*this));
+        return nullptr;
+    } else if (module_) {
         return module_->eval_module(*frame_);
     } else {
         auto op = meaning_->to_operation(sstate_);

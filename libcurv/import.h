@@ -11,19 +11,23 @@
 namespace curv {
 
 struct Context;
+struct Program;
 
 // Import a source file of any type, in the case that the user has explicitly
 // specified a pathname. Directories are imported using directory syntax,
 // regardless of the filename. Otherwise, if the filename has a recognized
 // extension, then the import function for that extension is used.
 // Otherwise, we default to Curv syntax.
-Value import(const Filesystem::path&, const Context&);
+void import(const Filesystem::path&, Program&, const Context&);
+
+typedef void (*Importer)(const Filesystem::path&, Program&, const Context&);
+Value import_value(Importer, const Filesystem::path&, const Context&);
 
 // Import a Curv language source file.
-Value curv_import(const Filesystem::path& path, const Context& cx);
+void curv_import(const Filesystem::path& path, Program&, const Context& cx);
 
 // Import a directory as a record value, using "directory syntax".
-Value dir_import(const Filesystem::path&, const Context&);
+void dir_import(const Filesystem::path&, Program&, const Context&);
 
 }
 #endif

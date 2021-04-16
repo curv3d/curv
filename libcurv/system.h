@@ -14,6 +14,7 @@
 namespace curv {
 
 struct Context;
+struct Program;
 
 /// An abstract interface to the client and operating system.
 ///
@@ -65,7 +66,7 @@ struct System
     // Used by `file` to import a file based on its extension.
     // The extension includes the leading '.', and "" means no extension.
     // The extension is converted to lowercase on all platforms.
-    using Importer = Value (*)(const Filesystem::path&, const Context&);
+    using Importer = void (*)(const Filesystem::path&, Program&, const Context&);
     std::map<std::string,Importer> importers_;
 };
 

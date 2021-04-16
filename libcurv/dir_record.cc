@@ -94,7 +94,8 @@ Value Dir_Record::find_field(Symbol_Ref sym, const Context& cx) const
     if (p == fields_.end())
         return missing;
     if (p->second.value_.is_missing())
-        p->second.value_ = p->second.importer_(p->second.path_, cx);
+        p->second.value_ =
+            import_value(p->second.importer_, p->second.path_, cx);
     return p->second.value_;
 }
 
@@ -124,7 +125,8 @@ Dir_Record::ref_field(Symbol_Ref name, bool need_value, const Context& cx)
     }
     if (p->second.value_.is_missing()) {
         if (need_value)
-            p->second.value_ = p->second.importer_(p->second.path_, cx);
+            p->second.value_ =
+                import_value(p->second.importer_, p->second.path_, cx);
     }
     return &p->second.value_;
 }
@@ -153,7 +155,8 @@ void Dir_Record::Iter::load_value(const Context& cx)
 {
     if (i_ != rec_.fields_.end()) {
         if (i_->second.value_.is_missing())
-            i_->second.value_ = i_->second.importer_(i_->second.path_, cx);
+            i_->second.value_ =
+                import_value(i_->second.importer_, i_->second.path_, cx);
         value_ = i_->second.value_;
     }
 }

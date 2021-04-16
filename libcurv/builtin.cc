@@ -1093,7 +1093,7 @@ struct File_Expr : public Just_Expression
                 / fs::path(argstr->c_str());
         }
 
-        return import(filepath, cx);
+        return import_value(import, filepath, cx);
     }
 };
 struct File_Metafunction : public Metafunction
