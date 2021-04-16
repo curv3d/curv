@@ -1,0 +1,98 @@
+Better Stack Traces
+===================
+Ideas from working on better stack traces.
+
+Abstract Call_Phrase
+--------------------
+Call_Phrase is a fully abstract class, representing an expression
+that calls a function.
+
+Call_Phrase
+    Represents an expression that calls a function.
+    Eg, like 'f x', but also 'value :: predicate'.
+    An abstract class, with subclasses like Juxta_Phrase.
+    Represents a function call. Methods arg_part() and func_part().
+    Benefits:
+    * cleaner.
+    * needed when general infix expressions become Call_Phrases.
+
+Shared<const Call_Phrase> Frame::call_phrase_
+    // If this is a function call frame, then call_phrase_ is the source code
+    // for the function call, otherwise it's nullptr.
+    //
+    // Program frames do not have a call_phrase_. If the call_phrase_ is null,
+    // then the frame does not appear in a stack trace.
+    //
+    // In the common case, *call_phrase_ is a Call_Phrase. However, in the
+    // case of a builtin function B that takes a function F as an argument,
+    // there is no Call_Phrase in Curv source code where F is called, so
+    // Call_Phrase is a best effort approximation, such as the call to B.
+
+Modified Tail Call Elimination
+------------------------------
+from: [[ideas/compiler/Tail_Recursion]]
+The original goal was to make stack traces complete for traditional
+imperative programs, while guaranteeing that tail-recursive loops
+do not blow up the stack. (Better stack traces for imperative programming.)
+
+    First, consider programs that do not treat functions as value: they are
+    not passed as arguments, returned as results, or stored in data structures.
+    For this subset of programs,
+    * If a program contains no recursion, then no tail call frames are elided.
+      Stack traces are the same as you expect in an imperative language.
+    * If there is recursion, then for a tail call to a recursive function,
+      within a recursive function, the new stack frame is elided.
+
+    Next, consider programs that treat functions as data (a characteristic of
+    functional programming style). Consider tail calls where the identity of
+    the function is not determined until run time. These function calls might
+    be part of a tail recursive loop, but as a first approximation, we don't
+    know. So to be safe, the frames for these tail calls are elided.
+
+    These rules try to achieve two goals:
+    1. We guarantee that tail-recursive loops will not blow up the stack.
+    2. Imperative-style programs will have imperative-style stack traces,
+       except in cases where this violates goal 1.
+
+What rules would achieve these goals, and do they help in fixing the bug?
+
+1. We identify recursive functions during analysis. We add a 'recursive' flag
+to Function values. A tail call to a recursive function elides the caller's
+stack frame, based on a dynamic check of the Function value.
+* This doesn't work for the Y combinator, which achieves recursion without
+  using recursive functions. I need to mark function calls at analysis time.
+  A call to a non-constant function is considered recursive.
+
+Current behaviour:
+    FAILALL(
+        "let\n"
+        "    f x = g x + 2;\n"
+        "    g x = h x;\n"
+        "    h x = x + 1;\n"
+        "in f true\n"
+    ,
+        "#true + 1: domain error\n"
+        "at function h:\n"
+        "4|     h x = x + 1;\n"
+        "             ^^^^^ \n"
+        "at function g:\n"
+        "3|     g x = h x;\n"
+        "             ^^^ \n"
+        "at:\n"
+        "5| in f true\n"
+        "      ^^^^^^"
+    );
+
+I'm not happy with the rule. I want the location
+    f x = g x + 2
+          ^^^
+to appear in the stack trace, since f is a non-recursive function.
+The g->h->g->h-> loop can have just the final call represented.
+
+It would be nice to have a visual indication that frames are elided.
+* In the current implementation, we can compare frame->parent->caller
+  to the current function or something and detect call frame elision.
+
+2. A tail call from a recursive function, to a recursive function, elides
+the caller's stack frame, and sets a flag in the callee frame that previous
+frames were elided.

@@ -507,5 +507,25 @@ TEST(curv, eval)
 
     SUCCESS("{test print a; a = 1}", "{a:1}");
     EXPECT_EQ(sconsole.str(), "1\n");
+
+    // better stack traces
+    FAILALL(
+        "let\n"
+        "    f x = g x + 2;\n"
+        "    g x = h x;\n"
+        "    h x = x + 1;\n"
+        "in f true\n"
+    ,
+        "#true + 1: domain error\n"
+        "at function h:\n"
+        "4|     h x = x + 1;\n"
+        "             ^^^^^ \n"
+        "at function g:\n"
+        "3|     g x = h x;\n"
+        "             ^^^ \n"
+        "at:\n"
+        "5| in f true\n"
+        "      ^^^^^^"
+    );
   }
 }
