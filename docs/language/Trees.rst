@@ -71,13 +71,9 @@ A **natural number** indexes a list.
 If ``list`` has ``n`` elements,
 then ``list.[0]`` is the first element and ``list.[n-1]`` is the final element.
 
-----------
-
 A **symbol** indexes a record.
 For example, if ``r`` is the record ``{a:1,b:2}``,
 then ``r.[#a]`` is the element ``1``.
-
-----------
 
 A **list** of indexes selects zero or more elements from a tree,
 yielding a list of element values.
@@ -90,16 +86,12 @@ will modify ``str`` to contain ``"turn"``.
 When you amend a tree using a list of indexes, then the *new_elements*
 argument must be a list of the same length as the list of indexes.
 
-----------
-
 The special index value **this** specifies the entire tree.
 ``val.[this]`` returns ``val``, for any arbitrary value ``val``.
 This may seem useless, but ``this`` has mathematical meaning as
 the identity element for several index constructors, and ``this``
 is used as the base case when constructing a compound index value
 algorithmically, using iteration or recursion.
-
-----------
 
 A **tree path** is a sequence of indexes which are applied sequentially
 to a tree.
@@ -115,8 +107,6 @@ to a tree.
 
     tpath[this,i] == tpath[i,this] == i.
     tpath[] == this
-
-----------
 
 A **tree slice** is a kind of path used to extract `slices`_ from
 multidimensional arrays. The main use case is described in `Arrays`_.
@@ -173,6 +163,6 @@ can be written as ``tree.[i,j,k]``.
 .. Where ``{#foo}`` is ``{foo:#foo}``.
 .. This means a record is an index, symmetrical with how lists are indexes.
 .. 
-.. However, this interferes with using plain records as 'classless OOP'
-.. instances of application data types. I have to consider how user-defined
-.. index types will be represented.
+.. This isn't compatible with a previous idea to represent user-defined indexes
+.. as records with function fields. They must instead be pure abstract values,
+.. similar to 'this', slices & paths. ('this' cannot be a symbol.)
