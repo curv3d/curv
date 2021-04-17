@@ -1,0 +1,19 @@
+Add a sign function.
+It returns -1 for negative numbers,
+1 for positive numbers,
+and 0 for zero.
+
+What is sign(-0)? This is holding me up.
+
+ 0. sign(-0) == -0
+    from Julia. pure genius.
+    ensures that: abs n * sign n <=> n
+    and also ensures that: if sign n == 0 then n == 0
+    However, it doesn't extract the sign bit.
+
+ 1. sign(-0) == -1
+    axiom: abs n * sign n <=> n
+    related to: signbit() in C++, which distinguishes 0 and -0
+
+ 2. sign(-0) == 0
+    same as: sign in numpy
