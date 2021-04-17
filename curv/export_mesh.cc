@@ -135,10 +135,10 @@ void put_buffer(std::ostream& out, openvdb::tools::VolumeToMesh& mesher)
 {
     const size_t vs = pad_buffer(vertex_byte_size(mesher), 4);
     const size_t bs = vs + point_byte_size(mesher);
-    unsigned char *buff = new unsigned char[bs]();
+    auto buff = std::make_unique<unsigned char []>(bs);
     int offset = 0;
 
-    unsigned short *vbuff = (unsigned short*)buff;
+    unsigned short *vbuff = (unsigned short*)buff.get();
     for (unsigned int i=0; i<mesher.polygonPoolListSize(); ++i) {
         openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
         for (unsigned int j=0; j<pool.numTriangles(); ++j) {
@@ -160,7 +160,7 @@ void put_buffer(std::ostream& out, openvdb::tools::VolumeToMesh& mesher)
         }
     }
 
-    float *pbuff = (float*)(buff + vs);
+    float *pbuff = (float*)(buff.get() + vs);
     for (unsigned int i = 0; i < mesher.pointListSize(); ++i) {
         auto& pt = mesher.pointList()[i];
         offset = i * 3;
@@ -168,9 +168,8 @@ void put_buffer(std::ostream& out, openvdb::tools::VolumeToMesh& mesher)
         pbuff[offset + 1] = pt.y();
         pbuff[offset + 2] = pt.z();
     }
-    delete [] buff;
 
-    auto str = base64_encode(buff, bs);
+    auto str = base64_encode(buff.get(), bs);
     out << str;
 }
 
