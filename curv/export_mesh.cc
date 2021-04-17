@@ -168,6 +168,7 @@ void put_buffer(std::ostream& out, openvdb::tools::VolumeToMesh& mesher)
         pbuff[offset + 1] = pt.y();
         pbuff[offset + 2] = pt.z();
     }
+    delete [] buff;
 
     auto str = base64_encode(buff, bs);
     out << str;
