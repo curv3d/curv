@@ -9,7 +9,7 @@
 
 #include <libcurv/context.h>
 #include <libcurv/die.h>
-#include <libcurv/dtostr.h>
+#include <libcurv/format.h>
 #include <libcurv/function.h>
 
 namespace curv {

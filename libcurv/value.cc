@@ -4,7 +4,7 @@
 
 #include <libcurv/value.h>
 
-#include <libcurv/dtostr.h>
+#include <libcurv/format.h>
 #include <libcurv/exception.h>
 #include <libcurv/list.h>
 #include <libcurv/num.h>

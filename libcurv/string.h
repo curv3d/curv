@@ -6,7 +6,7 @@
 #define LIBCURV_STRING_H
 
 #include <libcurv/alist.h>
-#include <libcurv/dtostr.h>
+#include <libcurv/format.h>
 #include <libcurv/range.h>
 #include <libcurv/value.h>
 #include <sstream>

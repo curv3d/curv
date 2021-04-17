@@ -10,7 +10,7 @@
 #include <libcurv/bool.h>
 #include <libcurv/context.h>
 #include <libcurv/die.h>
-#include <libcurv/dtostr.h>
+#include <libcurv/format.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
 #include <libcurv/meaning.h>
