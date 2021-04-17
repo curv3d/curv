@@ -11,6 +11,7 @@
 #include <glm/geometric.hpp>
 
 #include "export.h"
+#include "encode.h"
 #include <libcurv/geom/compiled_shape.h>
 #include <libcurv/shape.h>
 #include <libcurv/exception.h>
@@ -25,7 +26,8 @@ using openvdb::Vec3i;
 enum Mesh_Format {
     stl_format,
     obj_format,
-    x3d_format
+    x3d_format,
+    gltf_format
 };
 
 void export_mesh(Mesh_Format, curv::Value value,
@@ -60,6 +62,15 @@ void export_x3d(curv::Value value,
     export_mesh(x3d_format, value, prog, params, ofile.ostream());
 }
 
+void export_gltf(curv::Value value,
+    curv::Program& prog,
+    const Export_Params& params,
+    curv::Output_File& ofile)
+{
+    ofile.open();
+    export_mesh(gltf_format, value, prog, params, ofile.ostream());
+}
+
 void put_triangle(std::ostream& out, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2)
 {
     glm::vec3 n = glm::normalize(glm::cross(v1 - v0, v2 - v0));
@@ -92,6 +103,74 @@ void put_vertex_colour(std::ostream& out, curv::Shape& shape, Vec3s v)
     curv::Vec3 c = shape.colour(v.x(), v.y(), v.z(), 0.0);
     c = linear_RGB_to_sRGB(c);
     out << " " << c.x << " " << c.y << " " << c.z;
+}
+
+inline size_t vertex_byte_size(openvdb::tools::VolumeToMesh& mesher)
+{
+    size_t s = 0;
+    for (unsigned int i=0; i<mesher.polygonPoolListSize(); ++i) {
+        openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
+        for (unsigned int j=0; j<pool.numTriangles(); ++j) {
+            s += 3 * 2; // 3 point indices (int) 2 bytes each
+        }
+        for (unsigned int j=0; j<pool.numQuads(); ++j) {
+            s += 6 * 2; // 6 point indices (int) 2 bytes each
+        }
+    }
+    return s;
+}
+
+inline size_t point_byte_size(openvdb::tools::VolumeToMesh& mesher)
+{
+    return mesher.pointListSize() * 3 * 4; // xyz (float) 4 bytes each
+}
+
+// padded buffer length with a given stride
+inline size_t pad_buffer(size_t s, size_t stride)
+{
+    return (s/stride + 1) * stride;
+}
+
+void put_buffer(std::ostream& out, openvdb::tools::VolumeToMesh& mesher)
+{
+    const size_t vs = pad_buffer(vertex_byte_size(mesher), 4);
+    const size_t bs = vs + point_byte_size(mesher);
+    unsigned char *buff = new unsigned char[bs]();
+    int offset = 0;
+
+    unsigned short *vbuff = (unsigned short*)buff;
+    for (unsigned int i=0; i<mesher.polygonPoolListSize(); ++i) {
+        openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
+        for (unsigned int j=0; j<pool.numTriangles(); ++j) {
+            auto &tri = pool.triangle(j);
+            vbuff[offset] = tri[0];
+            vbuff[offset + 1] = tri[2];
+            vbuff[offset + 2] = tri[1];
+            offset += 3;
+        }
+        for (unsigned int j=0; j<pool.numQuads(); ++j) {
+            auto& q = pool.quad(j);
+            vbuff[offset] = q[0];
+            vbuff[offset + 1] = q[2];
+            vbuff[offset + 2] = q[1];
+            vbuff[offset + 3] = q[0];
+            vbuff[offset + 4] = q[3];
+            vbuff[offset + 5] = q[2];
+            offset += 6;
+        }
+    }
+
+    float *pbuff = (float*)(buff + vs);
+    for (unsigned int i = 0; i < mesher.pointListSize(); ++i) {
+        auto& pt = mesher.pointList()[i];
+        offset = i * 3;
+        pbuff[offset] = pt.x();
+        pbuff[offset + 1] = pt.y();
+        pbuff[offset + 2] = pt.z();
+    }
+
+    auto str = base64_encode(buff, bs);
+    out << str;
 }
 
 inline glm::vec3 V3(Vec3s v)
@@ -421,6 +500,78 @@ void export_mesh(Mesh_Format format, curv::Value value,
         "</X3D>\n";
         break;
       }
+    case gltf_format:
+        for (unsigned int i=0; i<mesher.polygonPoolListSize(); ++i) {
+            openvdb::tools::PolygonPool& pool = mesher.polygonPoolList()[i];
+            for (unsigned int j=0; j<pool.numTriangles(); ++j) {
+                ++ntri;
+            }
+            for (unsigned int j=0; j<pool.numQuads(); ++j) {
+                ntri += 2;
+            }
+        }
+        float minx, miny, minz, maxx, maxy, maxz;
+        minx = miny = minz = std::numeric_limits<float>::max();
+        maxx = maxy = maxz = std::numeric_limits<float>::min();
+        for (unsigned int i=0; i<mesher.pointListSize(); ++i) {
+            auto& pt = mesher.pointList()[i];
+            minx = std::min(pt.x(), minx);
+            miny = std::min(pt.y(), miny);
+            minz = std::min(pt.z(), minz);
+            maxx = std::max(pt.x(), maxx);
+            maxy = std::max(pt.y(), maxy);
+            maxz = std::max(pt.z(), maxz);
+        }
+        out << std::setprecision(16) <<
+        "{\n"
+        "  \"asset\": { \"version\": \"2.0\" },\n"
+        "  \"scenes\": [{ \"nodes\": [0] }],\n"
+        "  \"nodes\": [{ \"mesh\": 0 }],\n"
+        "  \"meshes\": [{ \"primitives\": [{ \"indices\": 0, \"attributes\": { \"POSITION\": 1 } }] }],\n"
+        "  \"bufferViews\": [\n"
+        "    {\n"
+        "      \"buffer\": 0,\n"
+        "      \"byteOffset\": 0,\n"
+        "      \"byteLength\": " << vertex_byte_size(mesher) << ",\n"
+        "      \"target\": 34963\n" // ELEMENT_ARRAY_BUFFER
+        "    },\n"
+        "    {\n"
+        "      \"buffer\": 0,\n"
+        "      \"byteOffset\": " << pad_buffer(vertex_byte_size(mesher), 4) << ",\n"
+        "      \"byteLength\": " << point_byte_size(mesher) << " ,\n"
+        "      \"target\": 34962\n" // ARRAY_BUFFER
+        "    }\n"
+        "  ],\n"
+        "  \"accessors\": [\n"
+        "    {\n"
+        "      \"bufferView\": 0,\n"
+        "      \"byteOffset\": 0,\n"
+        "      \"componentType\": 5123,\n" // UNSIGNED_SHORT
+        "      \"count\": " << ntri * 3 << ",\n"
+        "      \"type\": \"SCALAR\",\n"
+        "      \"max\": [" << mesher.pointListSize() - 1 << "],\n"
+        "      \"min\": [0]\n"
+        "    },\n"
+        "    {\n"
+        "      \"bufferView\": 1,\n"
+        "      \"byteOffset\": 0,\n"
+        "      \"componentType\": 5126,\n" // FLOAT
+        "      \"count\": " << mesher.pointListSize() << ",\n"
+        "      \"type\": \"VEC3\",\n"
+        "      \"max\": [" << maxx << ", " << maxy << ", " << maxz << "],\n"
+        "      \"min\": [" << minx << ", " << miny << ", " << minz << "]\n"
+        "    }\n"
+        "  ],\n"
+        "  \"buffers\": [\n"
+        "    {\n"
+        "      \"byteLength\": " << pad_buffer(vertex_byte_size(mesher), 4) + point_byte_size(mesher) << ",\n"
+        "      \"uri\": \"data:application/octet-stream;base64,";
+        put_buffer(out, mesher);
+        out << "\"\n"
+        "    }\n"
+        "  ]\n"
+        "}";
+        break;
     default:
         curv::die("bad mesh format");
     }

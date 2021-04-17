@@ -407,6 +407,7 @@ std::map<std::string, Exporter> exporters = {
     {"obj", {export_obj, "OBJ mesh file (3D shape only)", describe_mesh_opts}},
     {"x3d", {export_x3d, "X3D colour mesh file (3D shape only)",
              describe_colour_mesh_opts}},
+    {"gltf", {export_gltf, "GLTF file (3D shape only)", describe_mesh_opts}},
     {"gpu", {export_gpu, "compiled GPU program, in Curv format (shape only)",
         describe_render_opts}},
     {"jgpu", {export_jgpu, "compiled GPU program, in JSON format (shape only)",
