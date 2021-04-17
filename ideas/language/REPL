@@ -1,0 +1,66 @@
+Live Programming
+REPL-Driven Programming
+Programming as Teaching
+https://mikelevins.github.io/2020/12/18/repl-driven.html
+http://mikelevins.github.io/posts/2020-02-03-programming-as-teaching/
+
+What's missing from Curv to support REPL-driven programming?
+What style of live programming is desirable and worth implementing?
+
+Language & runtime designed to allow you to develop and modify a program
+while it runs. (Live programming.)
+
+In Live Programming, a general requirement is that an error in code that you
+aren't currently executing does not crash your live programming session.
+Also, the IDE gives you tools for identifying and fixing these errors without
+halting the program. There are different ways to satisfy this requirement:
+Lisp has one approach, Hazel has another.
+
+Now back to the Lisp REPL. Define a function `foo`, which calls another
+function `bar` that doesn't exist yet. That's okay. (In Curv, this is possible
+in the text editor, but not in the REPL.)
+
+Now call `foo`. When it calls `bar`, you get an error and enter a *breakloop*,
+a REPL which lets you explore the call stack, examine local variables, etc.
+* You can inspect all live data in the running program.
+* You can edit all live data in the program.
+* You can define the missing function `bar`, and resume the call to `foo`.
+
+Right now, Curv treats a reference to an undefined name `bar` as an analysis
+error, not as a runtime error. It seems this needs to change. Hmm, but even in
+Lisp, if the missing definition of `bar` is a macro, then can you supply the
+macro definition and keep running?
+
+In Lisp, "top level definitions" have a special status. You can modify them
+while a program runs.
+    Curv is modular and lexically scoped, this makes less sense.
+    But the breakloop UI knows the module context in which a process is running,
+    so it can provide meaning to 'define the missing function bar'.
+
+You can modify a type definition, and existing instances of this type
+(in the running program) will be remade to conform to the new definition.
+
+Lisp and Smalltalk support this; they are the prime examples.
+They also have shared-mutable-state semantics and use monkey-patching,
+which are things I don't want in Curv.
+    In Lisp/ST, everything is a mutable object, every function can mutate
+    any state in the system. In Curv, the DevUI has meta-level access,
+    can change source code and change the state of a running process. But
+    a function running in a process P can't change the meta-level state of P.
+
+One notable criticism of some REPL-based programming environments
+(this was directed at some REPL-based music system, maybe supercollider?)
+is that as you use the REPL to modify the system state, then the system state
+diverges from the source code, and you have to keep all the state changes in
+your head to understand where the system is currently at. You can't *see*
+what the system is by looking at the screen.
+
+The current state of live programming in Curv is quite primitive, but one
+thing it gets right is that all of the editable state (code, data) is visible
+on the screen, and what you see on the screen is *accurate*.
+
+What I've read about Common Lisp is that eventually the system state
+gets corrupted, so you reboot your environment from the source code
+to get a clean state.
+    This happens in Curv too, if you change the parameters of a parametric
+    shape while the animation is running.

@@ -1,0 +1,41 @@
+2021 Roadmap for "New Curv"
+===========================
+1. Language Design Bible (< new language)
+2. New Language (< new SubCurv compiler)
+    High Level (as a modelling language)
+     * simpler, more regular syntax
+     * 'time' variable for animation
+    Low Level (as a library implementation language)
+     * Imperative programming
+     * Better error messages
+       * efficient type checking in function parameters
+     * Modular programming (named functions, modules, constructors)
+     * Data abstraction: new representation of Shape, Colour
+     * Compact typed data structures (huge typed arrays)
+3. New SubCurv compiler
+    * SubCurv supports a larger Curv subset. distance functions are SubCurv.
+    * parametric shapes and 'time' expressions support full Curv.
+    * new SubCurv+Curv unified IR and partial evaluator.
+    * generate compact and efficient C++, GLSL. EGG based optimizer?
+    * leave room for a fast JIT compiler back end, eg Cranelift.
+    * leave room for a WASM port.
+4. New Runtime
+    * Runtime uses C data structures and functions. Export a module as C++ with
+      C interface, import a .so/.dll encoded module. Integrate w. other langs.
+    * Huge constants in GLSL (buffers), C++ for mesh export (use JIT instead?)
+5. WebGPU port
+
+Which enables:
+* Advanced GPU programming in SubCurv, with compute shaders, etc.
+* Fast GPU rendering. Fast large unions. Voxel shape representation.
+* Import images and voxel grids as Curv values. Import STL as voxels.
+* Interactive animations with mouse input, maybe webcam input.
+
+And beyond:
+* new integrated GUI
+* networked package manager
+* integrate w. other langs (via their C FFI, their C API, WebIDL, files, ...)
+  Compare to: hpyproject.org for Python, nodejs.org/api/n-api.html for JS.
+* Sandboxed file i/o: a persistent mutable workspace.
+  Better integration with external files; reading and writing more file formats.
+* rewrite Curv compiler in Curv?

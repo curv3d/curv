@@ -11,7 +11,6 @@ Use cases:
 
 Constructor:
     action <generator>
-    action <statement>
 An action body may contain recursive references.
 
 To call an action in a statement or generator context, use:
@@ -36,6 +35,45 @@ call expression.
 in a statement or generator context, and it works because error does not return.
 
 Predicate: `is_action`.
+
+Generators are not Imperative
+-----------------------------
+For now, I wish to avoid the extra language complexity introduced by
+imperative generators (that contain assignments to local mutable variables).
+* The documentation for Generators reveals some complexity in the language
+  when imperative generators are introduced--you switch to using ; statement
+  separators.
+* The principle of abstraction suggests the addition of Generator Procedures
+  with a call syntax of '... gproc!loca'. This is complicated.
+
+If we eliminate imperative generators and generator procedures, then:
+* Generators become simpler.
+  * The syntax is simpler. Just comma, no need for semicolon.
+  * Generators are always declarative.
+  * You can do full abstraction over generators just using recursive functions
+    over actions. No need for generator procedures.
+  * You can still code any generator algorithm using functional idioms.
+  * You can write generator-like imperative code that efficiently appends
+    elements to a list (as proposed in [[issues/List]]).
+* Procedures become simpler.
+  * No generator procedures, no '... gproc!loca' syntax.
+  * Procedures are always equivalent to pure functions.
+
+Leaving out generator procedures allows these ideas to cook longer.
+Maybe I'll find a better way to write imperative generators.
+
+This change (dropping imperative generators and generator procedures) reflects
+the "second class" status of imperative programming in Curv. The absence
+of closures that capture references to mutable variables also reflects the
+second class status. You need to switch to functional idioms with recursion
+and tail recursion to get a first class programming experience.
+
+The extra complexity of these missing "first class" imperative features
+is not required for the use cases that mandate the addition of imperative
+programming in the first place. Novice programmers don't need
+hard-to-understand advanced imperative features. And these features aren't
+needed for low level GPU programming or porting GLSL shader code, because
+nothing in GLSL or other shader languages looks like these missing features.
 
 Semantics
 ---------

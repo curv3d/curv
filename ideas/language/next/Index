@@ -1,0 +1,104 @@
+Index Values (Lenses)
+=====================
+Make a choice:
+* index values are disjoint from functions
+* index values are functions
+
+0. They are disjoint
+--------------------
+What are the benefits?
+* If user defined index values are abstract values (they implement the Index
+  theory using Algebra Data Abstraction), and therefore not record values,
+  then records could work as implicit pick indexes. Eg,
+    [4,5,6].[{a:0,b:1}] => {a:4,b:5}
+* Figuring out how to correctly unify functions with indexes is complicated...
+
+1. They are functions
+---------------------
+This is inspired by the Algebraic Data Abstraction proposal, wherein operations
+on abstract data types are functions. If an ADT is a collection, then there
+are operations for accessing the elements, which ought be functions, so that
+you can extend the interface to allow both setting and getting elements without
+switching to a new operation syntax. So index values are functions.
+
+  This is analogous to how locatives behave either as expressions or locations,
+  depending on context (right or left of a :=). And closely related, given
+  that 'i x' is both an expression and a locative (if i is an index).
+
+Benefits:
+  * More composability.
+  * Index values are functional abstractions over locatives.
+    The Law of Abstraction requires us to have functional abstractions
+    over all phrase types. Index values satisfy the requirement for locatives.
+    This proposal lets you use function call syntax for applying an index
+    to a locative.
+
+what it means:
+  Ad-hoc:
+    * ad-hoc overloading of function call (functions and indices)
+  Principled, algebraic:
+    * The Index theory is a subtype of the Function theory.
+    * The Function theory contains function application, id, error, match
+      and compose.
+    * Although, 'error' is effectively identical for any algebra that implements
+      this theory, and 'match' doesn't seem useful for Indexes. When would I
+      use 'error' as an index? Maybe the Function theory just contains
+      application, id and compose.
+    * Maybe it is the Map theory and the Function algebra, where a Map is more
+      general than a Function. An Index is a Map.
+
+Even with the algebraic gloss, we can still choose to only have one
+overloaded Map operation, which is the function call syntax. We can still
+have separate 'compose' and 'tpath' operations, and not try to join those
+into a single overloaded compose operation, which would encounter difficulties
+with the meaning of 'compose[]'.
+
+So the two interpretations may be equivalent in the function and index APIs.
+
+If 'i' is an index, we can classify 'i t' and 't >> i' as equivalent 
+to 't.[i]', and these are all locatives. We can drop the low-precedence '@'
+operator proposal and use 't>>i' instead. Eg, t.[i,j] <=> t >> tslice[i,j].
+
+#foo {foo:1} => 1, like in Clojure.
+0 [1,2,3] => 1
+
+However, the 't.[i]' syntax is specific to indexing, especially since
+the 'i' argument is actually a generator that is converted to a slice.
+I won't allow 'x.[f]' function calls.
+
+Some tree operations can be generalized as indexes.
+Eg, 'reverse' can be an index.
+
+Every combinator that can work on indexes, should do so.
+Eg, 'map <index> => <index>'.
+    'map #foo' selects column 'foo' from a table, and is an index.
+So map returns an index if its argument is an index.
+
+Previously, I conjectured that this proposal would include
+    [f,g] x => [f x, g x]
+as in Nial (an Atlas) or in FP (a Construction Functional). But functions are
+not indexes, even though indexes and functions are both maps. (The Algebraic
+analysis clarified this.) So this doesn't logically follow from the 'indexes
+are Maps' proposal. However, I do get this feature from the 'dmap' proposal,
+where you'd write 'x >>~ [f,g]'.
+
+In [[tree/Lens]] I proposed a 'pick' index combinator, similar to above.
+    [3,4,5] >> pick[0,1] => [3,4]
+    [3,4,5] >> pick{a:0,b:1} => {a:3,b:4}
+This should work on all Maps.
+    x >> pick[f,g] => [f x, g x]
+So pick returns an index if all the elements of its argument are indexes.
+
+  Something weird about this. Doesn't map onto ADA overloading. There are 2
+  versions of pick: 'Map.pick' (for the Map *theory*) and Index.pick (on the
+  Index *algebra*). First returns a Map, second returns an Index.
+
+  I think I am proposing ad-hoc, not principled, overloading of 'pick'.
+  There is an Index version, a Map version, that's it.
+  Which is unlike the overloading of function call syntax, which works
+  for any algebra that implements 'Map'.
+    ...Except in one context. 'f x' as a locative requires 'f' to be an Index.
+  Best then to use two different operation names?
+
+A colour space index like sRGB needs to be repackaged as 'sRGB.from'
+(since sRGB is already a function).

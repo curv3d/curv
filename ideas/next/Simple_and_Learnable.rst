@@ -227,7 +227,7 @@ since the extension language requires a certain amount of complexity and
 bureaucracy that we don't want to expose in the modelling language.
 
 To resolve the conflict, to make it more learnable and easier to use,
-Curv is designed as a tower of increasing larger language subsets.
+Curv is designed as a tower of increasingly larger language subsets.
 You don't need to master the entire language to use one of these subsets.
 Each level has a principled design with simple semantics, and is self contained,
 with no accidental complexity leaking through from the lower level dialects.

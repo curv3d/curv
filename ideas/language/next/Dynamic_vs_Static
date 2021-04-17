@@ -1,6 +1,93 @@
 Dynamic vs Static Typing
 ========================
-Is Curv dynamically typed or statically typed? The answer is yes.
+Curv is a dynamically typed language with a statically typed subset, SubCurv,
+that can be compiled into GPU shader code.
+
+Dynamic typing enables Curv to meet its design goals:
+* Type declarations and static type checking are optional, not mandatory.
+* The type of every value is available at run time.
+* Live programming is possible. In a live programming setup, you edit a
+  program's source while it is running. Type errors in code that isn't being
+  executed are tolerated: they do not crash your live programming session.
+* Simplicity, Orthogonality and Composability are more important than type
+  checking. Everything is a first class value, that can be bound to a variable,
+  passed as an argument to a function, returned as a result, or stored as an
+  element in a data structure.
+* Universal abstraction is both possible and easy. I mean that it is always
+  possible to write a function that abstracts out an arbitrary subexpression
+  of some expression, replacing it with a parameter. This is provably
+  impossible in a statically typed language with a sound type system. The
+  inability to create arbitrary abstractions in these languages has fueled
+  the creation of increasing more complex higher order type systems with
+  steeper and steeper learning curves.
+
+--------------------------------------------------------------------
+0. Is Curv dynamically typed or statically typed? The answer is yes.
+
+That's not a very useful categorization, though, is it?
+There is a dichotomy, popular in the programming community,
+which states that every programming language is either dynamically
+typed or statically typed. Many people align themselves with
+one camp or the other. True believers belonging to each camp use straw-man
+definitions of "statically typed" and "dynamically typed" that aren't true
+of modern practical programming languages. These false beliefs, in turn, make
+the categories less useful for communication.
+
+I would like to reclaim the term "dynamically typed" so that it has a
+real meaning, and so that we can have real discussions about real issues.
+
+Myths about dynamically typed languages:
+* They by definition do not have type declarations.
+  (Reality check: Common Lisp has had type declarations since the 1980s.)
+* It is impossible for the compiler to detect type errors at compile time.
+* They are inherently slow, due to the impossibility of using efficient
+  value representations, and due to the requirement to perform all type
+  checking at run time.
+* Functions cannot detect bad parameters up front, at the point where you
+  called them. Instead, you invariably get a type error deep inside the
+  function; you have to decode a stack track and understand the function's
+  implementation to understand the error.
+I mean, you can write slow programs in a dynamically typed language, and
+you can write functions that don't check their arguments, but it's not a
+requirement. And these same problems can occur in statically typed languages.
+
+Here is my definition of "dynamically typed", in the context of Curv:
+* Type declarations and static type checking are optional, not mandatory.
+* The type of every value is available at run time.
+* Live programming is possible. In a live programming setup, you edit a
+  program's source while it is running. Type errors in code that isn't being
+  executed are tolerated: they do not crash your live programming session.
+* Simplicity, Orthogonality and Composability are more important than type
+  checking. Everything is a first class value, that can be bound to a variable,
+  passed as an argument to a function, returned as a result, or stored as an
+  element in a data structure.
+* Universal abstraction is both possible and easy. I mean that it is always
+  possible to write a function that abstracts out an arbitrary subexpression
+  of some expression, replacing it with a parameter. This is provably
+  impossible in a statically typed language with a sound type system. The
+  inability to create arbitrary abstractions in these languages has fueled
+  the creation of increasing more complex higher order type systems with
+  steeper and steeper learning curves.
+
+Finally, Curv is a dynamically typed language with a statically typed,
+efficient subset called SubCurv.
+
+1. Dynamically typed languages are inherently more expressive.
+In Curv, you can abstract any expression with respect to any subexpression,
+creating a function whose body is the abstracted expression and whose parameter
+is the abstracted subexpression. It is dead simple to do this. The things
+we call 'types' or which we use as surrogates for 'types' are in fact values
+that are denoted by expressions, so we can arbitrarily abstract over 'type'
+expressions as well. In a statically typed language with a sound type system,
+you cannot do this. Static type people want to be able to do this, though,
+so for the past 40 years they've been creating ever more complex type system
+extensions that handle one or another special case of this problem, without
+ever solving the entire problem, which is provably impossible. Haskell GHC
+has several hundred extensions, most of which extend the type system to deal
+with various special cases of this problem. The complexity of this is far
+beyond anything I want to deal with.
+
+2. Is Curv dynamically typed or statically typed? The answer is yes.
 
 There is a false dichotomy, popular in the programming community,
 which states that every programming language is either dynamically

@@ -1,3 +1,68 @@
+Curv Changes since Release 0.4
+==============================
+General Improvements
+--------------------
+* @ComFreek -- Windows port.
+* @Xiaoyuew -- Multi-threaded, multi-core mesh export.
+* AMD GPUs supported on Linux using AMD Mesa 19.x driver.
+* Configuration file ~/.config/curv contains defaults for -O options.
+* All -O option values are now specified as Curv expressions.
+  Symbols used in -O options: -Ocolouring=#vertex or -Ocolouring=#face
+* `make upgrade` command
+* REPL supports full language (assignment statements, generators)
+* general tail call optimization
+
+Curv changes at Apr 3 2021 ce178d18
+-----------------------------------
+- a string is a list of characters
+- subcurv: matrix multiplication ('dot')
+- extended support for reactive expressions in SubCurv
+- multi-dimensional array slicing
+- generalized index values (lenses)
+- "precise domains" and failure handling:
+  - 'error' is a function value (previously was magic syntax)
+  - 'id' -- identity function
+  - 'identity' renamed to 'idmatrix'
+  - 'compose' is generalized to work correctly on partial functions
+- vectorized boolean 'not' function; unary '!' operator is deprecated
+- vectorized boolean reduction functions 'and', 'or', 'xor'
+- 'is_fun' deprecated, replaced by 'is_func' and 'is_primitive_func'
+- deprecate '(a,b,c)' list syntax; use '[a,b,c]' instead
+- generalized 'polygon' primitive (can be non-convex, self-intersecting)
+- 'parametric' records have a 'call' field that reruns the constructor
+  with different parameter values. The result is another parametric record,
+  also with a 'call' field.
+- 'test' definitions, for unit tests in a module, or anywhere else
+- 'assert_error', for writing unit tests
+- comma separated definition lists in 'let ...' and '{...}'.
+  Previously only ';' was allowed as separator.
+- '--depr=' option controls deprecation warnings
+- 'a.[i]' is new array indexing syntax. 'a[i]' is deprecated.
+- 'r.[#foo]' is same as 'r.foo'. Syntax r."foo" is deprecated.
+- 'a.foo.[i] := ...' assignment statements
+- 'symbol' function (construct symbol from string)
+- Add character type. A string literal "foo" is a list of characters.
+  - 'char' and 'is_char'
+- 'string' and 'ucode' functions
+- 'encode' removed, replaced by 'ucode'
+- 'decode' removed, replaced by 'char'
+- new char escape sequence in string literals: $_ -> $ and "_ -> "
+- #"a" is a character literal
+- a++b list catenation operator
+- in a statement context, () and (a,b,c) are generators.
+- deprecate syntax "name":value
+- 'where' is deprecated
+- in a dynamic record literal, [#a,1] is equivalent to a:1, both expressions
+- 'amend index newelem tree'
+- 'this', 'tpath', 'tslice'
+- 'locative!func1!func2' statement
+- deprecate "foo":expr, in expression or pattern context.
+- 'help' in REPL is partially implemented
+
+better error messages and stack traces
+- an ongoing project
+- function names printed in stack traces
+
 Curv changes at version 2e3bc8009, Feb 26 2020
 ----------------------------------------------
 

@@ -1,0 +1,54 @@
+the Laws of Abstraction
+=======================
+These ideas originated in the classic paper "The Next 700 Programming Languages"
+by Landin, 1966.
+
+They were formalized by R.D. Tennent
+in his book "Principles of Programming Languages", 1981.
+
+Here is a large superset of these principles (slide show)
+http://people.cs.aau.dk/~bt/DAT5E07/PrgLDesign.pdf
+
+I'm particular interested in Tennent's Principle of Abstraction:
+
+    All major syntactic categories should have abstractions defined
+    over them. For example, functions are abstractions over expressions.
+
+Curv Phrase Types (and their abstractions):
+  expression -- Function
+  statement -- Procedure
+    Statements are executed for their effects, and these effects are
+    restricted to updating mutable variables. We don't have full abstraction
+    over statements, because that would require closures that capture
+    references to mutable variables, which would introduce reference
+    semantics and non-locality into the language semantics. So we instead
+    have Procedures, where the external variables mutated by the abstraction
+    must be passed as explicit arguments.
+    abstracting a sublocative from a statement: Procedure
+    abstracting a subexpression from a statement: function returning a procedure
+  generator -- Action
+  locative -- Index
+  - An Index is a Mapping that maps a locative to a locative.
+  - Abstracting a subexpression or sublocative from a locative could
+    be done with a specialized lambda expression with a locative as body,
+    but the same things can be achieved using the Index API.
+  pattern -- Function, applied using a transform pattern (pat <: func).
+  metafunction -- n/a
+
+I've run into a complication with the abstractions for generators and
+statements. If I remove the 'imperative generator' feature, so that generators
+and imperative statements are distinct features, then things become simpler.
+Full abstraction over generators is then possible with recursive Action values,
+and Procedures become equivalent to pure functions.
+The above list factors in this change.
+ - This change reflects the "second class" status of imperative programming
+   in Curv. The absence of closures that capture references to mutable
+   variables also reflects the second class status. You need to switch to
+   functional idioms with recursion and tail recursion to get a first class
+   programming experience.
+ - The extra complexity of these missing "first class" imperative features
+   is not required for the use cases that mandate the addition of imperative
+   programming in the first place. Novice programmers don't need
+   hard-to-understand advanced imperative features. And these features aren't
+   needed for low level GPU programming or porting GLSL shader code, because
+   nothing in GLSL or other shader languages looks like these missing features.

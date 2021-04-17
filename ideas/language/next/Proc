@@ -90,6 +90,11 @@ functions, and only have debug effects) from impure procedures (which
 can modify the implicit imperative state, and are not functions, and
 can only be invoked in the context of `... x!P`).
 
+No Generator Procedures
+-----------------------
+For now, as a simplification, I wish to remove generator procedures and
+imperative generators from the language. See [[Actions]] for the rationale.
+
 In Place Atomic Update
 ----------------------
 A procedure call can efficiently update a data structure in place.

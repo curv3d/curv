@@ -16,7 +16,11 @@ Brainstorming results (so far):
   Now called a 'procedure': see [[next/Proc]].
 * Switch statement.
 
-See [[abstraction/Generators]] for a somewhat opposing view.
+See [[abstraction/Generators]] for a somewhat opposing earlier view,
+where I claim that generators and statements are distinct.
+More lately, after writing this essay, and seeing the complexity of the
+full proposal, I've returned to the idea that generators and statements
+should be distinct. See [[next/Actions]].
 
 Proposal #1: Generic Phrase Abstraction
 ---------------------------------------
@@ -217,7 +221,7 @@ I don't like 'loc!mg' by itself because there's no syntactic indication that
 values are generated.
 
 Kinds of Procedures (Dec 2020)
-------------------------------
+==============================
 Here are two viable kinds of procedures:
 
  1. Procedure

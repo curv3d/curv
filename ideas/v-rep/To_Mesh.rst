@@ -397,50 +397,63 @@ Is manifold / watertight, but non-hierarchical and edges remain bevelled.
 There’s also a stronger non-isotropic behavior, based on how you build the tets
 
 Cubical Marching Squares: Weird.
-I agree with Doug’s assessment of this one.  For a while, I had the main implementation
-on the internet (in kokopelli <https://github.com/mkeeter/kokopelli/blob/master/libfab/asdf/cms.c>); but it only implemented about 50% of the paper.
-George Rassovsky <https://grassovsky.wordpress.com/2014/09/09/cubical-marching-squares-implementation/> wrote a different implementation after we corresponded, but I haven’t
+I agree with Doug’s assessment of this one. For a while, I had the main
+implementation on the internet, in Kokopelli
+ <https://github.com/mkeeter/kokopelli/blob/master/libfab/asdf/cms.c>
+but it only implemented about 50% of the paper. George Rassovsky
+  <https://grassovsky.wordpress.com/2014/09/09/cubical-marching-squares-implementation/>
+wrote a different implementation after we corresponded, but I haven’t
 looked into it – this algorithm is best left alone.
 
 Feature Sensitive Surface Extraction from Volume Data: sharp features
-This paper describes a way to detect triangles that are likely to contain an edge + corner,
-and bump out an extra vertex to improve sharp feature performance.  It’s got a good explanation
-of QEFs and how they can be built from position + normal samples and used to position vertices.
+This paper describes a way to detect triangles that are likely to contain an
+edge + corner, and bump out an extra vertex to improve sharp feature
+performance. It’s got a good explanation of QEFs and how they can be built
+from position + normal samples and used to position vertices.
 
 Dual contouring: watertight(?), hierarchical, sharp features
-This is a strong local maxima in meshing algorithms – it’s not too hard to implement,
-and works really well.  The main limitation is that meshes have self-intersections
-and can be non-manifold.  There’s a good companion paper called “Dual Contouring:
-The Secret Sauce” which talks about implementation details.
+This is a strong local maxima in meshing algorithms – it’s not too hard to
+implement, and works really well. The main limitation is that meshes have
+self-intersections and can be non-manifold. There’s a good companion paper
+called “Dual Contouring: The Secret Sauce” which talks about implementation
+details.
 
 Dual Marching Cubes (Nielsen): Weird, and I don’t remember much about it,
 but it apparently inspired Manifold Dual Contouring
 
 Manifold dual contouring: manifold, watertight, hierarchical, sharp features
-This is a worthwhile minor improvement to Dual Contouring, and the primary algorithm in libfive
-It allows more than one vertex in a cell, to avoid non-manifold cases.  The main limitation
-remains self-intersections.
+This is a worthwhile minor improvement to Dual Contouring, and the primary
+algorithm in libfive. It allows more than one vertex in a cell, to avoid
+non-manifold cases. The main limitation remains self-intersections.
 
 Intersection-free Contouring on An Octree Grid: watertight, hierarchical, sharp features, not self-intersecting (probably)
-This is an alternate improvement to Dual contouring, which tries to address the self-intersection issue.
-It’s okay, but not great – it doesn’t handle the case where vertices completely escape their
-containing octree cell.  It’s also not compatible with manifold dual contouring: if you try to
-combine the two, then you can end up with self-intersections in a multi-vertex cell.
+This is an alternate improvement to Dual contouring, which tries to address
+the self-intersection issue. It’s okay, but not great – it doesn’t handle
+the case where vertices completely escape their containing octree cell.
+It’s also not compatible with manifold dual contouring: if you try to combine
+the two, then you can end up with self-intersections in a multi-vertex cell.
 
-Dual Marching Cubes (Warren): manifold, watertight, hierarchical, sharp features, thin features
-There are clever ideas to internalize, but I’ve found obvious cases where it just doesn’t work;
-I’m not sure if I’m misunderstanding something or the algorithm just isn’t that great.  On the other
-hand, the idea of positioning vertices on sharp features of the underlying field led to….
+Dual Marching Cubes (Warren): manifold, watertight, hierarchical,
+  sharp features, thin features
+There are clever ideas to internalize, but I’ve found obvious cases where it
+just doesn’t work; I’m not sure if I’m misunderstanding something or the
+algorithm just isn’t that great. On the other hand, the idea of positioning
+vertices on sharp features of the underlying field led to….
 
-Isosurfaces Over Simplicial Partitions of Multiresolution Grids: watertight, manifold, not self-intersecting, hierarchical, sharp features, thin features (everything!)
-This is what I’m trying to implement in libfive right now.  It’s a very clever algorithm that has
-all of the desirable properties, and builds on a lot of other ideas (Dual Contouring, Warren’s DMC
-and Marching Tetrahedrons).  It’s not too much more complicated than dual contouring in theory, but
-you have to be really comfortable with QEFs – I ended up writing a long explainer <http://www.mattkeeter.com/projects/qef/> while digging
-through the math.  It’s much harder to make fast, and produces many more triangles unless you implement
-some of the bonus algorithms from the paper.  Also, the paper only describes top-down construction,
-which I’m skeptical about, so I’ve developed a bottom-up way to build the octree (to guarantee finding
-shapes above a certain size, rather than trusting a heuristic + sampling).
+Isosurfaces Over Simplicial Partitions of Multiresolution Grids:
+  watertight, manifold, not self-intersecting, hierarchical, sharp features,
+  thin features (everything!)
+This is what I’m trying to implement in libfive right now. It’s a very clever
+algorithm that has all of the desirable properties, and builds on a lot of
+other ideas (Dual Contouring, Warren’s DMC and Marching Tetrahedrons).
+It’s not too much more complicated than dual contouring in theory, but you
+have to be really comfortable with QEFs – I ended up writing a long explainer
+<http://www.mattkeeter.com/projects/qef/> while digging through the math.
+It’s much harder to make fast, and produces many more triangles unless you
+implement some of the bonus algorithms from the paper. Also, the paper only
+describes top-down construction, which I’m skeptical about, so I’ve developed
+a bottom-up way to build the octree (to guarantee finding shapes above a
+certain size, rather than trusting a heuristic + sampling).
 
 Solid Meshing
 =============
@@ -548,15 +561,20 @@ Open source implementations:
 * http://home.eps.hw.ac.uk/~ab226/software/mpu_implicits/webpage.html
   C++, by original authors. Warning: no copyright notice or copyright licence.
 * https://github.com/sohale/implisolid
-  C++ and Python, LGPL 3.
+  C++ and Python, LGPL 3. Uses marching cubes to generate mesh.
 * https://github.com/Lin20/BinaryMeshFitting
   C++, MIT Licence. Looks worth investigating.
   It's a high performance implementation embedded in a game engine.
-  Uses DMC to create the initial mesh (DC didn't work as well).
+  Uses DMC (Nielson) to create the initial mesh (DC didn't work as well).
+  Sharp feature preservation was never implemented.
 
 "**Locally-optimal Delaunay-refinement and optimisation-based mesh generation**".
 https://github.com/dengwirda/jigsaw
 Looks interesting, but has a non-commercial, non-free licence.
+
+**Error-Bounded and Feature Preserving Surface Remeshing with Minimal Angle Improvement**
+https://github.com/KaimoHu/2019_CGALRemeshing
+C++, GPL 3, 2018, looks quite good.
 
 Survey of Algorithms
 ====================

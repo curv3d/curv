@@ -1,5 +1,107 @@
-Data Abstraction
-================
+Algebraic Data Abstraction
+==========================
+Algebraic Data Abstraction is a new data abstraction mechanism based
+on the idea that abstract data types are algebras.
+ADA is (1) modular, and supports (2) generic programming, with (3) run-time
+polymorphism (including overloaded binary operators and heterogenous lists).
+It solves the "expression problem", which is actually a modularity problem.
+
+Why is it needed? Because nothing else meets all 3 requirements.
+Existing data abstraction mechanisms, such as Object Oriented Programming,
+either support run-time polymorphism but are unmodular,
+or they are modular but do not support run-time polymorphism.
+
+Algebras & Theories
+-------------------
+An abstract data type (ADT) is a set of values (a Type), plus a set of
+operations on values of that type, plus a set of axioms (or laws) which
+specify the semantics of the operations. An ADT is abstract because when we
+use an ADT to write code, we ignore the representation of the type, and we
+only use the operations.
+
+This structure (a type, a set of named operations, and a set of axioms)
+is a single-typed Algebra. There are also multi-typed algebras.
+
+Since an Algebra may contain multiple types, each type has a name.
+By convention, a single-typed algebra has a type named T.
+
+The named types and operations in an Algebra are collectively called members.
+In Curv, an Algebra `A` is a module value, and you use dot notation,
+`A.T` and `A.op`, to reference the members of an Algebra.
+
+In an Algebra, an operation is a named value, and typically fits into
+one of the following categories:
+* It is a constant belonging to one of the Algebra's member types.
+* It is a function of one or more arguments that returns an instance
+  of one of the member types.
+* It is a function that takes one or more arguments that are instances
+  of a member type, and may return an instance of a member type.
+
+A Theory is the type of an Algebra. A Theory comprises a set of type names,
+a set of operation type signatures, and a set of axioms.
+
+Two Theories may be related by a subtheory/supertheory relationship.
+A subtheory contains all of the type names, operation signatures and axioms
+of its supertheory, and adds additional ones.
+
+This is a very general framework.
+You can have two algebras that implement the same theory
+over the same type, but the operations are implemented differently.
+An example from mathematics is that there is both an additive and
+a multiplicative monoid over the real numbers.
+
+Generic Programming
+-------------------
+The fundamental benefit of data abstraction is modularity. It allows you
+to separate the API for constructing and manipulating instances of a type
+from the type's internal representation, so that the representation can be
+changed without changing the code that uses the type.
+
+The next step beyond this is generic programming, where you have multiple
+algebras that implement the same theory, and you write generic code that
+uses the types and operations from the theory. Any algebra that implements
+the theory can be plugged in, so the same code works with different types
+and algebras without being changed.
+
+In order to make generic programming work, there must be a way of selecting
+which algebra to use. ADA uses two approaches.
+
+The first is using explicit algebra parameters. A function maps an algebra
+to either another function (a generic function), or to a module containing
+functions (a generic module). This approach is general enough to work even
+when there are multiple algebras over the same type that implement a given
+theory, but it's also verbose.
+
+The second approach is less general, but it supports run-time polymorphism.
+The types of the arguments to a function are used to dynamically select an
+algebra. This mechanism supports overloaded operators and heterogenous lists.
+
+Universal Data Abstraction?
+---------------------------
+In Smalltalk, it appears that the only important thing about an object is the
+message protocol that it accepts. Any object can be implemented to support
+any message protocol. So it would seem that all functions are automatically
+generic, since the requirements a function places on an argument is never a
+specific internal data representation and a specific internal implementation,
+but it is only that the argument supports a particular message protocol.
+
+Is this "universal data abstraction" property a real thing that Curv can
+implement, or what are the limitations? Can we automatically guarantee that
+all functions are generic, without writing the functions in a special way?
+
+My initial reaction is that this is an illusion. If all algebras were
+single typed, and all operations in an algebra were functions that take
+a single instance of type T as an argument (single dispatch: no constants,
+no constructors, no binary operators), then this property would be achievable.
+But I think it is unachieveable for arbitrary algebras.
+
+---------------------------------------------------------------------
+OOP has run-time polymorphism, but is anti-modular. The SML module system
+is modular, but doesn't support overloading or run-time polymorphism. Other
+systems lie in between. Haskell type classes support overloading, are more
+modular than OOP and less modular than SML, and don't support run-time
+polymorphism.
+
 Informally, a type is a set of values plus a set of operations on those values.
 
 We can formalize this. In Curv, all data is represented by immutable values,
@@ -30,8 +132,8 @@ For example,
     or interface inheritance). Objects contain both data and operations.
   * The Common Lisp Object System (CLOS), with generic functions that
     support multiple dispatch using a global dispatch table.
-  * Haskell Type Classes. A type class is essentially a theory, although
-    you can't formally specify the axioms. A type class instance is essentially
+  * Haskell Type Classes. A type class is essentially a theory, although you
+    can't formally specify the axioms. A type class instance is essentially
     an algebra. Type class instances permit only one implementation of a theory
     per data type.
 
@@ -41,6 +143,43 @@ I want to abstract over these data abstraction mechanisms, and provide
 a high level abstract notation for data abstraction and generic programming.
 Ideally, this notation should hide which data abstraction mechanism is being
 used.
+
+Values
+------
+All data is represented by immutable values. There are no mutable objects.
+All operations on data are represented by pure functions (no side effects).
+All API objects (functions, types, modules, etc) are represented by values.
+All abstraction over API objects is done using ordinary functions.
+
+Named API Values
+----------------
+API values (functions, types, modules, etc) can be given a name, which becomes
+part of the value's identity.
+
+Modules
+-------
+A module is a record with axioms. At present, we don't formally represent
+the axioms, they are part of the documentation. But two modules are not
+equivalent unless they have the same axioms. So that we have a way to
+determine equivalence, the name of a module is part of its identity,
+and we use a form of nominal equivalence for modules. Module members can
+themselves be named values, so the indication of which members are named values
+is another kind of metadata carried by a module.
+
+I might want to use the word 'module' in a more general sense to mean
+labelled or named value, or API value. In which case this section is
+about record modules.
+
+Constructors
+------------
+Every value has a unique constructor associated with it. This is like a run-time
+'type' tag. For named values (see above), the constructor is the value itself.
+Otherwise, the constructor is a named function with one or more curried
+arguments. The constructor plus its arguments uniquely determine the value.
+......
+* For a named function or module, isn't the 'type tag' Function or Record?
+  If I define an algebra where T=Function, won't the overloaded operations
+  with function arguments accept any named function as an argument?
 
 Labelled Value Constructors
 ---------------------------
@@ -64,6 +203,12 @@ This is the first step in providing data abstraction.
   you can pattern match on it, it has sensible equality semantics,
   and you can use `cube 10 .d` to query the diameter.
 
+Types
+-----
+A type is a set of related values. They are related because they are used by
+a common set of operations: they are part of the domain and/or range of these
+operations.
+
 Algebras
 --------
 An Algebra is a module that denotes a set of values together with a set of
@@ -83,12 +228,19 @@ A Labelled Algebra is restricted to have labelled value constructors.
 
 Theories
 --------
-A Theory is like the type or signature of an Algebra. A Theory contains
-constructor names and operation names and axioms, and declares
-signatures for constructors and operations, but doesn't contain
-an implementation. The operation signatures are needed to implement
+A Theory is like the type or signature of an Algebra. A Theory contains:
+* A set of type names.
+* A set of operation signatures (name/type pairs).
+  The signatures are written in terms of the types from the first clause.
+* A set of axioms over the operations. For now, these are encoded as comments,
+  but later I'd like to have formal axioms that can be used to generate unit
+  tests, and which can be used by an EGG based code optimizer.
+
+A Theory is also a dependent record type: the operation signatures depend
+on the types.
+
+The operation signatures are used to implement
 dispatch of overloaded operators (see Abstract Values).
-They are also used to validate Algebras (see below).
 
 A Theory can inherit from other Theories (multiple inheritance).
 
@@ -222,8 +374,127 @@ In case 2, the mapping could be stored in the theory.
 This has local semantics. There is no requirement for a global dispatch table
 (except maybe as a cache for performance reasons).
 
-Syntax
-------
+Theory Syntax
+-------------
+A Theory consists of:
+* zero or more supertheories (maybe those are declared externally)
+* one or more type names (of 'member types')
+* zero or more member signatures
+* axioms (not supported yet, must be described in documentation)
+
+A Theory is normally a named value.
+Is there even a use case for anonymous theories? (Obviously I'm thinking about
+orthogonality.) When would I pass an anonymous theory literal as a function
+argument? (Answer: some weird higher order programming, like theory or algebra
+combinators, that I haven't considered yet.) What operations can be performed
+on an anonymous theory? (How do you build complex theories or algebras out
+of simpler ones?) Theories are values, so you *can* pass them as arguments etc.
+
+A 'member signature' is an operation, a constructor, or a constant.
+* An operation is a function that takes at least one argument of a member type.
+* A constructor is a function whose result is a member type, or a constant
+  of a member type.
+* A constant is a member whose signature doesn't contain a member type.
+  It is a per-algebra constant, similar to a static member of a C++ class,
+  or a class variable in Smalltalk.
+
+A member signature is, syntactically, 'name : signature',
+where 'signature' is domain-specific syntax for a type expression,
+including some handy abbreviations. Signatures are a distinct phrase type;
+they are not expressions, just like patterns are not expressions.
+[Rationale: need to analyse signatures at compile time, find all occurrences
+of member types.]
+
+Signature syntax:
+ * type names and type constructor expressions from the Types proposal
+ * [type1,type2,type3] -- a tuple type
+ * {name1: type1, name2: type2} -- a record type
+ * Sig1 Sig2 -> SigResult
+
+So, like:
+    def Shape = theory (T) {
+        distance: Vec3 T -> Num,
+        colour: Vec3 T -> Num,
+        bounds: T -> [Vec3,Vec3],
+        is_2d: T -> Bool,
+        is_3d: T -> Bool,
+    }
+or:
+    def Monoid = theory (T) {
+        zero: T;
+        op: [T,T] -> T;
+    }
+
+A theory member can be a lens, and this is how we construct theories for
+container values that have mutable elements. It is better if the syntax
+for lens fetch is <lens> <x>, i.e. function call notation. This makes the
+theory interface more abstract. You can promote an element selector from
+a function to a lens without breaking existing code.
+
+Operations on Theories:
+* Container for overloaded operations. Given a shape S,
+    S >> Shape.distance[x,y,z]
+* <theory>.<typename> -- a run-time polymorphic classifier for a value whose
+  type is an instance of a member type.
+* <theory>.<operation> -- a run-time polymorphic, overloaded operation.
+* <theory>.<constructor> -- illegal, can't be resolved
+* <theory>.<constant> -- illegal, can't be resolved
+* Referenced by an Algebra.
+
+I think that a theory is really a dependent module type.
+A theory with zero member types is just a simple module type (an interface).
+
+If supertheories are declared externally, then they can be declared either
+beside the subtheory, or beside the supertheory.
+
+More features:
+* Theory constants (same for all algebras), which can implement additional
+  'static' operations based on the 'virtual' operations that are implemented
+  on a per-algebra basis. Needed because a Theory is also a module. For the
+  purpose of providing an abstract module interface to a Theory, we don't
+  expose which generic operations are 'static' and which are 'virtual'.
+  In fact, this status could change without changing the public interface.
+* Default values for virtual operations. This is useful because it allows a
+  new virtual operation to be added without breaking existing algebras that
+  implement the theory.
+* Maybe: a pragma to suggest that a virtual operation like T->X (where T
+  is a member type) should be cached in the value as a data field.
+  Eg, in Shape, bounds, is_2d and is_3d could be declared data fields.
+  This would be a performance optimization. It won't work for algebras that
+  implement operations over external constructors. But it will work for
+  algebras that define their own constructors.
+
+Note: Theories seem as complex and ad-hoc as C++ classes. Their dual nature
+(they are both modules and module types) is driving this. What about my
+orthogonality principle? I feel like I just accidently reinvented C++,
+that maybe my C++ background has biased the design towards complexity.
+
+We can separate the module and type aspects of theories. A theory is not a
+module, but a module can include a theory and get the type and operator names.
+So there is both a Shape module and a Shape theory:
+    Shape = {
+        theory = make_theory (type) {
+            distance: Vec3 type -> Num;
+            ...
+        };
+        include theory;
+        // non-virtual shape operation
+        size S = let b = Shape.bounds S in b.[MAX] - b.[MIN];
+    }
+Use naming conventions to reduce boilerplate, so a module containing a
+'type' field behaves like a type. Then 'Shape' is the type of a shape and
+'Shape.theory' is the type of a shape algebra. Another naming convention:
+maybe a module delegates to its 'theory' field, if that field contains a
+Theory. That eliminates the 'include theory;' boilerplate.
+
+`Theory` is the type of a theory value.
+
+Algebra Syntax
+--------------
+An Algebra is a module with:
+* Implements a Theory. Must define fields specified by the Theory with matching
+  types or signatures.
+* Can optionally be 'overloaded'. This is a kind of definition.
 
 Shapes
 ------

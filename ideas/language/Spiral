@@ -1,0 +1,123 @@
+https://github.com/mrakgr/The-Spiral-Language
+A GPU programming language with many similarities to Curv.
+
+Spiral v2 has a "top-down" dialect and a "bottom-up" dialect.
+
+ 1. top-down: ML-style type system based on unification. Like F#.
+    Eager evaluation, impure. Easy to use.
+
+ 2. bottom-up: Type propagation via partial evaluation.
+    More expressive type system, more difficult to use.
+
+    The disadvantage of using the bottom-up system is that you lose the
+    top-down benefits of type inference. Not only will the type errors
+    get deferred to the partial evaluation stage, type application and
+    type annotations for closures and recursive join points have to be set
+    manually. This is tedious or difficult depending on the approach and
+    more details will be provided in a later segment.
+
+  Spiral v1 did not have a top-down dialect. I spent a year programming
+  like that, but after a while I got tired of it. I started to realize that
+  expressiveness and power, while worthy and necessary goals in themselves
+  are not all there is. I was in love with it for a while as it was such a
+  new perspective on both programming and static typing, but in the end I
+  came to know the truth - just because the partial evaluator can do anything
+  it does not mean it should do everything.
+
+  The bottom-up has high expressiveness and power, but the user has to pay
+  a cost for that even when such a power is not needed so there is great
+  benefit to putting a weaker, but easier to use type system on top of it. I
+  expect that at least 95% of the time the programming in Spiral will be
+  done with the help of the top-down type system. The top-down segment is
+  the easy part of Spiral.
+
+This "ease of use" argument is interesting. In Curv, the "top-down" dialect
+is dynamically typed. My bottom-up dialect is also based on type propagation
+via partial evaluation. In Spiral, I infer that type errors in the bottom-up
+dialect are difficult to understand and fix? It would be nice to understand
+this issue in more detail.
+
+A Spiral source file *.spi is a module containing a main() function.
+The main function is partially evaluated, producing a *.fsx file (F#)
+containing a residual program, which is an expression.
+
+The partial evaluator works on "primitive types" like numbers, but not
+on "mutable heap layout types" (mutable objects) and arrays. (In Curv, the
+partial evaluator works on all plain data types, but functions and data
+structures containing functions are treated specially. No mutable objects.)
+
+Inlining: Dyns and Joins
+------------------------
+Well defined semantics for compiletime vs runtime. Language interop.
+  inl ~x = 1 : i64
+is a definition of 'x'. The ~ (dyn pattern) means push variable tracking
+to runtime. 'inl' is an inline let.
+* In Curv terms, is this like making 'x' a symbolic value like 'time'?
+* Not exactly. Passing a dyn variable as an argument to a joined function call
+  prevents inlining, forces a specialized copy of the function to be generated
+  as a function definition.
+* In 'What triggers dyning', it seems that 'dyning' is like computing a
+  symbolic expression in Curv. (Eg, if-else where the condition value is
+  not statically known.)
+* It appears that 'join f x' yields a symbolic expression for 'f x',
+  if 'x' is also symbolic.
+
+There is control over whether function calls are inlined or functions are
+preserved in the output. Join points achieve the latter: 'join <function call>'
+prevents the function call from being inlined.
+
+IDEA: Curv programs should be evaluated into residual Curv expressions
+that you can inspect as Curv source code (values or symbolic expressions).
+The SubCurv compiler outputs simply typed Curv code, which is inspectable,
+and which is then transliterated to GLSL for shape viewing.
+
+IDEA: Shape distance functions are subject to SubCurv type constraints
+during general & partial evaluation, not due to Shape::recognize, but
+due to metadata in Shape values that impose SubCurv type constraints on
+distance/colour functions. So type errors in distance functions are reported
+earlier, and are reported even if the distance functions aren't called?
+This metadata is in the Shape abstract type. Graphical display of Shapes
+just looks for the Shape type.
+
+In actual practice, you generally want to either inline everything or
+dyn all the arguments and wrap them in a join point.
+For the latter, 'let' is a shorthand.
+* 'let id x = x' is a function with a dyn pattern on its argument
+  and a join point wrapped around its body.
+
+Join points and dyn patterns provide fine grained control over inlining
+during partial evaluation. It's complicated, so what's the benefit?
+It allows control over the performance of residual programs, but that's not
+the main value. (Performance is all I care about, which I think I can accomplish
+using simpler features.) The real value is language interop, and specifically
+CUDA interop via the F# CUDA backend (being able to specify the contents
+of a CUDA kernel) and .NET interoperability. I can worry about this once I
+can generate GPU compute kernels.
+  "Closures are bad for interop, can't be sent past language boundaries."
+  Eg, the CUDA.NET backend supports only numbers, numeric arrays.
+
+Although I like the Curv language design better (immutable values, pure funcs,
+no GC), I don't think it helps Spiral due to its tight integration with
+.NET. My runtime doesn't map trivially to .NET abstractions. I think my
+runtime is better, but this is at the expense of interoperability with
+"managed runtimes" based on tracing garbage collection of mutable objects.
+
+IDEA: 'parametric <params> in <body>' accepts any type of <body>.
+It returns a symbolic expression in which the <params> are symbolic parameters.
+Each <param> may have a default value, must be simply typed.
+Specializing a parametric value w.r.t. a parameter is not function call,
+but another syntax. This is somehow unified with the design of 'time' as
+a global symbolic parameter, and the syntax for specializing a temporal
+symbolic value.
+
+Nominal Types
+-------------
+'nominal <id> = <type expr>' eg,
+    nominal t = heap {a: i32, b: i32}
+'t' is a constructor function for an object tagged as type 't'.
+Requires explicit pattern matching on a t x' pattern to access the argument.
+
+Symbols
+-------
+'.asd' is a 'member accessor' value for accessing a record or module field.
+Like #asd in Curv.

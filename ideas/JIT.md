@@ -1,14 +1,70 @@
-= A Machine Code JIT Compiler for Curv
+# A Machine Code JIT Compiler for Curv
+
+Can I JIT the entire language to native code, or is this restricted to SubCurv?
+* Proper tail calls. LLVM supports this for x86 and WASM, not ARM.
+  No tail call support in WASM, Cranelift.
+  A solution is to generate weird code, eg use heap allocated stack frames.
+  https://people.cs.uchicago.edu/~jhr/papers/2020/ifl-smlnj-llvm.pdf
+* All code + data structures in the Curv runtime (the ABI) can be described
+  using platform-independent C. Anything that consumes or produces C-describable
+  code and memory structures can interoperate with Curv, including all
+  popular JIT libraries, WASM, systems programming languages, languages with
+  a C FFI. In the general case, we may take a 50% performance hit over an
+  optimal representation. SubCurv is as fast as C.
 
 Here is a list of JIT libraries in 2021: https://github.com/vnmakarov/mir
-* LLVM and libgccjit are huge and very slow.
-* MIR looks amazing (tiny 10K LOC C, fast, competitive performance)
-  But (2021/Feb) is unstable and unreleased. And a hobby project.
+* LLVM and libgccjit are huge and slow, produce fast code.
+  Bad for interactive/live coding. Good for CPU mesh generation.
 * Cranelift has institutional support (used in firefox, rustc).
-  70K LOC Rust. The use of Rust makes this a huge dependency.
-* ... see mir readme for more
+  70K LOC Rust. The use of Rust makes this a significant dependency. (~1.5MB)
+  (Although, the generator module has minimal dependencies and a nostdlib
+  option.) The institutional support means this will work on all Rust and
+  Firefox platforms, will have vector ops, will have a community.
+  No tail recursion (stalled for 2 yrs) but good for SubCurv.
+  Maybe someone will support a C++ shim layer.
+* The hobby projects are interesting, and prove the idea that you can get
+  70% of LLVM performance with 10% of the code. But, more limited platform
+  support, potential limitations like no vector ops, etc.
+  * MIR looks cool (tiny 10K LOC C, fast, competitive performance)
+    But (2021/Feb) is unstable and unreleased. A hobby project.
+  * ... see mir readme for more
 
-== Which JIT library to use?
+What is my JIT story for Curv running in WASM?
+* Maybe there is no JIT under WASM: interpreter only.
+* JITing to WASM makes sense for SubCurv. But WASM lacks proper tail recursion.
+  The tail recursion proposal entered Phase 3 (implementation) in Aug 2019.
+  Chrome has an implementation, it has been stalled in Firefox and Cranelift
+  for 2 years.
+* Maybe there is a portable JIT library that generates native code in a
+  native executable, or WASM code in a WASM executable. For JIT, I need
+  the ability to execute a WASM module in my own address space, not in a
+  separate address space. Is this possible? It should be cheap for the
+  WASM module to refer to values and compiled functions in the local address
+  space, allocate memory using the global allocator, modify data structures
+  in the local address space, and return results, all without the expense
+  of copying code and data to and from a remote address space.
+  * LLVM has a WASM target.
+  * Maybe Cranelift will get a WASM target for Rust?
+* If I can't find a JIT library with native and WASM targets, then I need
+  to generate WASM directly.
+* A JIT library takes IR as input. Maybe I can use WASM as my JIT IR input
+  language. Maybe I use Wasmer as middleware on native platforms to select
+  between cranelift and llvm code gen?
+  * How do I tunnel native function and data pointers through WASM and Wasmer
+    into the native code that Wasmer generates? This may be impossible, given
+    the sandboxing guarantees.
+  * This is not light weight: LLVM is 13MB, vs 1.5MB for Cranelift.
+    LLVM alone is 13MB, vs 1.5MB for Cranelift. Curv is currently 7MB stripped.
+    https://wasmer.io/posts/wasmer-python-embedding-1.0
+  * WASM IR will be slower than using Cranelift directly in a native app.
+* Maybe Curv is only shipped as a WASM executable. Then my JIT targets only
+  WASM as its native code. I could ship native Curv as a native wrapper
+  around a WASM exe. Later, there might be an ecosystem for shipping WASM
+  apps directly.
+* Can I find prior art for JIT languages that run under WASM?
+
+-----------------------------------------------------------------------------
+## OLD: Which JIT library to use?
 LLVM is the dominant JIT library. But it has a serious problem:
 compilation is too slow for interactive use. Also, there are
 bugs and limitations that aren't immediately apparent. LLVM isn't
