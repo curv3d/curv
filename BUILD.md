@@ -67,6 +67,16 @@ For troubleshooting, look at [issue #88](https://github.com/curv3d/curv/issues/8
 
   These instructions have been tested on versions up to at least Ubuntu 18.04.1.
 
+## Fedora 33 build instructions
+
+Use `dnf install` to install the following packages:
+* cmake g++
+* boost-devel zlib-devel
+* mesa-libGL-devel libXrandr-devel libXinerama-devel libXcursor-devel libXi-devel
+* mesa-libGLU-devel OpenEXR-devel tbb-devel
+
+Then follow the Ubuntu build instructions.
+
 ## macOS build instructions
 * Install homebrew (http://brew.sh)
 * Open the Terminal application and run the following commands:
