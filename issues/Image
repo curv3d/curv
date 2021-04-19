@@ -1,0 +1,21 @@
+Image Values
+============
+Goals:
+* construct an image (pixel array) algorithmically
+* load an image from a file
+* access the pixel elements directly
+* access the pixel array using a sampler interface
+* use an image as a 2D shape
+* 'curv foo.png' displays the image
+* Image picker that lets you load a PNG file?
+
+Design:
+An `Image` value contains a pixel array, implements the Shape protocol,
+implements a sampler API.
+* You can read the pixel array. Using index values, you can modify pixels,
+  but not change their type, and you can't modify the array dimensions.
+
+`file "foo.png"` loads the PNG file as an Image value.
+
+SubCurv directly understands the Image type.
+
