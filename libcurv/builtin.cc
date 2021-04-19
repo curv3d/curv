@@ -208,7 +208,7 @@ UNARY_NUMERIC_FUNCTION(Round_Function, round, rint, roundEven)
 inline double frac(double n) { return n - floor(n); }
 UNARY_NUMERIC_FUNCTION(Frac_Function, frac, frac, fract)
 
-inline double sign(double n) { return n < 0.0 ? -1.0 : n > 0.0 ? +1.0 : n; }
+inline double sign(double n) { return copysign(double(n!=0),n); }
 UNARY_NUMERIC_FUNCTION(Sign_Function, sign, sign, sign)
 
 UNARY_NUMERIC_FUNCTION(Sin_Function, sin, sin, sin)
