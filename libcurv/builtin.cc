@@ -208,6 +208,9 @@ UNARY_NUMERIC_FUNCTION(Round_Function, round, rint, roundEven)
 inline double frac(double n) { return n - floor(n); }
 UNARY_NUMERIC_FUNCTION(Frac_Function, frac, frac, fract)
 
+inline double sign(double n) { return n < 0.0 ? -1.0 : n > 0.0 ? +1.0 : n; }
+UNARY_NUMERIC_FUNCTION(Sign_Function, sign, sign, sign)
+
 UNARY_NUMERIC_FUNCTION(Sin_Function, sin, sin, sin)
 UNARY_NUMERIC_FUNCTION(Cos_Function, cos, cos, cos)
 UNARY_NUMERIC_FUNCTION(Tan_Function, tan, tan, tan)
@@ -1530,6 +1533,7 @@ builtin_namespace()
     FUNCTION("trunc", Trunc_Function),
     FUNCTION("round", Round_Function),
     FUNCTION("frac", Frac_Function),
+    FUNCTION("sign", Sign_Function),
     FUNCTION("sin", Sin_Function),
     FUNCTION("cos", Cos_Function),
     FUNCTION("tan", Tan_Function),
