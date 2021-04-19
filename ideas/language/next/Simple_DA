@@ -1,0 +1,98 @@
+Simple Data Abstraction
+=======================
+This is a simple subset of Algebraic Data Abstraction, without theories
+or generic programming or runtime polymorphism. The goal is to support
+user-defined data types (UDTs), which can't be confused with built-in types,
+and to support an abstract interface to a user defined type using a fully
+functional interface (all operations on the data type are functions).
+
+UDT Requirements:
+* constructor functions
+* instances print as constructor expressions
+* constructor expressions can be used as patterns
+* index values as selectors
+
+Other considerations:
+* Backwards compatibility with POD based functional interfaces?
+  This is possible using a `match` with cases for the old POD values
+  and the new UDT values. No special features required.
+  So it's just a question of how convenient this is (and how important it is).
+* Metaprogramming: construct a UDT algorithmically?
+* Referential transparency.
+
+An operation on a UDT is a function:
+* A constructor (maps arguments to an instance).
+* A combinator (maps one or more instances to another instance).
+* An observer (maps an instance to a noninstance).
+* A selector (an observer that maps an instance to a data structure element,
+  and can be used for updating an instance; aka an index or lens).
+
+By convention, the operations on a UDT are packaged in a module named after
+the UDT.
+
+Strawman #H: Constructors
+--------------------------
+Something like Haskell data type declarations would be okay.
+    data CtorName ArgType0 ArgType1 ... -- 0 or more arg types
+    data TypeName = ctorspec1 | ctorspec2 | ...
+
+This is combined with the Types proposal.
+Each CtorName behaves as a type name.
+
+Strawman #A: Constructors
+--------------------------
+Only this:
+    data CtorName ArgType
+Ultimate simplicity, and is a subset of #H. Could be extended to #H later.
+
+If you are modelling your data using POD, then algebraic type instances
+look like this:
+    #foo
+    bar: 1
+
+In proposal #A, you lift this to an abstract type by adding a single
+constructor name that takes symbols and arrows as an argument, like this:
+    data Dat Enum[#foo, bar: Num]
+So now the instances look like this:
+    Dat #foo
+    Dat (bar: 1)
+(Unlike proposal #H, which would use this:)
+    Foo
+    Bar 1
+
+Could you make the new interface fully backward compatible with POD?
+ * Sure, nothing special required. Just use a `match` with cases for
+   the new UDT and the old POD.
+ * Use a transform pattern in operations with a UDT argument, like this:
+      f (x <: CtorName) = ...
+   And we specify that CtorName is an idempotent function.
+
+   ??? But the usual Haskell idiom is pattern matching on the ctor, like this:
+      f (CtorName x) = ...
+
+Metaprogramming: This proposal allows UDTs to be constructed algorithmically,
+since all the complexity is in the ArgType, which is a runtime value.
+
+Hidden Representation
+---------------------
+In some cases we wish the true representation of a UDT value to be different
+from the constructor argument (that is printed when the value is printed,
+and that is matched on by constructor patterns).
+
+For example, I want this for the Colour type. External: sRGB, internal:
+linear RGB.
+
+This feature could be handled using a Theory, similar to how Haskell has
+a type class Show and Rust has a trait. This Theory provides a bidirectional
+mapping between the internal representation and the constructor argument.
+
+Referential Transparency
+------------------------
+Under what circumstances are two identical definitions of the same UDT
+equivalent? I want Curv expressions to be referentially transparent.
+So consider two module expressions containing identical UDT definitions.
+The answer may involve Merkel trees.
+
+Selectors
+---------
+Index values for a UDT.
