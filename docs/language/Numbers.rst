@@ -37,13 +37,12 @@ The arithmetic operators:
 ``sign n``
   The sign of *n*.
 
-  * If ``n<0``, then ``sign n`` is ``-1``.
-  * If ``n>0``, then ``sign n`` is ``1``.
-  * If ``n==0``, then ``sign n`` is ``n``.
+  * If ``n < 0``, then ``sign n`` is ``-1``.
+  * If ``n > 0``, then ``sign n`` is ``1``.
+  * If ``n == 0``, then ``sign n`` is ``n``.
 
   The last rule means that ``sign(-0)`` is ``-0``.
-  We need to treat ``-0`` this way so that
-  ``sign(n)*abs(n)`` is identical to ``n``.
+  We treat ``-0`` this way so that ``sign(n)*abs(n)`` is identical to ``n``.
 
 ``floor n``
   The largest integer less than or equal to *n*.
