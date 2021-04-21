@@ -109,7 +109,6 @@ v0.5 Planning
   * CLI token colouring: New string escapes. Special colour for string-escapes.
     Bad token handling.
   * better unit tests:
-    * cli tests, curvc
     * detect console output from curv.curv
     * full sc_test suite
 

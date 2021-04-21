@@ -140,15 +140,11 @@ set(Libs
 
 target_link_libraries(curv PUBLIC ${Libs})
 
-file(GLOB CurvcSrc "curvc/*.cc")
-add_executable(curvc EXCLUDE_FROM_ALL ${CurvcSrc})
-target_link_libraries(curvc -static libcurv Boost::filesystem Boost::system double-conversion)
-
 file(GLOB TestSrc "tests/*.cc")
 add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})
 target_link_libraries(tester PUBLIC gtest pthread libcurv libcurv_geom double-conversion Boost::iostreams Boost::filesystem Boost::system)
 
-set_property(TARGET curv curvc libcurv libcurv_geom tester PROPERTY CXX_STANDARD 17)
+set_property(TARGET curv libcurv libcurv_geom tester PROPERTY CXX_STANDARD 17)
 
 if (APPLE)
     set(ompflags "-Xpreprocessor -fopenmp")

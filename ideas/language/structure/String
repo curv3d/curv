@@ -47,7 +47,7 @@ Here are some approaches:
     This approach has the best semantics: the most compatibility with
     equational reasoning.
 
-    This approach complicates JSON export (`-o json` and `curvc`):
+    This approach complicates JSON export (`-o json` and `-o jgpu`):
     we no longer distinguish "" and [], and "" is exported to JSON as [].
     Although you can currently use #'' to export an empty string.
     Curv v0.4 contains the JSON data model as a strict subset, allowing

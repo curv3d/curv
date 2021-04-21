@@ -4,8 +4,6 @@ A Guide to the Curv Implementation
 Top level subdirectories in the repo:
   cmake -- build scripts
   curv -- source code for the 'curv' command line tool and REPL
-  curvc -- a statically linked command line tool that provides only a JSON
-           interface.
   docs -- documentation, intended for users of Curv
   examples -- Curv programs (*.curv)
   extern -- source code for 3rd party packages
