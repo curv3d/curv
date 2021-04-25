@@ -1,0 +1,27 @@
+Claims of the power and elegance of Geometric Algebra
+as a way to describe and transform shapes.
+
+relevance: once New Curv is ready, implement this as a library.
+
+Two people who are promoters and popularizers of this new way to make shapes:
+
+Versor and Pablo Colapinto
+  He's an artist who does 3D graphics, as well as mathematician and academic.
+  wolftype.com
+  "Organic Forms Through Twists and Boosts"
+    -- new graphics synthesis techniques for modelling organic forms
+    http://wolftype.com/versor/orgformtwistboost.pdf
+  versor.mat.ucsb.edu -- C++ library
+  https://github.com/wolftype/versor
+  https://vimeo.com/wolftype -- math videos, highly visual
+  A versor is a generalization of a transformation matrix that can describe
+  twists and other cool things.
+  M.thesis -- VERSOR: Spatial Computing with Conformal Geometric Algebra 2011
+    http://wolftype.com/versor/colapinto_masters_final_02.pdf
+  PhD. "Articulating Space: Geometric Algebra for Parametric Design
+       – Symmetry, Kinematics, and Curvature" 2016
+    http://versor.mat.ucsb.edu/ArticulatingSpace.pdf
+
+Steven De Keninck
+  bivector.net
+  https://observablehq.com/@enkimute/animated-orbits
