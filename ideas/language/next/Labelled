@@ -1,0 +1,222 @@
+Labelled Values
+===============
+A labelled value is a kind of value that prints as a constructor expression.
+This is a form of data abstraction: the representation of the value is
+hidden behind the expression used to construct the value.
+
+In this proposal I distinguish between an MVP "prototype" implementation
+and a feature complete final design. The latter will learn from the mistakes
+of the former, and might not be backward compatible.
+
+Some kinds of labelled values, the ones that correspond to APIs, and not
+to regular data, can have docstrings, which are stored in the value as metadata.
+
+Here are the kinds of labelled values. Some of these kinds have
+an associated definition syntax.
+ * abstract data, constructed using a data constructor
+ * data constructor (`data` definition syntax)
+ * labelled functions (`func` definition syntax)
+ * constructors, a special category of labelled functions that
+   construct labelled values.
+ * labelled records, aka modules (`module` definition syntax)
+ * algebras and theories (see [[Algebraic_DA]]).
+   They use an `algebra` and `theory` definition syntax.
+
+This means we are introducing 5 new definition syntaxes, which are type
+specific. This makes Curv just like every other mainstream language, Lisp
+dialect, and ML dialect. It's a strawman design which happens to be the
+path of least resistance for designing and testing a prototype. A simpler,
+more orthogonal design might become apparent later, once I have that prototype.
+
+There are 4 keywords which can appear in a number of shared contexts:
+    func, module, algebra, theory
+
+Here are those contexts:
+  Definition syntax, legal in a moduleexpr, can have a docstring:
+    func id = funcexpr
+    module id = moduleexpr
+    algebra id = algebraexpr
+    theory id = theoryexpr
+  Top level of a *.curv file which is a child of a directory record:
+    func funcexpr
+    module moduleexpr
+    algebra algebraexpr
+    theory theoryexpr
+  Constructor literal:
+    param -> func funcexpr
+    param -> module moduleexpr
+    param -> algebra algebraexpr
+    param -> theory theoryexpr
+
+Labelled Definitions
+--------------------
+A labelled definition is prefixed with `data`, `func`, `module`,
+`algebra` or `theory`. It can appear in a moduleexpr, or as a REPL command.
+
+There isn't a strong use case for permitting these definitions in the contexts
+`let defn in phrase` or `local defn`, so that feature is left out for now.
+
+Docstrings
+----------
+A labelled definition can be preceded by a documentation comment:
+    /// one line summary
+    /// ...documentation body...
+    <definition>
+The doc string is stored as metadata in the labelled value.
+It can be accessed using the REPL `help` command.
+
+The one line summary is used when help is generated for a module.
+The summary is printed for each module member with documentation.
+
+A directory record is a module. It can have a docstring,
+which is stored in the file `.doc`.
+
+In principle, a constructor function could generate a docstring for
+the labelled value that it returns. But in the prototype I'm not
+supporting that feature.
+
+Metaprogramming
+---------------
+Labelled values are first class values constructed at run time.
+For each kind, there should be a metaprogramming interface that lets you
+algorithmically construct a value of that kind, eg using imperative code
+or a combinator API. This metaprogramming API would appear to involve the
+ability to build 'anonymous' versions of labelled values from components,
+followed by binding the anonymous value to a name.
+
+For the prototype, we are proposing a metaprogramming API for building
+labelled functions (with anonymous constructors), but there is no such API
+for modules yet due to technical complexity. The missing module API will
+also support algorithmically generated docstrings.
+
+Labelled Functions and Constructors
+-----------------------------------
+A labelled function has a name (aka constructor expression), like F.
+In which case it prints as F.
+
+A one-argument labelled function is defined like this:
+    func F = x -> expr
+    func F x = expr
+Then 'F' prints as 'F', but 'F x' prints as whatever the value returned
+by F prints as.
+
+A constructor is a labelled function that returns a labelled value,
+where the result is labelled with the identity of the constructor function.
+Data constructors are a special case.
+
+A one-argument constructor is defined like this:
+    func F = x -> labelledexpr
+    func F x = labelledexpr
+where labelledexpr is one of the following:
+    func funcexpr
+    module moduleexpr
+    algebra algebraexpr
+    theory theoryexpr
+
+A labelled function may be curried, such that a partial application
+prints as `F x` or `F x y`. Note that the label of the base function
+is printed. But this is just an application of constructor functions.
+A two-argument curried labelled function can be defined like this:
+    func F x y = labelledexpr
+    func F = x -> func y -> labelledexpr
+
+Modify the syntax for lambda expressions so that a two-argument curried
+labelled function can be defined like this:
+    func F = x y -> labelledexpr
+That is, 'x y -> expr' is the same as 'x -> func y -> expr'.
+
+A funcexpr is an arbitrary expression that returns a function value,
+which may be an anonymous constructor. This allows us to use combinators
+to define labelled functions.
+
+`rotate` is defined like this:
+    func rotate = match [
+        (a :: Num) shape -> ...,
+        {angle, axis} shape -> ...
+    ]
+
+Since both arguments to match are constructors, the piecewise function returned
+by match is also, effectively, a constructor. But this constructor status is
+actually determined at runtime. When a labelled function F is called with an
+argument x, and if the result is the labelled value 'F x', then F behaved
+like a constructor for that argument value.
+
+If you call an anonymous constructor,
+the label of the result value contains the function literal.
+
+Modules (Labelled Records)
+--------------------------
+A module M (aka labelled record) may have a mix of fields: some are labelled,
+some are not. When selecting a labelled field L from M, then M.L has the
+label 'M.L'.
+
+A moduleexpr is not an arbitrary expression. It is a scoped record
+constructor, extended to support labelled definitions. This restriction
+simplifies the prototype implementation: there are no anonymous modules.
+
+If we permit anonymous modules, that can lead to better metaprogramming
+(algorithmically constructing a module at runtime). But applying a label to
+an existing anonymous module looks tricky.
+ * Consider {func f = ...; g = f}. This constructs a record where `f` and `g`
+   are synonyms for the same labelled value.
+ * If we evaluate this to an anonymous record value R, where R.f is a 
+   labelled function 'f' and 'g' is the same, then applying a label to this
+   module requires searching for all labelled values in the record tree
+   (including those captured by closures) and relabelling the values we found.
+ * Or, store a thunk to regenerate the module value from a specified base label.
+
+A sophisticated approach would use multiple module representations for
+performance reasons:
+ * a frame-relative thunk for the module
+ * a closure thunk for the module, portable between frames
+
+Data Constructors
+-----------------
+The most minimal form of the 'data constructor' definition syntax is:
+    data name typeexpr
+So that's the prototype. A more expansive version is patterned after Haskell
+data type definitions.
+
+How do you define a data constructor using directory syntax? Perhaps:
+    data typeexpr
+at the top level of the file.
+
+Patterned Definitions?
+----------------------
+In the prototype, labelled definitions bind a single identifier.
+However, earlier proposals have supported arbitrary patterns as
+defienda. Eg,
+    def id = labelledexpr
+    def [x, y] =  pair_expr
+    [x, def y] = par_expr
+
+Equality and Referential Transparency
+-------------------------------------
+This "labelled values" proposal is weaker than the earlier "branded values"
+proposal: it doesn't require the printed representation to be globally
+unambiguous, or that value equality is isomorphic to printed rep equality.
+
+If two labelled values are equal, we prefer that they have the same printed
+representation. But even that can't be guaranteed given that `0` and `-0`
+compare equal, and given that numbers may appear in a constructor expression.
+
+Two labelled values are equal if the labels are equal and the payloads are
+equal. It's possible for two labelled values created by different libraries
+from different authors to be accidently equal, but this problem is solved
+at a higher level with culture and naming conventions.
+
+Labels
+------
+A label is the "constructor expression" that a labelled value prints as.
+
+  <label> ::= <symbol>                // variable label
+            | <label> . <symbol>      // field selection label
+            | <function> <argvalue>   // function call label
+
+Storing the original constructor function value in a call label is useful
+for "customizing" a parametric model (tweaking some of the parameters).
+It also arises when labelling the result of calling an anonymous ctor.
+
+Storing the original module value in a field formula may also be useful, but
+would result in a recursive object cycle (requiring a tracing garbage collector
+or cyclic reference counts). To avoid this, we store the module's label.

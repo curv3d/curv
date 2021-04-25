@@ -11,6 +11,7 @@ UDT Requirements:
 * instances print as constructor expressions
 * constructor expressions can be used as patterns
 * index values as selectors
+* equality and referential transparency
 
 Other considerations:
 * Backwards compatibility with POD based functional interfaces?
@@ -18,7 +19,6 @@ Other considerations:
   and the new UDT values. No special features required.
   So it's just a question of how convenient this is (and how important it is).
 * Metaprogramming: construct a UDT algorithmically?
-* Referential transparency.
 
 An operation on a UDT is a function:
 * A constructor (maps arguments to an instance).
@@ -86,12 +86,21 @@ This feature could be handled using a Theory, similar to how Haskell has
 a type class Show and Rust has a trait. This Theory provides a bidirectional
 mapping between the internal representation and the constructor argument.
 
-Referential Transparency
-------------------------
+Equality and Referential Transparency
+-------------------------------------
+Given two UDT instances that print the same (as textually identical
+constructor expressions `F x`), these two values are equal if the F's
+(the constructors) are equal and the x's (the constructor arguments) are equal.
+[In other words, I am not at present guaranteeing an isomorphism between
+equality of value and equality of printed representation. Maybe later.]
+
+UDT constructors are labelled values, so the issue of constructor equality
+is punted to the Labelled Value proposal.
+
 Under what circumstances are two identical definitions of the same UDT
 equivalent? I want Curv expressions to be referentially transparent.
 So consider two module expressions containing identical UDT definitions.
-The answer may involve Merkel trees.
+The answer may involve Merkel trees. See Labelled Values for details.
 
 Selectors
 ---------
