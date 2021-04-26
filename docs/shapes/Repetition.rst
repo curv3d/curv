@@ -31,6 +31,12 @@ This interface is still experimental.
   This cell is repeated endlessly across 3D space.
   The shape must be 3D.
 
+``repeat_finite (dx,dy,dz) (lx,ly,lz) shape``
+  The original cell to be copied is a cuboid with dimensions (dx,dy,dz),
+  centred on the origin.
+  This cell is repeated as number of instances (lx,ly,lz) from origin.
+  The shape must be 3D.
+
 ``repeat_mirror_x shape``
   The contents of the positive X half-space
   are reflected through the YZ-plane

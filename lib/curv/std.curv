@@ -1316,6 +1316,28 @@ repeat_xyz d shape =
         is_3d = shape.is_3d;
     };
 
+repeat_finite d l shape =
+    make_shape {
+        dist [x,y,z,t] =
+            shape.dist[
+                x - d@X*clamp[round(x/d@X), 0, l@X - 1],
+                y - d@Y*clamp[round(y/d@Y), 0, l@Y - 1],
+                z - d@Z*clamp[round(z/d@Z), 0, l@Z - 1],
+                t];
+        colour [x,y,z,t] =
+            shape.colour[
+                x - d@X*clamp[round(x/d@X), 0, l@X - 1],
+                y - d@Y*clamp[round(y/d@Y), 0, l@Y - 1],
+                z - d@Z*clamp[round(z/d@Z), 0, l@Z - 1],
+                t];
+        bbox = [
+            shape.bbox@MIN,
+            shape.bbox@MAX*l,
+        ];
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
+    };
+
 repeat_mirror_x shape =
     make_shape {
         dist[x,y,z,t] : shape.dist[abs x, y, z, t],
