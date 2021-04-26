@@ -22,10 +22,10 @@ These transformations preserve the structure of the distance field.
 If the input has an exact or mitred distance field, the output is also exact or mitred.
 As a result, there are no limitations on where similarity transformations can be used.
 
-``move (dx,dy) shape``
+``move [dx,dy] shape``
   Translate a 2D or 3D shape across the XY plane.
 
-``move (dx,dy,dz) shape``
+``move [dx,dy,dz] shape``
   Translate a 3D shape.
 
 ``rotate angle shape``
@@ -56,8 +56,8 @@ As a result, there are no limitations on where similarity transformations can be
   Apply a transformation ``t`` to a shape,
   treating the point ``p`` as the origin point of the transformation.
   
-  Example: ``square 2 >> at (1,1) (rotate(45*deg))``
-  rotates the square around the point (1,1).
+  Example: ``square 2 >> at [1,1] (rotate(45*deg))``
+  rotates the square around the point [1,1].
 
 ``align alignspec shape``
   TODO: Using the shape's bounding box,
@@ -95,14 +95,14 @@ In Curv 0.0, deformations deform the distance field, which limits and complicate
   corrected using the ``lipschitz`` operator in order for the sphere-tracing
   algorithm in the previewer to work.
 
-``stretch (kx, ky) shape``
+``stretch [kx, ky] shape``
   Anisotropic scaling of a 2D or 3D shape across the XY plane.
 
-``stretch (kx, ky, kz) shape``
+``stretch [kx, ky, kz] shape``
   Anisotropic scaling of a 3D shape.
 
 ``shear_x kx shape``
-  2D horizontal shear, defined on 2D and 3D shapes, mapping ``(x,y,z)`` to ``(x + kx*y, y, z)``.
+  2D horizontal shear, defined on 2D and 3D shapes, mapping ``[x,y,z]`` to ``[x + kx*y, y, z]``.
   If ``kx>0``, this maps a unit square to a right-tilting parallelogram of height 1 and width ``1+kx``.
   So ``shear_x 1`` will double the width of a square, and ``shear_x 2`` will triple the width.
   
@@ -112,19 +112,19 @@ In Curv 0.0, deformations deform the distance field, which limits and complicate
   
   TODO: distance field is bad.
   
-``shear_xy (kx,ky) shape``
-  3D horizontal shear, defined on 3D shapes, mapping ``(x,y,z)`` to ``(x + kx*z, y + ky*z, z)``.
+``shear_xy [kx,ky] shape``
+  3D horizontal shear, defined on 3D shapes, mapping ``[x,y,z]`` to ``[x + kx*z, y + ky*z, z]``.
   
   TODO
 
-``local_taper_x {range:(y0,y1), scale:(kx0, kx1)} shape``
+``local_taper_x {range:[y0,y1], scale:[kx0, kx1]} shape``
   Local 2 dimensional taper along the Y axis, between y==y0 and y==y1.
   When y<=y0, x values are scaled by the factor kx0.
   When y1<=y, x values are scaled by the factor kx1.
   When y0<y<y1, x values are scaled by a factor that is a linear ramp
   between kx0 and kx1.
 
-``local_taper_xy {range:(z0,z1), scale:([kx0, ky0], [kx1, ky1])} shape``
+``local_taper_xy {range:[z0,z1], scale:[[kx0, ky0], [kx1, ky1]]} shape``
   Local 3 dimensional taper along the Z axis, between z==z0 and z==z1.
   When z<=z0, x and y values are scaled by the factors kx0 and ky0.
   When z1<=z, x and y values are scaled by the factors kx1 and ky1.

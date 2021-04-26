@@ -18,7 +18,7 @@ Operations that convert a 2D shape into a 3D shape.
 
 Future Work
 -----------
-``cylinder_extrude (d, d2) shape``
+``cylinder_extrude [d, d2] shape``
   TODO:
   An infinite strip of 2D space running along the Y axis
   and bounded by ``-d/2 <= x <= d/2``

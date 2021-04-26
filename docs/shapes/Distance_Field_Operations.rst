@@ -65,11 +65,11 @@ Morph Operations
 ----------------
 In which we linearly interpolate between two distance fields.
 
-``morph k (shape1, shape2)``
+``morph k [shape1, shape2]``
   Linearly interpolate between the SDFs of shape1 and shape2.
   ``k=0`` yields shape1, ``k=1`` yields shape2.
 
-``loft d (shape1, shape2)``
+``loft d [shape1, shape2]``
   Like ``extrude``, except that you specify a lower cross section (``shape1``)
   and a upper cross section (``shape2``)
   and we linearly interpolate between the two SDFs while extruding.
@@ -135,9 +135,9 @@ between the two shapes.
 
 The ``smooth r`` blending kernel comprises:
 
-* ``smooth r .union (shape1, shape2)``
-* ``smooth r .intersection (shape1, shape2)``
-* ``smooth r .difference (shape1, shape2)``
+* ``smooth r .union [shape1, shape2]``
+* ``smooth r .intersection [shape1, shape2]``
+* ``smooth r .difference [shape1, shape2]``
 
 The parameter ``r`` controls the size/radius of the blending band.
 
@@ -206,7 +206,7 @@ and there are more sophisticated blends available that avoid it.
 The bulge can also be used artistically: Quilez has used it to create knee and knuckle joints
 in cartoonish creatures.
 
-As a special case, ``smooth r .union (s, s)`` is the same as ``offset (r/4) s``.
+As a special case, ``smooth r .union [s, s]`` is the same as ``offset (r/4) s``.
 This is specific to my current code. This seems to be the worst case
 for bounding box inflation, so we can use this to compute bounding boxes.
 

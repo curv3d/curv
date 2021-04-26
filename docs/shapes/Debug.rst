@@ -29,7 +29,7 @@ Shape Debugging
   If distance is infinity, the colour is vivid cyan.
   If distance is -infinity, the colour is dark cyan.
 
-``show_gradient (j,k) shape``
+``show_gradient [j,k] shape``
   Visualize the signed distance field (in the XY plane)
   by displaying gradient values.
   Gradient values < j are displayed in black.
@@ -37,7 +37,7 @@ Shape Debugging
   Gradient values between j and k are displayed using an sRGB.hue spectrum.
 
   To find the Lipschitz constant of a shape with a bad distance field,
-  start with (j,k)=(1,2), then use binary search to find the smallest value of k
+  start with [j,k]=[1,2], then use binary search to find the smallest value of k
   that doesn't produce white. Then you can plug that
   value into the ``lipschitz`` function to fix the bad distance field.
 

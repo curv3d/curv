@@ -9,7 +9,7 @@ Shape Constructors
   * ``circle``: A prototypical circle of diameter 2 (ie, the unit circle).
   * ``circle d``: Construct a circle of diameter ``d``.
 
-``ellipse (dx, dy)``
+``ellipse [dx, dy]``
   Construct an axis-aligned ellipse, centred on the origin,
   with width ``dx`` and height ``dy``.
   Approximate distance field.
@@ -29,10 +29,10 @@ Shape Constructors
 ``rect ...``
   Construct an axis-aligned rectangle.
 
-  * ``rect (dx, dy)``: a rectangle of width ``dx`` and height ``dy``,
+  * ``rect [dx, dy]``: a rectangle of width ``dx`` and height ``dy``,
     centred on the origin. Either argument may be ``inf``.
-  * ``rect ((xmin,ymin),(xmax,ymax))``: a rectangle with vertices
-    at ``(xmin,ymin)`` and ``(xmax,ymax)``.
+  * ``rect [[xmin,ymin],[xmax,ymax]]``: a rectangle with vertices
+    at ``[xmin,ymin]`` and ``[xmax,ymax]``.
     ``xmin`` or ``ymin`` may be ``-inf``,
     and ``xmax`` or ``ymax`` may be ``inf``.
   * ``rect {xmin=-inf, ymin=-inf, xmax=inf, ymax=inf}``:
@@ -111,7 +111,7 @@ Shape Constructors
   * ``sphere``: A prototypical sphere of diameter 2 (ie, the unit sphere).
   * ``sphere d``: Construct a sphere of diameter ``d``.
 
-``ellipsoid (dx, dy, dz)``
+``ellipsoid [dx, dy, dz]``
   Construct an axis-aligned ellipsoid, centred on the origin,
   with width ``dx``, depth ``dy`` and height ``dz``.
   Approximate distance field.
@@ -146,10 +146,10 @@ Shape Constructors
   Construct an axis-aligned cuboid, centred on the origin.
 
   * ``box``: A prototypical box of size 2x2x2.
-  * ``box (dx, dy, dz)``: a cuboid of width ``dx``, depth ``dy``,
+  * ``box [dx, dy, dz]``: a cuboid of width ``dx``, depth ``dy``,
     and height ``dz``, centred on the origin. Any argument may be ``inf``.
-  * ``box ((xmin,ymin,zmin),(xmax,ymax,zmax))``: a cuboid with vertices
-    at ``(xmin,ymin,zmin)`` and ``(xmax,ymax,zmax)``.
+  * ``box [[xmin,ymin,zmin],[xmax,ymax,zmax]]``: a cuboid with vertices
+    at ``[xmin,ymin,zmin]`` and ``[xmax,ymax,zmax]``.
     ``xmin``, ``ymin`` and ``zmin`` may be ``-inf``,
     ``xmax``, ``ymax`` and ``zmax``  may be ``inf``.
   * ``box {xmin=-inf, ymin=-inf, zmin=-inf, xmax=inf, ymax=inf, zmax=inf}``:

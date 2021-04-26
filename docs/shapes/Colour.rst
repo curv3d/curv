@@ -44,16 +44,16 @@ Constructors
 ------------
 High level operations for constructing colour values.
 
-``sRGB (r,g,b)``
+``sRGB [r,g,b]``
   Construct a colour value using red, green and blue coordinates in the
   sRGB colour space. Each colour component is in the range 0 to 1.
 
-``webRGB (r,g,b)``
+``webRGB [r,g,b]``
   Another way to specify sRGB colours, where the colour components are
   in the range 0 to 255.
   A `web colour`_ like PeachPuff (#FFDAB9 or rgb(255,218,185))
-  can be transcribed in Curv like this: ``webRGB(0xFF,0xDA,0xB9)``
-  or ``webRGB(255,218,185)``.
+  can be transcribed in Curv like this: ``webRGB[0xFF,0xDA,0xB9]``
+  or ``webRGB[255,218,185]``.
 
 .. _`web colour`: http://encycolorpedia.com/
 
@@ -82,7 +82,7 @@ High level operations for constructing colour values.
   A greyscale colour map containing all of the neutral colours in the sRGB colour space.
   ``i`` is between 0 and 1, where 0 is black and 1 is white.
 
-``sRGB.HSV (hue,saturation,brightness)``
+``sRGB.HSV [hue,saturation,brightness]``
   HSV (also known as HSB) is a popular colour model supported by many
   graphics languages.
   ``sRGB.HSV`` is a more user-friendly way to specify sRGB colours.
@@ -97,7 +97,7 @@ High level operations for constructing colour values.
     closer to neutral.
 
     * A ``saturation`` of 0 constructs a neutral greyscale colour
-      based on the ``brightness``, ignoring the ``hue``. So ``sRGB.HSV(h,0,b)``
+      based on the ``brightness``, ignoring the ``hue``. So ``sRGB.HSV[h,0,b]``
       is white if b==1, medium grey if b==0.5, and black if b==0.
     * A ``saturation`` of 1 constructs a "shade" (a mixture of a pure
       colour and black), where ``hue`` is the pure colour,
@@ -134,7 +134,7 @@ Applying Colours to Shapes
 
 Internal Representation (Linear RGB)
 ------------------------------------
-A colour value is an (R,G,B) triple, where:
+A colour value is an [R,G,B] triple, where:
 
 * The R, G and B components represent the linear intensity
   of red, green and blue light in the colour.

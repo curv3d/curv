@@ -5,8 +5,8 @@ leaving only a pattern of intensity values, which are numbers between 0 and 1.
 Intensity fields can be animated.
 
 Mathematically, an intensity field is a function
-that maps (x,y,z,t) onto an intensity,
-where (x,y,z) is a point in space, and t is time.
+that maps [x,y,z,t] onto an intensity,
+where [x,y,z] is a point in space, and t is time.
 
 An intensity field can be composed with a colour map
 to construct a texture.

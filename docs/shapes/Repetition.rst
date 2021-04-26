@@ -19,22 +19,22 @@ This interface is still experimental.
   centred on the origin. This cell is repeated endlessly along the X axis in both directions.
   The shape may be 2D or 3D.
 
-``repeat_xy (dx,dy) shape``
-  The original cell to be copied has a rectangular cross section, with width and height (dx,dy),
+``repeat_xy [dx,dy] shape``
+  The original cell to be copied has a rectangular cross section, with width and height [dx,dy],
   centred on the origin, and infinite along the Z axis.
   This cell is repeated endlessly across the XY plane.
   The shape may be 2D or 3D.
 
-``repeat_xyz (dx,dy,dz) shape``
-  The original cell to be copied is a cuboid with dimensions (dx,dy,dz),
+``repeat_xyz [dx,dy,dz] shape``
+  The original cell to be copied is a cuboid with dimensions [dx,dy,dz],
   centred on the origin.
   This cell is repeated endlessly across 3D space.
   The shape must be 3D.
 
-``repeat_finite (dx,dy,dz) (lx,ly,lz) shape``
-  The original cell to be copied is a cuboid with dimensions (dx,dy,dz),
+``repeat_finite [dx,dy,dz] [lx,ly,lz] shape``
+  The original cell to be copied is a cuboid with dimensions [dx,dy,dz],
   centred on the origin.
-  This cell is repeated as number of instances (lx,ly,lz) from origin.
+  This cell is repeated as number of instances [lx,ly,lz] from origin.
   The shape must be 3D.
 
 ``repeat_mirror_x shape``

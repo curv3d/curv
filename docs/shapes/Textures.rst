@@ -18,7 +18,7 @@ Basic Operations
 
 ``make_texture`` *cfield*
   Construct a variegated texture from a colour field function,
-  which maps the parameters ``(x,y,z,t)`` onto a colour value.
+  which maps the parameters ``[x,y,z,t]`` onto a colour value.
   2D colour fields ignore the ``z`` parameter.
   A colour field that uses the time parameter ``t`` is animated.
   
@@ -26,9 +26,9 @@ Basic Operations
   You can do a lot in a small amount of code.
   Eg::
   
-    make_texture((x,y,z,t)->sRGB.hue(cos x * cos y * cos z + t/8 `mod` 1))
+    make_texture([x,y,z,t]->sRGB.hue(cos x * cos y * cos z + t/8 `mod` 1))
 
-``make_texture (ifield, cmap)``
+``make_texture [ifield, cmap]``
   Construct a texture by composing an intensity field with a colour map.
 
 ``texture`` *tx* *shape*
@@ -37,7 +37,7 @@ Basic Operations
 ``texture`` *cfield* *shape*
   Apply the colour field function *cfield* to *shape*.
 
-``texture (ifield, cmap) shape``
+``texture [ifield, cmap] shape``
   Construct a texture by composing an intensity field with a colour map,
   then apply that texture to the shape.
 

@@ -48,8 +48,8 @@ intensity field
   An intensity field is a colour pattern with the colours abstracted away,
   leaving only a pattern of intensity values, which are numbers between 0
   and 1. Intensity fields can be animated.
-  Mathematically, a function that maps (x,y,z,t) onto an intensity,
-  where (x,y,z) is a point in space, and t is time.
+  Mathematically, a function that maps [x,y,z,t] onto an intensity,
+  where [x,y,z] is a point in space, and t is time.
 
   * `Intensity Fields`_
 
