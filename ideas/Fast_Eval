@@ -1,8 +1,72 @@
-# A Machine Code JIT Compiler for Curv
+Fast Evaluator
+==============
+Here are the possibilities for fast expression evaluation:
+* Tail-threaded interpreter. Fastest known interpreter implementation, given
+  current CPU architectures and recent features of clang/gcc.
+  Should work on all platforms (including WASM?) when using clang.
+  Hopefully I can use this for partial evaluation as well.
+* Internal JIT: generate machine code into local memory, then execute it.
+  Forbidden in iOS (Zee wants to do an iOS port). Impossible in WASM (per Wasm3
+  readme). Complicated, as I need to generate low level IR for the JIT library.
+* Generate C++, compile to *.so or *.dll, dlopen and execute. Forbidden in iOS.
+  Impossible in WASM/web browser, but can you generate an external WASM module
+  and then execute it? Yes (https://github.com/indutny/wasm-jit/).
+* GPU compute. Super fast for appropriate work loads. Strangely, this is the
+  only universal option for optimized native code execution.
+* AOT compiler. Generate C++, compile to native code or WASM.
 
+Use cases:
+* Partial evaluator; low latency live programming: tail-threaded interpreter.
+* Mesh export:
+  * Interpreter: too slow.
+  * Internal JIT: not iOS or WASM.
+  * External JIT: not iOS. On WASM, jit to WASM, could be 70% of native.
+  * GPU: fastest and most universal, if I can code the algorithms.
+* Implement Curv compiler and runtime in Curv: AOT compiler.
+
+Priorities:
+ 0. External JIT. Required for GPU, needed for mesh export until I can
+    implement a GPU version.
+ 1. GPU compute language.
+ 2. Tail-threaded interpreter. Faster, but finicky & bleeding edge.
+ 3. AOT compiler, offshoot of current GLSL/C++ compiler.
+ 4. Internal JIT. Difficulty + lack of universality makes this lowest priority.
+
+Tail-threaded interpreters
+--------------------------
+New technique, depends on -O2 tail call optimization in clang and gcc,
+made reliable by [[clang::musttail]] attribute in Mar 2021 clang.
+
+Will Rust get this? rust-lang/rust/issues/217 closed wontfix in 2013.
+There is a debate in /r/rust "Are we finally about to gain guaranteed Tail
+Calls in Rust?" 25-apr-2021 which proposes to reopen the issue. It will take
+a while (years?) for this to land in Rust stable, but the same could be said
+for landing in Ubuntu LTS's packaged version of clang.
+
+"Parsing Protobuf at 2+GB/s: How I Learned To Love Tail Calls in C"
+blog.reverberate.org/2021/04/21/musttail-efficient-interpreters.html
+
+This technique lets you write interpreters that are as fast as the
+assembly language LuaJIT interpreter, but in C, with a more modular and
+extensible code structure. Relies on a non-standard language extension,
+restricted to clang and possibly gcc, not MSVC, and probably not portable
+to niche legacy architectures. However intel and ARM are just fine.
+The Windows calling convention creates limitations, see Wasm3/M3 doc below.
+
+Per Wasm3: 4-15x slower than native on modern x86-64. Older CPUs are slower.
+
+The technique is finicky and you have to look at generated assembly code
+to ensure you didn't screw up the magic rituals needed to make the compiler
+generate efficient code. So this probably needs more time to bake.
+
+See also the Wasm3 interpreter architecture (aka M3, Massey Meta Machine):
+github.com/wasm3/wasm3/blob/main/docs/interpreter.md
+
+JIT
+---
 Can I JIT the entire language to native code, or is this restricted to SubCurv?
-* Proper tail calls. LLVM supports this for x86 and WASM, not ARM.
-  No tail call support in WASM, Cranelift.
+* Proper tail calls. LLVM supports this for x86 and WASM, not ARM (? per docs).
+  No tail call support in WASM (Firefox) and Cranelift.
   A solution is to generate weird code, eg use heap allocated stack frames.
   https://people.cs.uchicago.edu/~jhr/papers/2020/ifl-smlnj-llvm.pdf
 * All code + data structures in the Curv runtime (the ABI) can be described
@@ -45,6 +109,8 @@ What is my JIT story for Curv running in WASM?
   of copying code and data to and from a remote address space.
   * LLVM has a WASM target.
   * Maybe Cranelift will get a WASM target for Rust?
+  * Wasm3/readme says WASM internal JIT is not possible: "you can't generate
+    executable code pages in runtime".
 * If I can't find a JIT library with native and WASM targets, then I need
   to generate WASM directly.
 * A JIT library takes IR as input. Maybe I can use WASM as my JIT IR input
