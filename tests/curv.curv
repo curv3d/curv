@@ -789,6 +789,7 @@ exec (file "index.curv");
 ( local (a=[1,2];b={c:3}); [a.[0],b.c]:=[4,5]; assert([a,b]==[[4,2],{c:5}]) );
 
 assert( string(sign[-10,-0,0,10]) == "[-1,-0,0,1]" );
+assert( time != #null ); // issue #122
 
 // script return value:
 in null

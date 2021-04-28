@@ -10,20 +10,11 @@ namespace curv {
 
 Ternary Reactive_Value::equal(Value val) const
 {
-#if 0
-    if (val.is_ref()) {
-        Reactive_Value &rx = val.to_ref_unsafe();
-        if (type_.intersects(rx.type_))
-            return Ternary::Unknown;
-        else
-            return Ternary::False;
-    }
-    if (type_.contains(val))
+    SC_Type ty = sc_type_of(val);
+    if (ty == sctype_)
         return Ternary::Unknown;
     else
         return Ternary::False;
-#endif
-    return Ternary::Unknown;
 }
 
 void Reactive_Value::print_help(std::ostream& out) const
