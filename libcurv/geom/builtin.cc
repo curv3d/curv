@@ -18,9 +18,9 @@ namespace curv { namespace geom {
 // Run a unit test by compiling it to C++, thus testing the SC compiler's
 // C++ code generator.
 void
-run_cpp_test(const Context& cx, Shared<const Function> func)
+run_cpp_test(const Context& cx, Source_State& ss, Shared<const Function> func)
 {
-    Cpp_Program cpp{cx.system()};
+    Cpp_Program cpp{ss};
     cpp.define_function("test", SC_Type::Bool(), SC_Type::Bool(), func, cx);
     cpp.compile(cx);
     auto test = (void(*)(const bool*,bool*))cpp.get_function("test");
@@ -59,7 +59,7 @@ struct SC_Test_Action : public Operation
                 .to_bool(test_cx);
             if (!test_result)
                 throw Exception(test_cx, "assertion failed in interpreter");
-            run_cpp_test(test_cx, func);
+            run_cpp_test(test_cx, f.sstate_, func);
         });
     }
 };

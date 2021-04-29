@@ -12,13 +12,13 @@ namespace curv { namespace geom {
 
 Compiled_Shape::Compiled_Shape(Shape_Program& rshape)
 :
-    cpp_{rshape.system()}
+    cpp_{rshape.sstate_}
 {
     is_2d_ = rshape.is_2d_;
     is_3d_ = rshape.is_3d_;
     bbox_ = rshape.bbox_;
 
-    At_System cx{rshape.system()};
+    At_SState cx{rshape.sstate_};
 
     cpp_.define_function("dist", SC_Type::Num(4), SC_Type::Num(),
         rshape.dist_fun_, cx);
@@ -32,7 +32,7 @@ Compiled_Shape::Compiled_Shape(Shape_Program& rshape)
 void
 export_cpp(Shape_Program& shape, std::ostream& out)
 {
-    SC_Compiler sc(out, SC_Target::cpp, shape.system());
+    SC_Compiler sc(out, SC_Target::cpp, shape.sstate_);
     At_Program cx(shape);
 
     out << Cpp_Program::standard_header;

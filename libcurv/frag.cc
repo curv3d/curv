@@ -114,7 +114,7 @@ void export_frag_2d(
 void export_sf1(
     const Shape_Program& shape, const Render_Opts& opts, std::ostream& out)
 {
-    SC_Compiler sc(out, SC_Target::glsl, shape.system());
+    SC_Compiler sc(out, SC_Target::glsl, shape.sstate_);
     sc.define_function(
         "sf1",
         std::vector<SC_Type>{

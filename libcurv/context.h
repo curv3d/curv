@@ -79,6 +79,17 @@ struct At_System : public Context
     virtual Frame* frame() const override;
 };
 
+struct At_SState : public Context
+{
+    Source_State& sstate_;
+
+    At_SState(Source_State& ss) : sstate_(ss) {}
+
+    virtual void get_locations(std::list<Func_Loc>& locs) const override;
+    virtual System& system() const override;
+    virtual Frame* frame() const override;
+};
+
 struct At_Token : public Context
 {
     Src_Loc loc_;

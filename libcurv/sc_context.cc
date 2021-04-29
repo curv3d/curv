@@ -14,7 +14,7 @@ At_SC_Frame::get_locations(std::list<Func_Loc>& locs) const
 {
     get_sc_frame_locations(&call_frame_, locs);
 }
-System& At_SC_Frame::system() const { return call_frame_.sc_.system_; }
+System& At_SC_Frame::system() const { return call_frame_.sc_.sstate_.system_; }
 Frame* At_SC_Frame::frame() const { return nullptr; }
 
 Shared<const String>
@@ -62,7 +62,7 @@ At_SC_Phrase::get_locations(std::list<Func_Loc>& locs) const
         locs.emplace_back(call_frame_.func_, phrase_->location());
     get_sc_frame_locations(&call_frame_, locs);
 }
-System& At_SC_Phrase::system() const { return call_frame_.sc_.system_; }
+System& At_SC_Phrase::system() const { return call_frame_.sc_.sstate_.system_; }
 Frame* At_SC_Phrase::frame() const { return nullptr; }
 const Phrase& At_SC_Phrase::syntax() const { return *phrase_; }
 
@@ -76,7 +76,7 @@ void At_SC_Tuple_Arg::get_locations(std::list<Func_Loc>& locs) const
 {
     get_sc_frame_locations(&call_frame_, locs);
 }
-System& At_SC_Tuple_Arg::system() const { return call_frame_.sc_.system_; }
+System& At_SC_Tuple_Arg::system() const { return call_frame_.sc_.sstate_.system_; }
 Frame* At_SC_Tuple_Arg::frame() const { return nullptr; }
 
 Shared<const String>
@@ -105,7 +105,7 @@ At_SC_Arg_Expr::rewrite_message(Shared<const String> msg) const
 System&
 At_SC_Arg_Expr::system() const
 {
-    return parent_frame_.sc_.system_;
+    return parent_frame_.sc_.sstate_.system_;
 }
 Frame*
 At_SC_Arg_Expr::frame() const

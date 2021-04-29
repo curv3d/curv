@@ -33,16 +33,16 @@ const char Cpp_Program::standard_header[] =
     "using namespace glm;\n"
     "\n";
 
-Cpp_Program::Cpp_Program(System& sys)
+Cpp_Program::Cpp_Program(Source_State& ss)
 :
-    system_{sys},
+    sstate_{ss},
     tempfile_id_{make_tempfile_id()},
     path_{register_tempfile(tempfile_id_,".cpp")},
     file_{path_.c_str()},
-    sc_{file_, SC_Target::cpp, sys}
+    sc_{file_, SC_Target::cpp, ss}
 {
     if (file_.fail()) {
-        throw Exception{At_System{system_},
+        throw Exception{At_SState{ss},
             stringify("cannot open file ",path_.string())};
     }
     file_ << standard_header;
@@ -109,7 +109,7 @@ Cpp_Program::get_function(const char* name)
     if (!function)
     {
         DWORD error = GetLastError();
-        throw Exception(At_System{system_},
+        throw Exception(At_SState{sstate_},
             stringify("can't load function ", name, ": ", win_strerror(error)));
     }
     return function;
@@ -118,11 +118,11 @@ Cpp_Program::get_function(const char* name)
     void* function = dlsym(dll_, name);
     const char* err = dlerror();
     if (err != nullptr) {
-        throw Exception(At_System{system_},
+        throw Exception(At_SState{sstate_},
             stringify("can't load function ", name, ": ", err));
     }
     if (function == nullptr) {
-        throw Exception(At_System{system_},
+        throw Exception(At_SState{sstate_},
             stringify("can't load function ", name, ": got null pointer"));
     }
     return function;

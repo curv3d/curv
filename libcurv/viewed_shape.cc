@@ -91,7 +91,7 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Render_Opts& opts)
                     Picker::State state{
                         config.type_,
                         value,
-                        At_System{shape.system()}};
+                        At_SState{shape.sstate_}};
                     param_.insert(std::pair<const std::string,Parameter>{
                         name.c_str(),
                         Parameter{id, config, state}});

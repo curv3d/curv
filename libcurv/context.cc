@@ -36,6 +36,11 @@ void At_System::get_locations(std::list<Func_Loc>& locs) const { }
 System& At_System::system() const { return system_; }
 Frame* At_System::frame() const { return nullptr; }
 
+// At_SState
+void At_SState::get_locations(std::list<Func_Loc>& locs) const { }
+System& At_SState::system() const { return sstate_.system_; }
+Frame* At_SState::frame() const { return sstate_.file_frame_; }
+
 // At_Frame
 void
 At_Frame::get_locations(std::list<Func_Loc>& locs) const

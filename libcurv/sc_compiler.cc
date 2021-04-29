@@ -721,6 +721,10 @@ SC_Value Call_Expr::sc_eval(SC_Frame& fm) const
         if (list == nullptr)
             throw Exception(At_SC_Phrase(arg_->syntax_, fm),
                 "expected '[index]' expression");
+        fm.sc_.sstate_.deprecate(&Source_State::bracket_index_deprecated_, 1,
+            At_SC_Phrase(syntax_, fm),
+            "'array[i]' array indexing is deprecated.\n"
+            "Use 'array.[i]' instead.");
         if (list->size() == 1)
             return sc_eval_index_expr(scval, *list->at(0), fm);
         if (list->size() == 2)

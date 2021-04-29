@@ -14,7 +14,6 @@ namespace curv {
 
 struct Context;
 struct Function;
-struct System;
 
 /// SubCurv is a low level, strongly-typed subset of Curv
 /// that can be efficiently translated into a low level language (currently
@@ -67,14 +66,14 @@ struct SC_Compiler
     bool in_constants_ = false;
     SC_Target target_;
     unsigned valcount_;
-    System &system_;
+    Source_State &sstate_;
     std::unordered_map<Value, SC_Value, Value::Hash, Value::Hash_Eq>
         valcache_{};
     std::vector<Op_Cache> opcaches_{};
 
-    SC_Compiler(std::ostream& s, SC_Target t, System& sys)
+    SC_Compiler(std::ostream& s, SC_Target t, Source_State& ss)
     :
-        out_(s), target_(t), valcount_(0), system_(sys)
+        out_(s), target_(t), valcount_(0), sstate_(ss)
     {
     }
 

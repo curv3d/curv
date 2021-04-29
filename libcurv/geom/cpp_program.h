@@ -19,7 +19,7 @@ namespace curv { namespace geom {
 // the results. This holds the C++ source code and the compiled binary.
 struct Cpp_Program
 {
-    System& system_;
+    Source_State& sstate_;
     unsigned tempfile_id_;
     Filesystem::path path_;
     std::ofstream file_;
@@ -33,7 +33,7 @@ struct Cpp_Program
     void* dll_ = nullptr;
 #endif
 
-    Cpp_Program(System&);
+    Cpp_Program(Source_State&);
     ~Cpp_Program();
     static const char standard_header[];
     inline void define_function(

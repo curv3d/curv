@@ -16,7 +16,7 @@ const char glsl_header[] = "";
 
 void glsl_function_export(const Shape_Program& shape, std::ostream& out)
 {
-    SC_Compiler sc(out, SC_Target::glsl, shape.system());
+    SC_Compiler sc(out, SC_Target::glsl, shape.sstate_);
     At_Program cx(shape);
 
     out << glsl_header;

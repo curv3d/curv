@@ -10,4 +10,4 @@ in
 cubic_lattice
   >> offset 0.1
   >> into (smooth 0.1 .intersection) [sphere 20]
-  >> colour (p->sRGB(abs(normalize(p[[X,Y,Z]]))))
+  >> colour (p->sRGB(abs(normalize(p.[[X,Y,Z]]))))
