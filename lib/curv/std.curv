@@ -1332,7 +1332,7 @@ repeat_finite d l shape =
                 t];
         bbox = [
             shape.bbox@MIN,
-            shape.bbox@MAX*l,
+            shape.bbox@MIN + d*l,
         ];
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
