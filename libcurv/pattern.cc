@@ -275,7 +275,7 @@ struct List_Pattern : public Pattern
     virtual void sc_exec(Operation& expr, SC_Frame& caller, SC_Frame& callee)
     const override
     {
-        if (auto list = dynamic_cast<List_Expr*>(&expr)) {
+        if (auto list = cast_list_expr(expr)) {
             if (list->size() != items_.size()) {
                 throw Exception(At_SC_Phrase(expr.syntax_, caller),
                     stringify("list pattern: expected ",items_.size(),

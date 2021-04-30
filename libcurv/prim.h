@@ -199,8 +199,7 @@ struct Binary_Array_Op
     static SC_Value
     sc_reduce(const At_Syntax& cx, Value zero, Operation& argx, SC_Frame& fm)
     {
-        auto list = dynamic_cast<List_Expr*>(&argx);
-        if (list) {
+        if (auto list = cast_list_expr(argx)) {
             if (list->empty())
                 return sc_eval_const(fm, zero, *argx.syntax_);
             auto first = sc_eval_op(fm, *list->at(0));
@@ -295,7 +294,7 @@ struct Binary_Array_Op
     static SC_Value
     sc_op(const At_Syntax& cx, Operation& argx, SC_Frame& fm)
     {
-        auto list = dynamic_cast<List_Expr*>(&argx);
+        auto list = cast_list_expr(argx);
         if (list && list->size() == 2) {
             auto first = sc_eval_op(fm, *list->at(0));
             auto second = sc_eval_op(fm, *list->at(1));
