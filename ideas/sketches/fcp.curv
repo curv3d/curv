@@ -15,24 +15,24 @@ pbc = normalize[scospin,0,0.5];
 pca = normalize[0,scospin,cospin];
 
 fold pt =
-    do  var pos := pt;
+    do  local pos = pt;
         for (i in 0..Type) (
-            pos := [abs(pos[X]), abs(pos[Y]), pos[Z]];
-            let t = -2*min(0,dot(pos,nc));
+            pos := [abs(pos.[X]), abs(pos.[Y]), pos.[Z]];
+            let t = -2*min[0,dot[pos,nc]];
             in pos := pos + t*nc;
         );
     in pos;
 
 D2Segments pt =
     let pos = pt - p;
-        dla = mag(pos-min(0,pos[X])*(1,0,0));
-        dlb = mag(pos-min(0,pos[Y])*(0,1,0));
-        dlc = mag(pos-min(0,dot(pos,nc))*nc);
-    in min(min(dla,dlb),dlc)-SRadius;//max(max(dla,dlb),max(dlc,dlp))-SRadius;
+        dla = mag(pos-min(0,pos.[X])*[1,0,0]);
+        dlb = mag(pos-min(0,pos.[Y])*[0,1,0]);
+        dlc = mag(pos-min(0,dot[pos,nc])*nc);
+    in min[min[dla,dlb],dlc]-SRadius;//max[max[dla,dlb],max[dlc,dlp]]-SRadius;
 
 in
 make_shape {
-    dist pt = D2Segments(fold(pt[[X,Y,Z]]));
+    dist pt = D2Segments(fold(pt.[[X,Y,Z]]));
     is_3d = true;
     bbox = [[-1,-1,-1]-SRadius, [1,1,1]+SRadius];
 }

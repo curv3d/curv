@@ -1,10 +1,10 @@
 let
-gap g (s1, s2) =
+gap g [s1, s2] =
     make_shape {
         dist p =
             let a=s1.dist p;
                 b=s2.dist p;
-                d=if(a > g || b > g) min(a,b) else -abs(a-b)+g;
+                d=if (a > g || b > g) min[a,b] else -abs(a-b)+g;
             in d;
         colour p =
             let d1 = s1.dist p;
@@ -17,6 +17,6 @@ gap g (s1, s2) =
 
 in
 gap 1.5
-    ( sphere 33 >> colour (sRGB.HSV(0,.8,.8)),
-      gyroid >> shell .2 `intersection` cube 30 )
+    [ sphere 33 >> colour (sRGB.HSV[0,.8,.8]),
+      gyroid >> shell .2 `intersection` cube 30 ]
   >> lipschitz 2

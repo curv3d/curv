@@ -1,18 +1,18 @@
+let
 // Based on the standard cartesian equation for an ellipse.
-ellipse(rx,ry) = make_shape {
-    dist p : sqrt(p[X]^2/rx^2 + p[Y]^2/ry^2) - 1,
+ellipse[rx,ry] = make_shape {
+    dist p : sqrt(p.[X]^2/rx^2 + p.[Y]^2/ry^2) - 1,
     bbox : [[-rx,-ry,0],[rx,ry,0]],
     is_2d : true,
 };
 // The distance field is non-isotropic, exactly like a scaled circle.
-de=ellipse(1,2) >> distance_field;
+de=ellipse[1,2] >> distance_field;
 
 // Based on the polar equation for an ellipse.
-pellipse(rx,ry) = make_shape {
-    dist p : (
-        var a := phase p;
-        mag p - rx*ry / sqrt((rx*sin a)^2 + (ry*cos a)^2)
-    ),
+pellipse[rx,ry] = make_shape {
+    dist [x,y,_,_] :
+        let a = phase [x,y]
+        in mag [x,y] - rx*ry / sqrt((rx*sin a)^2 + (ry*cos a)^2),
     bbox : [[-rx,-ry,0],[rx,ry,0]],
     is_2d : true,
 };
@@ -20,7 +20,7 @@ pellipse(rx,ry) = make_shape {
 // and Y axes. Away from the axes, the distances are slightly too large,
 // which is a problem for ray-marching. The distance field inside the ellipse
 // is wild looking.
-dpe = pellipse(1,2) >> distance_field;
+dpe = pellipse[1,2] >> distance_field;
 
 // Next: try to compute a scaling factor for correcting the distance field
 // outside of pellipse, perhaps based on the angle a. The result will still be
@@ -44,10 +44,13 @@ float sdEllipsoid( in vec3 p, in vec3 r )
 */
 // this is a unit sphere scaled by `r`. non-euclidean DF.
 ellipsoid r = make_shape {
-    dist p : (mag(p/r) - 1) * min r,
+    dist [x,y,z,_] : (mag([x,y,z]/r) - 1) * min r,
     is_3d : true,
 };
-ellipsoid(1,2,3) >> slice_xz >> distance_field
+in
+//ellipsoid[1,2,3] >> slice_xz >> distance_field
+//de
+dpe
 
 /*
 "Most of the public attempts at ‘closest point on an ellipsoid’ are either slow,

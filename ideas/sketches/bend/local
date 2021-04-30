@@ -35,29 +35,29 @@ and translation. The range of the bending deformation is controlled by
 */
 
 let
-bend (k,s0,sb,se) shape =
+bend [k,s0,sb,se] shape =
     let r = 1/k;
         ak = abs k;
         sk = if (k<0) -1 else if(k>0) 1 else 0;
     in make_shape {
-        dist(x,y,z,t) =
+        dist[x,y,z,t] =
             let d = [x - s0, (r - y) * sk];
-                a = -atan2(d[X], d[Y]);
-                b = clamp(a, ak*(sb-s0), ak*(se-s0));
+                a = -atan2[d.[X], d.[Y]];
+                b = clamp[a, ak*(sb-s0), ak*(se-s0)];
                 s = b*r + s0;
                 c = [sin b, cos b];
                 mapped =
                     if (a==b)
                         [s, mag d - abs r]
                     else
-                        sk*(c[[Y,X]]*d[[X,X]]*[-1,1] - c*d[[Y,Y]]) + [s,r];
-            in shape.dist(mapped[X], mapped[Y], z, t);
+                        sk*(c.[[Y,X]]*d.[[X,X]]*[-1,1] - c*d.[[Y,Y]]) + [s,r];
+            in shape.dist[mapped.[X], mapped.[Y], z, t];
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
     };
 
 in
 parametric
-    t :: slider(0,pi) = tau/16;
+    t :: slider[0,pi] = tau/16;
 in
-bend(t,0,-1,1) (box(5,1,1))
+bend[t,0,-1,1] (box[5,1,1])

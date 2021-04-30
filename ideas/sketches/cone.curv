@@ -21,27 +21,28 @@ float fCone(vec3 p, float radius, float height) {
 }
 */
 
+let
 // Cone: Z is up, origin is in the middle of the base.
 // Euclidean distance field.
 // Credit: MERCURY (http://mercury.sexy/hg_sdf)
-hg_cone(radius, height) = make_shape {
-    dist p : (
-        var q := [mag(p[X,Y]), p[Z]];
-        var tip := q - [0, height];
-        var mantleDir := normalize(height, radius);
-        var mantle := dot(tip, mantleDir);
-        var d := max(mantle, -q[Y]);
-        var projected := dot(tip, [mantleDir[Y], -mantleDir[X]]);
+hg_cone[radius, height] = make_shape {
+    dist p : do
+        local q = [mag(p@[X,Y]), p@Z];
+        local tip = q - [0, height];
+        local mantleDir = normalize[height, radius];
+        local mantle = dot[tip, mantleDir];
+        local d = max[mantle, -q[Y]];
+        local projected = dot[tip, [mantleDir[Y], -mantleDir[X]]];
 
         // distance to tip
         if (q[Y] > height && projected < 0)
-            d := max(d, mag(tip));
+            d := max[d, mag(tip)];
 
         // distance to base ring
-        if (q[X] > radius && projected > mag(height, radius))
-            d := max(d, mag(q - [radius, 0]));
-        d
-    ),
+        if (q[X] > radius && projected > mag[height, radius])
+            d := max[d, mag(q - [radius, 0])];
+    in
+        d,
     bbox : [[-radius,-radius,0],[radius,radius,height]],
     is_3d : true
 };
@@ -50,30 +51,32 @@ hg_cone(radius, height) = make_shape {
 // h: z height
 // apex is at origin, shape is below XY plane.
 // non-Euclidean distance field, cheaper than the HG cone.
-iq_cone(c,h) = make_shape {
-    dist p : (
-        var q := [mag(p[X,Y]), p[Z]];
-        var d1 := -q[Y] - h;
-        var d2 := max( dot(q,c), q[Y] );
-        mag(max([d1,d2],0)) + min(max(d1,d2),0)
-    ),
+iq_cone[c,h] = make_shape {
+    dist p : let
+        q = [mag(p@[X,Y]), p.[Z]];
+        d1 = -q.[Y] - h;
+        d2 = max[ dot[q,c], q.[Y] ];
+    in
+        mag(max[[d1,d2],0]) + min[max[d1,d2],0],
     is_3d : true
 };
 // magic numbers provided by IQ:
 /*
 print "$(mag(.8,.6))";
 print "$(phase(.8,.6))";
-union(
-    iq_cone([.8,.6],.6),
-    cylinder .3 .1 >> translate(0,0,-1),
-    cylinder .05 (.6/2) >> translate(.5,0,-(.6/2)),
+union[
+    iq_cone[[.8,.6],.6],
+    cylinder .3 .1 >> translate[0,0,-1],
+    cylinder .05 (.6/2) >> translate[.5,0,-(.6/2)],
     sphere .01 >> colour red,
-)
+]
 */
 //iq_cone(cis(60*deg), 1) >> slice_xz >> distance_field
 
-c = hg_cone(.5, 1);
-difference(
+c = hg_cone[.5, 1];
+//c = iq_cone[cis(60*deg), 1];
+in
+difference[
     box(c.bbox),
     c
-) >> slice_xz
+] >> slice_xz
