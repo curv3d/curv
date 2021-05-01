@@ -51,10 +51,22 @@ Here are those contexts:
 Labelled Definitions
 --------------------
 A labelled definition is prefixed with `data`, `func`, `module`,
-`algebra` or `theory`. It can appear in a moduleexpr, or as a REPL command.
+`algebra` or `theory`. It can appear in a scoped record constructor,
+or as a REPL command.
 
-There isn't a strong use case for permitting these definitions in the contexts
-`let defn in phrase` or `local defn`, so that feature is left out for now.
+My current thought is that labelled definitions are *not* general definitions,
+and are not permitted in the contexts `let defn in phrase` or `local defn`.
+This restriction allows labels to be globally unique within a program, so
+that they are easy to reason about. Globally unique data labels then become
+a feature used by algebraic data abstraction for supporting overloaded
+operations and run-time polymorphism in a modular way.
+
+I'm copying this approach from other programming languages. It's the most
+popular approach to nominally-typed data abstraction. It can be criticized
+as a limitation on composability, forcing some kinds of code to be written
+only at the module level, and not locally inside a function body. The excuse
+is that this is a straw-man design, the limitation helps me get a working
+prototype more quickly.
 
 Docstrings
 ----------
@@ -144,31 +156,156 @@ like a constructor for that argument value.
 If you call an anonymous constructor,
 the label of the result value contains the function literal.
 
-Modules (Labelled Records)
---------------------------
+Modules
+-------
 A module M (aka labelled record) may have a mix of fields: some are labelled,
 some are not. When selecting a labelled field L from M, then M.L has the
 label 'M.L'.
 
-A moduleexpr is not an arbitrary expression. It is a scoped record
-constructor, extended to support labelled definitions. This restriction
-simplifies the prototype implementation: there are no anonymous modules.
+Any module member, labelled or not, can have a docstring. Docstrings for
+unlabelled members are stored in the module's metadata. Docstrings for
+labelled members are stored in the member values themselves.
 
-If we permit anonymous modules, that can lead to better metaprogramming
-(algorithmically constructing a module at runtime). But applying a label to
-an existing anonymous module looks tricky.
- * Consider {func f = ...; g = f}. This constructs a record where `f` and `g`
-   are synonyms for the same labelled value.
- * If we evaluate this to an anonymous record value R, where R.f is a 
-   labelled function 'f' and 'g' is the same, then applying a label to this
-   module requires searching for all labelled values in the record tree
-   (including those captured by closures) and relabelling the values we found.
- * Or, store a thunk to regenerate the module value from a specified base label.
+A moduleexpr is a phrase that denotes a protomodule, which is the content
+of a module prior to applying a label to it. Eg, in `module M = moduleexpr`.
+I'm finding it tricky to decide what constitutes a moduleexpr and a protomodule.
 
-A sophisticated approach would use multiple module representations for
-performance reasons:
- * a frame-relative thunk for the module
- * a closure thunk for the module, portable between frames
+ 1. Syntactic Protomodules
+    Certain syntactic phrases are interpreted during analysis as protomodules,
+    based on the syntactic context in which the phrase is found.
+    These phrases might include:
+     * A scoped record constructor, augmented with optional docstrings
+       and labelled definitions. These extra elements are only legal in this
+       syntactic context.
+     * `file <pathexpr>`. Needed by `module lib = file "lib"` in std.curv.
+     * `<mcexpr> <argexpr>`. The <mcexpr> is a constant expression denoting
+       a module constructor.
+    This approach, if moduleexprs are limited to {...} syntax, is equivalent
+    in expressiveness to the module syntax in most programming languages.
+    Most languages don't allow abstraction over module literals.
+
+ 2. Phase Restricted Protomodules.
+    Ambitious, but I think it allows general abstraction over modules without
+    creating performance and semantic issues.
+    Resembles "first class modules" in typed functional languages,
+    in that run-time module values differ from compile-time modules.
+
+ 3. First Class Protomodules.
+    Curv 0.4 has first class modules, with no complexity or restrictions:
+    they are just record values. But this becomes trickier with labelled
+    modules and metafunctions as module members.
+
+First Class Protomodules
+------------------------
+Curv 0.4 has first class modules, with no complexity or restrictions:
+they are just record values.
+
+Naively, first class protomodules with no restrictions should be the simplest
+and most expressive design. But it gets tricky with labelled modules
+and metafunctions as module members.
+
+What if we extend scoped module constructors with docstrings and labelled
+definitions, and we say this returns a protomodule. What is this value?
+
+Given a protomodule PM with a member A, what is the label of `PM.A`?
+ 1. It's illegal? That would suck; it means that adding a docstring or a
+    labelled definition to a scoped record causes big change in behaviour.
++2. No module label is applied, just a relative symbol label ('A' in the
+    example. This is consistent with Curv 0.4. But this doesn't give us
+    globally unique labels. (Okay, *some* labels are globally unique.)
+    It is compatible with labelled definitions in a 'let'.
+ 3. No label is applied; just return the definiens value. This is confluent
+    with anonymous records, and consistent with globally unique labels.
+    BUT: what's the definiens for a data constructor? Maybe this is incoherent.
+ 4. The label is 'M.F' where 'M' is replaced by the module literal? That seems
+    consistent with the proposed label for the result of calling an anonymous
+    constructor. But it's not supported by my proposed label implementation,
+    and it would also suck due to extreme verbosity of printed representation.
+
+Option #2, which eliminates the distinction between modules and protomodules,
+and introduces a distinction between relative and absolute labels, seems best.
+
+In this design, an existing labelled module can be relabelled by
+    module M = <labelled module>
+and a protomodule can be labelled by
+    module M = {...}
+How does this labelling/relabelling work?
+
+Naively, you could traverse the tree representation of the module value,
+looking for labelled values whose labels are rooted at the module that
+you are relabelling. Each such value must be relabelled. You'll need to
+look everywhere, including captured values within closures. This seems
+complex and expensive.
+
+Or, you could retain a thunk representing the unevaluated module, and
+evaluate this thunk in a new context (which provides the new module label)
+in order to relabel the value. This is less complex to implement.
+There is a memory cost in carrying around those thunks at runtime.
+
+std
+---
+`std` is a primitive expression denoting a labelled module that contains
+all of the standard top-level bindings (except 'std' itself).
+
+`std` is used in my proposal for globally unique labels. The labels
+of all standard bindings are prefixed by `std.`. Eg,
+ * `std.sin`.
+ * `file "dirpath"` returns a labelled directory module whose label
+   is `std.file "absdirpath"`.
+`std` is analogous to the root directory (`/`) in Unix pathnames.
+
+`std` should be a reserved word so that it can't be shadowed.
+This ensures that globally unique labels have the same meaning in all scopes.
+
+What kind of entity is `std`? The problem is metafunctions.
+How does `std.file` work?
+ 1. In the "syntactic protomodules" proposal, `std` is special syntax,
+    it is not an expression. `std.file` works, and is also not an expression.
+ 2. In the "phase restricted protomodules" proposal, `std` is promoted to
+    an expression denoting a phase restricted value. This allows `std.file`
+    to be an expression without implementing run-time metafunctions.
+ 3. If `std` is a first class module value, then we have run-time metafunctions
+    (aka Lisp FEXPRs). Which means performance problems and loss of
+    referential transparency.
+
+Phase Restricted Values
+-----------------------
+In this proposal, `std` and `std.file` are values.
+Metafunctions are values, but you can only call them at compile time.
+
+A module M can contain a metafunction binding mf. `M.mf` can be invoked without
+restriction, it returns a metafunction value. However, `M.mf x` will not invoke
+the metafunction unless M is a constant, otherwise you get a compile time error
+(phase error).
+
+I like this idea that constant expressions have some additional powers.
+That the phase restriction on metafunctions is imposed using constants.
+Because you can abstract over constants, using 'let' or functions, without
+adding additional language complexity. In Lisp, macros are not values, and
+a shadow realm is created for abstracting over macros. But functions are
+phase polymorphic, and no shadow realm is required.
+
+Phase Restricted Protomodules
+-----------------------------
+In this proposal, protomodules are distinguished from modules. Both are values.
+Protomodules are phase restricted values, which in general represent
+unevaluated, anonymous modules. Modules are runtime labelled values.
+
+The phase restriction aids performance: module values don't need to carry
+around a thunk that is used for labelling or relabelling the module.
+We could also make protomodules similar to Racket 'units'. A Unit has
+'imported variables' which must be resolved by linking with other units.
+A set of units can be linked together to form a module.
+
+The full set of operations are only available on the constant form.
+You can't use 'M.a' since the member values are generally not available
+(the module is unevaluated). The set of member names is available.
+
+The main use for a protomodule is as RHS of a labelled definition.
+This will evaluate the module, binding a label to it.
+In this context, it must be a constant.
+
+What syntax for constructing a protomodule? They are distinct from records.
 
 Data Constructors
 -----------------
@@ -190,20 +327,29 @@ defienda. Eg,
     def [x, y] =  pair_expr
     [x, def y] = par_expr
 
-Equality and Referential Transparency
--------------------------------------
-This "labelled values" proposal is weaker than the earlier "branded values"
-proposal: it doesn't require the printed representation to be globally
-unambiguous, or that value equality is isomorphic to printed rep equality.
+Equivalence, Equality and Referential Transparency
+--------------------------------------------------
+At present, I have two competing proposals for equivalence of labelled values.
 
-If two labelled values are equal, we prefer that they have the same printed
-representation. But even that can't be guaranteed given that `0` and `-0`
-compare equal, and given that numbers may appear in a constructor expression.
+ 1. Globally unique labels. All labels are absolute.
+    Labelled values are equal if their labels are equal.
+    Composability is limited: some kinds of code must be written only at
+    the module level, and not locally inside a function body.
+    Labelled definitions are not general definitions, they can't occur
+    in a 'let', only in a protomodule. Protomodules are not modules.
 
-Two labelled values are equal if the labels are equal and the payloads are
-equal. It's possible for two labelled values created by different libraries
-from different authors to be accidently equal, but this problem is solved
-at a higher level with culture and naming conventions.
+ 2. Relative and absolute labels. Two labelled values are equal if the labels
+    are equal and the payloads are equal. Labelled definitions may be used
+    locally (in a 'let'), where they create values with relative labels.
+    Labelled definitions can run in the REPL, creating relative labels.
+    There is no protomodule/module distinction.
+
+For #2, the payload of a labelled function, module, data constructor
+is a function, module or type.
+
+Either way, I need an equivalence/equality operator on all API values,
+including functions and modules, because these can appear as constructor
+arguments in a label.
 
 Labels
 ------
@@ -220,3 +366,11 @@ It also arises when labelling the result of calling an anonymous ctor.
 Storing the original module value in a field formula may also be useful, but
 would result in a recursive object cycle (requiring a tracing garbage collector
 or cyclic reference counts). To avoid this, we store the module's label.
+
+Labels are globally unique. There's no scope where two values can have the same
+label but different provenance. This makes labels easy to reason about.
+* Labels for standard bindings are prefixed with `std.`
+* Labels for members of a top level directory record are prefixed
+  with `std.file "pathname".`
+* The only situation where a label is a bare symbol (other than `std`) is in
+  the REPL local bindings scope. Those values cannot escape the REPL context.
