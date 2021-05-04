@@ -219,7 +219,7 @@ Transformations
 * Non-affine: taper, twist, bend
 * 2D->3D: extrude, revolve
 * 3D->2D: slice
-* Repetition: repeat_x, repeat_xy, repeat_xyz, repeat_finite, repeat_mirror, repeat_radial
+* Repetition: repeat_x, repeat_xy, repeat_xyz, repeat_finite, repeat_mirror, repeat_helix, repeat_radial
 
 Additive/Subtractive Operations
 ===============================

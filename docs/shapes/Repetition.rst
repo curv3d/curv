@@ -49,6 +49,10 @@ This interface is still experimental.
   The contents of "slice 0" are copied into the other *n-1* slices.
   The shape may be 2D or 3D.
 
+``repeat_helix {reps:n, step:dz} shape``
+  Partition space into *n* radial pie slices, radiating from the Z axis while incrementing in Z+ by dz.
+  The shape must be 3D.
+
 Future Work
 -----------
 * Support more symmetries. For example, consider the `Wallpaper Symmetries`_, the `Frieze Symmetries`_,
@@ -57,7 +61,6 @@ Future Work
 * Permit the `shape` argument of each repetition operator to be optionally replaced by a function
   that maps a cell index onto a shape. This function can customize the contents of each cell or tile
   based on the cell index.
-* ``repeat_helix ... shape``
 
 .. _`Wallpaper Symmetries`: https://en.wikipedia.org/wiki/Wallpaper_group
 .. _`Frieze Symmetries`: https://en.wikipedia.org/wiki/Frieze_group

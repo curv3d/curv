@@ -1384,6 +1384,46 @@ repeat_radial reps shape =
         is_3d = shape.is_3d;
     };
 
+repeat_helix{reps, step} shape =
+    let angle = tau/reps;
+        inradius = -shape.bbox@MIN@Y;
+        circumradius = inradius / cos(angle/2);
+        max_x =
+            if (mod[reps,4]==0)
+                inradius
+            else if (mod[reps,2]==0)
+                circumradius
+            else
+                circumradius * sin((floor(reps/4)+.5)*angle);
+        ashift = tau/4 + angle/2;
+        f[x,y,z,t] =
+            let a = phase[x,y] + ashift;
+                r = mag[x,y];
+                i = clamp[round(z/step), 0, reps - 1];
+                a2 =
+                    if (step==0)
+                        mod[a,angle] - ashift
+                    else
+                        a - angle*mod[i,reps] - ashift;
+                xy = cis(a2) * r;
+                z2 = z - step*i;
+            in [xy@X, xy@Y, z2, t];
+    in make_shape {
+        dist p = shape.dist(f p);
+        colour p = shape.colour(f p);
+        // bbox is exact for regular_polygon, approximate for general case.
+        bbox = [
+            [ -max_x,
+              -inradius,
+              shape.bbox@MIN@Z ],
+            [ max_x,
+              if (mod[reps,2]==0) inradius else circumradius,
+              shape.bbox@MIN@Z + reps*step ]
+        ];
+        is_2d = shape.is_2d;
+        is_3d = shape.is_3d;
+    };
+
 ////////////
 // COLOUR //
 ////////////
