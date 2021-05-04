@@ -56,5 +56,5 @@ let
 in
 sphere 12
   >> displace[i_fractal, Amplitude, -.2]
-  >> lipschitz 3
+  >> lipschitz 10
   >> colour [i_fractal, fire]
