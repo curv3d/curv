@@ -194,7 +194,7 @@ void export_frag_3d(
        "        float precis = 0.0005*t;\n"
        "        vec4 p = vec4(ro+rd*t,time);\n"
        "        float d = dist(p);\n"
-       "        if (abs(d) < precis) {\n"
+       "        if (abs(d) < abs(precis)) {\n"
        "            c = colour(p);\n"
        "            break;\n"
        "        }\n"
