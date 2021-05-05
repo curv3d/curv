@@ -9,8 +9,28 @@ on:
     branches: [ master ]
 
 jobs:
+  macos-build:
+    runs-on: macos-latest
 
-  windows-build: 
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - run: brew install boost ilmbase openexr tbb glm libomp
+
+    - name: Run tests
+      run: make test
+    - name: Release build
+      run: make
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: curv-mac-${{ github.sha }}
+        path: |
+          release/curv
+          lib
+
+  windows-build:
     runs-on: windows-latest
 
     steps:
@@ -18,7 +38,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
-      
+
     - uses: msys2/setup-msys2@v2
       with:
         msystem: MINGW64
@@ -32,14 +52,14 @@ jobs:
         key: ${{matrix.config.name}}-ccache-${{ github.sha }}
         restore-keys: |
           ${{matrix.config.name}}-ccache-
-      
+
     - name: Build Curv
       shell: msys2 {0}
       run: make
     - name: Test built executable
       shell: msys2 {0}
       run: ./release/curv --version
-      
+
     - name: Copy runtime dependencies to build dir
       shell: msys2 {0}
       run: |
@@ -48,9 +68,9 @@ jobs:
         cp /mingw64/bin/libopenvdb.dll ./release
         cp /mingw64/bin/libboost_filesystem-mt.dll ./release
     - uses: actions/upload-artifact@v2
-      if: ${{ always() }}
       with:
-        name: windows-binaries-${{ github.sha }}
+        name: curv-win-${{ github.sha }}
         path: |
           release/*.exe
           release/*.dll
+          lib
