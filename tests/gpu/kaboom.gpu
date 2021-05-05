@@ -49,6 +49,7 @@
     |  float r303 = 0.9375;
     |  float r305 = -0.2;
     |  float r307 = rv_Amplitude;
+    |  float r310 = 10.0;
     |  /* body */
     |  float r1 = r0[0];
     |  float r2 = r0[1];
@@ -333,8 +334,8 @@
     |  float r306 = r304+r305;
     |  float r308 = r306*r307;
     |  float r309 = r8-r308;
-    |  float r310 = r309/r36;
-    |  return r310;
+    |  float r311 = r309/r310;
+    |  return r311;
     |}
     |vec3 colour(vec4 r0)
     |{
@@ -709,7 +710,7 @@
     |        float precis = 0.0005*t;
     |        vec4 p = vec4(ro+rd*t,time);
     |        float d = dist(p);
-    |        if (d < precis) {
+    |        if (abs(d) < abs(precis)) {
     |            c = colour(p);
     |            break;
     |        }

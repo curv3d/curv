@@ -692,7 +692,7 @@
     |        float precis = 0.0005*t;
     |        vec4 p = vec4(ro+rd*t,time);
     |        float d = dist(p);
-    |        if (d < precis) {
+    |        if (abs(d) < abs(precis)) {
     |            c = colour(p);
     |            break;
     |        }
