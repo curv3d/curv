@@ -1,0 +1,23 @@
+Metaprogramming in Curv
+=======================
+No plan, just some ideas.
+
+Mechanisms:
+* Macros (like Scheme/Racket) -- at analysis time
+* Reflection and introspection -- at runtime
+* Axiom driven optimization using an EGG based optimizer.
+  Modules, algebras and theories define the axioms.
+* Multi-phase evaluation, partial evaluation.
+* C# code generators:
+  https://blog.marcgravell.com/2021/05/is-era-of-reflection-heavy-c-libraries.html
+
+Goals:
+* Preserve and support referential transparency, local reasoning,
+  equational reasoning.
+* Static type checking is pushed out of the core and into libraries.
+* Very high level code is transformed into efficient GPU code.
+  Push complexity out of the core and into libraries written in Curv.
+
+Implementation:
+* Compiler/interpreter data structures are represented as Curv values.
+  That's a first step.
