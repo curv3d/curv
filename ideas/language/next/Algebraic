@@ -75,6 +75,9 @@ theory, but it's also verbose.
 The second approach is less general, but it supports run-time polymorphism.
 The types of the arguments to a function are used to dynamically select an
 algebra. This mechanism supports overloaded operators and heterogenous lists.
+Operations that don't have any of the types in their domain can't be overloaded.
+In order to support efficient run-time type dispatching, the types are
+restricted to Data Types.
 
 Universal Data Abstraction?
 ---------------------------
@@ -93,7 +96,9 @@ My initial reaction is that this is an illusion. If all algebras were
 single typed, and all operations in an algebra were functions that take
 a single instance of type T as an argument (single dispatch: no constants,
 no constructors, no binary operators), then this property would be achievable.
-But I think it is unachieveable for arbitrary algebras.
+But I think it is unachieveable for arbitrary algebras. Smalltalk is selling
+a feature that it doesn't actually deliver, and the cost is that you can't
+write modular code.
 
 ---------------------------------------------------------------------
 OOP has run-time polymorphism, but is anti-modular. The SML module system
@@ -170,61 +175,33 @@ I might want to use the word 'module' in a more general sense to mean
 labelled or named value, or API value. In which case this section is
 about record modules.
 
-Constructors
-------------
-Every value has a unique constructor associated with it. This is like a run-time
-'type' tag. For named values (see above), the constructor is the value itself.
-Otherwise, the constructor is a named function with one or more curried
-arguments. The constructor plus its arguments uniquely determine the value.
-......
-* For a named function or module, isn't the 'type tag' Function or Record?
-  If I define an algebra where T=Function, won't the overloaded operations
-  with function arguments accept any named function as an argument?
-
-Labelled Value Constructors
----------------------------
-Cases:
-* Nilary constructor.
-* Simple constructor with arguments. The arguments are the data representation.
-* Fancy constructor, with a bidirectional transformation between the arguments
-  and the internal representation.
-
-Labelled values are printed as constructor expressions, which when evaluated
-in the right context, exactly reproduce the original value.
-Constructor expressions can be used in pattern matching.
-Two labelled values compare equal only if they have the same constructor
-expression.
-
-This is the first step in providing data abstraction.
-* In Curv 0.4, a shape is a record containing {dist,colour,bbox,is_2d,is_3d}
-  fields. So `cube 10` is such a record, and by examining the record,
-  you don't know anything about the shape's provenance.
-* But if `cube 10` is a labelled value, then it prints as `cube{d: 10}`,
-  you can pattern match on it, it has sensible equality semantics,
-  and you can use `cube 10 .d` to query the diameter.
-
 Types
 -----
 A type is a set of related values. They are related because they are used by
 a common set of operations: they are part of the domain and/or range of these
 operations.
 
+Data Types
+----------
+A Data Type is a specific kind of Type associated with a value's type tag.
+Every value has a unique Data Type associated with it (see [[Data Types]]).
+In the case of user defined data types, defined using a simple 'data'
+definition, the data type is synonymous with the data constructor name.
+
 Algebras
 --------
-An Algebra is a module that denotes a set of values together with a set of
-operations on those values. More specifically, an Algebra contains one or more
-constructors that generate the value set, plus a predicate for the value set,
-plus a set of operations.
+An Algebra is a module containing one or more named types, plus one or more
+operations over those types.
 
 An Algebra also has a set of axioms that describe its semantics, but for now
 that will be represented by documentation.
 
-The constructors need not be labelled values.
+The type names within an Algebra can be new data types defined locally by that
+algebra using data constructor definitions, or they can be aliases for types
+defined in other modules.
 
-Labelled constructors within an Algebra can be local to that Algebra, or they
-can be defined in another module. This flexibility is crucial.
-
-A Labelled Algebra is restricted to have labelled value constructors.
+What?
+> A Labelled Algebra is restricted to have labelled value constructors.
 
 Theories
 --------
@@ -264,8 +241,7 @@ I see two approaches to generic programming.
   This means that multiple implementations of same Theory can be associated
   with a value. Eg, a Number can be part of a Monoid in multiple ways.
   While this seems more flexible, it doesn't support heterogenous lists.
-  Requires more boilerplate and bureaucracy, and the use cases are not very
-  common.
+  Requires more boilerplate and bureaucracy, and the use cases are less common.
 
 * Intrinsic: The mapping from the value to the algebra is internal to the value.
   This means you can have overloaded operators that choose the right

@@ -58,6 +58,14 @@ Data types are used by theories for efficient dynamic dispatch of overloaded
 operations. A theory used for dynamic dispatch may require its types to be
 data types.
 
+If we use the simple design, where all data types are disjoint, then every
+value has a unique data type associated with it. This means, in theory, we
+can provide an operation that returns a value's data type. I don't have a
+use for this. But, Python has a type(x) function that seems to implement this.
+In Julia, only the leaf nodes of the tag tree can be associated with objects,
+so in this scheme also, a value has a unique data type which is either the 
+same as or disjoint from the data types of other values.
+
 Simple Data Constructors
 ------------------------
 A data constructor is defined like this:
@@ -70,6 +78,9 @@ curried arguments, because so do shape constructors:
     everything
     cube 10
     rotate (45*deg) cube
+
+Sum types could be defined like this:
+    data MySumType (Enum [#foo, #bar, baz: Num])
 
 A data constructor value supports multiple protocols:
 * is a constructor function (if the constructor has at least one argument).

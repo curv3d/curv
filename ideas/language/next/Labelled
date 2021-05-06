@@ -293,9 +293,14 @@ unevaluated, anonymous modules. Modules are runtime labelled values.
 
 The phase restriction aids performance: module values don't need to carry
 around a thunk that is used for labelling or relabelling the module.
-We could also make protomodules similar to Racket 'units'. A Unit has
+
+We could make protomodules similar to Racket 'units'. A Unit has
 'imported variables' which must be resolved by linking with other units.
+In Curv I'd call these 'declarations' (definitions without a definiens).
 A set of units can be linked together to form a module.
+A possible use for definitions might be to emulate 'partial methods'
+in C#, which are used for metaprogramming in conjunction with code generators.
+This stuff is speculative and outside of the MVP for next gen Curv.
 
 The full set of operations are only available on the constant form.
 You can't use 'M.a' since the member values are generally not available
@@ -306,6 +311,11 @@ This will evaluate the module, binding a label to it.
 In this context, it must be a constant.
 
 What syntax for constructing a protomodule? They are distinct from records.
+How about
+    #{defn, defn, ...}
+where 'defn' can optionally be a labelled definition, and can optionally be
+preceded by a doc string. With the metaprogramming/module linking extension,
+'defn' can also be a declaration.
 
 Data Constructors
 -----------------
