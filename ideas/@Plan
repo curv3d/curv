@@ -1,5 +1,15 @@
 2021 Roadmap for "New Curv"
 ===========================
+The long term goal is a major redesign of Curv:
+
+* A more powerful language with new syntax, and more efficient runtime.
+* A more powerful, optimizing GPU compiler.
+* A faster, more powerful GPU rendering engine that uses compute kernels.
+* A more powerful, more general purpose set of graphics primitives.
+* A new user interface.
+
+The current priority list for 2021 is:
+
 1. Language Design Bible (< new language)
 2. New Language (< new SubCurv compiler)
     High Level (as a modelling language)

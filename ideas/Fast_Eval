@@ -9,8 +9,10 @@ Here are the possibilities for fast expression evaluation:
   Forbidden in iOS (Zee wants to do an iOS port). Impossible in WASM (per Wasm3
   readme). Complicated, as I need to generate low level IR for the JIT library.
 * Generate C++, compile to *.so or *.dll, dlopen and execute. Forbidden in iOS.
-  Impossible in WASM/web browser, but can you generate an external WASM module
-  and then execute it? Yes (https://github.com/indutny/wasm-jit/).
+  Native only: Not workable in WASM/web browser.
+* WASM/JIT: Generate an external WASM module and then execute it.
+  * https://github.com/indutny/wasm-jit/
+  * JIT based x86 emulator in WASM: leaningtech.com/cheerpx
 * GPU compute. Super fast for appropriate work loads. Strangely, this is the
   only universal option for optimized native code execution.
 * AOT compiler. Generate C++, compile to native code or WASM.
@@ -29,6 +31,7 @@ Priorities:
     implement a GPU version.
  1. GPU compute language.
  2. Tail-threaded interpreter. Faster, but finicky & bleeding edge.
+    Needs a fallback for WASM.
  3. AOT compiler, offshoot of current GLSL/C++ compiler.
  4. Internal JIT. Difficulty + lack of universality makes this lowest priority.
 
@@ -62,6 +65,22 @@ generate efficient code. So this probably needs more time to bake.
 See also the Wasm3 interpreter architecture (aka M3, Massey Meta Machine):
 github.com/wasm3/wasm3/blob/main/docs/interpreter.md
 
+Small hackable example (283 lines of C++):
+gist.github.com/snej/9ba59d90689843b22dc5be2730ef0d49
+lobste.rs/s/wmuvxw/tails_tiny_forth_core_written_as_hack_for
+
+I think this technique is presently impossible in WASM, based on
+blog posts written by the CheerpX team. It requires the WASM tail call
+feature, which is stalled in the implementation phase for 2 years
+(Mozilla hasn't implemented it).
+ * https://medium.com/leaningtech/extreme-webassembly-1-pushing-browsers-to-their-absolute-limits-56a393435323
+ * https://medium.com/leaningtech/extreme-webassembly-2-the-sad-state-of-webassembly-tail-calls-f5d48ef82a87
+
+Because of this, the C/C++ code needs to be written so that it "falls back"
+to generated code that works correctly without the tail call optimization,
+and doesn't blow up the call stack. The interpreter will be slower without
+the tail call optimization, probably comparable to the Curv 0.4 interpreter.
+
 JIT
 ---
 Can I JIT the entire language to native code, or is this restricted to SubCurv?
@@ -94,6 +113,7 @@ Here is a list of JIT libraries in 2021: https://github.com/vnmakarov/mir
   * ... see mir readme for more
 
 What is my JIT story for Curv running in WASM?
+* See CheerpX, referenced above, a sophisticated JIT running in WASM.
 * Maybe there is no JIT under WASM: interpreter only.
 * JITing to WASM makes sense for SubCurv. But WASM lacks proper tail recursion.
   The tail recursion proposal entered Phase 3 (implementation) in Aug 2019.

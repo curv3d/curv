@@ -30,6 +30,57 @@ An operation on a UDT is a function:
 By convention, the operations on a UDT are packaged in a module named after
 the UDT.
 
+Data Types
+----------
+Every boxed Curv value contains a type tag, which is used for dynamic
+dispatching. This is a statement about the Curv VM.
+
+I've considered two models:
+* All type tags are disjoint. This is similar to Scheme, where primitive types
+  are disjoint.
+* Type tags form a hierarchy. This is similar to Julia.
+I prefer to keep things simple.
+
+A value's type tag is determined when it is constructed. In fact, I believe
+that it is uniquely determined by the value's constructor (and not by any
+constructor arguments).
+
+A simple data constructor has a unique type tag associated with it.
+
+Each type tag has an associated Type value -- all of the values with that tag
+belong to the associated type. Not all Types have an associated tag: those
+that do are called "data types".
+
+Primitive types (which are not constructed using 'data' definitions) also
+have tags and data types. For example, `Num` is a data type.
+
+Data types are used by theories for efficient dynamic dispatch of overloaded
+operations. A theory used for dynamic dispatch may require its types to be
+data types.
+
+Simple Data Constructors
+------------------------
+A data constructor is defined like this:
+    data CtorName ArgType0 ArgType1 ... -- 0 or more arg types
+
+This is the simplest design that meets the needs of the shape library.
+One use case for data constructors is to add new constructors to an existing
+Theory, such as the Shape theory. Data constructors may have zero or more
+curried arguments, because so do shape constructors:
+    everything
+    cube 10
+    rotate (45*deg) cube
+
+A data constructor value supports multiple protocols:
+* is a constructor function (if the constructor has at least one argument).
+* is a data value (if the constructor has zero arguments).
+* is a type for classifying instances of the data constructor.
+
+Problem: this design suggests that Type is a theory, which is extended by
+defining new data constructors. Eg, 'data MyType' could be used to create a
+new niladic type constructor. Except that MyType is already a type used to
+classify its sole instance, which is the value MyType. So there is a conflict.
+
 Strawman #H: Constructors
 --------------------------
 Something like Haskell data type declarations would be okay.
