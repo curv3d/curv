@@ -81,6 +81,13 @@ Shape Constructors
   with semicircle end caps of radius ``d/2``.
   Exact distance field.
 
+``polyline {d: diameter, v: vertices}``
+  A polyline of thickness ``d`` drawn with ``vertices``,
+  with semicircle end caps of radius ``d/2``.
+  Exact distance field.
+  Cost: linear in the number of vertices.
+  Exact distance field.
+
 ``half_plane ...``
   A half-plane is an infinite 2D shape consisting of all points on one side
   of an infinite straight line, and no points on the other side.

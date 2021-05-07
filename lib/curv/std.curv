@@ -265,6 +265,28 @@ stroke{d, from: a, to: b} =
         is_2d = true;
     };
 
+polyline{d, v} =
+    let r = d / 2;
+    in make_shape {
+        dist p =
+            do
+                local p = p@[X,Y];
+                local num = count v;
+                local d = dot[p-v@0, p-v@0];
+                local s = 1;
+                local j = 0;
+                for (i in 1..<num) (
+                    local e = v@j - v@i;
+                    local w = p - v@i;
+                    local b = w - e*clamp[dot[w,e]/dot[e,e], 0, 1];
+                    d := min[d, dot[b,b]];
+                    j := i;
+                );
+            in s * sqrt d - r;
+        bbox = [[...min v-r,0], [...max v+r,0]];
+        is_2d = true;
+    };
+
 // d1: major diameter, from center of tube, through origin, to centre of tube.
 // d2: minor diameter, of the tube.
 torus {major:d1, minor:d2} = perimeter_extrude (circle d1) (circle d2);

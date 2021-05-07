@@ -204,8 +204,8 @@ Primitive Shapes
 ================
 2D:
 
-* circle, ellipse, stroke
-* square, rect, regular_polygon, convex_polygon, half_plane
+* circle, ellipse, stroke, polyline
+* square, rect, regular_polygon, polygon, half_plane
 
 3D:
 
