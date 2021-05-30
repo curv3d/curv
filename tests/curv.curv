@@ -793,10 +793,11 @@ assert( time != #null ); // issue #122
 
 // scalar patterns
 let f = match [
-    0 -> #num,
+    0 -> #nat,
+    -1 -> #int,
     #a -> #sym,
     #"a" -> #char
-] in assert([f 0, f #a, f #"a"] == [#num, #sym, #char]);
+] in assert([f 0, f (-1), f #a, f #"a"] == [#nat, #int, #sym, #char]);
 
 // script return value:
 in null

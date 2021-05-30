@@ -72,7 +72,7 @@ Pattern Syntax
   then match the value against *pattern*.
 
 *numeral*
-  A numeral like ``42`` matches the number it denotes.
+  A numeral like ``42`` or ``-1`` matches the number it denotes.
 
 *symbol*
   A symbol literal like ``#foo`` matches the symbol it denotes.

@@ -497,6 +497,17 @@ make_pattern(const Phrase& ph, Environ& env)
     if (auto num = dynamic_cast<const Numeral*>(&ph)) {
         return make<Const_Pattern>(share(ph), num->eval());
     }
+    if (auto unary = dynamic_cast<const Unary_Phrase*>(&ph)) {
+        if (unary->op_.kind_ == Token::k_minus) {
+            if (auto num = dynamic_cast<const Numeral*>(&*unary->arg_)) {
+                auto n = num->eval();
+                if (n.is_num()) {
+                    return make<Const_Pattern>(share(ph),
+                        Value(-n.to_num_unsafe()));
+                }
+            }
+        }
+    }
     if (auto id = dynamic_cast<const Identifier*>(&ph)) {
         if (id->symbol_ == "_" && !id->quoted())
             return make<Skip_Pattern>(share(ph));
