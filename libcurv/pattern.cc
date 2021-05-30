@@ -494,8 +494,7 @@ identifier_pattern(const Phrase& ph)
 Shared<Pattern>
 make_pattern(const Phrase& ph, Environ& env)
 {
-    auto num = dynamic_cast<const Numeral*>(&ph);
-    if (num && num->loc_.token().kind_ == Token::k_symbol) {
+    if (auto num = dynamic_cast<const Numeral*>(&ph)) {
         return make<Const_Pattern>(share(ph), num->eval());
     }
     if (auto id = dynamic_cast<const Identifier*>(&ph)) {

@@ -71,6 +71,15 @@ Pattern Syntax
   If the predicate is false, the match fails. If the predicate is true,
   then match the value against *pattern*.
 
+*numeral*
+  A numeral like ``42`` matches the number it denotes.
+
+*symbol*
+  A symbol literal like ``#foo`` matches the symbol it denotes.
+
+*character*
+  A character literal like ``#"A"`` matches the character it denotes.
+
 ``[`` *pattern1* ``,`` ... ``]``
   List pattern with *n* elements, each of which is a pattern.
   Matches a list value with exactly *n* elements.

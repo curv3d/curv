@@ -791,5 +791,12 @@ exec (file "index.curv");
 assert( string(sign[-10,-0,0,10]) == "[-1,-0,0,1]" );
 assert( time != #null ); // issue #122
 
+// scalar patterns
+let f = match [
+    0 -> #num,
+    #a -> #sym,
+    #"a" -> #char
+] in assert([f 0, f #a, f #"a"] == [#num, #sym, #char]);
+
 // script return value:
 in null
