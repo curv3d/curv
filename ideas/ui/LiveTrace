@@ -1,0 +1,9 @@
+https://shalabh.com/programmable-systems/offload-mental-simulation.html
+
+A live programming UI with tools and language support for offloading the work
+of mentally executing the program to understand how it works.
+(Not a concrete design; it's more a set of requirements.)
+
+* What if this variable has that value? Show me an abstract execution trace.
+  Branches not taken are greyed out.
+* Interactive 'program slicing' (wikipedia).
