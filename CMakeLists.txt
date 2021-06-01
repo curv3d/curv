@@ -186,6 +186,7 @@ if (NOT DEFINED MSYS)
     add_library(Blosc::blosc ALIAS dummy)
     add_library(TBB::tbb ALIAS dummy)
     add_subdirectory(extern/openvdb/openvdb/openvdb EXCLUDE_FROM_ALL)
+    set_property(TARGET openvdb_static PROPERTY CXX_STANDARD 14)
     add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
 endif ()
 
