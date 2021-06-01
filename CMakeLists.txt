@@ -26,7 +26,7 @@ if (MSYS)
 else ()
     include_directories(
 	extern/googletest/googletest/include
-	extern/openvdb)
+	extern/openvdb/openvdb)
 endif ()
 
 if (APPLE)
@@ -174,8 +174,18 @@ if (NOT TARGET uninstall)
 endif()
 
 if (NOT DEFINED MSYS)
-    # On MSYS we use MinGW packages for OpenVDB and GoogleTest
-    add_subdirectory(extern/openvdb/openvdb EXCLUDE_FROM_ALL)
+    # On MSYS we use MinGW packages for OpenVDB and GoogleTest.
+    # Copy or stub definitions from extern/openvdb/CMakeLists.txt
+    set(OpenVDB_MAJOR_VERSION 8)
+    set(OpenVDB_MINOR_VERSION 1)
+    set(OpenVDB_PATCH_VERSION 0)
+    set(OpenVDB_ABI ${OpenVDB_MAJOR_VERSION})
+    set(OPENVDB_ABI_VERSION_NUMBER ${OpenVDB_MAJOR_VERSION})
+    set(OPENVDB_INSTALL_INCLUDEDIR openvdb_install_includedir)
+    add_library(dummy cmake/dummy.cc)
+    add_library(Blosc::blosc ALIAS dummy)
+    add_library(TBB::tbb ALIAS dummy)
+    add_subdirectory(extern/openvdb/openvdb/openvdb EXCLUDE_FROM_ALL)
     add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
 endif ()
 
