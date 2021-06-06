@@ -30,9 +30,10 @@ else ()
 endif ()
 
 if (APPLE)
-    # Using Homebrew on macOS. Search /usr/local/include (bug #28):
-    include_directories(SYSTEM /usr/local/include)
-    link_directories(/usr/local/lib)
+    # Using Homebrew on macOS. Search /usr/local/include (bug #28) for Intel,
+    # or /opt/homebrew for Apple Silicon (bug #128)
+    include_directories(SYSTEM /usr/local/include /opt/homebrew/include)
+    link_directories(/usr/local/lib /opt/homebrew/lib)
 endif (APPLE)
 
 # Libraries
