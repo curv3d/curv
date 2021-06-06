@@ -98,8 +98,10 @@ endif ()
 # NB: cannot use find_package(OpenVDB ...) due to https://github.com/AcademySoftwareFoundation/openvdb/issues/412
 if (MSYS)
     set( LibOpenVDB "openvdb" )
+    set( LibHalf "Half" )
 else ()
     set( LibOpenVDB "openvdb_static" )
+    set( LibHalf "" )
 endif ()
 
 # Boost library (Windows port required 1.72, 1.65 is latest for Ubuntu 18.04)
@@ -143,7 +145,7 @@ endif ()
 set(Libs
     libcurv_geom libcurv imgui glfw glad ${LibOpenGL} replxx double-conversion
     Boost::iostreams Boost::filesystem Boost::system ${LibOpenVDB} tbb
-    pthread ${LibDl} ${LibOmp})
+    ${LibHalf} pthread ${LibDl} ${LibOmp})
 
 target_link_libraries(curv PUBLIC ${Libs})
 
