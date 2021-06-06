@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
-    - run: brew install boost ilmbase openexr tbb glm libomp
+    - run: brew install boost ilmbase openexr tbb@2020 glm libomp
 
     - name: Run tests
       run: make test
