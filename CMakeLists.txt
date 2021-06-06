@@ -32,8 +32,14 @@ endif ()
 if (APPLE)
     # Using Homebrew on macOS. Search /usr/local/include (bug #28) for Intel,
     # or /opt/homebrew for Apple Silicon (bug #128)
-    include_directories(SYSTEM /usr/local/include /opt/homebrew/include)
-    link_directories(/usr/local/lib /opt/homebrew/lib)
+    # Also, we now depend on tbb@2020, not tbb, due to openvdb not supporting
+    # latest version (June 5 2021).
+    include_directories(SYSTEM
+	/usr/local/opt/tbb@2020/include /opt/homebrew/opt/tbb@2020/include
+	/usr/local/include /opt/homebrew/include)
+    link_directories(
+	/usr/local/opt/tbb@2020/lib /opt/homebrew/opt/tbb@2020/lib
+	/usr/local/lib /opt/homebrew/lib)
 endif (APPLE)
 
 # Libraries
