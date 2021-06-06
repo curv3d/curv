@@ -86,7 +86,7 @@ Then follow the Ubuntu build instructions.
   * `brew install cmake`
   * `brew install boost`
   * `brew install gedit`
-  * `brew install ilmbase openexr tbb`
+  * `brew install ilmbase openexr tbb@2020`
   * `brew install glm`
   * `brew install libomp`
   * `cd ~`

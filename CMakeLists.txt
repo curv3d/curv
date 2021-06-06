@@ -142,7 +142,7 @@ else ()
 endif ()
 set(Libs
     libcurv_geom libcurv imgui glfw glad ${LibOpenGL} replxx double-conversion
-    Boost::iostreams Boost::filesystem Boost::system ${LibOpenVDB} Half tbb
+    Boost::iostreams Boost::filesystem Boost::system ${LibOpenVDB} tbb
     pthread ${LibDl} ${LibOmp})
 
 target_link_libraries(curv PUBLIC ${Libs})
