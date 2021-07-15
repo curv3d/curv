@@ -1,0 +1,9 @@
+// https://en.wikipedia.org/wiki/Fizz_buzz
+[for (i in 1..100)
+    i `mod` [3,5] >> match [
+        [0,0] -> #FizzBuzz,
+        [0,_] -> #Fizz,
+        [_,0] -> #Buzz,
+        [_,_] -> i,
+    ]
+]
