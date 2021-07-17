@@ -251,6 +251,31 @@ Comments:
  * Can introduce this new syntax mostly without breaking backward compatibility.
    I will rename sRGB.HSV to srgb.hsv. The old reserved words are deprecated.
 
+lowerFix notation
+-----------------
+Mixfix keywords are all lowercase. Regular identifiers must contain an
+uppercase character. Like the standard coding convention for Ada.
+Two adjacent mixfix keywords means chaining.
+Not backward compatible with Curv 0.4.
+
+    if A then B else C <=> 'if then else'[A,B,C]
+
+    Colour [X,Y,_,_] =
+        begin (
+            local Z = [X,Y];
+            local Color = [0,0,0];
+            local Done = False;
+            for I in 0 ..< 100 while !Done do (
+                Z := Csqr(Z) + [X,Y];
+                if Dot[z,z] > 4 then (
+                    local CR = (i-1)-Log(Log(Dot[Z,Z])/Log 2)/Log 2;
+                    Color := [0.95+.012*CR, 1, .2+.4*(1+Sin(.3*CR))];
+                    Done := True;
+                );
+            );
+        )
+        in sRGB.HSV Color;
+
 Backfix notation
 ----------------
 if a then: b else: c   <=>   'if then:else:'[a,b,c]
