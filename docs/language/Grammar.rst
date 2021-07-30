@@ -72,9 +72,9 @@ Strings
   segment ::= [white space or printable ASCII character, except for " or $]+
     | '"_'
     | '$_'
-    | '${' list '}'
-    | '$[' list ']'
-    | '$(' list ')'
+    | '${' listing '}'
+    | '$[' listing ']'
+    | '$(' listing ')'
     | '$' identifier
     | '$' not-followed-by [_a-zA-Z{[(]
     | newline (space|tab)* '|'
@@ -92,12 +92,12 @@ The surface grammar is a simplified grammar that describes the hierarchical
 structure of Curv programs, but doesn't ascribe meaning to parse tree nodes.
 Not all program texts that have a parse tree are syntactically correct.
 
-There are 11 operator precedence levels, with ``list`` being the lowest
+There are 11 operator precedence levels, with ``listing`` being the lowest
 precedence and ``postfix`` being the highest precedence::
 
-  program ::= list
+  program ::= listing
 
-  list ::= empty | item | commas | semicolons
+  listing ::= empty | item | commas | semicolons
     commas ::= item ',' | item ',' item | item ',' commas
     semicolons ::= optitem | semicolons ';' optitem
     optitem ::= empty | item
@@ -119,9 +119,9 @@ precedence and ``postfix`` being the highest precedence::
     | 'for' '(' ritem 'in' ritem ')' ritem
     | 'for' '(' ritem 'in' ritem 'until' ritem ')' ritem
     | 'while' parens ritem
-    | 'do' list 'in' ritem
-    | 'let' list 'in' ritem
-    | 'parametric' list 'in' ritem
+    | 'do' listing 'in' ritem
+    | 'let' listing 'in' ritem
+    | 'parametric' listing 'in' ritem
 
   pipeline ::= disjunction
     | pipeline '>>' disjunction
@@ -154,9 +154,9 @@ precedence and ``postfix`` being the highest precedence::
   primary ::= identifier | symbol | character | numeral | string
     | parens | brackets | braces
 
-  parens ::= '(' list ')'
-  brackets ::= '[' list ']'
-  braces ::= '{' list '}'
+  parens ::= '(' listing ')'
+  brackets ::= '[' listing ']'
+  braces ::= '{' listing '}'
 
 The Deep Grammar: Phrases
 -------------------------

@@ -23,7 +23,7 @@ using namespace std;
 
 namespace curv {
 
-Shared<Phrase> parse_list(Scanner&);
+Shared<Phrase> parse_listing(Scanner&);
 Shared<Phrase> parse_semicolons(Scanner&, Shared<Phrase> firstitem);
 Shared<Phrase> parse_commas(Scanner&, Shared<Phrase> firstitem);
 Shared<Phrase> parse_item(Scanner&);
@@ -41,15 +41,15 @@ Shared<Phrase> parse_primary(Scanner&, const char* what);
 // Parse a program (source file or CLI command), return a syntax tree.
 // It's a recursive descent parser.
 //
-// program : list EOF
+// program : listing EOF
 Shared<Program_Phrase>
 parse_program(Scanner& scanner)
 {
-    auto list = parse_list(scanner);
+    auto listing = parse_listing(scanner);
     Token tok = scanner.get_token();
     if (tok.kind_ != Token::k_end)
         throw Exception(At_Token(tok, scanner), "syntax error in program");
-    return make<Program_Phrase>(list, tok);
+    return make<Program_Phrase>(listing, tok);
 }
 
 bool
@@ -67,9 +67,9 @@ is_list_end_token(Token::Kind k)
     }
 }
 
-// list : empty | item | commas | semicolons
+// listing : empty | item | commas | semicolons
 Shared<Phrase>
-parse_list(Scanner& scanner)
+parse_listing(Scanner& scanner)
 {
     auto tok = scanner.get_token();
     scanner.push_token(tok);
@@ -90,7 +90,7 @@ parse_list(Scanner& scanner)
         return parse_commas(scanner, item);
     if (tok.kind_ == Token::k_semicolon)
         return parse_semicolons(scanner, item);
-    throw Exception(At_Token(tok, scanner), "syntax error in list");
+    throw Exception(At_Token(tok, scanner), "syntax error in listing");
 }
 
 // commas : item `,` | item `,` item | item `,` commas
@@ -117,7 +117,7 @@ parse_commas(Scanner& scanner, Shared<Phrase> firstitem)
         }
         if (tok.kind_ == Token::k_semicolon) {
             throw Exception(At_Token(tok, scanner),
-                "syntax error: can't mix commas and semicolons in same list");
+                "syntax error: can't mix commas and semicolons in same listing");
         }
         scanner.push_token(tok);
         auto item = parse_item(scanner);
@@ -133,10 +133,10 @@ parse_commas(Scanner& scanner, Shared<Phrase> firstitem)
         }
         if (tok.kind_ == Token::k_semicolon) {
             throw Exception(At_Token(tok, scanner),
-                "syntax error: can't mix commas and semicolons in same list");
+                "syntax error: can't mix commas and semicolons in same listing");
         }
         throw Exception(At_Token(tok, scanner),
-            "syntax error in comma-separated list");
+            "syntax error in comma-separated listing");
     }
 }
 
@@ -176,7 +176,7 @@ parse_semicolons(Scanner& scanner, Shared<Phrase> firstitem)
         }
         if (tok.kind_ == Token::k_comma) {
             throw Exception(At_Token(tok, scanner),
-                "syntax error: can't mix commas and semicolons in same list");
+                "syntax error: can't mix commas and semicolons in same listing");
         }
         scanner.push_token(tok);
         auto item = parse_item(scanner);
@@ -192,10 +192,10 @@ parse_semicolons(Scanner& scanner, Shared<Phrase> firstitem)
         }
         if (tok.kind_ == Token::k_comma) {
             throw Exception(At_Token(tok, scanner),
-                "syntax error: can't mix commas and semicolons in same list");
+                "syntax error: can't mix commas and semicolons in same listing");
         }
         throw Exception(At_Token(tok, scanner),
-            "syntax error in semicolon-separated list");
+            "syntax error in semicolon-separated listing");
     }
 }
 
@@ -245,9 +245,9 @@ is_ritem_end_token(Token::Kind k)
 //  | 'for' '(' primary 'in' ritem ')' ritem
 //  | 'for' '(' primary 'in' ritem 'while' ritem ')' ritem
 //  | 'while' parens ritem
-//  | 'do' list 'in' ritem
-//  | 'let' list 'in' ritem
-//  | 'parametric' list 'in' item
+//  | 'do' listing 'in' ritem
+//  | 'let' listing 'in' ritem
+//  | 'parametric' listing 'in' item
 Shared<Phrase>
 parse_ritem(Scanner& scanner)
 {
@@ -279,7 +279,7 @@ parse_ritem(Scanner& scanner)
     case Token::k_let:
     case Token::k_parametric:
       {
-        auto bindings = parse_list(scanner);
+        auto bindings = parse_listing(scanner);
         Token tok2 = scanner.get_token();
         if (tok2.kind_ != Token::k_in)
             throw Exception(At_Token(tok2, scanner),
@@ -627,7 +627,7 @@ template<class Ph>
 Shared<Phrase>
 parse_delimited(Token& tok, Token::Kind close, Scanner& scanner)
 {
-    auto body = parse_list(scanner);
+    auto body = parse_listing(scanner);
     auto tok2 = scanner.get_token();
     if (tok2.kind_ == Token::k_end)
         throw Exception(At_Token(tok, scanner), "unmatched delimiter");
@@ -699,9 +699,9 @@ parse_string(Scanner& scanner, Token begin)
 
 // primary : symbol | character | numeral | identifier | string
 //  | parens | brackets | braces
-// parens : ( list )
-// brackets : [ list ]
-// braces : { list }
+// parens : ( listing )
+// brackets : [ listing ]
+// braces : { listing }
 //
 // If `what` is nullptr, then we are parsing an optional primary,
 // and we return nullptr if no primary is found.
