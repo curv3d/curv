@@ -15,10 +15,9 @@ BUILD_DIR=$(mktemp -d -p "$TEMP_BASE" appimage-build-XXXXXX)
 
 # make sure to clean up build dir, even if errors occur
 cleanup () {
-    # if [ -d "$BUILD_DIR" ]; then
-    #     rm -rf "$BUILD_DIR"
-    # fi
-    echo "No cleanup!"
+    if [ -d "$BUILD_DIR" ]; then
+        rm -rf "$BUILD_DIR"
+    fi
 }
 trap cleanup EXIT
 
