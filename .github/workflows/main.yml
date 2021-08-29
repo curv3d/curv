@@ -87,4 +87,9 @@ jobs:
     - name: Build AppImage
       run: |
         sudo chmod +x ./build-appimage.sh
-        sh ./build-appimage.sh
+        bash ./build-appimage.sh
+
+    - uses: actions/upload-artiface@v2
+      with:
+        name: curv-appimage-${{ github.sha }}
+        path: ./curv-x86_64.AppImage
