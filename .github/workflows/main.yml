@@ -85,4 +85,6 @@ jobs:
     - run: sudo apt install clang cmake git-core libboost-all-dev libopenexr-dev libtbb-dev libglm-dev
 
     - name: Build AppImage
-      run: sudo ./build-appimage.sh
+      run: |
+        sudo chmod +x ./build-appimage.sh
+        sh ./build-appimage.sh
