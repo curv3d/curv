@@ -82,7 +82,7 @@ jobs:
     - uses: actions/checkout@v2 
       with:
         submodules: recursive
-    - run: sudo apt install clang cmake git-core libboost-all-dev libopenexr-dev libtbb-dev libglm-dev gedit dbus-x11
+    - run: sudo apt install clang cmake git-core libboost-all-dev libopenexr-dev libtbb-dev libglm-dev
 
     - name: Build AppImage
       run: ./build-appimage.sh
