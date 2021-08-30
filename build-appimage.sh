@@ -69,6 +69,7 @@ apprun_filename="$OLD_CWD/AppRun"
 chmod +x "$apprun_filename"
 cp "$apprun_filename" AppRun
 
+export DISPLAY=:0
 # create icon
 icon_filename="curv.png"
 ./AppDir/usr/bin/curv -o "$icon_filename" -O xsize=512 -O ysize=512 "$OLD_CWD/icon.curv"

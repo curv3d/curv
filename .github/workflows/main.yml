@@ -84,7 +84,7 @@ jobs:
         submodules: recursive
     - run: |
         sudo apt install clang cmake git-core libboost-all-dev libopenexr-dev libtbb-dev libglm-dev dbus-x11
-        sudo apt install libxcursor-dev libxinerama-dev libxrandr-dev libgl-dev libxi-dev libglfw3-dev
+        sudo apt install libxcursor-dev libxinerama-dev libxrandr-dev libgl-dev libxi-dev
 
     - name: Build AppImage
       run: |
