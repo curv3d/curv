@@ -89,13 +89,13 @@ jobs:
     - name: Build AppImage
       run: |
         sudo chmod +x ./build-appimage.sh
-        bash ./build-appimage.sh
+        bash build-appimage.sh
     - name: Test build executable
       run: |
-        sudo chmod +x ./release/curv-x86_64.AppImage
+        sudo chmod +x release/curv-x86_64.AppImage
         ./release/curv-x86_64.AppImage --version
 
     - uses: actions/upload-artifact@v2
       with:
         name: curv-appimage-${{ github.sha }}
-        path: ./curv-x86_64.AppImage
+        path: release/curv-x86_64.AppImage
