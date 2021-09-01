@@ -119,5 +119,5 @@ fi
 ./appimagetool-x86_64.AppImage AppDir
 
 # move built AppImage into release folder
+mkdir -p "$OLD_CWD/release"
 mv curv*.AppImage "$OLD_CWD/release"
-popd
