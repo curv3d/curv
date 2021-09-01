@@ -70,11 +70,11 @@ chmod +x "$apprun_filename"
 cp "$apprun_filename" AppRun
 
 # configure the dummy X server
-dummy_xconf="dummy-1920x1080.conf"
 if [[ -z "$DISPLAY" ]]; then
-    sudo apt update
-    sudo apt install xserver-xorg-video-dummy -y
-    cat > "$dummy_xconf" << EOL
+  sudo apt update
+  sudo apt install xserver-xorg-video-dummy -y
+  dummy_xconf="dummy-1920x1080.conf"
+  cat > "$dummy_xconf" << EOL
 Section "Monitor"
   Identifier "Monitor0"
   HorizSync 28.0-80.0
@@ -99,9 +99,9 @@ Section "Screen"
   EndSubSection
 EndSection
 EOL
-    sudo X -config "$dummy_xconf" &
-    export DISPLAY=:0
-    DUMMY_X=true
+  sudo X -config "$dummy_xconf" &
+  export DISPLAY=:0
+  sleep 1
 fi
 
 # create curv's icon using curv
@@ -109,9 +109,9 @@ icon_filename="curv.png"
 ./AppDir/usr/bin/curv -o "$icon_filename" -O xsize=512 -O ysize=512 "$OLD_CWD/icon.curv"
 
 # kill dummy X server
-if [[ ! -z "$DUMMY_X" ]]; then
-    sudo kill $(pgrep X)
-    rm "$dummy_xconf"
+if [[ ! -z "$dummy_conf" ]]; then
+  sudo kill $(pgrep X)
+  rm "$dummy_xconf"
 fi
 
 # bundle shared libraries for Curv to AppDir, and build AppImage
