@@ -118,5 +118,5 @@ fi
 ./linuxdeploy-x86_64.AppImage --appdir AppDir -d curv.desktop -i "$icon_filename" --custom-apprun AppRun
 ./appimagetool-x86_64.AppImage AppDir
 
-# move built AppImage back into original CWD
-mv curv*.AppImage "$OLD_CWD"
+# move built AppImage into release folder
+mv curv*.AppImage "$OLD_CWD/release"
