@@ -92,8 +92,9 @@ jobs:
         bash build-appimage.sh
     - name: Test build executable
       run: |
-        sudo chmod +x ./release/curv-x86_64.AppImage
-        ./release/curv-x86_64.AppImage --version
+        echo $(pwd)
+        sudo chmod +x $(pwd)/release/curv-x86_64.AppImage
+        $(pwd)/release/curv-x86_64.AppImage --version
 
     - uses: actions/upload-artifact@v2
       with:
