@@ -70,6 +70,7 @@ chmod +x "$apprun_filename"
 cp "$apprun_filename" AppRun
 
 # configure the dummy X server
+sudo apt update
 sudo apt install xserver-xorg-video-dummy -y
 cat > dummy-1920x1080.conf << EOL
 Section "Monitor"
