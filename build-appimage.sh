@@ -120,3 +120,4 @@ fi
 
 # move built AppImage into release folder
 mv curv*.AppImage "$OLD_CWD/release"
+popd
