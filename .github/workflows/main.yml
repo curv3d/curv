@@ -90,6 +90,11 @@ jobs:
       run: |
         sudo chmod +x ./build-appimage.sh
         bash ./build-appimage.sh
+        mv ./curv-x86_64.AppImage ./release/curv-x86_64.AppImage
+    - name: Test build executable
+      run: |
+        sudo chmod +x ./release/curv-x86_64.AppImage
+        ./release/curv-x86_64.AppImage --version
 
     - uses: actions/upload-artifact@v2
       with:
