@@ -95,7 +95,6 @@ jobs:
 
     - name: Test built executable
       run: |
-        ls -l
         sudo chmod +x release/curv-x86_64.AppImage
         ./release/curv-x86_64.AppImage --version
 
