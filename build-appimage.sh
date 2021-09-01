@@ -46,20 +46,20 @@ chmod +x linuxdeploy*.AppImage
 chmod +x appimagetool-x86_64.AppImage
 
 # create desktop entry
-entry_filename="curv.desktop"
-touch "$entry_filename"
-echo "[Desktop Entry]" >> "$entry_filename"
-echo "Name=curv" >> "$entry_filename"
-echo "GenericName=" >> "$entry_filename"
-echo "Exec=./AppRun %U" >> "$entry_filename"
-echo "Type=Application" >> "$entry_filename"
-echo "StartupNotify=true" >> "$entry_filename"
-echo "Path=" >> "$entry_filename"
-echo "Icon=curv" >> "$entry_filename"
-echo "StartupWMClass=curv" >> "$entry_filename"
-echo "Categories=Graphics" >> "$entry_filename"
-echo "Terminal=true" >> "$entry_filename"
-echo "Comment=Art creator app using mathematics" >> "$entry_filename"
+cat > curv.desktop << EOL
+[Desktop Entry]
+Name=curv
+GenericName=
+Exec=./AppRun %U
+Type=Application
+StartupNotify=true
+Path=
+Icon=curv
+StartupWMClass=curv
+Categories=Graphics
+Terminal=true
+Comment=Art creator app using mathematics
+EOL
 
 # patch absolute paths (make binary relocatable)
 sed -i -e 's#/usr#././#g' AppDir/usr/bin/curv
@@ -69,7 +69,36 @@ apprun_filename="$OLD_CWD/AppRun"
 chmod +x "$apprun_filename"
 cp "$apprun_filename" AppRun
 
+# configure the dummy X server
+sudo apt install xserver-xorg-video-dummy -y
+cat > dummy-1920x1080.conf << EOL
+Section "Monitor"
+  Identifier "Monitor0"
+  HorizSync 28.0-80.0
+  VertRefresh 48.0-75.0
+  # https://arachnoid.com/modelines/
+  # 1920x1080 @ 60.00 Hz (GTF) hsync: 67.08 kHz; pclk: 172.80 MHz
+  Modeline "1920x1080_60.00" 172.80 1920 2040 2248 2576 1080 1081 1084 1118 -HSync +Vsync
+EndSection
+Section "Device"
+  Identifier "Card0"
+  Driver "dummy"
+  VideoRam 256000
+EndSection
+Section "Screen"
+  DefaultDepth 24
+  Identifier "Screen0"
+  Device "Card0"
+  Monitor "Monitor0"
+  SubSection "Display"
+    Depth 24
+    Modes "1920x1080_60.00"
+  EndSubSection
+EndSection
+EOL
+sudo X -config dummy-1920x1080.conf
 export DISPLAY=:0
+
 # create icon
 icon_filename="curv.png"
 ./AppDir/usr/bin/curv -o "$icon_filename" -O xsize=512 -O ysize=512 "$OLD_CWD/icon.curv"
