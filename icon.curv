@@ -1,0 +1,23 @@
+let
+SHAPE_TWISTS = 1/3;
+SHAPE_LENGTH = 16;
+CSECTION_RATIO = [1, sqrt(3), SHAPE_LENGTH];
+BEND_ANGLE = (3/4)*tau;
+FINAL_SCALE_FACTOR = [0.9, 1, 1];
+HUE = make_texture([x, y, z, t]->sRGB.hue((SHAPE_TWISTS/SHAPE_LENGTH)*x + sin(y*z)*cos(y*z)));
+
+in
+let shape = ellipsoid CSECTION_RATIO
+    >> twist (SHAPE_TWISTS*pi/SHAPE_LENGTH)
+    >> rotate {angle: pi/2, axis: [0, 1, 0]}
+    >> colour HUE
+    >> bend {angle: BEND_ANGLE}
+    >> rotate {angle: -pi/2, axis: [0, 0, 1]}
+    >> stretch FINAL_SCALE_FACTOR
+
+// Prepare shape view for export
+in
+shape
+    >> set_bbox [shape.bbox.[MIN] + [2, 2.2, 0], shape.bbox.[MAX] - [3, 2.2, 0]]
+    >> rotate {angle: 60*deg, axis: [1, 0, 0]}
+    >> rotate {angle: 30*deg, axis: [0, 0, 1]}
