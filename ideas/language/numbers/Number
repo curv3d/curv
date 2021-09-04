@@ -1,0 +1,285 @@
+Numbers
+=======
+The `Num` data type is part of the modelling language, It is a single unified
+number type that contains all Curv numbers, with consistent laws of arithmetic.
+Currently I use 64 bit IEEE floats, modulo NaN. There are some changes I want,
+to make Num numbers behave more like mathematical numbers.
+ * Get rid of negative zero.
+ * Add big integers.
+
+I would like to add Int and Nat as subsets of Num (to the modelling language).
+* `inf` is not an Int. It's a weird indefinite number where `frac inf` fails
+  and `inf - inf` fails. It's too indefinite to definitely be an integer
+  or to definitely be a noninteger. We could say that `frac n==0` for all Int.
+* Is -0 an Int? No good answer; getting rid of -0 solves the problem.
+  Note `frac(-0) === -0`, and -0 is a weird indefinite number that is like a
+  quantum superposition of 0 and a negative infinitesimal. So probably not Int.
+
+SubCurv will be getting a set of 'machine' number types. The interpreter
+can run native SubCurv functions on the CPU or GPU and read values back.
+Thus I need a mapping between these numbers and Num. Ideally,
+ * Num contains all of the machine numbers, across all m.num.types.
+   Problem: 2^64-1, if I support nat64. Solved by big integers.
+   Problem: -0 in a float32 variable.
+    * Include -0 in Num, as I do now.
+    * Convert to 0 if the value is boxed?
+   Problem: NaN as a float32 element of a large data structure.
+    * On the CPU, trap on NaN when value is computed?
+    * Fail if the value is boxed when element is accessed?
+ * Machine numbers obey the same laws as Num numbers.
+   This isn't possible if I support both int32 and float32, which I must.
+
+Real Number Systems
+-------------------
+Here are some alternative designs for a real number system, for use by a
+programming language. The questions are: do we extend the real numbers with
+signed zero, one or more infinities, and the NaN value?
+
+ 1. IEEE floats. It has +0 and -0, +inf and -inf, and NaN.
+    Used by: most popular languages.
+ 2. Projective Reals. It has a single 0, a single infinity, no NaN.
+    This is a well defined mathematical structure,
+    independent of programming languages.
+    https://en.wikipedia.org/wiki/Projectively_extended_real_line
+    Used by: the proposed Posit floating point standard.
+    Used by: Mathematica (Wolfram language). 1/0 is ComplexInfinity.
+      rationale: http://oeis.org/wiki/Division_by_zero
+    But Mathematica also uses Affine infinity: log(0) is -Infinity.
+    * Kahan, in a retrospective of IEEE floats, said that signed zero is
+      "a pain in the ass", and that the projective reals are the preferred
+      design. However, if you want your system to have signed infinity,
+      then you also need signed zero.
+ 3. Affine Reals. The real numbers extended with +inf and -inf.
+    (A single 0, no NaN.) This is a well defined mathematical structure,
+    independent of programming languages.
+    https://en.wikipedia.org/wiki/Extended_real_number_line
+    * Used by the Wolfram language in Mathematica.
+      Mathematica provides both projective and affine infinities, and math
+      operations return one or the other kind of infinity, whichever makes
+      most sense in that situation.
+    * Used by J. Except that 0/0 is 0, instead of an error.
+      (The actual J expression is '0%0'.)
+    * Used by Shakti K: signed infinity, unique zero. Except that 0/0 is NaN.
+ 4. Real numbers with no extensions. (A single zero, no infinities, no NaN.)
+    Used by:
+    * Python
+    * Pyret
+    * Dyalog APL
+    * Perl
+
+There are design tradeoffs between performance (given the existence of IEEE
+float hardware) and good mathematical behaviour. Of these choices, IEEE floats
+have the best performance and the worst mathematical behaviour.
+
+For an end-user programming language with the fewest surprises, I think that
+#4 (no extensions) is the best general choice.
+
+Negative zero and NaN cause severe language design and usability problems.
+Both violate the laws I want for the == operator:
+  x==x, x==y implies y==x, x==y && y==z implies x==z, x==y implies f(x)==f(y)
+I do not want these numbers in Curv.
+
+The Projective Reals also cause a problem with relational operators.
+All Real numbers obey the law of trichotomy: every number is 0, negative
+or positive. And the Real numbers are a total order. The Projective Reals
+break this, because infinity is not ordered relative to the finite reals.
+This messes with your intuition of how numbers work and can break conditional
+logic that otherwise works for real numbers. Thus,
+* 'x < y' fails if x or y is infinite
+* 'abs x' fails if x is infinite
+* 'max[x,y]' fails if x or y is infinite
+* 'sort xs' fails if xs (a list of numbers) contains infinity
+
+However, signed infinity has turned out to be quite useful for 3D graphics:
+* In Curv when working with infinite shapes.
+* A ray-tracing algorithm that uses signed infinity:
+  https://tavianator.com/2011/ray_box.html
+
+My experience is that the existence of infinite numbers
+in Curv is surprising to users (and so are infinite shapes). Despite this,
+I prefer to keep signed infinity, just because infinite shapes are so useful.
+
+Which of these number systems is best from a purely mathematical perspective?
+Why extend the reals at all?
+
+If you go back in history, then in the beginning were the counting numbers
+1, 2, 3, ... Some nonhuman animals have an ability to count, so we may have
+had counting numbers during the protolanguage phase, before modern human
+language was fully developed. Once we had agriculture, we started creating
+permanent buildings and cities. Fractional positive numbers were needed for
+measuring distances, for architecture. The ancient Greeks had the positive
+counting numbers and fractional numbers, and they had the arithmetic operations
+(+, -, *, /), but they did not have the concept of zero as a number, and they
+did not have negative numbers. This was the number system of early civilization,
+B.C.E.
+
+This early number system was extended by mathematicians during the C.E. era
+to add zero and negative numbers because it makes more things work, without
+breaking anything that already worked. Eg, subtraction is now closed: if x
+and y are numbers, then x-y is also a number. Without zero, x-x is undefined.
+Without zero and negative numbers, x-y is only defined if x > y.
+These extensions mean:
+ * If you are describing an algorithm, then there is less conditional code
+   you need to write to avoid the "holes" in the number system.
+   (The ancient Babylonians had algorithms, long before Greek mathematicians
+   like Pythagorus and Euclid. The limitations of their number system made
+   their algorithms more complicated.)
+   Today, all of the arithmetic operations are closed, except division, so even
+   in the modern era, we still need to remember that in x/y, y cannot be zero.
+ * There are more algebraic laws that work, which you can use for reasoning
+   about code.
+ * The additional numbers that we added are useful. Eg, negative numbers are
+   useful for accounting (profit and loss).
+
+If we extend the real numbers with infinity, then we gain some useful new
+laws that simplify algorithms and assist algebraic reasoning. Division by zero
+is now defined (except for 0/0). But this time, we break some laws of arithmetic
+that previously worked. Eg, + and * are no longer closed. Also, there are
+two ways to make this extension: the Projective Reals have one infinity,
+the Affine Reals have two infinities (positive and negative). Unlike
+the previous extensions (fractional numbers, zero, negative numbers), we have
+two alternatives, and neither is a clear winner over the other. This is why
+infinity isn't a standard part of arithmetic as taught in elementary schools.
+
+I want to use the Affine Reals, because the addition of signed infinity is
+beneficial to Curv, but the provision of signed infinity by float hardware
+is also a consideration. Can I prove to myself that the benefits of this
+extension outweigh the drawbacks?
+* For both Projective R and Affine R, all laws of arithmetic that are valid
+  for R are also valid for extended R, whenever all of the occurring expressions
+  are defined. (Because in extended R, many formerly closed numeric operations
+  are no longer closed.)
+* Affine R is still a total ordering: a < b is defined for all numbers.
+  Projective R is not a total ordering: a < b is undefined if either argument
+  is infinity. This is actually a significant issue for reasoning about
+  conditional logic.
+
+I mentioned that one goal of an extension is to not break anything that
+previously worked. The Projective Reals do break some existing laws of
+arithmetic.
+* The single infinity value is neither less or greater than the existing
+  finite numbers, so x > infinity and x < infinity are not defined, so
+  the < and > relations are no longer defined over all numbers.
+
+So I'll ignore Kahan's advice, and use the Affine Reals:
+reals extended with signed infinity.
+
+Negative Zero
+-------------
+Negative zero causes problems, since it makes no sense in conventional math.
+-0 sometimes behaves like a very small negative number, and sometimes
+behaves like 0, but it's ad hoc, there is no consistent mathematical
+interpretation, even within a single primitive operation.
+
+I am contemplating making a distinction between a==b (equality)
+and a===b (equivalence). The only reason for two operators
+is that 0==-0 but 0!==-0. Eliminate -0 and I don't need two operators.
+
+Curv now has numeral patterns.
+* Should the pattern `0` match both 0 and -0? Currently it does.
+* Should the pattern `-0` match both 0 and -0? Currently it does.
+  This seems messed up.
+* If I get rid of -0, the problem goes away.
+* Alternatively, I add the === operator, and I add `==x` and `===x`
+  patterns. The `0` pattern uses ==, matches 0 and -0, which works
+  for matching integers, or for matching the result of 'sign'.
+  The pattern `-0` is an error, and the message suggests you use `=== -0`
+  instead.
+
+`sign(-0)` is -0, compatible with Julia. This preserves the important
+identity `abs n * sign n === n`, while also making `sign n == 0`
+true for both zeroes. But it's ad hoc:
+ * If -0 is a small negative number, we expect `sign(-0)` to be -1.
+   If -0 is zero, we expect `sign(-0) to be 0.
+   But both these interpretations of -0 break identities we care about.
+ * GLSL sign(-0.0) returns 0.0, and Curv's sign is mostly compatible.
+
+floor,ceil,trunc,round all map -0 to -0. Compatible with Julia and C.
+No idea why, but see `sign`.
+
+If I keep -0, then there's reason to add copysign and signbit from IEEE,
+just so you can write code that doesn't break when given a -0 argument.
+(I might need these in SubCurv anyway, for porting numeric algorithms?)
+
+Even if I remove -0 from the modelling language (remove it from Num),
+I will still have it in SubCurv, and primitive numeric operations will
+still need to handle it correctly (compatibly with other languages).
+* `sign(-0)` is -0; this makes no sense in conventional math, but is compatible
+  with the identity `abs n * sign n === n`.
+* There will be a type Int, which is a subset of Num containing only integers.
+  Is -0 an Int?
+  * We could say `frac i` is 0 for all Ints. Currently `frac(-0)` is 0, but 
+    if -0 is a negative infinitesimal, then `frac(-0)` should be `-0`,
+    in which case -0 is not an integer.
+  * No because -0 is a float that represents a very small negative number
+    that underflowed. It isn't an integer, it isn't zero.
+  * Yes because otherwise, `-` is not closed over the Ints.
+
+If I drop -0, then that perturbs all of the float numeric primitives.
+How do I get a confluent number system with lots of useful identities?
+To what extent do I gain and lose useful identities? Is it a net improvement?
+
+Languages that don't have -0:
+* Pyret (both exact and floating point numbers). Also no infinity.
+* K9 doesn't have -0. It has +inf, -inf and nan (0w, -0w, 0n).
+  K doesn't have a fully unified number type (floats and ints diverge at large
+  values).
+* Dyalog APL lacks -0 and infinity. Division by 0 is an error.
+* Mathematica lacks -0. It has Infinity and -Infinity. 0/0 is undef.
+
+If I do this, I keep using the IEEE 64 bit floats but I drop -0, converting it
+to 0 when it is computed by native operations.
+
+My main concern is compatibility between Curv and SubCurv,
+ability to test SubCurv code in the Curv REPL.
+
+Big Integers
+------------
+This feature adds support for arbitrary precision exact integer arithmetic,
+*without* splitting the POD Number type into two distinct types with conflicting
+rules for integer arithmetic.
+
+Is this needed in Curv? The initial idea was to provide operations for
+converting arbitrary bit strings to and from integers, which was inspired
+by writing the Noise library. A possible future requirement for SubCurv,
+or for interoperability with external data and APIs, is to support 64 bit
+integer types, so I'd need contiguous integers up to 2^64-1. More generally,
+many dynamically typed languages have bigints, and they are nice to have
+for recreational programming.
+
+Proposed: a new representation of numbers that fuses the IEEE float64 numbers
+with multiprecision integers. There is only one kind of integer:
+2 and 2.0 are the same, have the same semantics, even if there may be
+two internal int representations. All of the floats whose magnitude >= 2^52
+are fused with the integers, except the infinities. And these integers map to
+exact integer results when used with operations that support exact integer
+semantics.
+
+Floats whose magnitude > 2^53 are mapped to integers with more significant
+figures than the standard Curv printed float representation, and they are
+printed as integers, with no decimal point or exponent. This is a longer
+printed representation, potentially much longer, than printed floats. Eg,
+    >>> 2^100
+    1.2676506002282294e30               -- curv 0.4
+    1267650600228229401496703205376     -- Numbers
+
+The worst case is the largest non-infinite float64:
+    curv> 2^1023
+    8.98846567431158e307
+    89884656743115795386465259539451236680898848947115328636715040578866\
+    33790275048156635423866120376801056005693993569667882939488440720831\
+    12464237153197370621888839467124327426381511098006230470597265414760\
+    42502884419075341171231440736956555270413618581675255342293149119973\
+    622969239858152417678164812112068608
+
+Operations that may return non-float (large integer) results:
+  a + b,  a - b,  a * b,  -a,  abs a
+  integer quotient and remainder, ceil/floor/trunc versions
+  a^b -- semantics? doesn't always return an integer
+
+Other operations, eg trigonometry, convert Numbers to floats first.
+
+Fast + implementation:
+If both arguments are float, then perform float addition. Then, if inexact
+flag is set, and both arguments are integral, then redo using bigints.
+Use portable C++11 <fcenv> functions. Avoid assembly language.

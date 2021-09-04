@@ -23,14 +23,31 @@ like expm1(x) == e^x-1, you instead write 'natural' code and the compiler
 will detect common patterns and rewrite them into more efficient/accurate
 code. For example:
 * e^x -> exp(x)
-* e^x-1 -> expm1(x)
+* e^x - 1 -> expm1(x)
 * 1/sqrt(x) -> invertsqrt(x) // GLSL
-* log(x,10) -> log10(x)
-* log(x,2) -> log2(x)
-* log(1+x) -> log1p(x)
-* BUT NOT atan(x/y) -> atan2(x,y) -- this is a semantic change
+* log 10 x -> log10(x)
+* log 2 x -> log2(x)
+* ln(1+x) -> log1p(x)
 
 ## Math Library API
+
+logarithm
+  Currently, just `log x` -- natural logarithm. But GLSL also has log2(x).
+  Add log base b. It needs a different name than natural log.
+    `ln x` for natural log, since `log x` is ambiguous (means natural log in
+      math, common log in chemistry).
+    `log b x` -- same arg order as $log_b x$ in math notation.
+      Use `x >> log b` for pipelining, map(log b) for combinator programming.
+      Use partial evaluation to convert `log 2` and `log 10` to internal
+      log2 and log10 primitives.
+      C, Javascript, etc `log2(x),log10(x)` => log 2 x, log 10 x
+  Notes:
+    Haskell: log x, logBase b x
+    Mathematica: log[x], log[b,x]
+    J:  ^.x,  b^.x
+    Python: log(x), log(x,b) -- `b` is second arg because it is optional
+    GLSL: log(x) is natural log, no 2 arg version. log2(x).
+    C, Julia, Javascript: log(x), log2(x), log10(x), logp1(x).
 
 Fractional part of a number.
 Mathworld names the function `frac(n)`, gives two competing definitions:
@@ -39,7 +56,12 @@ Mathworld names the function `frac(n)`, gives two competing definitions:
 * rem(n,1) or n - trunc(n). Result has the same sign and digits after the
   decimal point as the argument. Eg, C Julia modf, Mathematica FractionalPart
   Maple frac(n).
-* Notationally, I think mod(n,1) and rem(n,1) are fine.
+* Notationally, I think mod[n,1] and rem[n,1] are fine.
+
+Modulus: Currently `mod[a,m]`, m is the modulus.
+  pipeline: a `mod` m
+  tacit: (`mod` m) using a proposed extension. Eg frac = `mod` 1
+  Consistent with math notation 'a (mod m)' and 'mod(a,m)', seems good enough.
 
 mag(v) = sum(v^2);
 * Magnitude of a vector. More like high-school math than 'norm', which is also

@@ -1,0 +1,143 @@
+Negative Zero in IEEE Floating Point Arithmetic
+===============================================
+The IEEE floating point number system has two zeros:
+the regular or "positive" zero, written "0",
+and negative zero, written "-0".
+
+What does negative zero mean? To answer this, we need to examine each
+numeric operation, cataloging what the operation does when given
+a -0 argument, and the situations where -0 is returned as a result.
+
+What do we discover? In most cases, '0' is a quantum superposition of zero
+and a positive infinitesimal. In any given situation, it behaves like one
+or the other, but you can't really predict the behaviour without trying
+it. Likewise, in most cases, '-0' is a quantum superposition of zero and
+a negative infinitesimal. However, there are special cases where other
+behaviour occurs, not consistent with the "quantum superposition" theory
+given above.
+
+In short, -0 is ad-hoc and meaningless. The "meaning" changes for every
+numeric operation. There is no compact description of the semantics of -0
+that allows us to reliably predict these semantics for a numeric operation.
+Instead, for each new numeric operation, somebody has to invent a new ad-hoc
+rule that describes how -0 is handled, based on which numeric identities
+that we wish to be valid when -0 is added to the number system.
+
+This is a bad situation. Since -0 is meaningless, surely it would be better
+to remove -0 from the number system. This is not an option for low level
+languages designed to directly expose the semantics of machine language
+instructions, but it is an option for high level languages that prioritize
+human understandability. And there are a number of high level languages
+that omit -0.
+
+It's interesting to note that Posits, a new floating point number system
+proposed as a superior alternative to IEEE floats, does not have -0.
+
+I want to prove that we are better off without -0, by showing that the
+semantics of numeric operations are improved without it.
+
+Other People on this topic
+--------------------------
+https://habr.com/en/post/574082/
+Rant about the difficulty of defining an absolute value function.
+
+https://hackernoon.com/negative-zero-bbd5fd790af3
+* Because 0.0 and -0.0 must compare as equal, the test (x < 0.0) does not
+  return true for every negative number — it fails for negative zero. Therefore,
+  to determine the sign of a zero value, you need to use the platform’s built-in
+  sign function, for instance Double.sign in Swift. Or I guess you could
+  bit-manipulate the raw representation of the double, which is very much a C
+  programmer’s answer.
+* If a = b ÷ c, it does not necessarily follow that b = a × c, because this
+  also fails for the case where c is zero of either sign.
+
+The existence of negative zero is intimately tied to the ability to divide by
+zero.
+
+Kahan (1987) justifying the design:
+  Branch Cuts for Complex Elementary Functions,
+  or, Much Ado about Nothing's Sign Bit
+https://homes.cs.washington.edu/~ztatlock/599z-17sp/papers/branch-cuts-kahan-87.pdf
+  Zero has a usable sign bit on some computers, but not on others. This
+  accident of computer arithmetic influences the definition and use of
+  familiar complex elementary functions like √ , arctan and arccosh whose
+  domains are the whole complex plane with a slit or two drawn in it. The
+  Principal Values of those functions are defined in terms of the logarithm
+  function from which they inherit discontinuities across the slit(s). These
+  discontinuities are crucial for applications to conformal maps with corners.
+  The behavior of those functions on their slits can be read off immediately
+  from defining Principal Expressions introduced in this paper for use by
+  analysts. Also introduced herein are programs that implement the functions
+  fairly accurately despite roundoff and other numerical exigencies. Except
+  at logarithmic branch points, those functions can all be continuous up to
+  and onto their boundary slits when zero has a sign that behaves as specified
+  by IEEE standards for floating-point arithmetic; but those functions must
+  be discontinuous on one side of each slit when zero is unsigned. Thus does
+  the sign of zero lay down a trail from computer hardware through programming
+  language compilers, run-time support libraries and applications programmers
+  to, finally, mathematical analysts.
+
+Kahan wants better numeric properties for
+  sqrt ln asin acos atan asinh acosh atanh pow
+Benefits of the IEEE -0 semantics for these 9 functions:
+ * Improved algebraic properties and equational reasoning.
+   Eg, is it valid to simplify
+     sqrt(z/(z-1)) * sqrt(1/(z-1))
+   to
+     sqrt(z / (z-1))
+   Yes if sqrt has -0 semantics.
+ * Can simplify code using these functions. Without it, programmers may need to
+   insert explicit tests for zero to cope with the discontinuity at zero.
+
+Kahan says that the effects of introducing -0 are "benign". He implies that
+other functions can ignore the difference between -0 and +0; He specifically
+says that signum(x) has the same result for +0 and -0, but actually there's a
+problem with that definition. In real life every numeric primitive must deal
+with -0 in ad hoc ways, and can't just treat -0 as if it were +0.
+He says:
+  A few extraordinary arithmetic functions must be affected by zero's sign.
+    1/(+0) == +inf, 1/(-0) == -inf
+  To retain its usefulness, the sign bit must propagate through certain
+  arithmetic operations according to rules derived from continuity
+  considerations.
+    -3 * +0 == -0
+    -0 / -5 == +0
+    -0 - +0 == -0
+    etc (as per IEEE standard)
+  One rule was chosen arbitrarily: x - x == +0, x not nan or infinite.
+  
+  "If a programmer does not find these rules helpful, or does not know about
+  them, he can ignore them." Actually this is false.
+
+Kahan in 2005 revised 2016:
+http://history.siam.org/pdfs2/Kahan_final.pdf
+  Signed zero—well, the signed zero was a pain in the ass that we could
+  eliminate if we used the projective mode. If there was just one infinity
+  and one zero you could do just fine; then you didn’t care about the sign
+  of zero and you didn’t care about the sign of infinity. But if, on the
+  other hand, you insisted on what I would have regarded as the lesser choice
+  of two infinities, then you are going to end up with two signed zeros. There
+  really wasn’t a way around that and you were stuck with it.
+Posits use the model of projective arithmetic. One zero, one infinity.
+Now he says "pain in the ass" and doesn't talk about discontinous trancendental
+functions, but maybe that's implied by "you were stuck with it".
+
+Semantics
+---------
+x+y
+The only case where -0 is returned is -0 + -0.
+Otherwise, -0 and 0 behave like zero.
+
+x-y
+The only case where -0 is returned is (-0) - 0.
+Otherwise, -0 and 0 behave like zero.
+
+-x
+-(-0) is 0. The only case where -0 is returned is '-(0)'.
+Note that 0-0 is 0, so 0-x is not always -x.
+
+x*y
+Multiplication can cause underflow, where the result is a positive or negative
+value too small to be represented. Positive numbers underflow to 0, while
+negative numbers underflow to -0. This is useful, if you think of 0 as a
+positive number, because it means that the sign of the result is preserved.
