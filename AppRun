@@ -1,5 +1,12 @@
-#!/bin/sh
+#!/bin/bash
 
-export PATH="$(dirname $0)/usr/bin:$PATH"
+if [[ -z "$APPDIR" ]]; then
+    export APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+fi
+export PATH="$APPDIR/usr/bin:$PATH"
 
-curv $@
+if [[ -z "$@" ]]; then
+    curv -le new.curv
+else
+    curv $@
+fi
