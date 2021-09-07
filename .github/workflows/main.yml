@@ -101,4 +101,6 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: curv-appimage-${{ github.sha }}
-        path: release/curv-x86_64.AppImage
+        path: |
+          release/Curv-*.AppImage
+          release/Curv-*.AppImage.zsync
