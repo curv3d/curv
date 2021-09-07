@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Generated using https://www.freedesktop.org/software/appstream/metainfocreator -->
+<component type="desktop-application">
+  <id>org.curv3d.curv</id>
+  <url type="homepage">http://www.curv3d.org</url>
+  <update_contact>doug_AT_moens.org</update_contact>
+
+  <name>Curv</name>
+  <summary>A language for making art using mathematics</summary>
+  
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>Apache-2.0</project_license>
+  
+  <description>
+    <p>
+      Curv is a programming language for creating art using mathematics. It&apos;s a 2D and 3D geometric modelling tool that supports full colour, animation and 3D printing.
+    </p>
+    <p>
+      <em>Features:</em>
+    </p>
+    <p>
+      - Curv is a simple, powerful, dynamically typed, pure functional   programming language.
+    </p>
+    <p>
+      - Curv is easy to use for beginners. It has a standard library of   predefined geometric shapes, plus operators for transforming and   combining shapes. These can be plugged together like Lego to make 2D and 3D   models.
+    </p>
+    <p>
+      - Coloured shapes are represented using Function Representation (F-Rep).   They can be infinitely detailed, infinitely large, and any shape or colour   pattern that can be described using mathematics can be represented exactly.
+    </p>
+    <p>
+      - Curv exposes the full power of F-Rep programming to experts.   The standard geometry library is written entirely in Curv.   Many of the demos seen on shadertoy.com can be reproduced in Curv,   using shorter, simpler programs. Experts can package techniques used on   shadertoy as high level operations for use by beginners.
+    </p>
+    <p>
+      - Rendering is GPU accelerated. Curv programs are compiled into fragment   shaders which are executed on the GPU.
+    </p>
+    <p>
+      - Curv can export meshes to STL, OBJ and X3D files for 3D printing.   The X3D format supports full colour 3D printing (on Shapeways.com, at least).   These meshes are defect free: watertight, manifold, with no self   intersections, degenerate triangles, or flipped triangles.
+    </p>
+  </description>
+  
+  <launchable type="desktop-id">org.curv3d.curv.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://github.com/curv3d/curv/blob/master/docs/images/shreks_donut.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/curv3d/curv/blob/master/docs/images/torus.png</image>
+    </screenshot>
+  </screenshots>
+</component>
