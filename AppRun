@@ -4,6 +4,8 @@ if [[ -z "$APPDIR" ]]; then
     export APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 fi
 export PATH="$APPDIR/usr/bin:$PATH"
+export LD_LIBRARY_PATH="$APPDIR/usr/lib/:$LD_LIBRARY_PATH"
+export XDG_DATA_DIRS="$APPDIR/usr/share/:$XDG_DATA_DIRS"
 
 if [[ -z "$@" ]]; then
     curv -le new.curv
