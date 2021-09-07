@@ -14,49 +14,24 @@ cleanup ()
 }
 trap cleanup EXIT
 
-# utility function - rename directory
-shopt -s dotglob
-rnmdir ()
-{
-  local from=$1
-  local to=$2
-
-  if [[ -d "$from" ]]; then
-    if [[ $(ls -A "$from") ]]; then
-      for item in "$from"/*; do
-        rnmdir "$item" "$to/$(basename "$item")"
-      done
-      [[ -d "$from" ]] && rm -rf "$from"
-    else
-      mkdir -p "$to"
-      rmdir "$from"
-    fi
-  elif [[ -f "$from" ]]; then
-    mkdir -p "$(dirname "$to")"
-    mv -u "$from" "$to"
-  fi
-}
-
 # variables
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 BUILD_DIR=release
 APPDIR=$BUILD_DIR/AppDir
-HICOLOR_ICONS_PATH=$APPDIR/usr/share/icons/hicolor
 ID=org.curv3d.curv # software id
 
 cd "$REPO_ROOT"
 
-# cleanup leftover artifacts in AppDir
-rm -f $APPDIR/*.png
-rm -f $APPDIR/*.svg
-rm -f $APPDIR/*.desktop
+# remove AppDir from previous builds
+rm -rf $APPDIR
 
 # build project and install files into AppDir/usr
 make -j$(nproc)
 make install DESTDIR=AppDir
 
 # rename usr/local -> usr/
-rnmdir $APPDIR/usr/local $APPDIR/usr
+cd $APPDIR/usr/local && mv * .. && cd .. && rmdir local
+cd "$REPO_ROOT"
 
 # patch absolute paths (make binary relocatable)
 sed -i -e 's#/usr#././#g' $APPDIR/usr/bin/curv
@@ -98,12 +73,8 @@ EOL
 fi
 
 # create AppImage's icons using curv
-icon_filename=curv.png
-icon_filepath=$BUILD_DIR/$icon_filename
-./$APPDIR/usr/bin/curv -o $BUILD_DIR/$icon_filename -O xsize=512 -O ysize=512 icon.curv
-./$APPDIR/usr/bin/curv -o $HICOLOR_ICONS_PATH/256x256/apps/$icon_filename -O xsize=256 -O ysize=256 icon.curv
-./$APPDIR/usr/bin/curv -o $HICOLOR_ICONS_PATH/128x128/apps/$icon_filename -O xsize=128 -O ysize=128 icon.curv
-./$APPDIR/usr/bin/curv -o $HICOLOR_ICONS_PATH/64x64/apps/$icon_filename -O xsize=64 -O ysize=64 icon.curv
+icon_filepath=$BUILD_DIR/curv.png
+./$APPDIR/usr/bin/curv -o $icon_filepath -O xsize=512 -O ysize=512 icon.curv
 
 # kill dummy X server
 if [[ ! -z $dummy_xconf ]]; then
@@ -115,8 +86,8 @@ fi
 desktop_filepath=$BUILD_DIR/$ID.desktop
 cat > $desktop_filepath << EOL
 [Desktop Entry]
-Name=curv
-GenericName=
+Name=Curv
+GenericName=2D/3D Graphics and Model Editor
 Exec=./AppRun %U
 Type=Application
 StartupNotify=true
@@ -128,7 +99,6 @@ Comment=Art creator app using mathematics
 EOL
 
 # add metainfo to AppDir
-rm -rf $APPDIR/usr/share/metainfo
 mkdir -p $APPDIR/usr/share/metainfo
 cp metainfo.xml $APPDIR/usr/share/metainfo/$ID.appdata.xml
 
