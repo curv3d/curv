@@ -42,10 +42,7 @@
   <launchable type="desktop-id">org.curv3d.curv.desktop</launchable>
   <screenshots>
     <screenshot type="default">
-      <image>https://github.com/curv3d/curv/blob/master/docs/images/shreks_donut.png</image>
-    </screenshot>
-    <screenshot>
-      <image>https://github.com/curv3d/curv/blob/master/docs/images/torus.png</image>
+      <image>https://github.com/curv3d/curv/blob/master/docs/images/viewer2.png</image>
     </screenshot>
   </screenshots>
 </component>
