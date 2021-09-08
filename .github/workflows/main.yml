@@ -93,10 +93,10 @@ jobs:
         sudo chmod +x build-appimage.sh
         bash build-appimage.sh
 
-    - name: Test built executable
+    - name: Test built executable(s)
       run: |
-        sudo chmod +x release/curv-x86_64.AppImage
-        ./release/curv-x86_64.AppImage --version
+        sudo chmod +x release/Curv-*.AppImage
+        find ./release -maxdepth 1 -iname "Curv-*.AppImage" -exec {} --version \;
 
     - uses: actions/upload-artifact@v2
       with:
