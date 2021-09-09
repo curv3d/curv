@@ -9,6 +9,7 @@ cleanup ()
   # remove temp downloaded files and AppImage-build artifacts
   rm -f linuxdeploy-x86_64.AppImage
   rm -f appimagetool-x86_64.AppImage
+  rm -f AppRun-x86_64
   rm -f $desktop_filepath
   rm -f $icon_filepath
 }
@@ -88,7 +89,7 @@ cat > $desktop_filepath << EOL
 [Desktop Entry]
 Name=Curv
 GenericName=2D/3D Graphics and Model Editor
-Exec=./AppRun %U
+Exec=curv %U
 Type=Application
 StartupNotify=true
 Icon=curv
@@ -102,6 +103,10 @@ EOL
 mkdir -p $APPDIR/usr/share/metainfo
 cp metainfo.xml $APPDIR/usr/share/metainfo/$ID.appdata.xml
 
+# download precompiled AppRun binary from official repo
+wget https://github.com/AppImage/AppImageKit/releases/download/continuous/AppRun-x86_64
+chmod +x AppRun-x86_64
+
 # now, build AppImage using linuxdeploy
 # download linuxdeploy
 wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
@@ -111,7 +116,7 @@ chmod +x linuxdeploy-x86_64.AppImage
 export UPDATE_INFORMATION="gh-releases-zsync|curv3d|curv|latest|Curv-*x86_64.AppImage.zsync"
 ./linuxdeploy-x86_64.AppImage \
   --appdir=$APPDIR \
-  --custom-apprun=AppRun \
+  --custom-apprun=AppRun-x86_64 \
   --desktop-file=$desktop_filepath \
   --icon-file=$icon_filepath \
   --output=appimage
