@@ -4,21 +4,27 @@ set -x
 set -e
 
 # do cleanup, even if errors occur
-cleanup () {
+cleanup ()
+{
   # remove temp downloaded files and AppImage-build artifacts
   rm -f linuxdeploy-x86_64.AppImage
   rm -f appimagetool-x86_64.AppImage
-  rm -f $desktop_filename
-  rm -f $icon_filename
+  rm -f AppRun-x86_64
+  rm -f $desktop_filepath
+  rm -f $icon_filepath
 }
 trap cleanup EXIT
 
-# store repo root as variable
+# variables
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 BUILD_DIR=release
 APPDIR=$BUILD_DIR/AppDir
+ID=org.curv3d.curv # software id
 
 cd "$REPO_ROOT"
+
+# remove AppDir from previous builds
+rm -rf $APPDIR
 
 # build project and install files into AppDir/usr
 make -j$(nproc)
@@ -67,9 +73,9 @@ EOL
   sleep 1
 fi
 
-# create AppImage's icon using curv
-icon_filename=$BUILD_DIR/curv.png
-./$APPDIR/usr/bin/curv -o $icon_filename -O xsize=512 -O ysize=512 icon.curv
+# create AppImage's icons using curv
+icon_filepath=$BUILD_DIR/curv.png
+./$APPDIR/usr/bin/curv -o $icon_filepath -O xsize=512 -O ysize=512 icon.curv
 
 # kill dummy X server
 if [[ ! -z $dummy_xconf ]]; then
@@ -78,15 +84,14 @@ if [[ ! -z $dummy_xconf ]]; then
 fi
 
 # create desktop entry for AppImage
-desktop_filename=$BUILD_DIR/curv.desktop
-cat > $desktop_filename << EOL
+desktop_filepath=$BUILD_DIR/$ID.desktop
+cat > $desktop_filepath << EOL
 [Desktop Entry]
-Name=curv
-GenericName=
-Exec=./AppRun %U
+Name=Curv
+GenericName=2D/3D Graphics and Model Editor
+Exec=curv %U
 Type=Application
 StartupNotify=true
-Path=
 Icon=curv
 StartupWMClass=curv
 Categories=Graphics
@@ -94,22 +99,28 @@ Terminal=true
 Comment=Art creator app using mathematics
 EOL
 
-# now, build AppImage using linuxdeploy and appimagetool
-# download linuxdeploy and appimagetool
+# add metainfo to AppDir
+mkdir -p $APPDIR/usr/share/metainfo
+cp metainfo.xml $APPDIR/usr/share/metainfo/$ID.appdata.xml
+
+# download precompiled AppRun binary from official repo
+wget https://github.com/AppImage/AppImageKit/releases/download/continuous/AppRun-x86_64
+chmod +x AppRun-x86_64
+
+# now, build AppImage using linuxdeploy
+# download linuxdeploy
 wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-wget https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage
-
-# make them executable
 chmod +x linuxdeploy-x86_64.AppImage
-chmod +x appimagetool-x86_64.AppImage
 
-# bundle shared libraries for curv to AppDir, and build AppImage from AppDir
+# bundle shared libraries for curv to AppDir and build AppImage from AppDir
+export UPDATE_INFORMATION="gh-releases-zsync|curv3d|curv|latest|Curv-*x86_64.AppImage.zsync"
 ./linuxdeploy-x86_64.AppImage \
-  --appdir $APPDIR \
-  --custom-apprun AppRun \
-  -d $desktop_filename \
-  -i $icon_filename
-./appimagetool-x86_64.AppImage $APPDIR
+  --appdir=$APPDIR \
+  --custom-apprun=AppRun-x86_64 \
+  --desktop-file=$desktop_filepath \
+  --icon-file=$icon_filepath \
+  --output=appimage
 
 # move built AppImage into release folder
-mv curv*.AppImage $BUILD_DIR
+mv Curv-*.AppImage $BUILD_DIR
+mv Curv-*.AppImage.zsync $BUILD_DIR

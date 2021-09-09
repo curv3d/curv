@@ -1,5 +1,0 @@
-#!/bin/sh
-
-export PATH="$(dirname $0)/usr/bin:$PATH"
-
-curv $@
