@@ -1,0 +1,47 @@
+parametric
+  soroban_width :: slider [1, 30] =  18;
+  soroban_height :: slider [1, 30] =  8;
+  soroban_depth :: slider [1, 10] = 2;
+  soroban_frame_thickness :: slider [0.1, 5] = 1;
+
+  column_hole :: slider [0.01, 1] = 0.5;
+  column_spacing :: slider [0.1, 5] = 1;
+  bar_thickness :: slider [1, 5] = 1;
+  bar_vertical :: slider [-15, 15] = 0;
+in
+let
+  sorobanbb = box[soroban_width, soroban_height, soroban_depth];
+
+  base = difference [
+    rect [soroban_width, soroban_height],
+    rect [soroban_width, soroban_height] >> offset (soroban_frame_thickness * -1)
+  ]
+  >> extrude soroban_depth;
+
+  base_with_bar = union [
+    base,
+    rect [soroban_width - soroban_frame_thickness * 2, bar_thickness]
+      >> extrude soroban_depth
+      >> move [0, bar_vertical, 0]
+  ];
+
+  rods = circle column_hole
+    >> extrude inf
+    >> local_taper_xy { range: [-1, 1], scale: [[1, 1], [0.95, 0.95]] }
+    >> repeat_x column_spacing
+    >> into intersection [
+      box [
+        soroban_width - soroban_frame_thickness * 2,
+        column_hole,
+        inf
+      ]
+    ]
+    >> rotate {angle=90*deg, axis=X_axis};
+in
+base_with_bar
+  // If you wanted to cut out holes for the rods when 3D printing.
+  // >> into difference [rods]
+  // But since we're not, let's show it assembled:
+  >> into union [
+    intersection [rods, sorobanbb]
+  ]
