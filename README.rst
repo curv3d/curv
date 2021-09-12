@@ -46,30 +46,29 @@ Getting Started
   and I will send you an invitation to join the list.
 * To contribute, see `<CONTRIBUTING.md>`_.
 
-Hardware Requirements
-=====================
-Linux, MacOS and Windows are supported.
-
-Precisely, Ubuntu LTS and MacOS are currently tested by me, `@doug-moen <https://github.com/doug-moen>`_.
-The Windows port is tested by `@ComFreek <https://github.com/ComFreek>`_.
+Hardware and OS Requirements
+============================
+Linux, MacOS (intel & apple silicon) and Windows (native) are supported.
 
 Curv uses OpenGL 3.3.
 The recommended configuration is a GPU made by Intel, AMD or Nvidia,
 using a known working GPU driver (see below).
 
-* On Linux, the GPU needs to be modern enough to be supported
-  by the latest driver version from the GPU vendor. Any GPU from 2012 or later
-  will work. Some older GPUs may work: check the list of supported hardware
-  for the driver.
-* On Macintosh, I recommend the current release of MacOS, or 1 or 2 releases earlier.
-  More precisely, Curv works on any version of MacOS supported by `Homebrew <https://brew.sh/>`_.
-  (For older systems, you would need to resurrect an older version of Homebrew.
-  Also, on a pre-Metal system (hardware from 2011 or earlier),
-  some Curv programs may not work correctly due to the GPU.)
-* On Windows, you can use `MSYS <https://www.msys2.org/>`_ to build and run a native executable.
-  Alternatively, you can use `Windows Subystem for Linux (WSL) <https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux>`_
-  for building and running non-natively. However, this alternative is much slower than MSYS since WSL has no GPU rendering support so far,
-  which forces us to fall back to software rendering. See `issue #88`_ for details.
+* On Linux, the GPU needs to be modern enough to be supported by the latest
+  driver version from the GPU vendor. Any GPU from 2012 or later will work.
+  Some older GPUs may work: check the list of supported hardware for the driver.
+* On Macintosh, I recommend the current release of MacOS, or 1 or 2 releases
+  earlier. More precisely, Curv works on any version of MacOS supported by
+  `Homebrew <https://brew.sh/>`_. (For older systems, you would need to
+  resurrect an older version of Homebrew. Also, on a pre-Metal system
+  (hardware from 2011 or earlier), some Curv programs may not work correctly
+  due to the GPU.)
+* On Windows, you can use `MSYS2 <https://www.msys2.org/>`_ to build and run a
+  native executable; see `<WINDOWS.md>`_. Alternatively, you can use
+  `Windows Subystem for Linux (WSL) <https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux>`_
+  for building and running non-natively. However, this alternative is much
+  slower than MSYS2 since WSL has no GPU rendering support so far, which forces
+  us to fall back to software rendering. See `issue #88`_ for details.
 * Raspberry Pi isn't supported yet.
 
   * Raspberry Pi 4 support is planned. I believe that Curv could be ported
@@ -86,9 +85,8 @@ using a known working GPU driver (see below).
   * An Nvidia GPU, with the Nvidia closed source driver.
     Any GPU supported by the latest Nvidia driver will work with Curv.
 
-    The open source Nouveau driver is slow and buggy. Curv runs too slow,
-    with visual glitches. If you don't mind driver hacking, there are some
-    mitigations you can try. See `issue #78`_.
+    The open source Nouveau driver is not supported; it is too slow and buggy.
+    Curv runs too slow, with visual glitches. See `issue #78`_.
 
   * An Intel GPU, using the Intel supplied open source driver (based on Mesa).
     Any GPU supported by the latest Intel driver will work with Curv
@@ -107,6 +105,13 @@ using a known working GPU driver (see below).
   Try `TurboVNC`_ combined with `VirtualGL`_.
 * If Curv is run inside a VM, then it might not have direct access to the GPU.
   You need to ensure that the VM is GPU accelerated.
+* You can run Curv from the command line on a headless Linux server, to export
+  images and meshes. For image export, you may need to configure a dummy X
+  server: see `<https://github.com/curv3d/curv/discussions/131>`_.
+
+Curv is not as GPU intensive as AAA video games. Integrated graphics will
+work fine for most stuff. But you can definitely write Curv code that will
+benefit from expensive discrete graphics.
 
 Why is Curv so picky about GPU drivers and hardware, when [some old 3D
 software] runs just fine? The answer is that old 3D software relies primarily
