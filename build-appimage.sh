@@ -9,7 +9,7 @@ cleanup ()
   # remove temp downloaded files and AppImage-build artifacts
   rm -f linuxdeploy-x86_64.AppImage
   rm -f appimagetool-x86_64.AppImage
-  rm -f AppRun-x86_64
+  rm -f $apprun_filepath
   rm -f $desktop_filepath
   rm -f $icon_filepath
 }
@@ -89,7 +89,7 @@ cat > $desktop_filepath << EOL
 [Desktop Entry]
 Name=Curv
 GenericName=2D/3D Graphics and Model Editor
-Exec=curv %U
+Exec=curv -le %U
 Type=Application
 StartupNotify=true
 Icon=curv
@@ -99,13 +99,23 @@ Terminal=true
 Comment=Art creator app using mathematics
 EOL
 
+# create custom AppRun
+apprun_filepath=$BUILD_DIR/AppRun
+cat > $apprun_filepath << \EOL
+#!/bin/bash
+
+[[ -z "$APPDIR" ]] && export APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+
+export PATH="$APPDIR/usr/bin:$PATH"
+export LD_LIBRARY_PATH="$APPDIR/usr/lib/:$LD_LIBRARY_PATH"
+export XDG_DATA_DIRS="$APPDIR/usr/share/:$XDG_DATA_DIRS"
+
+curv $@
+EOL
+
 # add metainfo to AppDir
 mkdir -p $APPDIR/usr/share/metainfo
 cp metainfo.xml $APPDIR/usr/share/metainfo/$ID.appdata.xml
-
-# download precompiled AppRun binary from official repo
-wget https://github.com/AppImage/AppImageKit/releases/download/continuous/AppRun-x86_64
-chmod +x AppRun-x86_64
 
 # now, build AppImage using linuxdeploy
 # download linuxdeploy
@@ -116,7 +126,7 @@ chmod +x linuxdeploy-x86_64.AppImage
 export UPDATE_INFORMATION="gh-releases-zsync|curv3d|curv|latest|Curv-*x86_64.AppImage.zsync"
 ./linuxdeploy-x86_64.AppImage \
   --appdir=$APPDIR \
-  --custom-apprun=AppRun-x86_64 \
+  --custom-apprun=$apprun_filepath \
   --desktop-file=$desktop_filepath \
   --icon-file=$icon_filepath \
   --output=appimage
