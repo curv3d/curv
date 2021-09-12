@@ -10,8 +10,8 @@ Instead, build and install `curv` using:
 * `make`
 * `make install`
 
-**C++ Notes**: Curv requires a C++ 14 compiler.
-You can use gcc 5.4 (or later), or clang 3.4 (or later).
+**C++ Notes**: Curv requires a C++ 17 compiler.
+It has been tested with gcc and clang (but not MSVC++).
 
 # Installing
 
