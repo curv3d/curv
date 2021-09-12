@@ -262,7 +262,9 @@ main(int argc, char** argv)
         }
     }
     if (filename == nullptr) {
-        if (expr || live || (exporter != exporters.end() && !help)) {
+        if (editor != nullptr)
+            filename = "new.curv";
+        else if (expr || live || (exporter != exporters.end() && !help)) {
             std::cerr << "missing filename argument\n"
                       << "Use " << argv0 << " --help for help.\n";
             return EXIT_FAILURE;
