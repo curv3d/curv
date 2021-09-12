@@ -86,6 +86,7 @@ const char help_prefix[] =
 "curv -l [-e] [options] filename\n"
 "   Live programming mode. Evaluate & display result each time file changes.\n"
 "   -e : Open editor window. $CURV_EDITOR overrides default editor.\n"
+"        With 'curv -le', filename is optional, defaults to 'new.curv'.\n"
 "curv [-o arg] [-x] [options] filename\n"
 "   Batch mode. Evaluate file, display result or export to a file.\n"
 "   -o format : Convert to specified file format, write data to stdout.\n"
