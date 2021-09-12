@@ -7,7 +7,7 @@ spline curves and surfaces.
 * Inkscape can read quadratic Beziers, but elevates them to cubic for editing.
 * iWork now supports Hobby splines as the default (see below).
   They are easier to define and edit than Beziers. Hobby control points
-  are converted to Bezier form for rendering.
+  are converted to cubic Bezier form for rendering.
 
 TrueType fonts contain quadratic Bezier splines.
 OpenType fonts contain quadratic, may contain cubic Bezier splines.
