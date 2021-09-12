@@ -1,0 +1,1029 @@
+{
+  is_2d: #false;
+  is_3d: #true;
+  bbox: [[-9,-4,-1],[9,4,1]];
+  shader:
+    "#define AA 1
+    |#define TAA 1
+    |#define FDUR 0.04
+    |const vec3 background_colour = vec3(1,1,1);
+    |const int ray_max_iter = 200;
+    |const float ray_max_depth = 400.0;
+    |#ifdef GLSLVIEWER
+    |uniform vec3 u_eye3d;
+    |uniform vec3 u_centre3d;
+    |uniform vec3 u_up3d;
+    |#endif
+    |uniform float rv_bar_thickness;
+    |uniform float rv_bar_vertical;
+    |uniform float rv_column_hole;
+    |uniform float rv_column_spacing;
+    |uniform float rv_soroban_depth;
+    |uniform float rv_soroban_frame_thickness;
+    |uniform float rv_soroban_height;
+    |uniform float rv_soroban_width;
+    |float dist(vec4 r0)
+    |{
+    |  /* constants */
+    |  float r3 = rv_soroban_depth;
+    |  float r4 = 2.0;
+    |  float r5 = r3/r4;
+    |  float r6 = r5;
+    |  float r10 = 0.0;
+    |  float r19 = rv_soroban_width;
+    |  float r20 = r19/r4;
+    |  float r21 = rv_soroban_height;
+    |  float r22 = r21/r4;
+    |  vec2 r23 = vec2(r20,r22);
+    |  float r39 = r19/r4;
+    |  float r40 = r21/r4;
+    |  vec2 r41 = vec2(r39,r40);
+    |  float r51 = rv_soroban_frame_thickness;
+    |  float r52 = -1.0;
+    |  float r53 = r51*r52;
+    |  float r54 = r53;
+    |  vec3 r66 = vec3(0.0,rv_bar_vertical,0.0);
+    |  float r79 = r3/r4;
+    |  float r80 = r79;
+    |  float r87 = r51*r4;
+    |  float r88 = r19-r87;
+    |  float r89 = r88/r4;
+    |  float r90 = rv_bar_thickness;
+    |  float r91 = r90/r4;
+    |  vec2 r92 = vec2(r89,r91);
+    |  float r114 = 1.5707963267948966;
+    |  vec3 r115 = vec3(1.0,0.0,0.0);
+    |  float r146 = 1.0;
+    |  float r163 = rv_column_spacing;
+    |  float r164 = r163/r4;
+    |  float r165 = r164;
+    |  float r178 = 1.0/0.0;
+    |  float r185 = rv_column_hole;
+    |  float r186 = r185/r4;
+    |  float r187 = r186;
+    |  float r199 = 0.95;
+    |  float r268 = r51*r4;
+    |  float r269 = r19-r268;
+    |  float r270 = r269/r4;
+    |  float r271 = r185/r4;
+    |  vec3 r272 = vec3(r270,r271,1.0/0.0);
+    |  float r291 = r19/r4;
+    |  float r292 = r21/r4;
+    |  float r293 = r3/r4;
+    |  vec3 r294 = vec3(r291,r292,r293);
+    |  /* body */
+    |  float r1 = r0.z;
+    |  float r2 = abs(r1);
+    |  float r7 = r2-r6;
+    |  float r8 = r0.x;
+    |  float r9 = r0.y;
+    |  float r11 = r0.w;
+    |  vec4 r12 = vec4(r8,r9,r10,r11);
+    |  float r13 = r12[0];
+    |  float r14 = r12[1];
+    |  float r15 = r12[2];
+    |  float r16 = r12[3];
+    |  vec2 r17 = vec2(r13,r14);
+    |  vec2 r18 = abs(r17);
+    |  vec2 r24 = r18-r23;
+    |  float r25 = r24[0];
+    |  float r26 = r24[1];
+    |  float r27 = max(r25,r26);
+    |  float r28 = min(r27,r10);
+    |  vec2 r29 = vec2(r10);
+    |  vec2 r30 = max(r24,r29);
+    |  float r31 = length(r30);
+    |  float r32 = r28+r31;
+    |  float r33 = r12[0];
+    |  float r34 = r12[1];
+    |  float r35 = r12[2];
+    |  float r36 = r12[3];
+    |  vec2 r37 = vec2(r33,r34);
+    |  vec2 r38 = abs(r37);
+    |  vec2 r42 = r38-r41;
+    |  float r43 = r42[0];
+    |  float r44 = r42[1];
+    |  float r45 = max(r43,r44);
+    |  float r46 = min(r45,r10);
+    |  vec2 r47 = vec2(r10);
+    |  vec2 r48 = max(r42,r47);
+    |  float r49 = length(r48);
+    |  float r50 = r46+r49;
+    |  float r55 = r50-r54;
+    |  float r56 = -(r55);
+    |  float r57 = max(r32,r56);
+    |  vec2 r58 = vec2(r7,r57);
+    |  vec2 r59 = vec2(r10);
+    |  vec2 r60 = max(r58,r59);
+    |  float r61 = length(r60);
+    |  float r62 = max(r7,r57);
+    |  float r63 = min(r62,r10);
+    |  float r64 = r61+r63;
+    |  float r65 = r0.x;
+    |  float r67 = r66.x;
+    |  float r68 = r65-r67;
+    |  float r69 = r0.y;
+    |  float r70 = r66.y;
+    |  float r71 = r69-r70;
+    |  float r72 = r0.z;
+    |  float r73 = r66.z;
+    |  float r74 = r72-r73;
+    |  float r75 = r0.w;
+    |  vec4 r76 = vec4(r68,r71,r74,r75);
+    |  float r77 = r76.z;
+    |  float r78 = abs(r77);
+    |  float r81 = r78-r80;
+    |  float r82 = r76.x;
+    |  float r83 = r76.y;
+    |  float r84 = r76.w;
+    |  vec2 r85 = vec2(r82,r83);
+    |  vec2 r86 = abs(r85);
+    |  vec2 r93 = r86-r92;
+    |  float r94 = r93[0];
+    |  float r95 = r93[1];
+    |  float r96 = max(r94,r95);
+    |  float r97 = min(r96,r10);
+    |  vec2 r98 = vec2(r10);
+    |  vec2 r99 = max(r93,r98);
+    |  float r100 = length(r99);
+    |  float r101 = r97+r100;
+    |  vec2 r102 = vec2(r81,r101);
+    |  vec2 r103 = vec2(r10);
+    |  vec2 r104 = max(r102,r103);
+    |  float r105 = length(r104);
+    |  float r106 = max(r81,r101);
+    |  float r107 = min(r106,r10);
+    |  float r108 = r105+r107;
+    |  float r109 = min(r64,r108);
+    |  float r110 = r0[0];
+    |  float r111 = r0[1];
+    |  float r112 = r0[2];
+    |  float r113 = r0[3];
+    |  vec3 r116 = vec3(r110,r111,r112);
+    |  float r117 = cos(r114);
+    |  vec3 r118 = vec3(r117);
+    |  vec3 r119 = r116*r118;
+    |  float r120 = r115.y;
+    |  float r121 = r116.z;
+    |  float r122 = r120*r121;
+    |  float r123 = r115.z;
+    |  float r124 = r116.y;
+    |  float r125 = r123*r124;
+    |  float r126 = r122-r125;
+    |  float r127 = r115.z;
+    |  float r128 = r116.x;
+    |  float r129 = r127*r128;
+    |  float r130 = r115.x;
+    |  float r131 = r116.z;
+    |  float r132 = r130*r131;
+    |  float r133 = r129-r132;
+    |  float r134 = r115.x;
+    |  float r135 = r116.y;
+    |  float r136 = r134*r135;
+    |  float r137 = r115.y;
+    |  float r138 = r116.x;
+    |  float r139 = r137*r138;
+    |  float r140 = r136-r139;
+    |  vec3 r141 = vec3(r126,r133,r140);
+    |  float r142 = sin(r114);
+    |  vec3 r143 = vec3(r142);
+    |  vec3 r144 = r141*r143;
+    |  vec3 r145 = r119-r144;
+    |  float r147 = cos(r114);
+    |  float r148 = r146-r147;
+    |  vec3 r149 = vec3(r148);
+    |  vec3 r150 = r116*r149;
+    |  float r151 = dot(r115,r150);
+    |  vec3 r152 = vec3(r151);
+    |  vec3 r153 = r115*r152;
+    |  vec3 r154 = r145+r153;
+    |  float r155 = r154.x;
+    |  float r156 = r154.y;
+    |  float r157 = r154.z;
+    |  vec4 r158 = vec4(r155,r156,r157,r113);
+    |  float r159 = r158[0];
+    |  float r160 = r158[1];
+    |  float r161 = r158[2];
+    |  float r162 = r158[3];
+    |  float r166 = r159+r165;
+    |  float r167 = r166/r163;
+    |  float r168 = floor(r167);
+    |  float r169 = r163*r168;
+    |  float r170 = r166-r169;
+    |  float r171 = r170-r165;
+    |  bool r172 = r161<=r52;
+    |  float r173 = r171/r146;
+    |  float r174 = r160/r146;
+    |  vec4 r175 = vec4(r173,r174,r161,r162);
+    |  float r176 = r175.z;
+    |  float r177 = abs(r176);
+    |  float r179 = r177-r178;
+    |  float r180 = r175.x;
+    |  float r181 = r175.y;
+    |  float r182 = r175.w;
+    |  vec2 r183 = vec2(r180,r181);
+    |  float r184 = length(r183);
+    |  float r188 = r184-r187;
+    |  vec2 r189 = vec2(r179,r188);
+    |  vec2 r190 = vec2(r10);
+    |  vec2 r191 = max(r189,r190);
+    |  float r192 = length(r191);
+    |  float r193 = max(r179,r188);
+    |  float r194 = min(r193,r10);
+    |  float r195 = r192+r194;
+    |  float r196 = min(r146,r146);
+    |  float r197 = r195*r196;
+    |  bool r198 = r161>=r146;
+    |  float r200 = r171/r199;
+    |  float r201 = r160/r199;
+    |  vec4 r202 = vec4(r200,r201,r161,r162);
+    |  float r203 = r202.z;
+    |  float r204 = abs(r203);
+    |  float r205 = r204-r178;
+    |  float r206 = r202.x;
+    |  float r207 = r202.y;
+    |  float r208 = r202.w;
+    |  vec2 r209 = vec2(r206,r207);
+    |  float r210 = length(r209);
+    |  float r211 = r210-r187;
+    |  vec2 r212 = vec2(r205,r211);
+    |  vec2 r213 = vec2(r10);
+    |  vec2 r214 = max(r212,r213);
+    |  float r215 = length(r214);
+    |  float r216 = max(r205,r211);
+    |  float r217 = min(r216,r10);
+    |  float r218 = r215+r217;
+    |  float r219 = min(r199,r199);
+    |  float r220 = r218*r219;
+    |  float r221 = r161-r52;
+    |  float r222 = r146-r52;
+    |  float r223 = r221/r222;
+    |  float r224 = r146-r223;
+    |  float r225 = r146*r224;
+    |  float r226 = r199*r223;
+    |  float r227 = r225+r226;
+    |  float r228 = r161-r52;
+    |  float r229 = r146-r52;
+    |  float r230 = r228/r229;
+    |  float r231 = r146-r230;
+    |  float r232 = r146*r231;
+    |  float r233 = r199*r230;
+    |  float r234 = r232+r233;
+    |  float r235 = r171/r227;
+    |  float r236 = r160/r234;
+    |  vec4 r237 = vec4(r235,r236,r161,r162);
+    |  float r238 = r237.z;
+    |  float r239 = abs(r238);
+    |  float r240 = r239-r178;
+    |  float r241 = r237.x;
+    |  float r242 = r237.y;
+    |  float r243 = r237.w;
+    |  vec2 r244 = vec2(r241,r242);
+    |  float r245 = length(r244);
+    |  float r246 = r245-r187;
+    |  vec2 r247 = vec2(r240,r246);
+    |  vec2 r248 = vec2(r10);
+    |  vec2 r249 = max(r247,r248);
+    |  float r250 = length(r249);
+    |  float r251 = max(r240,r246);
+    |  float r252 = min(r251,r10);
+    |  float r253 = r250+r252;
+    |  float r254 = min(r227,r234);
+    |  float r255 = r253*r254;
+    |  float r256 =(r198 ? r220 : r255);
+    |  float r257 =(r172 ? r197 : r256);
+    |  float r258 = min(r146,r199);
+    |  float r259 = min(r258,r146);
+    |  float r260 = min(r259,r199);
+    |  float r261 = r257*r260;
+    |  float r262 = r158[0];
+    |  float r263 = r158[1];
+    |  float r264 = r158[2];
+    |  float r265 = r158[3];
+    |  vec3 r266 = vec3(r262,r263,r264);
+    |  vec3 r267 = abs(r266);
+    |  vec3 r273 = r267-r272;
+    |  float r274 = r273[0];
+    |  float r275 = r273[1];
+    |  float r276 = max(r274,r275);
+    |  float r277 = r273[2];
+    |  float r278 = max(r276,r277);
+    |  float r279 = min(r278,r10);
+    |  vec3 r280 = vec3(r10);
+    |  vec3 r281 = max(r273,r280);
+    |  float r282 = length(r281);
+    |  float r283 = r279+r282;
+    |  float r284 = max(r261,r283);
+    |  float r285 = r0[0];
+    |  float r286 = r0[1];
+    |  float r287 = r0[2];
+    |  float r288 = r0[3];
+    |  vec3 r289 = vec3(r285,r286,r287);
+    |  vec3 r290 = abs(r289);
+    |  vec3 r295 = r290-r294;
+    |  float r296 = r295[0];
+    |  float r297 = r295[1];
+    |  float r298 = max(r296,r297);
+    |  float r299 = r295[2];
+    |  float r300 = max(r298,r299);
+    |  float r301 = min(r300,r10);
+    |  vec3 r302 = vec3(r10);
+    |  vec3 r303 = max(r295,r302);
+    |  float r304 = length(r303);
+    |  float r305 = r301+r304;
+    |  float r306 = max(r284,r305);
+    |  float r307 = min(r109,r306);
+    |  return r307;
+    |}
+    |vec3 colour(vec4 r0)
+    |{
+    |  /* constants */
+    |  float r3 = rv_soroban_depth;
+    |  float r4 = 2.0;
+    |  float r5 = r3/r4;
+    |  float r6 = r5;
+    |  float r10 = 0.0;
+    |  float r19 = rv_soroban_width;
+    |  float r20 = r19/r4;
+    |  float r21 = rv_soroban_height;
+    |  float r22 = r21/r4;
+    |  vec2 r23 = vec2(r20,r22);
+    |  float r39 = r19/r4;
+    |  float r40 = r21/r4;
+    |  vec2 r41 = vec2(r39,r40);
+    |  float r51 = rv_soroban_frame_thickness;
+    |  float r52 = -1.0;
+    |  float r53 = r51*r52;
+    |  float r54 = r53;
+    |  vec3 r66 = vec3(0.0,rv_bar_vertical,0.0);
+    |  float r79 = r3/r4;
+    |  float r80 = r79;
+    |  float r87 = r51*r4;
+    |  float r88 = r19-r87;
+    |  float r89 = r88/r4;
+    |  float r90 = rv_bar_thickness;
+    |  float r91 = r90/r4;
+    |  vec2 r92 = vec2(r89,r91);
+    |  float r114 = 1.5707963267948966;
+    |  vec3 r115 = vec3(1.0,0.0,0.0);
+    |  float r146 = 1.0;
+    |  float r163 = rv_column_spacing;
+    |  float r164 = r163/r4;
+    |  float r165 = r164;
+    |  float r178 = 1.0/0.0;
+    |  float r185 = rv_column_hole;
+    |  float r186 = r185/r4;
+    |  float r187 = r186;
+    |  float r199 = 0.95;
+    |  float r268 = r51*r4;
+    |  float r269 = r19-r268;
+    |  float r270 = r269/r4;
+    |  float r271 = r185/r4;
+    |  vec3 r272 = vec3(r270,r271,1.0/0.0);
+    |  float r291 = r19/r4;
+    |  float r292 = r21/r4;
+    |  float r293 = r3/r4;
+    |  vec3 r294 = vec3(r291,r292,r293);
+    |  float r369 = 0.8;
+    |  float r370 = 0.5;
+    |  vec3 r371 = vec3(r369,r369,r370);
+    |  float r372 = 2.2;
+    |  vec3 r373 = vec3(r372);
+    |  vec3 r374 = pow(r371,r373);
+    |  /* body */
+    |  float r1 = r0.z;
+    |  float r2 = abs(r1);
+    |  float r7 = r2-r6;
+    |  float r8 = r0.x;
+    |  float r9 = r0.y;
+    |  float r11 = r0.w;
+    |  vec4 r12 = vec4(r8,r9,r10,r11);
+    |  float r13 = r12[0];
+    |  float r14 = r12[1];
+    |  float r15 = r12[2];
+    |  float r16 = r12[3];
+    |  vec2 r17 = vec2(r13,r14);
+    |  vec2 r18 = abs(r17);
+    |  vec2 r24 = r18-r23;
+    |  float r25 = r24[0];
+    |  float r26 = r24[1];
+    |  float r27 = max(r25,r26);
+    |  float r28 = min(r27,r10);
+    |  vec2 r29 = vec2(r10);
+    |  vec2 r30 = max(r24,r29);
+    |  float r31 = length(r30);
+    |  float r32 = r28+r31;
+    |  float r33 = r12[0];
+    |  float r34 = r12[1];
+    |  float r35 = r12[2];
+    |  float r36 = r12[3];
+    |  vec2 r37 = vec2(r33,r34);
+    |  vec2 r38 = abs(r37);
+    |  vec2 r42 = r38-r41;
+    |  float r43 = r42[0];
+    |  float r44 = r42[1];
+    |  float r45 = max(r43,r44);
+    |  float r46 = min(r45,r10);
+    |  vec2 r47 = vec2(r10);
+    |  vec2 r48 = max(r42,r47);
+    |  float r49 = length(r48);
+    |  float r50 = r46+r49;
+    |  float r55 = r50-r54;
+    |  float r56 = -(r55);
+    |  float r57 = max(r32,r56);
+    |  vec2 r58 = vec2(r7,r57);
+    |  vec2 r59 = vec2(r10);
+    |  vec2 r60 = max(r58,r59);
+    |  float r61 = length(r60);
+    |  float r62 = max(r7,r57);
+    |  float r63 = min(r62,r10);
+    |  float r64 = r61+r63;
+    |  float r65 = r0.x;
+    |  float r67 = r66.x;
+    |  float r68 = r65-r67;
+    |  float r69 = r0.y;
+    |  float r70 = r66.y;
+    |  float r71 = r69-r70;
+    |  float r72 = r0.z;
+    |  float r73 = r66.z;
+    |  float r74 = r72-r73;
+    |  float r75 = r0.w;
+    |  vec4 r76 = vec4(r68,r71,r74,r75);
+    |  float r77 = r76.z;
+    |  float r78 = abs(r77);
+    |  float r81 = r78-r80;
+    |  float r82 = r76.x;
+    |  float r83 = r76.y;
+    |  float r84 = r76.w;
+    |  vec2 r85 = vec2(r82,r83);
+    |  vec2 r86 = abs(r85);
+    |  vec2 r93 = r86-r92;
+    |  float r94 = r93[0];
+    |  float r95 = r93[1];
+    |  float r96 = max(r94,r95);
+    |  float r97 = min(r96,r10);
+    |  vec2 r98 = vec2(r10);
+    |  vec2 r99 = max(r93,r98);
+    |  float r100 = length(r99);
+    |  float r101 = r97+r100;
+    |  vec2 r102 = vec2(r81,r101);
+    |  vec2 r103 = vec2(r10);
+    |  vec2 r104 = max(r102,r103);
+    |  float r105 = length(r104);
+    |  float r106 = max(r81,r101);
+    |  float r107 = min(r106,r10);
+    |  float r108 = r105+r107;
+    |  float r109 = min(r64,r108);
+    |  float r110 = r0[0];
+    |  float r111 = r0[1];
+    |  float r112 = r0[2];
+    |  float r113 = r0[3];
+    |  vec3 r116 = vec3(r110,r111,r112);
+    |  float r117 = cos(r114);
+    |  vec3 r118 = vec3(r117);
+    |  vec3 r119 = r116*r118;
+    |  float r120 = r115.y;
+    |  float r121 = r116.z;
+    |  float r122 = r120*r121;
+    |  float r123 = r115.z;
+    |  float r124 = r116.y;
+    |  float r125 = r123*r124;
+    |  float r126 = r122-r125;
+    |  float r127 = r115.z;
+    |  float r128 = r116.x;
+    |  float r129 = r127*r128;
+    |  float r130 = r115.x;
+    |  float r131 = r116.z;
+    |  float r132 = r130*r131;
+    |  float r133 = r129-r132;
+    |  float r134 = r115.x;
+    |  float r135 = r116.y;
+    |  float r136 = r134*r135;
+    |  float r137 = r115.y;
+    |  float r138 = r116.x;
+    |  float r139 = r137*r138;
+    |  float r140 = r136-r139;
+    |  vec3 r141 = vec3(r126,r133,r140);
+    |  float r142 = sin(r114);
+    |  vec3 r143 = vec3(r142);
+    |  vec3 r144 = r141*r143;
+    |  vec3 r145 = r119-r144;
+    |  float r147 = cos(r114);
+    |  float r148 = r146-r147;
+    |  vec3 r149 = vec3(r148);
+    |  vec3 r150 = r116*r149;
+    |  float r151 = dot(r115,r150);
+    |  vec3 r152 = vec3(r151);
+    |  vec3 r153 = r115*r152;
+    |  vec3 r154 = r145+r153;
+    |  float r155 = r154.x;
+    |  float r156 = r154.y;
+    |  float r157 = r154.z;
+    |  vec4 r158 = vec4(r155,r156,r157,r113);
+    |  float r159 = r158[0];
+    |  float r160 = r158[1];
+    |  float r161 = r158[2];
+    |  float r162 = r158[3];
+    |  float r166 = r159+r165;
+    |  float r167 = r166/r163;
+    |  float r168 = floor(r167);
+    |  float r169 = r163*r168;
+    |  float r170 = r166-r169;
+    |  float r171 = r170-r165;
+    |  bool r172 = r161<=r52;
+    |  float r173 = r171/r146;
+    |  float r174 = r160/r146;
+    |  vec4 r175 = vec4(r173,r174,r161,r162);
+    |  float r176 = r175.z;
+    |  float r177 = abs(r176);
+    |  float r179 = r177-r178;
+    |  float r180 = r175.x;
+    |  float r181 = r175.y;
+    |  float r182 = r175.w;
+    |  vec2 r183 = vec2(r180,r181);
+    |  float r184 = length(r183);
+    |  float r188 = r184-r187;
+    |  vec2 r189 = vec2(r179,r188);
+    |  vec2 r190 = vec2(r10);
+    |  vec2 r191 = max(r189,r190);
+    |  float r192 = length(r191);
+    |  float r193 = max(r179,r188);
+    |  float r194 = min(r193,r10);
+    |  float r195 = r192+r194;
+    |  float r196 = min(r146,r146);
+    |  float r197 = r195*r196;
+    |  bool r198 = r161>=r146;
+    |  float r200 = r171/r199;
+    |  float r201 = r160/r199;
+    |  vec4 r202 = vec4(r200,r201,r161,r162);
+    |  float r203 = r202.z;
+    |  float r204 = abs(r203);
+    |  float r205 = r204-r178;
+    |  float r206 = r202.x;
+    |  float r207 = r202.y;
+    |  float r208 = r202.w;
+    |  vec2 r209 = vec2(r206,r207);
+    |  float r210 = length(r209);
+    |  float r211 = r210-r187;
+    |  vec2 r212 = vec2(r205,r211);
+    |  vec2 r213 = vec2(r10);
+    |  vec2 r214 = max(r212,r213);
+    |  float r215 = length(r214);
+    |  float r216 = max(r205,r211);
+    |  float r217 = min(r216,r10);
+    |  float r218 = r215+r217;
+    |  float r219 = min(r199,r199);
+    |  float r220 = r218*r219;
+    |  float r221 = r161-r52;
+    |  float r222 = r146-r52;
+    |  float r223 = r221/r222;
+    |  float r224 = r146-r223;
+    |  float r225 = r146*r224;
+    |  float r226 = r199*r223;
+    |  float r227 = r225+r226;
+    |  float r228 = r161-r52;
+    |  float r229 = r146-r52;
+    |  float r230 = r228/r229;
+    |  float r231 = r146-r230;
+    |  float r232 = r146*r231;
+    |  float r233 = r199*r230;
+    |  float r234 = r232+r233;
+    |  float r235 = r171/r227;
+    |  float r236 = r160/r234;
+    |  vec4 r237 = vec4(r235,r236,r161,r162);
+    |  float r238 = r237.z;
+    |  float r239 = abs(r238);
+    |  float r240 = r239-r178;
+    |  float r241 = r237.x;
+    |  float r242 = r237.y;
+    |  float r243 = r237.w;
+    |  vec2 r244 = vec2(r241,r242);
+    |  float r245 = length(r244);
+    |  float r246 = r245-r187;
+    |  vec2 r247 = vec2(r240,r246);
+    |  vec2 r248 = vec2(r10);
+    |  vec2 r249 = max(r247,r248);
+    |  float r250 = length(r249);
+    |  float r251 = max(r240,r246);
+    |  float r252 = min(r251,r10);
+    |  float r253 = r250+r252;
+    |  float r254 = min(r227,r234);
+    |  float r255 = r253*r254;
+    |  float r256 =(r198 ? r220 : r255);
+    |  float r257 =(r172 ? r197 : r256);
+    |  float r258 = min(r146,r199);
+    |  float r259 = min(r258,r146);
+    |  float r260 = min(r259,r199);
+    |  float r261 = r257*r260;
+    |  float r262 = r158[0];
+    |  float r263 = r158[1];
+    |  float r264 = r158[2];
+    |  float r265 = r158[3];
+    |  vec3 r266 = vec3(r262,r263,r264);
+    |  vec3 r267 = abs(r266);
+    |  vec3 r273 = r267-r272;
+    |  float r274 = r273[0];
+    |  float r275 = r273[1];
+    |  float r276 = max(r274,r275);
+    |  float r277 = r273[2];
+    |  float r278 = max(r276,r277);
+    |  float r279 = min(r278,r10);
+    |  vec3 r280 = vec3(r10);
+    |  vec3 r281 = max(r273,r280);
+    |  float r282 = length(r281);
+    |  float r283 = r279+r282;
+    |  float r284 = max(r261,r283);
+    |  float r285 = r0[0];
+    |  float r286 = r0[1];
+    |  float r287 = r0[2];
+    |  float r288 = r0[3];
+    |  vec3 r289 = vec3(r285,r286,r287);
+    |  vec3 r290 = abs(r289);
+    |  vec3 r295 = r290-r294;
+    |  float r296 = r295[0];
+    |  float r297 = r295[1];
+    |  float r298 = max(r296,r297);
+    |  float r299 = r295[2];
+    |  float r300 = max(r298,r299);
+    |  float r301 = min(r300,r10);
+    |  vec3 r302 = vec3(r10);
+    |  vec3 r303 = max(r295,r302);
+    |  float r304 = length(r303);
+    |  float r305 = r301+r304;
+    |  float r306 = max(r284,r305);
+    |  bool r307 = r306<=r10;
+    |  bool r308 = r306<=r109;
+    |  bool r309 =(r307 || r308);
+    |  float r310 = r0[0];
+    |  float r311 = r0[1];
+    |  float r312 = r0[2];
+    |  float r313 = r0[3];
+    |  vec3 r314 = vec3(r310,r311,r312);
+    |  float r315 = cos(r114);
+    |  vec3 r316 = vec3(r315);
+    |  vec3 r317 = r314*r316;
+    |  float r318 = r115.y;
+    |  float r319 = r314.z;
+    |  float r320 = r318*r319;
+    |  float r321 = r115.z;
+    |  float r322 = r314.y;
+    |  float r323 = r321*r322;
+    |  float r324 = r320-r323;
+    |  float r325 = r115.z;
+    |  float r326 = r314.x;
+    |  float r327 = r325*r326;
+    |  float r328 = r115.x;
+    |  float r329 = r314.z;
+    |  float r330 = r328*r329;
+    |  float r331 = r327-r330;
+    |  float r332 = r115.x;
+    |  float r333 = r314.y;
+    |  float r334 = r332*r333;
+    |  float r335 = r115.y;
+    |  float r336 = r314.x;
+    |  float r337 = r335*r336;
+    |  float r338 = r334-r337;
+    |  vec3 r339 = vec3(r324,r331,r338);
+    |  float r340 = sin(r114);
+    |  vec3 r341 = vec3(r340);
+    |  vec3 r342 = r339*r341;
+    |  vec3 r343 = r317-r342;
+    |  float r344 = cos(r114);
+    |  float r345 = r146-r344;
+    |  vec3 r346 = vec3(r345);
+    |  vec3 r347 = r314*r346;
+    |  float r348 = dot(r115,r347);
+    |  vec3 r349 = vec3(r348);
+    |  vec3 r350 = r115*r349;
+    |  vec3 r351 = r343+r350;
+    |  float r352 = r351.x;
+    |  float r353 = r351.y;
+    |  float r354 = r351.z;
+    |  float r355 = r352+r165;
+    |  float r356 = r355/r163;
+    |  float r357 = floor(r356);
+    |  float r358 = r163*r357;
+    |  float r359 = r355-r358;
+    |  float r360 = r359-r165;
+    |  bool r361 = r354<=r52;
+    |  float r362 = r360/r146;
+    |  float r363 = r353/r146;
+    |  vec4 r364 = vec4(r362,r363,r354,r313);
+    |  float r365 = r364.x;
+    |  float r366 = r364.y;
+    |  float r367 = r364.w;
+    |  vec4 r368 = vec4(r365,r366,r10,r367);
+    |  bool r375 = r354>=r146;
+    |  float r376 = r360/r199;
+    |  float r377 = r353/r199;
+    |  vec4 r378 = vec4(r376,r377,r354,r313);
+    |  float r379 = r378.x;
+    |  float r380 = r378.y;
+    |  float r381 = r378.w;
+    |  vec4 r382 = vec4(r379,r380,r10,r381);
+    |  float r383 = r354-r52;
+    |  float r384 = r146-r52;
+    |  float r385 = r383/r384;
+    |  float r386 = r146-r385;
+    |  float r387 = r146*r386;
+    |  float r388 = r199*r385;
+    |  float r389 = r387+r388;
+    |  float r390 = r354-r52;
+    |  float r391 = r146-r52;
+    |  float r392 = r390/r391;
+    |  float r393 = r146-r392;
+    |  float r394 = r146*r393;
+    |  float r395 = r199*r392;
+    |  float r396 = r394+r395;
+    |  float r397 = r360/r389;
+    |  float r398 = r353/r396;
+    |  vec4 r399 = vec4(r397,r398,r354,r313);
+    |  float r400 = r399.x;
+    |  float r401 = r399.y;
+    |  float r402 = r399.w;
+    |  vec4 r403 = vec4(r400,r401,r10,r402);
+    |  vec3 r404 =(r375 ? r374 : r374);
+    |  vec3 r405 =(r361 ? r374 : r404);
+    |  float r406 = r0.z;
+    |  float r407 = abs(r406);
+    |  float r408 = r407-r6;
+    |  float r409 = r0.x;
+    |  float r410 = r0.y;
+    |  float r411 = r0.w;
+    |  vec4 r412 = vec4(r409,r410,r10,r411);
+    |  float r413 = r412[0];
+    |  float r414 = r412[1];
+    |  float r415 = r412[2];
+    |  float r416 = r412[3];
+    |  vec2 r417 = vec2(r413,r414);
+    |  vec2 r418 = abs(r417);
+    |  vec2 r419 = r418-r23;
+    |  float r420 = r419[0];
+    |  float r421 = r419[1];
+    |  float r422 = max(r420,r421);
+    |  float r423 = min(r422,r10);
+    |  vec2 r424 = vec2(r10);
+    |  vec2 r425 = max(r419,r424);
+    |  float r426 = length(r425);
+    |  float r427 = r423+r426;
+    |  float r428 = r412[0];
+    |  float r429 = r412[1];
+    |  float r430 = r412[2];
+    |  float r431 = r412[3];
+    |  vec2 r432 = vec2(r428,r429);
+    |  vec2 r433 = abs(r432);
+    |  vec2 r434 = r433-r41;
+    |  float r435 = r434[0];
+    |  float r436 = r434[1];
+    |  float r437 = max(r435,r436);
+    |  float r438 = min(r437,r10);
+    |  vec2 r439 = vec2(r10);
+    |  vec2 r440 = max(r434,r439);
+    |  float r441 = length(r440);
+    |  float r442 = r438+r441;
+    |  float r443 = r442-r54;
+    |  float r444 = -(r443);
+    |  float r445 = max(r427,r444);
+    |  vec2 r446 = vec2(r408,r445);
+    |  vec2 r447 = vec2(r10);
+    |  vec2 r448 = max(r446,r447);
+    |  float r449 = length(r448);
+    |  float r450 = max(r408,r445);
+    |  float r451 = min(r450,r10);
+    |  float r452 = r449+r451;
+    |  float r453 = r0.x;
+    |  float r454 = r66.x;
+    |  float r455 = r453-r454;
+    |  float r456 = r0.y;
+    |  float r457 = r66.y;
+    |  float r458 = r456-r457;
+    |  float r459 = r0.z;
+    |  float r460 = r66.z;
+    |  float r461 = r459-r460;
+    |  float r462 = r0.w;
+    |  vec4 r463 = vec4(r455,r458,r461,r462);
+    |  float r464 = r463.z;
+    |  float r465 = abs(r464);
+    |  float r466 = r465-r80;
+    |  float r467 = r463.x;
+    |  float r468 = r463.y;
+    |  float r469 = r463.w;
+    |  vec2 r470 = vec2(r467,r468);
+    |  vec2 r471 = abs(r470);
+    |  vec2 r472 = r471-r92;
+    |  float r473 = r472[0];
+    |  float r474 = r472[1];
+    |  float r475 = max(r473,r474);
+    |  float r476 = min(r475,r10);
+    |  vec2 r477 = vec2(r10);
+    |  vec2 r478 = max(r472,r477);
+    |  float r479 = length(r478);
+    |  float r480 = r476+r479;
+    |  vec2 r481 = vec2(r466,r480);
+    |  vec2 r482 = vec2(r10);
+    |  vec2 r483 = max(r481,r482);
+    |  float r484 = length(r483);
+    |  float r485 = max(r466,r480);
+    |  float r486 = min(r485,r10);
+    |  float r487 = r484+r486;
+    |  bool r488 = r487<=r10;
+    |  bool r489 = r487<=r452;
+    |  bool r490 =(r488 || r489);
+    |  float r491 = r0.x;
+    |  float r492 = r66.x;
+    |  float r493 = r491-r492;
+    |  float r494 = r0.y;
+    |  float r495 = r66.y;
+    |  float r496 = r494-r495;
+    |  float r497 = r0.z;
+    |  float r498 = r66.z;
+    |  float r499 = r497-r498;
+    |  float r500 = r0.w;
+    |  vec4 r501 = vec4(r493,r496,r499,r500);
+    |  float r502 = r501.x;
+    |  float r503 = r501.y;
+    |  float r504 = r501.w;
+    |  vec4 r505 = vec4(r502,r503,r10,r504);
+    |  float r506 = r0.x;
+    |  float r507 = r0.y;
+    |  float r508 = r0.w;
+    |  vec4 r509 = vec4(r506,r507,r10,r508);
+    |  vec3 r510 =(r490 ? r374 : r374);
+    |  vec3 r511 =(r309 ? r405 : r510);
+    |  return r511;
+    |}
+    |const vec3 bbox_min = vec3(-9.0,-4.0,-1.0);
+    |const vec3 bbox_max = vec3(9.0,4.0,1.0);
+    |// ray marching. ro is ray origin, rd is ray direction (unit vector).
+    |// result is (t,r,g,b), where
+    |//  * t is the distance that we marched,
+    |//  * r,g,b is the colour of the distance field at the point we ended up at.
+    |//    (-1,-1,-1) means no object was hit.
+    |vec4 castRay( in vec3 ro, in vec3 rd, float time )
+    |{
+    |    float tmin = 0.0;
+    |    float tmax = ray_max_depth;
+    |   
+    |    float t = tmin;
+    |    vec3 c = vec3(-1.0,-1.0,-1.0);
+    |    for (int i=0; i<ray_max_iter; i++) {
+    |        float precis = 0.0005*t;
+    |        vec4 p = vec4(ro+rd*t,time);
+    |        float d = dist(p);
+    |        if (abs(d) < abs(precis)) {
+    |            c = colour(p);
+    |            break;
+    |        }
+    |        t += d;
+    |        if (t > tmax) break;
+    |    }
+    |    return vec4( t, c );
+    |}
+    |vec3 calcNormal( in vec3 pos, float time )
+    |{
+    |    vec2 e = vec2(1.0,-1.0)*0.5773*0.0005;
+    |    return normalize( e.xyy*dist( vec4(pos + e.xyy,time) ) + 
+    |                      e.yyx*dist( vec4(pos + e.yyx,time) ) + 
+    |                      e.yxy*dist( vec4(pos + e.yxy,time) ) + 
+    |                      e.xxx*dist( vec4(pos + e.xxx,time) ) );
+    |}
+    |float calcAO( in vec3 pos, in vec3 nor, float time )
+    |{
+    |    float occ = 0.0;
+    |    float sca = 1.0;
+    |    for( int i=0; i<5; i++ )
+    |    {
+    |        float hr = 0.01 + 0.12*float(i)/4.0;
+    |        vec3 aopos =  nor * hr + pos;
+    |        float dd = dist( vec4(aopos,time) );
+    |        occ += -(dd-hr)*sca;
+    |        sca *= 0.95;
+    |    }
+    |    return clamp( 1.0 - 3.0*occ, 0.0, 1.0 );    
+    |}
+    |// in ro: ray origin
+    |// in rd: ray direction
+    |// out: rgb colour
+    |vec3 render( in vec3 ro, in vec3 rd, float time )
+    |{ 
+    |    //vec3 col = vec3(0.7, 0.9, 1.0) +rd.z*0.8;
+    |    vec3 col = background_colour;
+    |    vec4 res = castRay(ro,rd, time);
+    |    float t = res.x;
+    |    vec3 c = res.yzw;
+    |    if( c.x>=0.0 )
+    |    {
+    |        vec3 pos = ro + t*rd;
+    |        vec3 nor = calcNormal( pos, time );
+    |        vec3 ref = reflect( rd, nor );
+    |        
+    |        // material        
+    |        col = c;
+    |
+    |        // lighting        
+    |        float occ = calcAO( pos, nor, time );
+    |        vec3  lig = normalize( vec3(-0.4, 0.6, 0.7) );
+    |        float amb = clamp( 0.5+0.5*nor.z, 0.0, 1.0 );
+    |        float dif = clamp( dot( nor, lig ), 0.0, 1.0 );
+    |        float bac = clamp( dot( nor, normalize(vec3(-lig.x,lig.y,0.0))), 0.0, 1.0 )*clamp( 1.0-pos.z,0.0,1.0);
+    |        float dom = smoothstep( -0.1, 0.1, ref.z );
+    |        float fre = pow( clamp(1.0+dot(nor,rd),0.0,1.0), 2.0 );
+    |        float spe = pow(clamp( dot( ref, lig ), 0.0, 1.0 ),16.0);
+    |        
+    |        vec3 lin = vec3(0.0);
+    |        lin += 1.30*dif*vec3(1.00,0.80,0.55);
+    |        lin += 2.00*spe*vec3(1.00,0.90,0.70)*dif;
+    |        lin += 0.40*amb*vec3(0.40,0.60,1.00)*occ;
+    |        lin += 0.50*dom*vec3(0.40,0.60,1.00)*occ;
+    |        lin += 0.50*bac*vec3(0.35,0.35,0.35)*occ;
+    |        lin += 0.25*fre*vec3(1.00,1.00,1.00)*occ;
+    |        vec3 iqcol = col*lin;
+    |
+    |        //col = mix( col, vec3(0.8,0.9,1.0), 1.0-exp( -0.0002*t*t*t ) );
+    |        col = mix(col,iqcol, 0.5);
+    |    }
+    |
+    |    return vec3( clamp(col,0.0,1.0) );
+    |}
+    |// Create a matrix to transform coordinates to look towards a given point.
+    |// * `eye` is the position of the camera.
+    |// * `centre` is the position to look towards.
+    |// * `up` is the 'up' direction.
+    |mat3 look_at(vec3 eye, vec3 centre, vec3 up)
+    |{
+    |    vec3 ww = normalize(centre - eye);
+    |    vec3 uu = normalize(cross(ww, up));
+    |    vec3 vv = normalize(cross(uu, ww));
+    |    return mat3(uu, vv, ww);
+    |}
+    |// Generate a ray direction for ray-casting.
+    |// * `camera` is the camera look-at matrix.
+    |// * `pos` is the screen position, normally in the range -1..1
+    |// * `lens` is the lens length of the camera (encodes field-of-view).
+    |//   0 is very wide, and 2 is a good default.
+    |vec3 ray_direction(mat3 camera, vec2 pos, float lens)
+    |{
+    |    return normalize(camera * vec3(pos, lens));
+    |}
+    |void mainImage( out vec4 fragColour, in vec2 fragCoord )
+    |{
+    |    vec3 col = vec3(0.0);
+    |    const vec3 origin = (bbox_min + bbox_max) / 2.0;
+    |    const vec3 radius = (bbox_max - bbox_min) / 2.0;
+    |    float r = max(radius.x, max(radius.y, radius.z)) / 1.3;
+    |#if AA>1
+    |  for (int m=0; m<AA; ++m)
+    |  for (int n=0; n<AA; ++n) {
+    |    vec2 o = vec2(float(m),float(n)) / float(AA) - 0.5;
+    |#else
+    |    const vec2 o = vec2(0.0);
+    |#endif
+    |    vec2 p = -1.0 + 2.0 * (fragCoord+o) / iResolution.xy;
+    |    p.x *= iResolution.x/iResolution.y;
+    |
+    |#ifdef GLSLVIEWER
+    |    vec3 eye = vec3(u_eye3d.x, -u_eye3d.z, u_eye3d.y)*r + origin;
+    |    vec3 centre = vec3(u_centre3d.x, -u_centre3d.z, u_centre3d.y)*r + origin;
+    |    vec3 up = vec3(u_up3d.x, -u_up3d.z, u_up3d.y);
+    |#else
+    |    vec3 eye = vec3(2.6, -4.5, 3.0);
+    |    vec3 centre = vec3(0.0, 0.0, 0.0);
+    |    vec3 up = vec3(-0.25, 0.433, 0.866);
+    |#endif
+    |    mat3 camera = look_at(eye, centre, up);
+    |    vec3 dir = ray_direction(camera, p, 2.5);
+    |
+    |#if TAA>1
+    |  for (int t=0; t<TAA; ++t) {
+    |    float time = iTime + float(t)/float(TAA)*float(FDUR);
+    |#else
+    |    float time = iTime;
+    |#endif
+    |    col += render( eye, dir, time );
+    |
+    |#if TAA>1
+    |  }
+    |#endif
+    |#if AA>1
+    |  }
+    |#endif
+    |#if AA>1 || TAA>1
+    |    col /= float(AA*AA*TAA);
+    |#endif
+    |
+    |    // convert linear RGB to sRGB
+    |    col = pow(col, vec3(0.454545454545454545));
+    |    fragColour = vec4(col,1.0);
+    |}
+    ";
+  parameters: [
+    {name: "rv_bar_thickness", type: "float", value: 1, label: "bar_thickness", config: {slider:[1,5]}};
+    {name: "rv_bar_vertical", type: "float", value: 0, label: "bar_vertical", config: {slider:[-15,15]}};
+    {name: "rv_column_hole", type: "float", value: 0.5, label: "column_hole", config: {slider:[0.01,1]}};
+    {name: "rv_column_spacing", type: "float", value: 1, label: "column_spacing", config: {slider:[0.1,5]}};
+    {name: "rv_soroban_depth", type: "float", value: 2, label: "soroban_depth", config: {slider:[1,10]}};
+    {name: "rv_soroban_frame_thickness", type: "float", value: 1, label: "soroban_frame_thickness", config: {slider:[0.1,5]}};
+    {name: "rv_soroban_height", type: "float", value: 8, label: "soroban_height", config: {slider:[1,30]}};
+    {name: "rv_soroban_width", type: "float", value: 18, label: "soroban_width", config: {slider:[1,30]}};
+  ];
+}
