@@ -34,27 +34,27 @@ xGDF [p, r, e, begin, end] =
     do
         local d = 0;
         for (i in begin..end)
-            d := d + abs(dot[p, GDFVectors@i])^e;
+            d := d + abs(dot[p, GDFVectors.[i]])^e;
 	in d^(1/e) - r;
 
 GDF [p, r, begin, end] =
     do
         local d = 0;
         for (i in begin..end)
-            d := max[d, abs(dot[p, GDFVectors@i])];
+            d := max[d, abs(dot[p, GDFVectors.[i]])];
     in d - r;
 
 // not an octahedron, not Lipschitz(1)
 xOcta [r, e] =
     make_shape {
-        dist p = xGDF[p@[X,Y,Z], r, e, 3, 6];
+        dist p = xGDF[p.[[X,Y,Z]], r, e, 3, 6];
         is_3d = true;
     };
 
 // works as expected
 Octa r =
     make_shape {
-        dist p = GDF[p@[X,Y,Z], r, 3, 6];
+        dist p = GDF[p.[[X,Y,Z]], r, 3, 6];
         colour p = sRGB[count GDFVectors/19,0,0];
         circumratio = (1/2*sqrt 2) / (1/6*sqrt 6);
         bbox = circumratio * [[-r,-r,-r], [r,r,r]];

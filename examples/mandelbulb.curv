@@ -23,8 +23,8 @@ let
     powN1[z, r, dr] =
         let
             // extract polar coordinates
-            theta = if (r==0) 0 else acos(z@Z/r);
-            phi = phase(z@[X,Y]);
+            theta = if (r==0) 0 else acos(z.[Z]/r);
+            phi = phase(z.[[X,Y]]);
             //	dr2 =  pow( r, Power-1.0)*Power*dr + 1.0;
             // mermelada's tweak
             // http://www.fractalforums.com/new-theories-and-research/error-estimation-of-distance-estimators/msg102670/?topicseen#msg102670
@@ -37,13 +37,13 @@ let
 
             // convert back to cartesian coordinates
             z2 = zr*[sin(theta2)*cos(phi2), sin(phi2)*sin(theta2), cos(theta2)];
-        in [z2@X, z2@Y, z2@Z, dr2];
+        in [z2.[X], z2.[Y], z2.[Z], dr2];
 
 in
 make_shape {
     dist p =
         do
-            local pos = p@[X,Y,Z];
+            local pos = p.[[X,Y,Z]];
             local rot = 1;
             local dr = 1;
             local z = pos;
@@ -51,8 +51,8 @@ make_shape {
             local r = mag z;
             while (r<Bailout && i<Iterations) (
                 local zdr = powN1[z,r,dr];
-                z := zdr@[X,Y,Z];
-                dr := zdr@3;
+                z := zdr.[[X,Y,Z]];
+                dr := zdr.[3];
                 z := z + pos;
                 r := mag z;
                 z := z * rot;

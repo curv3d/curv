@@ -14,8 +14,8 @@ ripple shape =
         dist[x,y,z,t] =
             let dz = cos(mag[x,y]);
             in shape.dist[x,y,z-dz,t];
-        bbox = [[shape.bbox@MIN@X, shape.bbox@MIN@Y, shape.bbox@MIN@Z-1],
-                [shape.bbox@MAX@X, shape.bbox@MAX@Y, shape.bbox@MAX@Z+1]];
+        bbox = [[shape.bbox.[MIN,X], shape.bbox.[MIN,Y], shape.bbox.[MIN,Z]-1],
+                [shape.bbox.[MAX,X], shape.bbox.[MAX,Y], shape.bbox.[MAX,Z]+1]];
         is_3d = true;
     };
 
@@ -24,8 +24,8 @@ undulate shape =
         dist[x,y,z,t] =
             let dx = cos y;
             in shape.dist[x-dx,y,z,t];
-        bbox = [[shape.bbox@MIN@X-1, shape.bbox@MIN@Y, shape.bbox@MIN@Z],
-                [shape.bbox@MAX@X+1, shape.bbox@MAX@Y, shape.bbox@MAX@Z]];
+        bbox = [[shape.bbox.[MIN,X]-1, shape.bbox.[MIN,Y], shape.bbox.[MIN,Z]],
+                [shape.bbox.[MAX,X]+1, shape.bbox.[MAX,Y], shape.bbox.[MAX,Z]]];
         is_2d = shape.is_2d;
         is_3d = shape.is_3d;
     };
@@ -36,8 +36,8 @@ pagoda shape =
         dist[x,y,z,t] =
             let kz = cos z / 20 + 1;
             in shape.dist[x/kz,y/kz,z,t]*kz;
-        bbox = [[shape.bbox@MIN@X-1, shape.bbox@MIN@Y-1, shape.bbox@MIN@Z],
-                [shape.bbox@MAX@X+1, shape.bbox@MAX@Y+1, shape.bbox@MAX@Z]];
+        bbox = [[shape.bbox.[MIN,X]-1, shape.bbox.[MIN,Y]-1, shape.bbox.[MIN,Z]],
+                [shape.bbox.[MAX,X]+1, shape.bbox.[MAX,Y]+1, shape.bbox.[MAX,Z]]];
         is_3d = true;
     };
 
@@ -57,9 +57,9 @@ noise xy =
 
         u = f * f * (3 - 2 * f);
 
-    in lerp[a, b, u@X] + 
-        (c - a)* u@Y * (1 - u@X) + 
-        (d - b) * u@X * u@Y;
+    in lerp[a, b, u.[X]] + 
+        (c - a)* u.[Y] * (1 - u.[X]) + 
+        (d - b) * u.[X] * u.[Y];
 
 fbm xy =
     let shift = [100,100];
@@ -90,7 +90,7 @@ smoke[x,y,z,t] =
                  clamp[mag q, 0, 1]];
         c := lerp[c,
                  [0.666667,1,1],
-                 clamp[r@X, 0, 1]];
+                 clamp[r.[X], 0, 1]];
     in (f*f*f+.6*f*f+.5*f)*c;
 
 } // EOF

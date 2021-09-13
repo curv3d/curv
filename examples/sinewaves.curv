@@ -1,6 +1,6 @@
 make_shape {
-    dist p = (p@Z - sin(p@X) * sin(p@Y)) * 0.66;
-    colour p = sRGB.hue((sin(p@X) * sin(p@Y) + 1)/2);
+    dist p = (p.[Z] - sin(p.[X]) * sin(p.[Y])) * 0.66;
+    colour p = sRGB.hue((sin(p.[X]) * sin(p.[Y]) + 1)/2);
     bbox = [[-inf,-inf,-1], [inf, inf, +1]];
     is_3d = true;
 }

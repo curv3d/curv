@@ -3,7 +3,7 @@
 
 let
     schwartz_p = make_shape {
-        dist p = -(cos(p@X) + cos(p@Y) + cos(p@Z));
+        dist p = -(cos(p.[X]) + cos(p.[Y]) + cos(p.[Z]));
         is_3d = true;
     };
 

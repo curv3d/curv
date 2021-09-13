@@ -30,9 +30,9 @@ spiral_print m =
     if (m == []) m else m[0] ++ spiral_print(reverse(transpose(m[1..last])));
 spiral_print [[1,2,3], [8,9,4], [7,6,5]]
 
-/// a@i not a[i]
+/// a.[i] not a[i]
 spiral_print m =
-    if (m == []) m else m@0 ++ spiral_print(reverse(transpose(m@(1..))));
+    if (m == []) m else m.[0] ++ spiral_print(reverse(transpose(m.[1..])));
 spiral_print [[1,2,3], [8,9,4], [7,6,5]]
 
 /// alpha mixfix
@@ -40,7 +40,7 @@ spiral_print m =
     if (m == []) then
         (m)
     else
-        (m@0 ++ spiral_print(reverse(transpose(m@(1..last)))));
+        (m.[0] ++ spiral_print(reverse(transpose(m.[1..last]))));
 spiral_print [[1,2,3], [8,9,4], [7,6,5]]
 
 /// UPPER mixfix
@@ -48,6 +48,6 @@ spiral_print m =
     IF m == [] THEN
         m
     ELSE
-        m@0 ++ spiral_print(reverse(transpose(m@(1..last))));
+        m.[0] ++ spiral_print(reverse(transpose(m.[1..last])));
 spiral_print [[1,2,3], [8,9,4], [7,6,5]]
 */

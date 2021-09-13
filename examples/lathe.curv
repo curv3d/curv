@@ -1,6 +1,6 @@
 let
     function(f) = make_shape {
-        dist p = p@Y - f(p@X);
+        dist p = p.[Y] - f(p.[X]);
         is_2d = true;
     };
 

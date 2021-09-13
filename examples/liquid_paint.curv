@@ -13,8 +13,8 @@ make_shape {
             local p = [x,y];
             local t = t*Speed;
             for (i in 1..Iter)
-                p := p + Amp/i*sin(i*p@[Y,X] + t + [0,tau/2]) + 1;
-        in sRGB[0.5*sin(3.0*p@X)+0.5, 0.5*sin(3.0*p@Y)+0.5, sin(p@X+p@Y)];
+                p := p + Amp/i*sin(i*p.[[Y,X]] + t + [0,tau/2]) + 1;
+        in sRGB[0.5*sin(3.0*p.[X])+0.5, 0.5*sin(3.0*p.[Y])+0.5, sin(p.[X]+p.[Y])];
     dist p = -inf;
     bbox = [[-1,-1,0],[1,1,0]];
     is_2d = true;

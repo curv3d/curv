@@ -17,9 +17,9 @@ let
 
             u = f * f * (3 - 2 * f);
 
-        in lerp[a, b, u@X] +
-            (c - a) * u@Y * (1 - u@X) +
-            (d - b) * u@X * u@Y;
+        in lerp[a, b, u.[X]] +
+            (c - a) * u.[Y] * (1 - u.[X]) +
+            (d - b) * u.[X] * u.[Y];
 
     fbm xy =
         let shift = [100,100];
@@ -50,7 +50,7 @@ let
                      clamp[mag q, 0, 1]];
             c := lerp[c,
                      [0.666667,1,1],
-                     clamp[r@X, 0, 1]];
+                     clamp[r.[X], 0, 1]];
         in (f*f*f+.6*f*f+.5*f)*c;
 
 in

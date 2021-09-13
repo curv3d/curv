@@ -8,9 +8,9 @@ let
             dist p = shape.dist p;
             colour p =
                 if (
-                    mod[abs(p@X)+(0.001+pitch)/2,pitch] < 0.01 ||
-                    mod[abs(p@Y)+(0.001+pitch)/2,pitch] < 0.01 ||
-                    mod[abs(p@Z)+(0.001+pitch)/2,pitch] < 0.01
+                    mod[abs(p.[X])+(0.001+pitch)/2,pitch] < 0.01 ||
+                    mod[abs(p.[Y])+(0.001+pitch)/2,pitch] < 0.01 ||
+                    mod[abs(p.[Z])+(0.001+pitch)/2,pitch] < 0.01
                 )
                     black
                 else

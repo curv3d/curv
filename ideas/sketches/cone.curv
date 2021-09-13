@@ -27,7 +27,7 @@ let
 // Credit: MERCURY (http://mercury.sexy/hg_sdf)
 hg_cone[radius, height] = make_shape {
     dist p : do
-        local q = [mag(p@[X,Y]), p@Z];
+        local q = [mag(p.[[X,Y]]), p.[Z]];
         local tip = q - [0, height];
         local mantleDir = normalize[height, radius];
         local mantle = dot[tip, mantleDir];
@@ -53,7 +53,7 @@ hg_cone[radius, height] = make_shape {
 // non-Euclidean distance field, cheaper than the HG cone.
 iq_cone[c,h] = make_shape {
     dist p : let
-        q = [mag(p@[X,Y]), p.[Z]];
+        q = [mag(p.[[X,Y]]), p.[Z]];
         d1 = -q.[Y] - h;
         d2 = max[ dot[q,c], q.[Y] ];
     in

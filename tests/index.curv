@@ -1,16 +1,16 @@
 do
-assert( 42@this == 42 );
+assert( 42.[this] == 42 );
 assert( amend this 17 42 == 17 );
-assert( [0,1,2]@(tpath[this,1]) == 1 );
-assert( [0,1,2]@(tpath[1,this]) == 1 );
-assert( [0,1,2]@(tslice[this,1]) == 1 );
-assert( [0,1,2]@(tslice[1,this]) == 1 );
+assert( [0,1,2].[tpath[this,1]] == 1 );
+assert( [0,1,2].[tpath[1,this]] == 1 );
+assert( [0,1,2].[tslice[this,1]] == 1 );
+assert( [0,1,2].[tslice[1,this]] == 1 );
 assert( amend (tpath[this,1]) 99 [0,1,2] == [0,99,2] );
 assert( amend (tpath[1,this]) 99 [0,1,2] == [0,99,2] );
 assert( amend (tslice[this,1]) 99 [0,1,2] == [0,99,2] );
 assert( amend (tslice[1,this]) 99 [0,1,2] == [0,99,2] );
 
-assert( [1,2,3]@0 == 1 );
+assert( [1,2,3].[0] == 1 );
 assert( amend 0 17 [1,2,3] == [17,2,3] );
 
 assert( {a:1,b:2}@#a == 1 );
@@ -20,10 +20,10 @@ local a =
   [[00, 01, 02],
    [10, 11, 12],
    [20, 21, 22]];
-assert( a@(tpath[1,2]) == 12 );
-assert( a@(tslice[0,[1,2]]) == [1,2] );
-assert( a@(tslice[[0,2],1]) == [01,21] );
-assert( a@(tslice[[0,2],[0,2]]) == [[00,02],[20,22]] );
+assert( a.[tpath[1,2]] == 12 );
+assert( a.[tslice[0,[1,2]]] == [1,2] );
+assert( a.[tslice[[0,2],1]] == [01,21] );
+assert( a.[tslice[[0,2],[0,2]]] == [[00,02],[20,22]] );
 assert( amend (tpath[1,2]) 99 a ==
   [[00, 01, 02],
    [10, 11, 99],
@@ -41,15 +41,15 @@ assert( amend (tslice[[0,2],[0,2]]) [[88,89],[98,99]] a ==
    [10, 11, 12],
    [98, 21, 99]] );
 
-assert( [1,2,3]@(tpath[[0,2],[1,0]]) == [3,1] );
+assert( [1,2,3].[tpath[[0,2],[1,0]]] == [3,1] );
 assert( amend (tpath[[0,2],[1,0]]) [99,77] [1,2,3] == [77,2,99] );
 
-assert( a@(tpath[[0,1],[1,0]]) == 
+assert( a.[tpath[[0,1],[1,0]]] == 
   [
    [10, 11, 12],
    [00, 01, 02],
   ] );
-assert( a@(tslice [tpath [[0,1],[1,0]], 1]) == [11,01] );
+assert( a.[tslice [tpath [[0,1],[1,0]], 1]] == [11,01] );
 assert( amend (tslice [tpath [[0,1],[1,0]], 1]) [19,09] a ==
   [[00, 09, 02],
    [10, 19, 12],
@@ -70,8 +70,8 @@ local b =
      [220,221,222]]
   ]
 ;
-assert( b@(tpath[0,1]) == [010,011,012] );
-assert( b@(tpath[0,1,2]) == 012 );
+assert( b.[tpath[0,1]] == [010,011,012] );
+assert( b.[tpath[0,1,2]] == 012 );
 assert( amend (tpath[0,1]) 999 b ==
   [ [[000,001,002],
      999,
@@ -101,11 +101,11 @@ assert( amend (tpath[0,1,2]) 999 b ==
   ]
 );
 
-assert( b@(tslice[[0,1],[1,2],[0,2]]) ==
+assert( b.[tslice[[0,1],[1,2],[0,2]]] ==
     [[[010,012],[020,022]],
      [[110,112],[120,122]]]
 );
-assert( b@(tslice[ tslice[[0,1],[1,2]], [0,2] ]) ==
+assert( b.[tslice[ tslice[[0,1],[1,2]], [0,2] ]] ==
     [[[010,012],[020,022]],
      [[110,112],[120,122]]]
 );
@@ -146,7 +146,7 @@ assert( amend (tslice[ tslice[[0,1],[1,2]], [0,2] ])
   ]
 );
 
-assert("abc"@1 == #"b");
+assert("abc".[1] == #"b");
 assert(amend 1 (#"-") "abc" == "a-c");
 assert(amend 1 42 "abc" == "a"++[42]++"c");
 

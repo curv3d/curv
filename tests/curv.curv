@@ -434,7 +434,7 @@ sc_test{
     let a = [1,2,3];
     in do
         a.[X] := 17;
-        a@1 := 42;
+        a.[1] := 42;
         a.[2] := 99;
     in a
   ) == [17,42,99];
@@ -510,7 +510,7 @@ assert_error(
     local a = [1,2,3];
     local b = a;
     a.[0] := 17;
-    a@1 := 42;
+    a.[1] := 42;
     assert(a == [17,42,3] && b == [1,2,3]);
 );
 assert_error(   // a[i] is a locative; [i]>>a is not a locative
@@ -626,19 +626,19 @@ sc_test {
 
 // lens
 let n=42 in (
-    assert(n@[] == []);
+    assert(n.[[]] == []);
     assert(n.[] == n);
     assert(n.[[]] == []);
 );
 let a=[1,2,3] in (
-    assert(a@0 == 1);
     assert(a.[0] == 1);
-    assert(a@[1,2] == [2,3]);
+    assert(a.[0] == 1);
+    assert(a.[[1,2]] == [2,3]);
     assert(a.[[1,2]] == [2,3]);
 );
 let r={a:1,b:2} in (
     assert(r@#b == 2);
-    assert(r@[#b,#a] == [2,1]);
+    assert(r.[[#b,#a]] == [2,1]);
     assert(r.[#a] == 1);
     assert(r.[[#a,#b]] == [1,2]);
 );
@@ -646,12 +646,12 @@ assert_error [
     "Bad index: 0.5
     |collection: {}
     |index: 0.5",
-    {}@0.5 ];
+    {}.[0.5] ];
 assert_error [
     "Index incompatible with collection: {} is not a list
     |collection: {}
     |index: 0",
-    {}@0 ];
+    {}.[0] ];
 assert_error [
     "Bad index: {} does not contain the field .foo
     |collection: {}
@@ -661,22 +661,22 @@ assert_error [
     "Bad index: 9007199254740992 is not in the range 0..2
     |collection: [1,2,3]
     |index: 9007199254740992",
-    [1,2,3]@(2^53) ];
+    [1,2,3].[2^53] ];
 assert_error [
     "Bad index: 0 is not in range
     |collection: []
     |index: 0",
-    []@0 ];
+    [].[0] ];
 assert_error [
     "Bad index: 9007199254740992 is not in range
     |collection: []
     |index: 9007199254740992",
-    []@(2^53) ];
+    [].[2^53] ];
 assert_error [
     "Bad index: 3.141592653589793
     |collection: []
     |index: 3.141592653589793",
-    []@pi ];
+    [].[pi] ];
 assert_error [
     "Index incompatible with collection: [] is not a record
     |collection: []
@@ -686,7 +686,7 @@ assert_error [
     "Bad index: inf
     |collection: []
     |index: inf",
-    []@inf ];
+    [].[inf] ];
 assert_error [
     "Bad index: {}
     |collection: {}
@@ -745,7 +745,7 @@ assert(concat["a",[1]] == [char 97,1]);
 assert([for (c in "abc") c] == "abc");
 assert("a"++"b" == "ab" && [1]++[2]==[1,2] && "a"++[2]==[#"a",2]);
 assert( "foo"[0] == #"f" && "foobar"[[3,2,4]] == "boa" );
-assert( "abc"@[0,[1,2]] == [#"a","bc"] );
+assert( "abc".[[0,[1,2]]] == [#"a","bc"] );
 assert( [..."abc",#"d"] == "abcd" );
 assert( string (#"a") == "a" && string "b" == "b" && string #cd == "cd" );
 assert( string "" == "" && string("abc"++[1,2,3]) == "abc[1,2,3]"
@@ -785,7 +785,7 @@ exec (file "index.curv");
 );
 
 // compound locatives
-( local a=0; a@this:=3; assert(a==3) );
+( local a=0; a.[this]:=3; assert(a==3) );
 ( local (a=[1,2];b={c:3}); [a.[0],b.c]:=[4,5]; assert([a,b]==[[4,2],{c:5}]) );
 
 assert( string(sign[-10,-0,0,10]) == "[-1,-0,0,1]" );
