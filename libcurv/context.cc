@@ -73,6 +73,13 @@ At_Token::At_Token(Token tok, const Phrase& phrase, Environ& env)
     file_frame_{env.sstate_.file_frame_}
 {
 }
+At_Token::At_Token(Token tok, const Phrase& phrase, Frame& fm)
+:
+    loc_{share(phrase.location().source()), tok},
+    system_{fm.sstate_.system_},
+    file_frame_{fm.sstate_.file_frame_}
+{
+}
 At_Token::At_Token(Src_Loc loc, Environ& env)
 :
     loc_{move(loc)},

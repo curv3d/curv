@@ -29,7 +29,13 @@ tail_eval_frame(std::unique_ptr<Frame> fm)
 Value
 Operation::eval(Frame& fm) const
 {
-    throw Exception(At_Phrase(*syntax_, fm), "not an expression");
+    auto listing = cast<const Listing_Phrase>(syntax_);
+    if (listing)
+        throw Exception(
+            At_Token(listing->args_.front().separator_, *syntax_, fm),
+            "syntax error in expression");
+    else
+        throw Exception(At_Phrase(*syntax_, fm), "not an expression");
 }
 
 void

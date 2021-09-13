@@ -98,6 +98,7 @@ struct At_Token : public Context
 
     At_Token(Token, const Scanner&);
     At_Token(Token, const Phrase&, Environ&);
+    At_Token(Token, const Phrase&, Frame&);
     At_Token(Src_Loc, Environ&);
     At_Token(Src_Loc, System&, Frame* = nullptr);
 

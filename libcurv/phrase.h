@@ -308,8 +308,11 @@ struct Empty_Phrase : public Phrase
     virtual Shared<Definition> as_definition(Environ&, Fail) const override;
 };
 
-// common implementation for Comma_Phrase and Semicolon_Phrase
-struct Separator_Phrase : public Phrase
+// Common implementation for Comma_Phrase and Semicolon_Phrase.
+// In the surface grammar, a <listing> is a sequence of zero or more items
+// separated by commas or semicolons, with an optional final comma or semi.
+// However, a Listing_Phrase always contains at least one comma/semi.
+struct Listing_Phrase : public Phrase
 {
     // an expression followed by an optional separator
     struct Arg
@@ -324,7 +327,7 @@ struct Separator_Phrase : public Phrase
 
     std::vector<Arg> args_;
 
-    Separator_Phrase() {}
+    Listing_Phrase() {}
 
     virtual Src_Loc location() const override
     {
@@ -335,22 +338,21 @@ struct Separator_Phrase : public Phrase
             : last.separator_);
     }
     virtual Shared<Definition> as_definition(Environ&, Fail) const override;
+    virtual Shared<Meaning> analyse(Environ&, Interp) const override;
 };
 
 /// `a,b,c` -- One or more items, separated by commas, with optional trailing
 /// comma. Guaranteed to contain at least one comma token.
-struct Comma_Phrase : public Separator_Phrase
+struct Comma_Phrase : public Listing_Phrase
 {
-    using Separator_Phrase::Separator_Phrase;
-    virtual Shared<Meaning> analyse(Environ&, Interp) const override;
+    using Listing_Phrase::Listing_Phrase;
 };
 
 /// `a;b;c` -- One or more items, separated by semicolons, with optional
 /// trailing semicolon. Guaranteed to contain at least one semicolon token.
-struct Semicolon_Phrase : public Separator_Phrase
+struct Semicolon_Phrase : public Listing_Phrase
 {
-    using Separator_Phrase::Separator_Phrase;
-    virtual Shared<Meaning> analyse(Environ&, Interp) const override;
+    using Listing_Phrase::Listing_Phrase;
 };
 
 /// common implementation for `(...)`, `[...]` and `{...}` phrases.

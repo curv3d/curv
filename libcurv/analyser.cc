@@ -859,7 +859,7 @@ Recursive_Definition_Phrase::as_definition(Environ& env, Fail) const
 }
 
 Shared<Meaning>
-Semicolon_Phrase::analyse(Environ& env, Interp terp) const
+Listing_Phrase::analyse(Environ& env, Interp terp) const
 {
     Scope scope(env);
     terp = terp.deepen();
@@ -871,7 +871,7 @@ Semicolon_Phrase::analyse(Environ& env, Interp terp) const
 }
 
 Shared<Definition>
-Separator_Phrase::as_definition(Environ& env, Fail fl) const
+Listing_Phrase::as_definition(Environ& env, Fail fl) const
 {
     Shared<Compound_Definition> compound =
         Compound_Definition::make(args_.size(), share(*this));
@@ -904,18 +904,6 @@ Separator_Phrase::as_definition(Environ& env, Fail fl) const
         compound->resize(j);
         return compound;
     }
-}
-
-Shared<Meaning>
-Comma_Phrase::analyse(Environ& env, Interp) const
-{
-    auto& items = args_;
-    Shared<Paren_List_Expr> list =
-        Paren_List_Expr::make(items.size(), share(*this));
-    for (size_t i = 0; i < items.size(); ++i)
-        (*list)[i] = analyse_op(*items[i].expr_, env, Interp::stmt());
-    list->init();
-    return list;
 }
 
 void
