@@ -672,6 +672,11 @@ Binary_Phrase::analyse(Environ& env, Interp) const
 
 Shared<Meaning> Apply_Lens_Phrase::analyse(Environ& env, Interp) const
 {
+    env.sstate_.deprecate(
+        &Source_State::at_deprecated_, 1,
+        At_Phrase(*this, env),
+        "'a@i' is deprecated, use 'a.[i]' instead.");
+
     return make<Index_Expr>(
         share(*this),
         analyse_op(*arg_, env),

@@ -117,6 +117,7 @@ struct Source_State
     bool string_colon_deprecated_ = false;
     bool where_deprecated_ = false;
     bool bracket_index_deprecated_ = false;
+    bool at_deprecated_ = false;
 
     Source_State(System& sys, Frame* ff) : system_(sys), file_frame_(ff) {}
 
