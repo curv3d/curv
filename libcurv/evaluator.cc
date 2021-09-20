@@ -394,6 +394,10 @@ tail_call_func(
         case Ref_Value::ty_abstract_list:
         case Ref_Value::ty_reactive:
           {
+            fm->sstate_.deprecate(&Source_State::bracket_index_deprecated_, 1,
+                At_Phrase(*call_phrase, *fm),
+                "'array[i]' array indexing is deprecated.\n"
+                "Use 'array.[i]' instead.");
             fm->result_ = get_value_at_boxed_slice(funv, arg,
                 At_Phrase(*call_phrase, *fm));
             fm->next_op_ = nullptr;
