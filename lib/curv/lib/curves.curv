@@ -1,0 +1,66 @@
+{
+  dot2 v = dot[v,v];
+  cross2 [a, b] = a.[X]*b.[Y] - a.[Y]*b.[X];
+
+  // signed distance to a quadratic bezier
+  // by inigo quilez
+  sdQuadraticBezier [pos, A, B, C] = do
+      local a = B - A;
+      local b = A - 2*B + C;
+      local c = a * 2;
+      local d = A - pos;
+
+      local kk = 1/dot[b,b];
+      local kx = kk * dot[a,b];
+      local ky = kk * (2*dot[a,a]+dot[d,b])/3;
+      local kz = kk * dot[d,a];
+
+      local res = 0;
+      local sgn = 0;
+
+      local p = ky - kx*kx;
+      local p3 = p*p*p;
+      local q = kx*(2*kx*kx - 3*ky) + kz;
+      local h = q*q + 4*p3;
+
+      if (h >= 0.0)
+      (   // 1 root
+          h := sqrt(h);
+          local x = ([h,-h]-q)/2;
+          local uv = sign x * abs x ^ (1/3);
+          local t = uv.[X]+uv.[Y]-kx;
+          local q = d+(c+b*t)*t;
+          res := dot2 q;
+          sgn := cross2[c+2*b*t,q];
+      )
+      else
+      (   // 3 roots
+          local z = sqrt(-p);
+          local v = acos(q/(p*z*2))/3;
+          local m = cos(v);
+          local n = sin(v)*1.732050808;
+          local t = [m+m,-n-m,n-m]*z-kx;
+          local qx=d+(c+b*t.[X])*t.[X];
+          local dx=dot2(qx);
+          local sx = cross2[c+2*b*t.[X],qx];
+          local qy=d+(c+b*t.[Y])*t.[Y];
+          local dy=dot2(qy);
+          local sy = cross2[c+2*b*t.[Y],qy];
+          if (dx<dy) (
+              res := dx;
+              sgn := sx;
+          ) else (
+              res := dy;
+              sgn := sy;
+          );
+      )
+  in
+      sqrt res * sign sgn;
+
+  curve = {
+    quadratic p0 p1 p2 = make_shape {
+      dist[x,y,_,_] = sdQuadraticBezier [[x,y], p0, p1, p2];
+      is_2d = true;
+    };
+  }
+}

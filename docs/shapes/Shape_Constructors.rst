@@ -110,6 +110,10 @@ Shape Constructors
     Right hand palm on p1, fingertips on p2, thumb is the normal vector
     (points away from the half-plane).
 
+``curve.quadratic p0 p1 p2``
+  A quadratic bezier curve specified with 3 points, where its open side expands
+  into infinity.
+
 3D Shapes
 ---------
 ``sphere``
