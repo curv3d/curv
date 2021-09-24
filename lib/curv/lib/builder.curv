@@ -1,0 +1,39 @@
+/* UNSTABLE INTERFACE */
+{
+  build = [union, nothing, [[0, 0, 0]], [0, 0, 0]];
+
+  '><' =
+    f_new ->
+    [f, shape_prev, origin_history, origin_prev] ->
+    [f_new, shape_prev, origin_history, origin_prev];
+
+  '*' =
+    shape_current ->
+    origin_current ->
+    [f, shape_prev, origin_history, origin_prev] ->
+    let
+      origin_parent = origin_history.[(count origin_history) - 1];
+      position = origin_parent + origin_current;
+    in
+    [
+      f,
+      f [
+        shape_prev,
+        (shape_current >> move position)
+      ],
+      origin_history,
+      position,
+    ];
+
+  '{' = [f, shape_prev, origin_history, origin_prev] ->
+    [f, shape_prev, origin_history ++ [origin_prev], origin_prev];
+
+  '}' = [f, shape_prev, origin_history, origin_prev] ->
+    let
+      origin_history_new = origin_history.[0..<count origin_history];
+      origin_parent = origin_history_new.[(count origin_history) - 1]
+    in
+    [f, shape_prev, origin_history_new, origin_parent];
+
+  done = [f, shape_prev, origin_history, origin_prev] -> shape_prev;
+}
