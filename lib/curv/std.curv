@@ -1665,19 +1665,21 @@ show_dist shape =
 
 show_axes shape =
     let eps = .05;
-    in if (shape.is_2d)
-        union [
-            shape,
-            rect[eps, inf] >> colour green,
-            rect[inf, eps] >> colour red,
-        ]
-    else
-        union [
-            shape,
-            box[inf, eps, eps] >> colour red,
-            box[eps, inf, eps] >> colour green,
-            box[eps, eps, inf] >> colour blue,
-        ];
+    in
+        (if (shape.is_2d)
+            union [
+                shape,
+                rect[eps, inf] >> colour green,
+                rect[inf, eps] >> colour red,
+            ]
+        else
+            union [
+                shape,
+                box[inf, eps, eps] >> colour red,
+                box[eps, inf, eps] >> colour green,
+                box[eps, eps, inf] >> colour blue,
+            ])
+        >> set_bbox (shape.bbox);
 
 set_bbox (bbox :: is_bbox3) shape = {...shape; bbox: bbox};
 
