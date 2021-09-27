@@ -11,6 +11,22 @@ Value Oriented Programming
 
 Objects vs Values
 -----------------
+Conventional programming languages are for programming computers.
+You think about the computer as a machine with state, and your goal is
+to execute a series of instructions that progressively mutate that state
+until you get a result. Your language lets you create and modify stateful
+objects, that encapsulate bits of the machine's mutable state.
+
+Although Curv has a low level subset that lets you think and program
+this way, it's not the main purpose of the language, and we don't force
+you to think this way when using Curv at a high level.
+
+Curv is a very high level language for describing geometric shapes.
+A shape, eg a tetrahedron, is not an "object", it is a pure, stateless,
+immutable mathematical abstraction.
+
+Objects vs Values
+-----------------
 There are two ways for a programming language to represent data:
 as objects, or as values.
 

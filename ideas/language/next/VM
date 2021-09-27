@@ -1,0 +1,44 @@
+VM for Curv+Theories
+====================
+All runtime data structures can be described using pure C.
+(No C++ classes with vtables.)
+* I want to be able to construct any runtime data structure at runtime,
+  from scratch, using C code, and I can't construct a C++ vtable from scratch.
+* This makes a Curv_VM library usable in any language with C FFI.
+* Curv_VM objects can be created and exported by any language with C FFI.
+  This is important for interfacing with best-of-breed external libraries
+  that are potentially written in multiple languages (C++, Rust, etc).
+  The external library is wrapped in a Curv interface using the same language
+  the library is written in, then imported as a native Curv module.
+
+Every value has an associated datatype.
+A Ref_Value header comprises two 64-bit fields: a refcount, and a datatype ref.
+
+Refcounts use the cyclic refcount proposal (probably).
+
+A datatype object is similar to a C++ vtable, except I can create one
+from scratch out of Curv values, and the function pointers can be closures.
+It has a label/identity that can be efficiently pattern matched.
+It contains functions for operations that are supported by all values.
+Certainly there is a destructor, plus a few other methods.
+
+Every datatype object is in 1-1 correspondence with a Curv datatype value,
+so the datatype object might as well be a Ref_Value? Just as Smalltalk is
+"objects all the way down", Curv is "values all the way down".
+* This adds a refcount increment to the cost of value creation.
+  Refcount optimization is a future area of investigation, it shouldn't be
+  a blocker for a prototype implementation of the new VM.
+* This creates a reference cycle: every datatype value is an instance
+  of Datatype, which is an instance of itself. Use 'cyclic reference
+  counting' to avoid the problem.
+
+A datatype can implement zero or more theories, and the overloaded operation
+table for each theory can be stored in the datatype value itself. (There
+are other possibilities in the full design, but this is one of the
+representations.) Find some docs on how C++ lays out method dictionaries
+in a vtable for fast lookup (or how Rust or Go or other languages do this).
+
+Compiled code (for the interpreter) is represented using tail-threaded code?
+* The partial evaluator needs to work on a tree representation (I think),
+  and I would like partial evaluation to be as fast as possible under the
+  circumstances. (Walking a tree is a significant slowdown though.)

@@ -32,6 +32,7 @@
 // * th
 //   ...
 
+let
 // This isn't correct. Distance field is wrong.
 quantize n shape = make_shape {
     dist p : shape.dist(p - mod(p,n)) + mod(p[X],n),
@@ -41,4 +42,5 @@ quantize n shape = make_shape {
     is_3d : shape.is_3d,
 };
 
+in
 sphere 1 >> quantize .1

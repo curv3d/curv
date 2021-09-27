@@ -1,0 +1,80 @@
+Equality, Equivalence & Referential Transparency
+================================================
+`x == y` is the equality predicate. It is useful for comparing data values,
+especially numbers, and less useful for comparing API values.
+Due to a misfeature of IEEE floating point arithmetic, `0 == -0`
+even though those two numbers are not operationally equivalent.
+But I think I need those semantics for porting floating point algorithms,
+and in SubCurv for GPU code generation.
+
+`x === y` is the equivalence predicate. If `x === y` then `x` and `y`
+are semantically equivalent: `y` can be substituted for `x` in any
+context without changing the meaning of a program. So `0 === -0` is false.
+
+Two labelled API values are equivalent if they abstractly represent the
+same API. It's possible that two API values are operationally equivalent
+because they happen to have the same internal implementation, but they aren't
+intended to be interchangeable, and === reports them as not equivalent.
+It's not theoretically possible to prove that two functions are operationally
+equivalent, but that's not even relevant for comparing API values, which
+only need compare as equivalent when they are *documented* to be equivalent.
+
+Design Goals
+------------
+First class values
+  Everything in Curv is represented by first class immutable values,
+  including data, functions, modules and types. "First class" means:
+  can be bound to a variable, stored as an element of a data structure,
+  passed as an argument to a function, and returned as a result.
+
+Labelled Values
+  A function, module or type is called an "API value", in contrast to
+  data values such as booleans, numbers, lists and records.
+
+  In mainstream languages, API entities often have a name which is part
+  of their identity.
+  * Mainstream languages have a specialized function definition syntax
+    which includes the function name. This function name is commonly
+    attached to the function value or function object at runtime.
+    If you define a function in javascript, python or lisp, and later print
+    the function value, the name will be printed. Modern languages
+    also have lambda expressions, which construct anonymous function values.
+  * In mainstream languages, it is usually impossible to define
+    a module without giving it a name.
+  * Statically typed languages use a combination of "structural equivalence"
+    and "nominal equivalence" to determine if two types are the same.
+    Nominal types and type constructors have names which are part of their
+    identity. A new nominal type is often constructed by binding a name to
+    a type expression. If the language also has modules, then the name of
+    the module that contains the type is also part of the type's identity.
+
+  In Curv, API values may be optionally given names, which introduces a
+  concept of "nominal value equivalence" (a generalization of nominal type
+  equivalence).
+
+  Curv also has labelled data values, as part of its data abstraction system.
+  You can define a labelled 'data constructor' (a kind of API value),
+  which maps zero or more curried arguments onto a labelled data value.
+
+The Equivalence Operator
+* There is an equivalence operator, `a === b`. If true, then the values
+  `a` and `b` are semantically equivalent: `b` can be substituted for `a`
+  in any context without changing the meaning of the program.
+* The equivalence operator is an equivalence relation:
+    `a === a` for every value `a`
+    `a === b` implies `b === a`
+    `a === b && b === c` implies `a === c`
+* Curv is referentially transparent.
+* Function, module and type values are called "API values".
+
+Two labels are equivalent (===) if they are structurally equivalent.
+Equivalence for labelled values means label equivalence.
+
+What makes this work (in the current prototype design) is that labels
+are globally unique. There's no scope where two values can have the same
+label but different provenance.
+* Labels for standard bindings are prefixed with `std.`
+* Labels for members of a top level directory record are prefixed
+  with `std.file "pathname".`
+* The only situation where a label is a bare symbol (other than `std`) is in
+  the REPL local bindings scope. Those values cannot escape the REPL context.

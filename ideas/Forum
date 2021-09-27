@@ -70,16 +70,22 @@ Possibly suitable:
    has github integration and markdown support. It is marketed as an upgrade
    from mailman and google groups.
  * dfeed : https://github.com/CyberShadow/DFeed
-   Forum UI initially looks pretty good, and seems there is no compromise
-   on mailing list support. Written in D, only used by D community.
+   Forum UI initially looks pretty good, with full mailing list support.
+   Written in D, only used by D community.
+   One man project, no real documentation (read the source).
+   Markdown, but apparently no inline image support.
+   As of 2016, can't delete or edit a forum post, because you can't unsend
+   an email message.
  * HyperKitty (https://lists.fedoraproject.org/archives/) is a "modern forum"
    web user interface for mailman. It is GPL free software from the FSF and
    Fedora uses it. But it is plain text only: no rich text, markdown, or
    embedded images. https://gitlab.com/mailman/hyperkitty/-/issues/225
+ * Empathy is an archiver and forum UI for mailman, but as a forum it
+   is inadequate for OpenSCAD. Currently (Jul 2021) not open source and the
+   main dev has died, so no support or new features.
 
-Zulip is currently my top pick. It is often proposed as an alternative to
-Slack on the FoC forum. The pro-Zulip evangelism arguments seem compelling.
-  "Combines the immediacy of real-time chat with the productivity benefits
-  of a threaded conversation model"
-A non-aligned FoC member who needs to use both says it is neither better nor
-worse than Slack, just different.
+Nothing exists that is free software, actively maintained, forum+mailing list,
+markdown + inline images.
+* google groups is proprietary
+* there are multiple good forums without mailing list support
+* dfeed has no inline images

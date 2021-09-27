@@ -1,0 +1,38 @@
+Partial Evaluator
+=================
+There is a partial evaluator.
+The input is a program, represented as an Operation, where free variables
+must be simply typed.
+
+The output is a statically typed residual program, using a Curv subset,
+represented as a symbolic expression.
+Functions are monomorphised (one copy
+of the function for each distinct argument type).
+The output also contains monomorphized function instances.
+
+A symex is either an arbitrary Curv value, or it is a simply typed expression
+containing free variable references. In the case where a program symex is
+a value, there is an associated Phrase (currently the nub of the program).
+So it's really a Constant.
+So abstractly, a symex is always an expression.
+
+IDEA: Curv programs should be evaluated into residual Curv expressions
+that you can inspect as Curv source code (values or symbolic expressions).
+The SubCurv compiler outputs simply typed Curv code, which is inspectable,
+and which is then transliterated to GLSL for shape viewing.
+
+IDEA: Shape distance functions are subject to SubCurv type constraints
+during general & partial evaluation, not due to Shape::recognize, but
+due to metadata in Shape values that impose SubCurv type constraints on
+distance/colour functions. So type errors in distance functions are reported
+earlier, and are reported even if the distance functions aren't called?
+This metadata is in the Shape abstract type. Graphical display of Shapes
+just looks for the Shape type.
+
+IDEA: 'parametric <params> in <body>' accepts any type of <body>.
+It returns a symbolic expression in which the <params> are symbolic parameters.
+Each <param> may have a default value, must be simply typed.
+Specializing a parametric value w.r.t. a parameter is not function call,
+but another syntax. This is somehow unified with the design of 'time' as
+a global symbolic parameter, and the syntax for specializing a temporal
+symbolic value.

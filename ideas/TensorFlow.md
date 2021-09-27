@@ -49,3 +49,6 @@ accepts/rejects the candidates.
 
 On using machine learning to approximate functions (to create 3D animations)
 http://theorangeduck.com/page/machine-learning-kolmogorov-complexity-squishy-bunnies
+
+Nvidia Kaolin? Scaffolding for working with 3D graphics in ML systems,
+based on Pixar USD.

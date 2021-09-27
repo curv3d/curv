@@ -1,0 +1,31 @@
+2019-present
+------------
+Problems with the 2019 version:
+
+Modelling language is good enough for making pipelines of graphics primitives.
+But, sucky: half-baked, missing features, inconsistent, gratuituous complexity.
+
+The 'parametric' feature (declare sliders and graphical pickers for controlling
+shape parameters) never worked properly: compile errors due to missing GPU
+compiler support for various classes of parameter expressions.
+
+Support for GPU programming is deeply inadequate:
+* The SubCurv language subset for writing shader code is incomplete, missing
+  features found in GLSL.
+* Inadequate support for large data structures on the GPU.
+* No support for compute pipelines on modern (>= 2012) GPUs.
+* Performance hole: large shape unions are too slow, and the language features
+  needed to code a solution are missing.
+* Missing support for images, voxel grids, triangle meshes.
+
+----
+Since the last Curv release in Mar 2019, I have been trying to fix these
+problems incrementally, by identifying low hanging fruit and fixing issues.
+
+Results:
+* The modelling language has been extensively redesigned and extended.
+  However, it's been done piecemeal, without the benefit of fully
+  articulated design goals.
+* The GPU compiler has been patched to fix a subset of the problems, but
+  the architecture is wrong, and I can't really get traction without a full
+  rewrite.

@@ -1,7 +1,14 @@
 Fractal Noise
 =============
-
 Some starting points:
+
+OpenSimplex2
+  A public domain replacement for Simplex noise (patented until Jan 2022),
+  which is an improved version of Perlin noise (aka original fractal noise).
+  OpenSimplex2F is faster while OpenSimplex2S is smoother (higher quality).
+  https://github.com/KdotJPG/OpenSimplex2
+
+See [[Hash]] for modern hash algorithms, not the following.
 
 https://github.com/BrianSharpe/GPU-Noise-Lib/blob/master/gpu_noise_lib.glsl
     Implements the FAST_32 hash.

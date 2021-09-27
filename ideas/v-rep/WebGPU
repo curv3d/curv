@@ -1,9 +1,35 @@
 OpenGL to WebGPU transition plan.
 
-Dates:
- * Minimum-viable-product by the end of 2020.
-   https://hacks.mozilla.org/2020/04/experimental-webgpu-in-firefox/
- * Apple may release ARM based Macs in 2021. I expect no OpenGL support.
+May 2021 Update
+* first public working draft of WebGPU and WGSL published
+* finalized "MVP" spec and some initial implementations expected later in 2021
+* @raphlinus <https://news.ycombinator.com/item?id=27194857>
+  ...deep dive into the suitability of WebGPU and WGSL for "serious" compute
+  tasks (ie potentially competing with CUDA).
+
+  The upside is that it's very pleasant to program compared with existing APIs,
+  and is portable. Even when the GPU doesn't quite meet the requirements,
+  it's possible to polyfill compute shaders with SwiftShader. As this
+  standard becomes more mature, it will be reasonable to expect that it will
+  be correct and performant pretty much everywhere.
+
+  The biggest drawback is that the "MVP" covers the basics of compute
+  shaders but not the advanced features. It's roughly equivalent to DX11 /
+  Shader Model 5, which is of course good for compatibility on pre-Windows 10
+  devices. It's missing subgroup operations, scalar types other than 32 bits,
+  an explicit memory model, and some other goodies. This potentially leaves
+  quite a bit of performance on the table, but that will depend on the exact
+  workload. For example, machine learning inference workloads will probably
+  suffer considerably due to the lack of f16. Thus, if you want to ship
+  something based on compute shaders today, it makes sense to build your own
+  portability layer on top of existing APIs such as Vulkan, DX12, and Metal.
+
+  I do think WebGPU is an excellent on-ramp to learning compute shader
+  programming, as it will get stronger over time, and concepts will transfer
+  to other APIs as listed above.
+
+  Watch my Twitter feed for more depth on the points I listed above.
+
 Basic Info:
   spec: https://gpuweb.github.io/gpuweb/
   https://github.com/gpuweb/gpuweb/wiki/Implementation-Status

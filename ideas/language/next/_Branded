@@ -1,0 +1,443 @@
+Pure Branded Values (ignoring types and data abstraction)
+=========================================================
+This is a useful standalone feature, which is also a prerequisite
+for Algebraic Data Abstraction. ADA is too big to design at once.
+So implement this first, design ADA later.
+
+A branded value has a brand, which has the form of a constructor
+expression. When evaluated in an appropriate environment, the brand
+reconstructs the original value. Branded values are printed as their brands.
+Equality depends on the brand (two brands can't be equal unless their brands
+are equal). Brands are used for pattern matching.
+
+A brand is:
+  <brand> ::= <identifier>              -- name brand
+            | <brand> <argvalue>        -- call brand
+            | <brand> . <identifier>    -- field brand
+
+A branded value is an atom, a function, or a module.
+An atom is much like a symbol, in that the brand consistutes the entire
+identity of the value.
+
+A branded value abstractly consists of a brand and a payload.
+The payload for an atom is the unit value. Otherwise the payload is an
+anonymous function or module.
+
+Referential transparency. The mechanisms for constructing branded values
+do not violate referential transparency.
+
+There is an equivalence relation, x === y.
+In general x===y means substitutional equivalence: that x can be substituted
+for y in any context without changing the meaning of the program. For branded
+values, x===y is true if the brand and the payload are equivalent. For POD data,
+equivalence is equality, except that 0 and -0 are not equivalent. For functions,
+equivalence means same parse tree, and nonlocal bindings are equivalent.
+
+Construction
+------------
+Syntax for defining branded values.
+ 1. Implicit. Certain types of values are in want of a name. They are born
+    anonymous: if then bound to a name, they automatically acquire that name.
+    Like Curv 0.4 functions and like struct types in Zig.
+ 2. Explicit. You use explicit syntax to bind a name, overriding a previous
+    name: 'def name = bexpr'. The problem with functions in Curv 0.4 is that
+    automatic naming only works at compile time for function literals, and
+    the result of calling a function combinator doesn't acquire a name. A
+    combinator result probably already has a name, and we want to rename it.
+
+Top-down vs bottom-up name assignment.
+ * If names are assigned bottom up, then the same module might be renamed
+   multiple times. Assigning a name to a module requires evaluating the
+   module expression, so modules need a construction thunk as part of their
+   metadata, and we potentially need to evaluate it multiple times.
+    * I considered a restricted form of module value, which is an unevaluated
+      module: you can bind a name to it, but the dot operator isn't supported.
+      But this hack doesn't support renaming a module returned by a combinator.
+ * Perhaps names are assigned top down. A branded definiens phrase is evaluated
+   in a context where the name is available in a VM register. The right side
+   of a branded definition, or the body of a constructor function, is perhaps
+   restricted to certain phrase types: a function literal, a module literal,
+   and a function call (where the function should be a constructor).
+    * So branded values get their brand during construction from a function
+      or module literal; it can't be changed later.
+    * This restriction handles my main use cases, but it interferes with
+      abstracting a constructor call into a variable definition.
+      The workaround is to abstract into a function with a [] argument.
+    * This is also not compatible with patterned branded definitions
+      like the proposed '[a, def b] = bexpr', which assumes bottom-up
+      evaluation with renaming at each level where a name is available.
+
+Top-Down/Explicit Construction
+------------------------------
+Right now, I like the explicit/top-down model. Module/function expressions
+whose result doesn't receive a name from being invoked in the right context,
+are still useable; they are just anonymous. The restrictions on how names
+are bestowed could be loosened in the future?
+
+To reiterate, brands are applied to functions and records only during
+construction, not after the value already exists. In 'def x = <bphrase>',
+the bphrase is a record lit, func lit, or funcall to a constructor function.
+The latter must fail if the function position isn't a constructor, because
+otherwise the requirement that an existing value can't be rebranded isn't met.
+
+An anonymous constructor literal needs to be legal outside a bexpr context
+because we use these for Curried functions. So it returns a function (ACF).
+
+Semantics of anonymous constructor functions (ACFs)?
+* What happens with 'def x = ACF arg'? Is x a branded value?
+  I'd like to say yes, it is branded with 'x'.
+  Therefore, the constructor nature is preserved, even though the ACF
+  is anonymous.
+* What happens with 'ACF arg' outside of a bexpr context?
+  * Probably it's just a regular function call with no brand applied.
+    Good enough for MVP.
+  * Otherwise we need to extend the definition of what a brand is, so that
+    an ACF can appear as the head of a call brand. (Is there a connection
+    with parametric shape values in Curv next?)
+* How is an ACF printed? As a constructor function literal.
+
+Is an anonymous module literal legal outside of a bexpr context?
+The best answer is yes.
+
+Semantics of anonymous modules (AMs)? It's a record with module metadata.
+* What happens with branded field definitions like 'def BF = bexpr'?
+  * Is AM.BF branded with BF?
+    Yes. It's analogous to typing 'def X = bexpr' in the REPL:
+    the value of X is branded with X.
+  * What about BF's docstring? Does AM.BF have that docstring?
+    Yes.
+* What happens with field docstrings in general? Are they preserved in the
+  AM's metadata, and printed when the AM is printed? Yes.
+* How is an AM printed? It's just a record with metadata. Each field has
+  an independent value. So, {a: 1, BF: BF, c: 3}, plus field docstrings.
+
+Can I construct a branded module using metaprogramming (dynamic record
+literals)? This seems useful. Need field docstrings and branded fields.
+
+Functions and Modules should be Rebrandable
+-------------------------------------------
+The inability to relabel a function (eg, def f = id) is alarming.
+
+Just as `tpath[]` returns the labelled value `this`,
+I would like `compose[]` to return the labelled value `id`, for clarity.
+I can get this behaviour trivially by defining `compose` as:
+    compose = reduce [id, [f,g] -> x -> x >> f >> g]
+
+A function combinator C ought to be able to return a labelled function
+as a result without breaking code like `def f = C x`.
+
+Here's another one. Suppose we have 'def F = C x y z' (a branded function F).
+If the function result is constructed by the body of 'C x y' then it works.
+If the function result is computed by 'C x', which is captured in the closure
+'C x y', then it fails, because an existing function value is relabelled.
+
+There's no technical problem with relabelling a function.
+However, there is a technical problem with relabelling a module,
+and it's because of field labels, and the cost of relabelling values
+in a module with new field labels. My best idea to address this problem
+is for modules with branded fields to carry around a thunk for reconstructing
+the module with a new brand. The top-down/explict proposal avoids this.
+
+Alternatives:
+* Functions can be rebranded (but not modules).
+* Eliminate field brands. Modules are easily relabelled.
+* Modules with branded fields carry a thunk, which reevaluates the module
+  when it is rebranded.
+
+Functions and modules should be rebrandable. Use thunks in modules with
+branded fields. Use top-down branding to increase performance by avoiding
+rebranding in the common cases.
+
+Modules vs Records
+------------------
+Are modules distinct from records?
+Should there be a distinct syntax for module literals?
+ * Modules are API values, records are data.
+ * A record is a model of:
+   * A map from symbols to values, where all of the entries in the map
+     have the same status. There are no relationships or dependencies
+     between record fields.
+   * A set of name/value pairs, that conform to a record type or schema.
+     The value restrictions on fields, and the invariants that relate fields,
+     are maintained by the code that constructs and updates the records.
+ * A record can be updated: 'r.[#foo] := 42'.
+ * Curv has both record and module types.
+ * Module members can have doc strings.
+ * Module members can be branded.
+ * Modules can be branded.
+ * A module 'call' member causes it to behave like a function.
+ * The names in a module form a lexical scope, with dependencies between
+   module members created by references. If we allow modules to be rebranded,
+   then these dependencies are preserved in the module value.
+ * Every value can be serialized, transmitted across the internet, then
+   reconstituted with no change in identity, behaviour or performance.
+   For modules, this effectively requires transmitting the source code.
+   (For javascript, this is accomplished by transmitting textual source code;
+   for java, it's jar files.) So the printed version of a module should display
+   source code (a scoped module literal), similar to the printed version of a
+   function?
+
+{a=1} is a module, {a:1} is a record, {} is an empty module or record.
+They print differently, as a module or record literal.
+Modules retain their construction code, needed for printing & rebranding.
+
+Is there a subtype relation between modules and records?
+Technically, no, because {a=1} prints differently than {a:1}.
+So this is not the same as the integers being a coherent subset of the numbers
+with special properties. Also, in Curv there are no subtype relationships
+between data types, there are only subtheory relationships between theories.
+In [[Theories]] I say that for chimeric API values to exist, there needs to be
+a Record *theory*, which curv::DRecord and curv::Module implement.
+Also, a callable module is one that implements the Function or Callable theory.
+For those specific modules, we want 'is Callable M' to be true. But it's false
+for modules that don't implement 'call'.
+
+So either an algebra that implements a theory can specify, via a predicate,
+which of its values implements that theory. Or, not all modules belong to
+the same data type. The ones that implement Callable belong to different data
+types from the ones that don't.
+
+A record can be used in any context requiring a module:
+* A record is like a module with no docstrings or branded members,
+  and no dependencies between fields.
+* Except: treatment of call field?
+* Except: a record is serialized differently from the equivalent module.
+* Except: equality of a record and equivalent module?
+Record field update doesn't make sense for modules. Updating a module member
+should update any member that depends on its value.
+
+Constructor Function Docstrings
+-------------------------------
+What is the deal with
+    <docstring1> def f x = <docstring2> branded {foo: x}
+The help for 'f' is <docstring1>.
+The help for 'f 42' is <docstring2>.
+This just falls out of the grammar, but what are the use cases?
+Won't there be a lot of duplication between <docstring1> and <docstring2>?
+
+Note: in the case of a branded module, it does make sense to separate the
+documentation for the module as a whole from the documentation for
+individual members.
+
+Note: in the case of a branded constructor (functor?), I'm not familiar
+with software systems that separate the documention for a functor from
+the documentation for a functor instance.
+* Don't worry about this extra possibility in the grammar? Just
+  don't provide functor instance documentation if it doesn't make sense.
+* It might make sense for a piecewise functor. The functor instance has
+  different documentation for each branded alternative. This story would
+  improve if the docs for each branded alternative can be included in
+  the main functor doc automatically, similar to what happens for
+  module documentation. But, the grammar doesn't let me attach docstrings
+  to the branches of a 'match' call, and I don't have a design for this at all.
+
+For MVP, there's no docstring in the body of a constructor.
+Leave this as a future enhancement.
+
+What about a piecewise functor? With classless oop,
+    def cube = match [
+        d::Num -> cube {d:d},
+        {d::Num} -> branded box[d,d,d]
+    ]
+
+Let's suppose that 'cube' is not a prototypical cube, it is instead a
+module that presents a cube construction API. For an actual cube,
+use 'cube 10'. What help do I get for 'help cube' and 'help (cube 10)'?
+
+Syntax
+------
+As a simplification, I'll say that the unit value is `{}`.
+This unifies atoms with modules, reducing the amount of primitive syntax.
+
+Terminology: branded value, brand, branded definition
+
+A branded definition is:
+    def <id> = <bexpr>
+where <bexpr> computes a module or function. This can be preceeded by a
+docstring, which becomes part of the metadata of a branded value.
+This is legal anywhere a definition is legal, including a let phrase,
+and a REPL command.
+
+A *.curv source file in a directory record yields a branded definition
+if the contents of the source file are:
+    <explicit-bexpr>
+optionally preceded by a docstring. An explicit-bexpr is
+    branded <bexpr>
+The 'branded' keyword can be omitted if <bexpr> is a function literal
+or a non-empty module literal.
+
+An anonymous module literal is what used to be called a scoped record literal.
+It may contain branded definitions. Any definition can be preceded by a
+docstring.
+
+An anonymous constructor function is constructed using
+    <param> -> <explict-bexpr>
+Calling an anonymous constructor function is the same as calling a regular
+function. The behaviour is different when you print the function, and when
+you bind it using a branded definition.
+You can construct anonymous constructor functions using combinators.
+
+Opaque Syntax
+-------------
+Terminology: opaque value, label, opaque definition
+
+Opaque definition:
+    <docstring> def <id> = <api-expr>
+where <api-expr> denotes a function or module,
+and <docstring> is an optional documentation comment.
+
+Opaque expr: '<docstring> opaque <api-expr>'.
+An opaque expression is recognized at compile time. The 'opaque' keyword may
+be omitted if <api-expr> is a function literal or a non-empty module literal.
+
+An opaque expression denotes a value that is available to receive a label.
+It is legal in these contexts:
+ * As the top level expression in a *.curv file.
+   Receives a label if the source file is a member of a directory module.
+ * As the body of a function. The function is marked at compile time
+   as a constructor function. Receives a label if the constructor function
+   is bound to a label using an opaque definition, and the opaque constructor
+   function is then called with an argument.
+ * Following the principles of general phrase abstraction, should we also
+   support these contexts?
+     ( <opaque-expr> )
+     let <definitions> in <opaque-expr>
+   In these cases, where is the best place to put the 'opaque' keyword
+   and the <docstring>? This is a bit silly; we already have full phrase
+   abstraction inside the <api-expr>, and the only outcome of this digression
+   is whether to have more flexibility in the placement of the <docstring>
+   and the 'opaque' keyword.
+
+I think 'branded' is better than 'opaque'.
+
+Primitive Syntax
+----------------
+The minimum syntax needed to make this work. I'm not worrying about
+ergonomics, just simplicity and orthogonality.
+
+As an initial simplification, I'll say that the unit value is `{}`.
+This unifies atoms with modules, reducing the amount of primitive syntax.
+
+A branded definition is:
+    branded <id> = <bexpr>
+where <bexpr> computes a record, anonymous module, function, or anonymous 
+constructor function. This can be preceeded by a docstring, which becomes
+part of the metadata of a branded value.
+
+At the top level of a *.curv source file in a directory record:
+    branded <bexpr>
+
+An anonymous module is constructed using a scoped record literal that
+contains docstrings and/or branded definitions. You can't extract fields
+from an anonymous module, it must be branded first. But you can construct
+anonymous modules using combinators.
+
+An anonymous constructor function is constructed using
+    <param> -> branded <bexpr>
+Calling an anonymous constructor function is the same as calling a regular
+function. The behaviour is different when you print the function, and when
+you bind it using a branded definition.
+You can construct anonymous constructor functions using combinators.
+
+Ergonomic Syntax
+----------------
+Some additional syntax to make this feature easier to use in the context
+of modular programming. Not worrying about data abstraction here.
+
+Alternate keyword choices:
+* abstract:
+* labelled:
+* branded:
+* opaque: An opaque value is printed as a label, hiding its representation.
+  A constructor function returns an opaque value if the function itself
+  is made opaque.
+        def foo = x -> opaque <func-or-module-expression>
+* 'named', 5 letters.
+* 'term'. Use 'term' to mean 'branded value'. An 'anonymous term'
+  is an anonymous module or an anonymous constructor function.
+* 'def' works well at the head of a definition, is familiar from Python, Lisp
+  and other languages, but looks weird in the context of 'def <bexpr>'.
+  (It could be considered an abbreviation of 'definiendum'.)
+* 'nom', as an abbreviation of 'nominal'.
+  Use 'nominal value' to mean 'branded value'.
+* 'api', because branded values are restricted to "API values".
+  Not true if you consider data constructors.
+
+What it looks like:
+    branded f = x y z -> stuff
+    branded f = x -> branded y -> branded z -> stuff
+
+    named f = x y z -> stuff
+    named f = x -> named y -> named z -> stuff
+
+    term f = x y z -> stuff
+    term f = x -> term y -> term z -> stuff
+
+    def f = x y z -> stuff
+    def f = x -> def y -> def z -> stuff
+        -- NOPE: don't put 'def' before a function parameter name.
+        -- Use a different keyword.
+
+    api f = x y z -> stuff
+    api f = x -> api y -> api z -> stuff
+
+    nom f = x y z -> stuff
+    nom f = x -> nom y -> nom z -> stuff
+
+Alternative Syntax Schemas:
+ 1. Single keyword.
+        branded f = x y z -> stuff
+        branded f = x -> branded y -> branded z -> stuff
+        branded f x y z = stuff
+ 2. Two keywords.
+    'def' attaches to an identifier in a definiens, has high precedence.
+    Pattern matching definitions are supported, eg '[x, def y] = bexpr'.
+    'branded' attaches to a bexpr, has low precedence.
+        def f = x y z -> stuff
+        def f = x -> branded y -> branded z -> stuff
+        def f x y z = stuff
+    Both keywords may be preceded by a docstring.
+
+Let's examine the 'two keywords' option.
+
+Finalists for the first keyword:
+    def lerp[a,b,t] = a*(1-t) + b*t;
+    api lerp[a,b,t] = a*(1-t) + b*t;
+
+The second keyword is a word that describes the argument 'bexpr', and limits
+what 'bexpr' can evaluate to. It appears in two contexts:
+    x -> branded y -> x + y  -- constructor function
+    branded {...}            -- top level of a file in a directory record
+This word is also used in documentation.
+Keyword length is not an issue; 3-7 characters is okay.
+Options:
+ * 'labelled'
+ * 'branded'
+ * 'named'
+ * 'term'. Use 'term' to mean 'branded value'. An 'anonymous term'
+   is an anonymous module or an anonymous constructor function.
+ * 'nom', as an abbreviation of 'nominal'.
+   Use 'nominal value' to mean 'branded value'.
+ * 'api', because branded values are restricted to "API values".
+
+   x -> branded y -> x + y    branded {...}
+   x -> named y -> x + y      named {...}
+   x -> term y -> x + y       term {...}
+   x -> nom y -> x + y        nom {...}
+   x -> api y -> x + y        api {...}
+Finalists:
+   x -> branded y -> x + y    branded {...}
+   x -> term y -> x + y       term {...}
+
+
+
+
+Curried functions.
+    term f x y z = stuff
+    term f = x y z -> stuff
+is the same as
+    term f = x -> term y -> term z -> stuff
+
+The function `x -> term y -> x + y`
+is printed as `x y -> x + y`.
+So the function literal syntax has changed since Curv 0.4.

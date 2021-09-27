@@ -1,0 +1,8 @@
+C++, Java, Python, etc, have binary literals beginning with "0b".
+
+C99 etc have hex floating point literals
+    0xABC.DEFp42
+where the exponent is a decimal representation of a base 2 exponent.
+This syntax is proposed for WGSL.
+
+These are industry standards that Curv can adopt without any changes.

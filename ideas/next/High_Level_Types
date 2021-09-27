@@ -24,3 +24,11 @@ The right time to be making this kind of decision is when you are
 optimizing some code for performance. You shouldn't be forced to
 make these decisions up front, because up front complexity is bad,
 and most Curv code doesn't need this level of performance optimization.
+
+Judgement:
+* At a high level, Curv offers high level types, avoiding the need to choose
+  between almost identical alternatives when modelling data. Internally, there
+  may be multiple representations of each high level type, and the runtime
+  can dynamically choose or switch between representations.
+* At a low level, you can tune performance by exercising more control over
+  representations.

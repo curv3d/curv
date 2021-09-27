@@ -21,6 +21,98 @@ Dynamic typing enables Curv to meet its design goals:
   the creation of increasing more complex higher order type systems with
   steeper and steeper learning curves.
 
+Other Critiques of Static Typing
+--------------------------------
+The map is not the territory.
+Static type systems are an imperfect map of runtime behaviour.
+People put up with the complexities and limitations of static types 
+only because of the benefits of static checking.
+The territory (what you actually care about) is runtime behaviour.
+Always keep the territory in mind; don't confuse the map with the territory.
+
+Aaron Hsu: "Does APL Need a Type System?"
+-----------------------------------------
+https://www.youtube.com/watch?v=z8MVKianh54
+
+Pragmatically, what is the benefit of static typing? Value proposition?
+ * Common answer: productivity.
+ * Provides static analysis. Other things do this as well (linters).
+ * Static types must be explicit, must constrain the semantics of the language.
+   Constraints are good, make it easier to explore a design space.
+ * Must impose a syntactic burden.
+Benefits: types assist us in the past, the present, and the future.
+ * past: formal documentation, document intent of the code
+ * present: robustness, performance, productivity.
+   Helps you refactor, change code while preserving correctness.
+ * future: code prediction. It's a constraint on your design space.
+   Type directed programming. Helps find a correct solution more quickly.
+
+Benefits of APL: Intent, Robustness, Performance, Time to Solution
+* Almost the same benefits, delivered in a different way.
+* This approach is: Tool of Thought. Less a programming language,
+  more a notation that provides us with a way of thinking. Solution oriented.
+* To understand if static types make sense in APL, must understand the
+  social and linguistic context in which APL is used.
+* There are many failed attempts to embed APL in other languages.
+  These fail in kinda the way that pure functional programming in C fails.
+  Something important is missing (syntax).
+* This is an HCI problem. Syntax is important, not just semantics.
+  This is true for FP as well as for APL.
+* Intent (readability). It's not about how comfortable you feel when reading
+  the source code (ease of onramping). It's about expert level confidence.
+  How confident are you that a change you are about to make will work
+  the first time, without using mechanical aids? Because this is about
+  readability, not tooling. It's about understanding your source code by
+  reading it.
+  * The type system community relies on abstraction for this.
+  * APL solves the problem using Directness.
+  * Naming is hard. Requiring programmers to invent proper names for everything
+    creates problems. Types are structural names. When we introduce names
+    into our code, we increase the Distance metrics in our code: semantic
+    distance (abstract indirection) and syntactic distance. "Abstraction
+    means that the code that does what you want isn't where you think it is."
+  * (gives examples of APL expressions) Is there a benefit to adding a type
+    system on top of these examples? Impacts readability.
+  * Maybe APL is a type system: we've eliminated term level programming, and we
+    are programming directly in our type system. APL regularly computes over the
+    things that would be considered types in other languages.
+  * Lisp: Code is Data. APL: Types are Data.
+  * Aaron created a dependent type system for APL. The types were 3x, 5x, 7x
+    longer than the code they described. Not usable. APL typing is research
+    level hard: hard to create a usable type system that allows for the degree
+    of rank polymorphism found in typical APL code.
+* Robustness/Performance. Benefit of types: theorums for free, infinite tests.
+  Eliminates whole classes of bugs, improves correctness and performance.
+  Provides mechanical assistance for refactoring. BUT danger of mechanical
+  guarantees. If you go too big picture, you lose ability to reason about
+  small details and destroy your performance. If you focus too much on the
+  details, you have usability issues thinking about problems, because you have
+  too many abstractions you need to build up. So what you want is:
+    a language that allows you to reason about the little details without
+    worrying about them, and see the big picture without getting lost.
+  APL is really high level. Often you don't need any abstraction to solve the
+  problem. It's "ultra-instinct high level". Not only do these programs show
+  good high level behaviour, they are also mechanically sympathetic. Their
+  cost model is directly related to modern simd and vector architectures.
+  * on data structures:
+    * "Functional data structures are like sausages. The more you see them
+      being made, the less well you will sleep." -- Martin Thompson
+    * If you want to get things done quickly, use an array.
+  * on shorter code:
+    * "Shorter code is easier to debug" -- Arthur Whitney
+    * HCI: the more you can see, the more you can know.
+    * Get real benefits by shrinking code size by orders of magnitude.
+    * How does APL do it? Very general, in a specific way: rank polymorphism.
+    * Allows very fast iteration on problems, "hyper agile".
+      Iterate on multiple solutions spaces very fast.
+    * Often APLers will have code memorized. There's a big value in the ability
+      to memorize large pieces of non-trivial code. If you can internalize that
+      knowledge, it becomes deep knowledge, and now it can affect everything
+      you are doing. And this makes APL a tool of thought.
+    * Optimize for whole program rewrite. This is how you remove technical debt.
+      (APL code is so terse, it's preferable to rewrite than to live with the
+      pain of technical debt.)
+
 --------------------------------------------------------------------
 0. Is Curv dynamically typed or statically typed? The answer is yes.
 
