@@ -142,6 +142,18 @@ Shape Constructors
   * ``cone.mitred``: mitred distance field.
   * ``cone.exact``: exact distance field, more expensive.
 
+``capped_cone {h, top, bottom}``
+  Construct a capped cone (with the top cut off), aka a sloped cylinder.
+  The shape is centred on the origin, axis of rotation is Z axis.
+
+  ``h``: height of shape (top to bottom, along Z axis)
+  ``top``: diameter of top end-cap
+  ``bottom``: diameter of bottom end-cap
+
+  If either ``top`` or ``bottom`` is zero then you get a traditional pointy cone.
+
+  Exact distance field.
+
 ``torus {major: d1, minor: d2}``
   Construct a torus, centred on the origin, axis of rotation is Z axis.
   Major diameter is ``d1`` (centre of tube to centre of tube, crossing the origin).

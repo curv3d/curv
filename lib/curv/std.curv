@@ -240,6 +240,26 @@ cone =
             };
     };
 
+// credit: based on sdCappedCone by Inigo Quilez
+capped_cone {h,top,bottom} =
+  let
+    hh = h / 2;
+    r1 = bottom / 2;
+    r2 = top / 2;
+    k1 = [r2, hh];
+    k2 = [r2-r1, h];
+  in make_shape {
+    dist p = do
+      local q = [ mag(p.[[X,Y]]), p.[Z] ];
+      local ca = [q.[X]-min[q.[X],if (q.[Y]<0) r1 else r2], abs(q.[Y])-hh];
+      local cb = q - k1 + k2*clamp[ dot[k1-q,k2]/dot[k2,k2], 0, 1 ];
+      local s = if (cb.[X]<0 && ca.[Y]<0) -1 else 1;
+    in
+      s*sqrt( min[dot[ca,ca],dot[cb,cb]] );
+    bbox = let r = max[r1,r2] in [[-r,-r,-hh],[r,r,hh]];
+    is_3d = true;
+  };
+
 // credit: Inigo Quilez
 capsule{d, from: a, to: b} =
     let ba = b - a;
