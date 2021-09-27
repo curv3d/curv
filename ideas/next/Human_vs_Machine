@@ -1,0 +1,25 @@
+Human Language vs Machine Language
+==================================
+Every high level programming language is a balancing act, because it must
+serve two purposes: as a language for communicating ideas between humans,
+and as a language for instructing a machine what to do.
+
+Curv is a very high level language: its first priority is to be a notation
+for human thought. This isn't just an empty slogan. It means that instead
+of blindly copying other programming languages, there is a commitment
+to analysing Curv's domain of discourse, and breaking it down into mostly
+orthogonal high level concepts, each of which has a single name or syntax,
+and which represents a single idea in the most general way possible.
+
+Conventional programming languages mostly give names to implementations
+of ideas, they mostly don't give names to the abstract ideas themselves.
+Each idea has multiple implementations, and each implementation has a
+different name. You can't just talk about things abstractly, as you do in
+mathematics or natural languages. Every time you use a concept, (which
+happens multiple times in each line of code), you have to specify which
+implementation of that concept to use. And that creates cognitive load,
+as you are forced to make all these choices.
+
+This focus on concrete, machine level implementations rather than on
+abstract ideas is so pervasive in programming languages that it feels
+like a revolutionary act to try and do things differently.

@@ -11,6 +11,10 @@ Existing data abstraction mechanisms, such as Object Oriented Programming,
 either support run-time polymorphism but are unmodular,
 or they are modular but do not support run-time polymorphism.
 
+Data abstraction is needed at Curv level 4 (library implementation) so that
+we can reduce complexity by creating simple powerful abstractions that hide
+their implementation.
+
 Algebras & Theories
 -------------------
 An abstract data type (ADT) is a set of values (a Type), plus a set of
@@ -200,8 +204,47 @@ The type names within an Algebra can be new data types defined locally by that
 algebra using data constructor definitions, or they can be aliases for types
 defined in other modules.
 
-What?
-> A Labelled Algebra is restricted to have labelled value constructors.
+Syntactically, an Algebra is just a module with a particular structure.
+No extra syntax is needed to construct a bare algebra.
+We do need some syntax relating to theories:
+
+ 1. Declare that an algebra (aka a module) implements a theory (aka a module
+    type). The significance is:
+     * Checking (verify that the algebra contains the members required by
+       the theory).
+     * Type membership. A Theory is a module type. Given this declaration,
+       a function with a theory-typed parameter will accept this algebra
+       as an argument.
+     * Default values. It is proposed that a Theory can provide default
+       values for operations. The rationale is to allow a Theory to be
+       extended with new operations without breaking existing algebras.
+       (In this extension/backward compatibility scenario, the algebra
+       wouldn't directly reference a default value.)
+
+    Possible syntax for implementing a theory:
+     * 'implement <theory>' in a module body.
+       This would allow other members to reference default values, so the
+       existence of the defaults would become part of the theory's contract.
+       This is on the edge of reinventing the contracts between OOP classes
+       and subclasses, which are a misfeature of OOP.
+       Is this contract extension undesirable feature creep?
+       Referencing defaults is not a requirement right now.
+     * '<theory>(<module>)' -- Using a <theory> value, which is a type,
+       as a constructor for values of that type. This is a common Curv idiom.
+       This constructs a new algebra value that is possibly extended with new
+       members possessing default values. This would allow you to use someone
+       else's algebra to implement your new theory. This seems more composable.
+       There's no way for the module to reference members 'inherited' from the
+       theory, so there are no OOP implementation inheritance semantics (good).
+       The syntax seems parsimonious: no new 'implement' keyword.
+
+ 2. Add the methods in an algebra to the overloaded virtual operations of a
+    theory that the algebra implements. This is an extended form of #1 that
+    requires some additional restrictions for implementability.
+    This operation can be performed either in the module where the algebra
+    is defined, or in the module where the theory is defined. Possible syntax:
+
+        overload <theory>(<algebra>)
 
 Theories
 --------

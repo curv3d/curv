@@ -3,10 +3,10 @@ Fast Evaluator
 Here are the possibilities for fast expression evaluation:
 * Tail-threaded interpreter. Fastest known interpreter implementation, given
   current CPU architectures and recent features of clang/gcc.
-  Should work on all platforms (including WASM?) when using clang.
+  Should work on all platforms (except WASM?) when using clang.
   Hopefully I can use this for partial evaluation as well.
 * Internal JIT: generate machine code into local memory, then execute it.
-  Forbidden in iOS (Zee wants to do an iOS port). Impossible in WASM (per Wasm3
+  Forbidden in iOS (Zee wanted to do an iOS port). Impossible in WASM (per Wasm3
   readme). Complicated, as I need to generate low level IR for the JIT library.
 * Generate C++, compile to *.so or *.dll, dlopen and execute. Forbidden in iOS.
   Native only: Not workable in WASM/web browser.
@@ -16,6 +16,21 @@ Here are the possibilities for fast expression evaluation:
 * GPU compute. Super fast for appropriate work loads. Strangely, this is the
   only universal option for optimized native code execution.
 * AOT compiler. Generate C++, compile to native code or WASM.
+
+SimpleJIT:
+* SubCurv compiles to statically typed optimized code, only on request.
+  Compilation is slow, evaluation is fast. Generate code as a self-contained
+  module. Small static data is generated as literals, large static data is
+  passed as arguments (like uniform variables). This design works for GPU,
+  WASM (generate external WASM module), any kind of JIT, any platform.
+  * Use LLVM to generate native code, SPIR-V, WASM. Maybe via libclang.
+* For full Curv, transliterate each VM instruction into machine code while
+  keeping state in the interpreter data structures. Code generation is fast
+  enough for live programming. Run-time introspection: debugger works on
+  interpreter data structures. Tail call not a problem.
+* Use interpreter on platforms where machine code JIT not available.
+* Eg, https://blog.erlang.org/a-first-look-at-the-jit/
+  Uses <asmjit.com>: small fast C++ lib, ISA dependent API.
 
 Use cases:
 * Partial evaluator; low latency live programming: tail-threaded interpreter.
@@ -35,10 +50,18 @@ Priorities:
  3. AOT compiler, offshoot of current GLSL/C++ compiler.
  4. Internal JIT. Difficulty + lack of universality makes this lowest priority.
 
+Two Strategies: High-Perf vs Run-Everywhere
+-------------------------------------------
+1. High performance: native only, advanced GPU >WebGPU, Dali graphics
+   tail-threaded interpreter, full Curv JIT like Julia.
+   Advanced technology, not held back by web (or iOS) limitations.
+2. Run-Everywhere: runs native or in a web browser
+   old-style interpreter, SubCurv-only JIT.
+
 Tail-threaded interpreters
 --------------------------
 New technique, depends on -O2 tail call optimization in clang and gcc,
-made reliable by [[clang::musttail]] attribute in Mar 2021 clang.
+made reliable by [[clang::musttail]] attribute in Mar 2021 clang (LLVM 13).
 
 Will Rust get this? rust-lang/rust/issues/217 closed wontfix in 2013.
 There is a debate in /r/rust "Are we finally about to gain guaranteed Tail
@@ -81,6 +104,19 @@ to generated code that works correctly without the tail call optimization,
 and doesn't blow up the call stack. The interpreter will be slower without
 the tail call optimization, probably comparable to the Curv 0.4 interpreter.
 
+Another threaded interpreter approach:
+  sfkleach December 13, 2018, 4:20pm
+
+  In my own threaded interpreter, built on top of gcc, I directly plant
+  the labels into the generated code-array, so that the dispatch is “goto
+  *pc++;” where pc is a pointer into the code. This is much more direct
+  than “goto *dispatch_table[ code[ pc++ ] ]” where pc is an int that
+  is indirected through a code array. I designed the instruction set so I
+  could actually try out both forms and my experiments showed a very large
+  difference in performance for gcc; the exact value depends on architecture
+  but never less than a factor of 2.5 and up to a factor of 6.
+But tail-threaded is more modular.
+
 JIT
 ---
 Can I JIT the entire language to native code, or is this restricted to SubCurv?
@@ -98,6 +134,8 @@ Can I JIT the entire language to native code, or is this restricted to SubCurv?
 Here is a list of JIT libraries in 2021: https://github.com/vnmakarov/mir
 * LLVM and libgccjit are huge and slow, produce fast code.
   Bad for interactive/live coding. Good for CPU mesh generation.
+* asmjit.com is small 300kB, C++, used in production by some serious projects.
+  Targets Intel (experimental ARM port). API is somewhat arch. dependent.
 * Cranelift has institutional support (used in firefox, rustc).
   70K LOC Rust. The use of Rust makes this a significant dependency. (~1.5MB)
   (Although, the generator module has minimal dependencies and a nostdlib

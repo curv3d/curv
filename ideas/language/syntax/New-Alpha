@@ -1,31 +1,134 @@
 New Syntax Alpha
 ================
-A function call argument is a delimited or bracketed primary expression:
+Synopsis:
+  Tight mixfix with no reserved words, no stropping, context free parsing.
+  Funcall arguments are delimited: f(x), not f x, needed for mixfix.
+  Simple grammar, 5 precedence levels: Term, Unary, Pipeline, Item, List.
+  Most infix ops (including user defined) have pipeline precedence.
+  Left + right chaining without parenthesis pileups.
+
+Function Call:
+  A function call argument is a delimited or bracketed primary expression:
     (...)
     [...]
     {...}
     "..."
-'f x' is not allowed (x an identifier) because it conflicts with mixfix syntax.
-Use f(x) instead.
-'f 42' is not allowed because it is confusing that 'f -42' is not a function
-call. Use f(42) and f(-42) instead.
+  'f x' is not allowed (x an identifier), it conflicts with mixfix syntax.
+  Use f(x) instead.
+  'f 42' is not allowed because it is confusing that 'f -42' is not a function
+  call. Use f(42) and f(-42) instead.
 
-if (x) then (y) else (z)  <=>  'if then else'(x,y,z)
-  Mixfix notation. No reserved words are used. Mixfix keywords are
-  distinguished from identifiers in funcall position by the grammar alone.
-  A mixfix call with only one keyword is indistinguishable
-  from an ordinary function call.
+  f(x,y,z)  <=>  f(x)(y)(z)
+  Syntactic sugar for a Curried function call.
 
-f(x,y,z)  <=>  f(x)(y)(z)
-Syntactic sugar for a Curried function call.
+  Term ::= numeral | symbol | character | Call
+  Call ::= Arg | id | Call Arg
 
-ISSUE: What does 'foo (a,b) bar (c,d)' mean?
-Syntactically, it means 'foo bar'((a,b),(c,d)). Alternatives:
- 1. This is flattened to 'foo bar'(a,b,c,d).
-    Which, confusingly, is equivalent to foo (a) bar (b,c,d).
- 2. Currying doesn't nest, so this is an error.
+  Hmmm:
+  * The distinction between f(a,b) and f[a,b] is like the distinction
+    between f a b and f[a,b] in Curv, unfortunately it's less obvious.
+  * Curv uses (a,b,c) for generators, this conflicts in control structures.
+  * I could reserve ',' for (a,b,c) curried argument lists, and use ';'
+    for generators. Now we have f(a,b) vs f[a;b].
 
-Dot Operator:
+Mixfix:
+  if (x) then (y) else (z)  <=>  'if then else'(x,y,z)
+    Mixfix notation. No reserved words are used. Mixfix keywords are
+    distinguished from identifiers in funcall position by the grammar alone.
+    A mixfix call with only one keyword is indistinguishable
+    from an ordinary function call.
+
+  Term ::= Mixfix
+  Mixfix ::= id Arg | Mixfix id Arg
+  Call ::= Mixfix Arg
+
+  Note that 'foo (a,b) bar (c)' is illegal.
+  But 'foo (a) bar (b,c)' is legal, <=> '(foo (a) bar (b)) (c)'.
+
+Chained Mixfix:
+  If two adjacent identifiers occur in a term '... a b ...',
+  it means right associative chaining: '... a (b ...)'.
+  Motivating example: 'if (a) then (b) else if (c) then (d)'
+                means 'if (a) then (b) else (if (c) then (d))'.
+  Also, 'f g h (x)' means 'f(g(h(x)))'.
+
+Offside Mixfix:
+    factorial n =
+        begin:
+            result = 1
+            i = 0
+            while (i < n) do:
+                result := result * i
+                i := i + 1
+            end
+        in result
+
+    factorial n =
+        begin (
+            result = 1;
+            i = 0;
+            while (i < n) do (
+                result := result * i;
+                i := i + 1;
+            );
+        )
+        in result;
+  Curv 'a:1' is an arrow value denoting a record field, this conflicts.
+  Using ':' for offside syntax works with UPPER stropped keywords, no conflict.
+  Using '{a=1}' for records looks good, conflicts with definitions in Curv.
+  * Revise definition syntax so we use 'val x=1', 'var y=1', 'loc z=y'.
+    Then 'a=1' is an arrow expression, like '#a=>1'.
+
+Dot Notation:
+  M.a <=> #a(M)
+  M.a (x) b (y) <=> M.'a b'(x,y)
+
+  Should call and dot have the same precedence (allowing left-to-right chaining)
+  or should dot have higher precedence (why)?
+  * high precedence dot allows right chaining of dotted funcalls
+      a.b c.d e.f (x)  <=>  a.b(c.d(e.f(x)))
+    The alternative is an explicit chaining operator:
+      a.b << c.d << e.f (x)
+      a.b <| c.d <| e.f (x)
+      a.b $ c.d $ e.f (x)
+
+Infix Pipelines:
+  User defined infix operator symbols, no precedence declarations.
+    x + y  <=>  '+'[x,y]
+  There is one precedence level for infix, left associative operators
+  (including x^y, arithmetic, relational, boolean, >>, user-defined).
+  A chain of these operators is a pipeline: data flows left to right.
+  Maybe there is whitespace sensitive precedence, a+b binds tighter than a + b.
+
+  Infix keyword operators. Two syntax ideas
+    a `foo` b   Haskell
+    a foo: b    Smalltalk, Supercollider
+  The 'foo:' syntax looks nicer. The `foo` syntax generalizes to support
+  terms as operator names.
+
+  An idea from Tulip on the precedence of the -> operator:
+    a >> b -> c >> f b
+  groups as
+    a >> (b -> c >> f b)
+  Rationale:
+    You are typing a pipeline left to right, you need to grab a value
+    and use it later on.
+  Downside:
+    Left operand of -> is now a term, not a pipeline. Requires more
+    parens in `match` expressions: match[(x::Num)->x+1,...].
+    But if I want multi-argument lambdas to have the syntax
+      primary primary primary -> expr
+    for consistency with short-cut function definitions (more like Haskell),
+    then it's okay.
+
+Prefix:
+  Only one hardcoded prefix operator symbol, '-', because it's traditional.
+  For other operations, use function call syntax.
+    -x  <=>  negate(x)
+    not(x)
+
+---------------------------------------------------------------------------
+Old Dot Operator Idea:
   idea 1:
     a.f      <=> f(a)
     a.f(b)   <=> f(a,b)
@@ -79,38 +182,6 @@ Common data types double as lenses.
     {a:1}.#a     -- field selection, ==  1
     array.[i,j]  -- array swizzling, == [array.(i), array.(j)]
     record.[#a,#b]  <=>  [record.#a, record.#b]
-
-User defined infix operator symbols, no precedence declarations.
-    x + y  <=>  '+'[x,y]
-There is one precedence level for infix, left associative operators
-(including x^y, arithmetic, relational, boolean, user-defined).
-Maybe there is whitespace sensitive precedence, a+b binds tighter than a + b.
-
-An idea from Tulip on the precedence of the -> operator:
-  a >> b -> c >> f b
-groups as
-  a >> (b -> c >> f b)
-Rationale:
-  You are typing a pipeline left to right, you need to grab a value
-  and use it later on.
-Downside:
-  Left operand of -> is now a term, not a pipeline. Requires more
-  parens in `match` expressions: match[(x::Num)->x+1,...].
-  But if I want multi-argument lambdas to have the syntax
-    primary primary primary -> expr
-  for consistency with short-cut function definitions (more like Haskell),
-  then it's okay.
-
-Only one prefix operator symbol, '-', because it's traditional.
-For other operations, use function call syntax.
-    -x  <=>  negate(x)
-    not(x)
-
-Infix keyword operators. Two syntax ideas
-    a `foo` b   Haskell
-    a foo: b    Smalltalk, Supercollider
-The 'foo:' syntax looks nicer. The `foo` syntax generalizes to support
-postfix expressions as operator names.
 
 Syntax for a range:
     a .. b

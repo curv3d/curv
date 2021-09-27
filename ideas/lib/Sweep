@@ -1,0 +1,5 @@
+"Swept Volumes via Spacetime Numerical Continuation" 2021
+http://dgp.toronto.edu/~sgsellan/pdf/swept-volumes-low-res.pdf
+
+An efficient, continuous method for sweeping a 3D shape along a 3D trajectory.
+Uses SDFs. No stamping!

@@ -32,6 +32,85 @@ with 1 bit per element.
 
 Terse syntax for bit string literals. [#true,#true,#false,...] is too much.
 
+Current Design
+--------------
+A bstring is a list of booleans, represented using 1 bit per element.
+Boolean operations (which are extended to bstrings):
+    `bool 0` | `bool 1` yield false | true
+    `bit true` | `bit false` yield 1 or 0
+    and or xor not
+Bstring literals:
+    #b"1011", #x"D2"
+Bstring operations:
+    bshift n bstring -- n is positive or negative shift size
+    bsum[b1,b2,b3]
+    bproduct[b1,b2,b3]
+Bstring conversions:
+    bstring_to_float32 <bstring>
+    float32_to_bstring <num>
+The following rely on bigint support, see [[Numbers]]:
+    bstring_to_nat <bstring>
+    nat_to_bstring <count> <nat>
+      or, int_to_bstring <count> <int>
+
+bit #b"1011" == [1,0,1,1]
+bool [1,0,1,1] == #b"1011"
+
+Bstring Literals
+----------------
+This is proving to be the most difficult problem. Alternatives:
+
+#1101   -- little endian, == [true,true,false,true]
+#0xD2 -- little endian, == #1011_0100
+    To port a hex numeral bitstring rep (big endian) to this syntax,
+    reverse the order of the hex digits.
+    nat_to_bstring 8 0x2D == #0xD2
+
+    What's good: terse, minimal.
+    Problem: it's little endian, thus potentially confusing,
+        since these look a lot like numerals.
+    Problem: 0b1011 is proposed as a binary numeral (it's an industry standard
+        syntax found in many mainstream languages).
+        If we have #0x... then we should also have #0b... ?
+
+#[1101]   -- little endian, == [true,true,false,true]
+    Internal whitespace ignored, can extend over multiple lines.
+#[xD2] -- little endian, == #[1011 0100]
+    To port a hex numeral bitstring rep (big endian) to this syntax,
+    reverse the order of the hex digits.
+    nat_to_bstring 8 0x2D == #[xD2]
+
+    Rationale: the use of [...] is supposed to suggest that this is a
+    list literal, and that elements are in little-endian order.
+
+    Problem: #[...] is also proposed as a syntax for Generator values,
+    and as the Set constructor.
+
+    Problem: it looks as if #[1011 xD2] might be legal, which is complicated.
+
+#b[1101], #x[D2]
+#b"1011", #x"D2"
+    This looks more like a list/string than a numeral, so the data type
+    and element ordering is clearer.
+
+    The #b"1011" is objectively better, the string syntax more clearly
+    suggests that each binary digit is a separate list element.
+    The #b[1011] syntax appears to contain a single numeral in the brackets.
+    
+    It could be a basis for an extensible literals syntax.
+    Eg, define macros named '#b[' or '#b"' for example.
+
+    Note: ambiguous since #b "1011" are two valid tokens.
+
+#0b[1101]
+#0b"1101"
+#0x[D2FA]
+#0x"D2FA"
+    Avoids the ambiguity of previous syntax.
+    Avoids the implied complexity of allowing a mix of binary and hex
+    sequences within #[...].
+    But: the '0' prefix is normally associated with numerals, not arrays.
+
 Encoding
 --------
 How are Booleans, bits and bit strings encoded in Curv?
@@ -129,19 +208,28 @@ literals
 We could add special syntax for blist literals.
 * K:       1110b
 * SQL-99:  B'1110' or X'E'
+* VHDL     B"1110" or X"E", internal _ can be used as separator
 * QNial:   lllo
 * LDAP:    '1110'B
+* SMT-LIB: #b1110, #xE      -- embedded in some Lisp dialect
 * Erlang:  Complicated expressions of <<...>>, aimed at describing
            bit and byte strings in binary file formats and protocols,
            which are split into fields. Also supports pattern matching.
-* #:       #1110
+* #:       #1110      -- little endian
            #0xEF00
+           #32bEFF00  -- big endian, supports any bit count
   
 I like the idea of supporting either binary or hex blist literals,
 it matches the lib.random source. Using 'b' or 'x' to distinguish
 them seems good. It's good if this *isn't* confused with a numeral.
 
-    b"1110"  x"E"
+    b"1110"   x"EF0"
+    #b[1110]  #x[EF0]
+    #[1110]   #[xEF0]   -- #[...] is a blist literal in both cases
+
+With a delimited, list-like syntax that doesn't look like a numeral,
+we allow a large literal to be broken over several lines, and the
+syntax reinforces the idea that the elements are in little-endian order.
 
 Problems with hex literals:
 * Hex notation is big endian. Hex bitstring literals copied from programs
@@ -160,15 +248,7 @@ Problems with a nat -> blist conversion function (alternative to literals):
 * You have to separately specify the size of the resulting blist.
   The literal syntax incorporates the size in the number of digits.
 * Won't work for 64 bit blists because ints are 53 bits.
-  So then maybe I need bignums, like 42n in javascript?
-  * I don't like the Javascript semantics. There should not be 2 kinds of
-    integers with different arithmetic properties.
-    How about this: there are two internal number representations:
-    64 bit floats, and bigints. A float that represents an integer whose
-    magnitude is < 2^53 has identical semantics to a bigint with the same
-    value.
-  * Adding bigints is way too big a change to be justified by the problem
-    presented here.
+  So maybe I need bignums? See [[Number]] for proposal.
 
 I like the syntax #1110, it solves a useability problem with the
 syntax {#true,#true,#true,#false}. Hex blists have unresolved problems.
@@ -218,6 +298,8 @@ Benefits:
   The word 'bits' is used in bit string operations.
 * We'd like a compact representation (1 bit per value) for Boolean strings
   and bit strings. This is simpler if Boolean and Bit have the same encoding.
+* Graphics programming: 1 bit per pixel images are naturally considered to
+  contain bit (0 or 1) values.
 
 Drawbacks:
 * When a function returns 0 or 1, you can't see by looking at the printed
@@ -225,7 +307,12 @@ Drawbacks:
 * It's more work in the SubCurv compiler to deduce which variables should
   have type bool.
 * It's more work to export booleans to JSON (need a schema).
-* -0 == false? Is -0 a bit, accepted by boolean ops?
+* Is -0 a bit, accepted by boolean ops?
+  If yes, then you have 2 representations of false and 1 of true.
+  If no, then -0 == false returning true is a problem.
+    You could use x === false for boolean equality, but man.
+  Note, k9 does not support -0, a big simplification. But would be numerically
+  incompatible with SubCurv.
 
 The syntax #1110 can be introduced as an abbreviation of [1,1,1,0], but
 the need is less urgent than with the #true,#false encoding of truth values.

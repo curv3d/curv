@@ -1,0 +1,33 @@
+funprogramming.org/pad/p/ccs
+
+GLSL optimizer (try it: it might help Curv a lot)
+
+web cam input
+
+illusions: youtube.com/watch?v=vJG698U2Mvo
+twitter.com/jagarikin
+twitter.com/AkiyoshiKitaoka
+instagram.com/samarthishere
+
+xemantic.com
+Kazik's generative art (I want to reproduce it in Curv)
+  better looking spectra and colour spaces:
+  https://medium.com/@kazikpogoda/not-so-discreet-charm-of-machine-colors-1390d4dba3db?source=friends_link&sk=2ceccd011ec5452732b9156142e1cb48
+  his shadertoy account: https://www.shadertoy.com/user/morisil
+
+GLisp.app visual coding in Lisp
+* 2 panes: text/code, and graphics
+* Interact with graphics pane, modify the shape using direct manipulation,
+  eg by dragging control handles, and the code updates.
+
+Kazik:
+  https://github.com/morisil/openrndr-camera-filter
+  I used v4lloopback with OPENRNDR for live coding
+  I am also using v4l2loopback and using a camera stream for android + obs
+
+Samarth:
+  julia set plotter
+  https://www.instagram.com/p/CCvtI8SHCot/
+    I use the inverse Julia transform to fold a circle on the complex plane
+    until it's shaped like a Julia fractal. Meaning the output remains a
+    closed curve that I can directly render as SVG and feed to my plotter!

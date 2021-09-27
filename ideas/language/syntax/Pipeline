@@ -1,0 +1,42 @@
+A pipeline is an expression comprising an initial value and a series of
+operations; data flows left to right through the pipeline, being transformed
+by each operation.
+
+Most of the left-associative infix operators, including + * ^ == && >> and
+backtick operators, have the same precedence, named 'pipeline' precedence.
+This is part of a simplified surface grammar with five precedence levels, named
+    listing, item, pipeline, unary, postfix
+
+The Context-Free Mixfix proposal includes syntax for left-associative inmixfix
+operators with pipeline predecence:
+    pipeline <op> arg1 key2: arg2 key3: arg3
+which is equivalent to
+    '<op> key2: key3:' [pipeline, arg1, arg2, arg3]
+
+Pipeline syntax could be extended to support
+ * binding a local variable to the current value of the pipeline
+ * conditionals
+ * iteration
+
+Local bindings with sequential scoping:
+   <pipeline> >> <formal> -> <pipeline>
+[This creates a grammatical problem: do lambda expressions have pipeline
+or item precedence?]
+
+Conditionals. Match the current pipeline value against a series of patterns.
+On a successful match, evaluate a corresponding expr giving the final pipeline
+result. On no match, fall through to the rest of the pipeline.
+   initial_value
+   >> op1
+   >> op2
+   >> if (pattern)
+      pipeline final value expression, in scope of pattern formals
+   else
+   rest of pipeline
+Grammar note: 'if (x) y else z' is here a function literal with *right*
+associative chaining after the 'else'.
+
+For-loop iteration.
+  Map the current pipeline value onto an array of values:
+    pipeline >>~ i -> expr_of_i
+

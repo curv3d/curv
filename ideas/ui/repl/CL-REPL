@@ -118,7 +118,7 @@ into the repl. As an example, nowadays you can still rebuild the whole Clozure
 Common Lisp environment from the ground up by typing (rebuild-ccl :full t).
 
 The point is not that I would want to rebuld my Lisp from the repl all the
-time. The point is that the repl doesn't impose any aribtrary boundaries
+time. The point is that the repl doesn't impose any arbitrary boundaries
 on what I can do. If the language and development environment can do it,
 I can do it from the repl. This is one of the properties that distinguishes
 the whole-system interactive design of these old tools from the more limited

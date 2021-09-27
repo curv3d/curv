@@ -1,0 +1,53 @@
+The Simple Syntax
+=================
+This is a small, simple syntax for a general purpose programming language,
+derived from Curv, but inspired by the "entire syntax on a postcard"
+philosophy of Lisp and Smalltalk.
+
+There are 5 levels of operator precedence. No reserved words except END.
+User defined infix and mixfix operators with a context-free grammar.
+Most core language features are invoked using function and operator bindings,
+not hardwired syntax.
+
+  program ::= listing
+
+  listing ::= empty | commas | semicolons
+    commas ::= item | item ',' | item ',' commas
+    semicolons ::= item | item ';' | item ';' semicolons
+
+  item ::= pipeline
+    | pipeline pop tail
+    | pipeline pkey tail
+    | pipeline iop item
+    | '...' item
+    | tail
+    tail ::= lambda | mixfix
+    iop ::= '=' | ':=' | ':' | '=>' | '<<'
+    lambda ::= unary '->' item
+    mixfix ::= (key iarg)* key item
+    iarg ::= pipeline
+      | pipeline pop iarg
+      | pipeline pkey iarg
+      | '...' iarg
+      | pipeline iop iarg
+      | imixfix
+    imixfix ::= (key iarg)+ end
+
+  pipeline ::= unary | pipeline pop unary (pkey unary)*
+    pop ::= '>>' | '`' postfix `'` | '::' | '||' | '&&'
+          | '==' | '/=' | '<' | '>' | '<=' | '>=' | '..' | '..<'
+          | '+' | '-' | '++' | '*' | '/' | '^'
+    pkey ::= identifier ':'
+
+  unary ::= '-'? postfix
+
+  postfix ::= primary
+    | postfix primary
+    | postfix '.' primary
+
+  primary ::= identifier | symbol | character | numeral | string
+    | parens | brackets | braces
+
+  parens ::= '(' listing ')'
+  brackets ::= '[' listing ']'
+  braces ::= '{' listing '}'

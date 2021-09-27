@@ -1,0 +1,124 @@
+Object 0: An initial subset of the TUPL 'Object' proposal
+=========================================================
+This is a subset of the TUPL object proposal where:
+* All objects are mutable local variables. Object phrases are locatives.
+* Modules do not contain object bindings.
+
+Proposed for addition to Curv.
+A deep dive into this subset will expose any design & implementation issues.
+
+Compound Locatives
+------------------
+[loc1, loc2]
+{a: loc2, b: loc2}
+
+Procedures
+----------
+`locative!op` is a statement.
+  op is a function mapping state->newstate, or a procedure
+
+`locative?op` is an impure expression.
+  op is a query function or a query procedure
+    query function: maps state->[newstate,result]
+  An impure expression is legal in a limited set of contexts:
+  * as a REPL command.
+  * as the right side of a LOCAL definition.
+  * as the right side of an assignment statement.
+  * as a <generator> phrase, if locative is in scope for assignment.
+
+  Can `loc?op` return a locative?
+  Yes, for constructing a new object (not in Object0).
+  Otherwise we would be returning a borrowed locative (like a lens call).
+  And there is only one object argument, so we are mutating and lensing
+  the same object. Too weird to support as a special case. Leave it out.
+
+proc <locative-pattern> is <statement>
+    procedure, effectively a function in imperative form.
+
+proc <locative-pattern> is begin <statements> in <expression>
+    query procedure, effectively a query function in imperative form.
+
+Both kinds of procedure answer true to `is_func` (and is_primitive_func?).
+
+Lenses
+------
+A functional abstraction over a locative could have these forms:
+    f <expr> -> <loc>
+        Impossible.
+    f <loc> -> <expr>
+        This function can do nothing but read the locative's state.
+        Useful in TUPL. In Object0, just use a regular function.
+    f <loc> -> <loc>
+        In Object0, f must be a lens.
+So we need user-defined lens values.
+
+Generators
+----------
+To abstract over generators, we need a value representation of a generator.
+The elements of a generator phrase append values to an implicit list object.
+Let's represent a generator by a procedure that takes this object as argument.
+
+Reify a generator phrase (a,b,c) as a procedure value:
+    #(a,b,c)
+
+`!proc` is a generator that mutates the implicit list object using a procedure.
+Aka: invoke a generator value.
+
+Hence `obj!#(generator)` is a statement that executes the given generator in
+a context where the implicit object is `obj`. Nothing is returned.
+
+`?proc` is an impure expression that applies `proc` to the implicit list object.
+
+So now, with `!proc` and `?proc` and the implicit object,
+we have the beginnings of "generalized imperative programming",
+kind of like Haskell monads or F# sequence expressions.
+
+Debug Actions
+-------------
+`print "Hello world"` is an identity function that prints to the console
+as a side effect.
+
+`foo!print "Hello world"` is a statement -- the object `foo` is ignored.
+
+`!print "Hello world"` is the usual syntax for invoking `print`.
+It works in any statement context. Within a `begin <statements> in <expr>`,
+the "implicit list object" is the locative `[]`.
+
+[..., !print x, ...] -- insert a debug print statement into a list.
+The `!` syntax makes clear that we aren't inserting the result of the function
+call `print x` as a list element.
+
+`... >> print x >> ...` -- insert a debug print statement into a pipeline.
+`print x` is an identity function with a debug side effect.
+
+`print` is an ordinary value (no longer magic syntax).
+We can now more easily abstract over debug actions.
+The `exec` command is replaced by `!`.
+#(...) can be used to construct a compound unevaluated debug action.
+
+Error Handling
+--------------
+I want to provide a high level mechanism for imperative error handling.
+It fits into "generalized imperative programming" somehow.
+
+Applications
+------------
+"generalized imperative programming" is just as weird and abstract as monads
+and sequence expressions. It won't be familiar: the full exposition needs to
+reside in a low level tier of the language hierarchy. It needs to be justified
+as a tool for creating easy-to-use high level library abstractions.
+
+To start with, the killer apps are "debug actions" and "linear union".
+
+linear_union #(for (i in list) f i)
+    The argument is an unevaluated shape generator, which is executed in the
+    GPU. I.e., the `for` loop is part of the generated distance function.
+    By contrast, `union[for (i in list) f i]` generates a list of shapes,
+    throwing away the structure of the for loop, then unions them.
+
+Haskell has "lazy data structures", a key feature.
+You can think of them as a kind of "procedural data", where embedded code
+is executed while accessing the data.
+But they are impossible to implement on a GPU due to memoization.
+Generator values are another kind of procedural data, another kind of "lazy
+list" which are more directly applicable to GPU programming.

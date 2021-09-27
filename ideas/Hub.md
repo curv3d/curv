@@ -79,12 +79,26 @@ Forum features?
    Staff members to monitor the flags and exert editorial control? Oops.
 
 ## Decentralization
-How much of this can be decentralized/delegated? (Without forcing casual users
-to set up their own servers.)
+How much of this can be decentralized? (Without forcing casual users
+to set up their own servers.) We want a decentralized knowledge base
+that includes documentation, code, forum discussions. We want to keep
+a historical record over a period of years, and have that accessible
+to new users. Ideally it is also on the web and google searchable.
+
 Maybe check out
-* JoinDiaspora.com ("decentralized facebook")
-* Synereo.com (vague and ambitious, decentralized Attention Economy network)
-  Also, total vapourware right now.
+* Matrix.org -- federated real-time chat. Real time, crypto secure,
+  distributed JSON database with eventual consistency.
+  Typically, admins run matrix servers and users use them.
+* IPFS
+* Holochain sounds interesting, has a reasonable size community.
+  A framework for distributed apps where each user hosts their own data.
+  https://developer.holochain.org/concepts/1_the_basics/
+    Each user of an app participates in building the app’s infrastructure,
+    supplying their own compute and storage resources and taking responsibility
+    for validating and storing a small portion of other users’ data.
+  For this to work, the user must be connected to and using the distributed
+  web all the time--it effectively must be the user's operating system.
+  Like the way that most people have a web browser always running.
 
 ## Business Model
 I like how ghost.org is a non-profit organization. Their software is open

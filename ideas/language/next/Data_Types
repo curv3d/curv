@@ -73,31 +73,84 @@ In Julia, only the leaf nodes of the tag tree can be associated with objects,
 so in this scheme also, a value has a unique data type which is either the 
 same as or disjoint from the data types of other values.
 
+Singleton Data Types
+--------------------
+A singleton data type has exactly one instance (called a 'singleton' for short).
+I want singletons to be labelled values (in most cases): this labelled value
+is the constructor of the data type (even though it isn't a function), and
+constructors should be labelled values. So I need to extend the definition
+of 'labelled value' to allow this.
+
+In a data type with a single constructor, which is a function, the constructor
+can also be the data type. A single value can be both a function and a type,
+by implementing both the function theory and the type theory.
+Unfortunately, it's not possible for a singleton to be its own data type.
+Because that would conflict with the existence of singleton types such as Num.
+* I assume that Num is a singleton that implements the Type theory.
+  Num can't be a singleton type that includes only itself, because Num is
+  already the type of numbers.
+* Can all types belong to the same data type? If they do, then the problem is
+  that each value has a unique data type. A singleton can't belong to its own
+  singleton data type and also belong to the type data type at the same time.
+
+Too many contradictions. In Curv, a singleton value cannot denote both itself
+and the singleton data type to which it belongs.
+* Haskell can give the same name to both concepts because it has different
+  name spaces for types and values. That can't work in Curv.
+
+No matter. Regardless of this, data constructors can be distinguished from
+other values, and there can be contexts where a data constructor is used
+to represent its data type.
+
+Three Designs for Data Constructors
+-----------------------------------
+ 1. single monadic constructor
+ 2. single variadic constructor
+ 3. multiple constructors of varying arities
+
+### 1. single monadic constructor
+A data type has exactly one constructor, with exactly one argument.
+ * For a singleton data type, the argument is [].
+ * For a sum data type, the argument is a symbol `#foo`
+   or an arrow `bar: 42`.
+
+In the modelling language, you use POD to represent all your data
+(instead of defining new data types). You use symbols and arrows to represent
+sum types. There is a direct upgrade path from this style, where the POD value
+becomes the data constructor argument.
+
+### 2. single variadic constructor
+A data type has exactly one constructor, which can have zero, one, or
+multiple curried arguments.
+ * For a singleton data type, the constructor is niladic.
+ * For a sum data type, the constructor is monadic, and the argument is
+   a symbol `#foo` or an arrow `bar: 42`.
+
+### 3. multiple constructors of varying arities
+ * For a singleton data type, the constructor is niladic.
+ * For a sum data type, there are multiple constructors, like in Haskell.
+
 Simple Data Constructors
 ------------------------
-A data constructor is defined like this:
-    data CtorName ArgType0 ArgType1 ... -- 0 or more arg types
+A simple data constructor is defined like this:
+    data CtorName ArgType0 ArgType1 ... -- 1 or more arg types
 
-This is the simplest design that meets the needs of the shape library.
-One use case for data constructors is to add new constructors to an existing
-Theory, such as the Shape theory. Data constructors may have zero or more
-curried arguments, because so do shape constructors:
+This syntax defines a constructor function that also denotes a data type.
+Can you use this syntax to define a singleton type? Well yes, if there
+is a single constructor argument whose parameter type has one value.
+You can do this:
+    data Foo [];
+    def foo = Foo [];
+So 'Foo' is the data type and 'foo' is the sole instance of 'Foo'.
+
+The shape library needs data constructors with zero or more curried arguments.
+With the above workaround for singletons, I think this is covered.
     everything
     cube 10
     rotate (45*deg) cube
 
 Sum types could be defined like this:
     data MySumType (Enum [#foo, #bar, baz: Num])
-
-A data constructor value supports multiple protocols:
-* is a constructor function (if the constructor has at least one argument).
-* is a data value (if the constructor has zero arguments).
-* is a type for classifying instances of the data constructor.
-
-Problem: this design suggests that Type is a theory, which is extended by
-defining new data constructors. Eg, 'data MyType' could be used to create a
-new niladic type constructor. Except that MyType is already a type used to
-classify its sole instance, which is the value MyType. So there is a conflict.
 
 Haskell-Inspired Data Constructors
 ----------------------------------
@@ -107,7 +160,7 @@ where a ctorspec is a constructor name followed by zero or more argspecs,
 and an argspec is a primary expression denoting a type.
 
 This separates the data type name from the constructor names,
-and allows for multiple constructor names. For niladic constructors,
+and allows for multiple constructor names. For singleton constructors,
 it avoids the problem cited earlier of overloading a constructor name
 with a data type name.
 

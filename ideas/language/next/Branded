@@ -1,0 +1,141 @@
+Branded Values
+==============
+A branded value is an "API value" that carries around its name (called a brand)
+and its documentation as metadata. Functions, modules, and data constructors
+can be branded. These are the components from which library APIs are built.
+
+This is a feature that's found in a less general form in many dynamically
+typed programming languages. It's common for functions and modules
+to carry their name and a docstring as metadata.
+
+Statically typed languages use a mixture of 'structural' and 'nominal'
+equivalence rules for determining type equivalence. In Curv, types are
+values, and Curv has a more general notion of "value equivalence".
+Branded values are compared for equivalence by comparing their brands,
+which means they use nominal equivalence. Unbranded values are compared
+using structural equivalence.
+
+Curv provides a uniform mechanism for defining branded values, and for
+abstracting over them.
+ * In the simplest case, a branded definition 'def B = <function or module>'
+   defines a branded value whose brand is the identifier "B"
+   (and binds it to B in the local environment).
+ * If a branded module "M" has a branded member "f",
+   then f's value has the brand "M.f".
+ * A branded "constructor function" returns a branded value,
+   whose brand (a "call brand") has the form of a function call:
+   the function's brand, followed by the argument values.
+ * There are expressions for constructing anonymous functions, constructor
+   functions, and modules. These anonymous (unbranded) values can then be
+   given a brand. You can also rebrand an already branded value.
+
+A brand is effectively a constructor expression: it's an expression that
+when evaluated in the appropriate environment, reconstructs the original value.
+
+A branded value is printed as its brand. You can use the brand as a pattern
+to match a branded value and bind argument values in a call brand.
+This is a form of data abstraction: the representation of the value is
+hidden behind the expression used to construct the value.
+
+Shapes will become branded values (using the Algebraic Data Abstraction
+feature). All of the standard shape constructors and shape operators
+will become branded data constructors. The brand of a Shape will be a
+tree of operations, like an OpenSCAD CSG tree. The ability to introspect
+this operation tree will have multiple applications.
+
+Branded Values
+--------------
+A branded value has a brand, which has the form of a constructor
+expression. When evaluated in an appropriate environment, the brand
+reconstructs the original value. Branded values are printed as their brands.
+Equality depends on the brand (two brands can't be equal unless their brands
+are equal). Brands are used for pattern matching.
+
+A brand is:
+  <brand> ::= <identifier>              -- name brand
+            | <brand> <argvalue>        -- call brand
+            | <brand> . <identifier>    -- field brand
+
+Two ontologies of branded values: need to align this with Data Type theory.
+* A branded value is an atom, a function, or a module.
+  An atom is much like a symbol, in that the brand constitutes the entire
+  identity of the value.
+* A branded value is a function, module or data constructor.
+
+A branded value abstractly consists of a brand and a payload.
+The payload for an atom is the unit value. Otherwise the payload is an
+anonymous function or module.
+
+Referential transparency. The mechanisms for constructing branded values
+do not violate referential transparency.
+
+There is an equivalence relation, x === y.
+In general x===y means substitutional equivalence: that x can be substituted
+for y in any context without changing the meaning of the program. For branded
+values, x===y is true if the brand and the payload are equivalent. For POD data,
+equivalence is equality, except that 0 and -0 are not equivalent. For functions,
+equivalence means same parse tree, and nonlocal bindings are equivalent.
+
+Modules and records are distinct. Only modules can be branded.
+* A module is a set of mutually recursive definitions. Dependencies between
+  definitions are preserved in the value, which is relevant when a module is
+  printed or rebranded. Editing a module member would entail editing the
+  source code then re-evaluating it and any dependent members.
+  Module members may be branded. Module equivalence is code equivalence (like
+  functions): same parse tree, equivalent nonlocal bindings.
+* A record is a map from symbols to values. An individual record field can be
+  updated without affecting other fields.
+
+Syntax
+------
+As a simplification, I'll say that the unit value is `{}`.
+This unifies atoms with modules, reducing the amount of primitive syntax.
+
+A branded definition is:
+    def <id> = <bexpr>
+where <bexpr> computes a module or function. This can be preceeded by a
+docstring, which becomes part of the metadata of a branded value.
+This is legal anywhere a definition is legal, including a let phrase
+and a REPL command.
+
+A *.curv source file in a directory module yields a branded definition
+if the contents of the source file are:
+    <explicit-bexpr>
+optionally preceded by a docstring. An explicit-bexpr is
+    branded <bexpr>
+The 'branded' keyword can be omitted if <bexpr> is a function literal
+or a non-empty module literal.
+
+An anonymous module literal is what used to be called a scoped record literal.
+It may contain branded definitions. Any definition can be preceded by a
+docstring.
+
+An anonymous constructor function is constructed using
+    <param> -> <explict-bexpr>
+There is no docstring before <explicit-bexpr> in this case.
+Calling an anonymous constructor function is the same as calling a regular
+function. The behaviour is different when you print the function, and when
+you bind it using a branded definition.
+
+A general requirement is that you can construct anonymous modules and
+anonymous constructor functions using combinators, then bind them
+using branded definitions.
+
+Implementation
+--------------
+It is more efficient to construct a function or module with a brand
+than it is to rebrand an existing anonymous function or module. So we
+try to use the former strategy when possible.
+* eval_branded() takes a brand argument. It defaults to calling eval(), then
+  rebranding the result. It is overridden by Function_Expr, Module_Expr
+  and Call_Expr, which use the brand to construct a function or module value.
+
+A Brand contains a helpstring and a label.
+A Label is
+    def Label = {
+        data T = name Symbol | call Function (List Value) | dot T Symbol
+    }
+    factorial = match [
+        0 -> 1,
+        n -> n * factorial (n - 1)
+    ]

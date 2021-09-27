@@ -1,0 +1,114 @@
+Algebraic Data Abstraction
+==========================
+This is a design for data abstraction based on the Relational Data Abstraction
+brainstorming dump. I'm using Existential Values as my basis for generic
+programming, overloaded operators with multiple dispatch, and heterogenous
+lists. It's a new idea, and it achieves all these goals using purely local
+semantics (unlike the CLOS global dispatch table, the only well known technique
+for doing all this stuff).
+
+Labelled Value Constructors
+---------------------------
+Cases:
+* Nilary constructor.
+* Simple constructor with arguments. The arguments are the data representation.
+* Fancy constructor, with a bidirectional transformation between the arguments
+  and the internal representation.
+
+Labelled values are printed as constructor expressions, which when evaluated
+in the right context, exactly reproduce the original value.
+Constructor expressions can be used in pattern matching.
+
+Algebras
+--------
+An Algebra is a module that denotes a set of values together with a set of
+operations on those values. More specifically, an Algebra contains one or more
+constructors that generate the value set, plus a predicate for the value set,
+plus a set of operations.
+
+An Algebra also has a set of axioms that describe its semantics, but for now
+that will be represented by documentation.
+
+The constructors need not be labelled values.
+
+Labelled constructors within an Algebra can be local to that Algebra, or they
+can be defined in another module. This flexibility is crucial.
+
+A Labelled Algebra is restricted to have labelled value constructors.
+
+Theories
+--------
+A Theory is like the type or signature of an Algebra. A Theory contains
+constructor names and operation names and axioms, and declares
+signatures for constructors and operations, but doesn't contain
+an implementation. The operation signatures are needed to implement
+dispatch of overloaded operators (see Abstract Values).
+They are also used to validate Algebras (see below).
+
+A Theory can inherit from other Theories (multiple inheritance).
+
+There is a predicate for testing if an Algebra implements a Theory.
+In the case of Theory inheritance, the Algebra is also considered to implement
+the super-theories of the Theory it is declared to implement.
+
+There is a predicate for testing if an abstract value implements a Theory.
+
+An Algebra can be declared to implement a Theory, and some checking is done.
+If a formal parameter is to be bound to an Algebra, you can specify
+a Theory as a parameter type. So this gives us checked Algebra parameters,
+needed for the Better Error Messages feature.
+
+Algebra Passing Style
+---------------------
+You can write generic algorithms on simple data using local semantics, if you
+explicitly pass algebras around as arguments, using "Scrap Your Typeclasses"
+(value level) or "SML Modules" (module level).
+ * No additional language features are needed to support this.
+ * Is verbose, boilerplatey.
+ * Doesn't support heterogenous lists of generic values.
+
+Abstract Values
+---------------
+An Abstract Value implements a Theory while hiding the implementation.
+Generic algorithms can use the operations of the Theory on the abstract value,
+without any bureaucracy or boilerplate to ensure that the correct functions
+are being called.
+
+There are multiple ways to implement Abstract Values in a programming language.
+The popular methods are:
+* Single-dispatch Object Oriented Programming (using classes or prototypes).
+  The limitation is: single dispatch.
+* CLOS style generic functions, using a global dispatch table. This supports
+  multiple dispatch. But the global dispatch table has non-local semantics
+  and breaks modularity.
+* Haskell type classes. The limitation is that you can't have a heterogenous
+  list of values with the same abstract interface but different implementations.
+  Also, there is bureaucracy: mandatory type declarations.
+Curv uses a new method with none of these limitations.
+
+Limitations:
+* Can't extend the theories supported by an existing constructor defined
+  elsewhere. CLOS style can do this. Eg, define a SVG export function by
+  defining cases over existing Shape constructors.
+
+In Curv, an abstract value is an <Algebra,value> pair, where the value is an
+instance of the Algebra.
+
+The Algebra must have a Theory. The Theory provides a predicate and/or type
+for identifying abstract values whose Algebra conforms to the Theory.
+
+To invoke an operation, use <Theory>.<opname> <argument>.
+Multiple dispatch is supported. A binary operator pulls the algebras out of the
+two valueset operands and fails if they are unequal or don't match the theory.
+
+Shapes
+------
+There are many shape constructors supporting the same generic operations,
+so we need a Shape Theory, and we need to choose a method of binding an
+algebra to a shape value that supports heterogenous lists.
+Shapes are abstract values. A shape value can be identified as such
+in a purely local way, by examining the value.
+
+'cube n = box [n,n,n]' is simple and works.
+What if I upgrade 'cube' to a labelled constructor, with extra properties
+due to 'cube' being a subtype of 'box' with extra symmetries?

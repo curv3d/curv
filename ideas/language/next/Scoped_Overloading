@@ -1,0 +1,68 @@
+Scoped Overloading
+==================
+An examination of prior art for techniques related to Scoped Overloading,
+especially in dynamic languages. How can we do multiple dispatch overloading
+while avoiding an anti-modular global dispatch table?
+
+* dynamic scoping in Haskell type classes
+* that Implicits thing in Ocaml
+* that Smalltalk module system
+* that Ruby module system
+* per-module tables something something in "Systems Programming with Modula-3",
+  "How the Language Got Its Spots", "Type Identity".
+
+Modular Implicits in OCaml
+--------------------------
+https://arxiv.org/pdf/1512.01895.pdf
+
+Adding ad-hoc polymorphism to OCaml by leveraging the module system.
+It sounds related to what I was trying to do with Algebra/Theory, etc.
+
+"using modules as type-directed implicit parameters" -- sounds familiar
+
+The Implicits mechanism borrowed from Scala removes awkward language
+restrictions where there must be one canonical binding of an Algebra
+to a Theory for a specific type. These restrictions affect Haskell type
+classes and also CLOS style generic functions. What happens instead is
+that if there is no canonical mapping (multiple competing Algebras)
+then you have to specify an Algebra explicitly at the call site.
+
+You don't have to bind an Algebra to a Theory in the environment, at all.
+You can just construct an Algebra value and pass it as an explicit argument.
+Which is what you do in Modular Programming. So the scheme is upward compatible
+with Modular Programming and loses nothing of its expressiveness.
+
+That seems cool. In the context of Curv, we don't want this idea to
+break modularity (if the absence of a canonical binding is a global
+property that can break working code in an external library you imported,
+for example).
+
+---
+Modular implicits are based on type-directed implicit module parameters, and
+elaborate straightforwardly into OCaml’s first-class functors. Basing the
+design on OCaml’s modules leads to a system that naturally supports many
+features from other languages with systematic ad-hoc overloading, including
+inheritance, instance constraints, constructor classes and associated types.
+
+A Haskell program can only contain at most one instance of `Show Int`, and
+attempting to define two such instances will result in a compiler error.
+Section 4.2 describes why this property cannot hold in OCaml. Type classes are
+implemented using a type-directed implicit parameter-passing mechanism. Each
+constraint on a type is treated as a parameter containing a dictionary of the
+methods of the type class. The corresponding argument is implicitly inserted
+by the compiler using the appropriate type class instance.
+
+Unlike constraints in Haskell, Scala’s implicit parameters must always be added
+to a function explicitly. The need for a function to have an implicit parameter
+cannot be inferred from the function’s definition. Without such inference,
+Scala’s coherence can rely on the weaker property of non-ambiguity instead of
+canonicity. This means that you can define multiple implicit objects of type
+`Showable[Int]` in your program without causing an error. Instead, Scala issues
+an error if the resolution of an implicit parameter is ambiguous.
+
+Smalltalk module system?
+------------------------
+Squeak and Pharo use Monticello for package management.
+A Monticello package is composed of elements, which are *parts* of classes.
+So installing a package can add new methods to a system class, I think.
+Packages can conflict with one another.

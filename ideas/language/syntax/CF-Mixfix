@@ -1,3 +1,90 @@
+Extensible, Context Free Mixfix Operators
+===========================================
+This report explores the landscape of possible syntaxes for mixfix expressions,
+which are:
+* Extensible. Mixfix keywords are not reserved words. The language can be
+  extended with new mixfix operators without breaking backward compatibility.
+* Context free. A program can be parsed into a syntax tree without
+  semantic analysis. There are no 'fixity' declarations that declare
+  the role of an identifier during parsing.
+
+Goals:
+* Premixfix expressions, initial keyword, like 'if A then B else C'.
+* Inmixfix expressions, initial argument, like 'A .. B by C' in Curv?
+* Right-assoc chaining of pre/inmixfix, like 'if A then B else if C then D'.
+  * Chained inmixfix would need to distinguish initial/noninitial keywords.
+* Optional offside syntax for premixfix.
+* Premixfix in a multiline string or derived markup language.
+* Modules can export mixfix operators, which can then be invoked using
+  dot notation, eg 'M.if A then B else C'.
+  An initial mixfix keyword is <key> or <term>.<key>.
+
+Design choices:
+* Stropping, whereby mixfix keywords are lexically distinct from identifiers.
+* Some mixfix syntaxes distinguish the initial keyword from subsequent keywords.
+* Tight mixfix has <primary> arguments, expressions are <terms>.
+* Loose mixfix has <item> arguments, expressions are <items>.
+* Curv next has arrow expressions for record fields, like this:
+    item ::= id ':' item
+  Does the design use ':' in a way that conflicts?
+
+Inmixfix:
+* Motivating example: 0 .. 10 by 2
+* I'd like <pipeline> precedence, left-assoc chaining.
+* Chaining syntax requires lexically distinct initial and subsequent keywords.
+   1. Backfix syntax: initial keyword is an infix operator, subsequent keywords
+      are stropped.
+   2. An explicit operator specifically for chained inmixfix, placed before
+      the initial mixfix keyword.
+   3. Explicit '>>' (pipe-right) operator for chaining.
+      An expression beginning with an inmixfix initial keyword is a
+      partial application with initial argument missing.
+
+StropFix
+--------
+* Mixfix keywords are lexically distinct from identifiers, and they are all
+  stropped in a uniform way (the initial keyword isn't lexically different).
+* Loose mixfix is supported, as <item>. Premixfix grammars:
+   1. Non-final arguments are <pipeline>, final argument is <item>.
+   2. Arguments are <item>. Since premixfix expressions are also <item>,
+      and since initial and interior keywords are not distinguished,
+      nested premixfix expressions are terminated by the 'end' keyword.
+* Offside syntax:
+   1. Append a ':' to a keyword to enter offside syntax mode for the
+      next argument. This doesn't conflict with Curv arrow syntax, which
+      appends a ':' to an identifier. Loosely inspired by Python.
+   2. A keyword followed by a linebreak indicates a following offside argument.
+      To avoid offside syntax, use 'keyword ( <newline>' instead.
+  After an indented argument, next outdented token is a mixfix keyword, which
+  continues the mixfix expression, or END, which terminates it.
+
+UPPERfix: keywords are uppercase identifiers. Looks like Modula 2.
+lowerFix: keywords are lowercase identifiers. Looks like Ada.
+*bold*fix: keywords are lowercase boldface identifiers. Looks like Algol.
+    To encode this in ASCII, use uppercase stropping.
+ColonFix: Keywords are 'foo:'. Looks a bit like Smalltalk.
+    Variant: In Self, initial keywords are 'foo:', subsequent keywords are
+    'Bar:'. This supports right-assoc chaining of inmixfix expressions.
+
+PlainFix
+--------
+Tight premixfix with no stropping (delimited primary arguments).
+Identifiers are distinguished from keywords by context.
+Function call and mixfix arguments are delimited: f(x), not f x.
+    if (a) then (b) else (c)
+Premixfix with one keyword, one argument is identical to function call.
+
+BackFix
+-------
+First keyword is not stropped.
+* Premixfix: first keyword is identifier, subsequent keywords are stropped.
+      if A then: B else: C
+* Inmixfix: first keyword is infix operator, subsequent keywords are stropped.
+      0 .. 10 by: 2
+  Supports chaining.
+Colon stropping doesn't conflict with Curv field generator syntax.
+
+---------------------------------------------------------------
 Mixfix Notation
 ===============
 A more uniform mixfix notation, consisting of alternating keywords and
@@ -228,11 +315,11 @@ The grammar is:
 IF a THEN b ELSE c <=> 'IF THEN ELSE'[a,b,c]
 
     colour [x,y,_,_] =
-        BEGIN (
+        DO (
             LOCAL z = [x,y];
             LOCAL color = [0,0,0];
             LOCAL done = false;
-            FOR i IN 0 ..< 100 UNTIL done DO (
+            FOR i IN 0 ..< 100 WHILE !done DO (
                 z := csqr(z) + [x,y];
                 IF dot[z,z] > 4 THEN (
                     LOCAL cr = (i-1)-log(log(dot[z,z])/log 2)/log 2;
@@ -243,24 +330,6 @@ IF a THEN b ELSE c <=> 'IF THEN ELSE'[a,b,c]
         )
         IN srgb.hsv color;
 
-Offside syntax: A newline after a keyword precedes an indented offside argument.
-The next outdented token is a keyword continuing the mixfix expression,
-or END, which terminates it. Use parens as above to avoid offside syntax.
-    colour [x,y,_,_] =
-        BEGIN
-            LOCAL z = [x,y]
-            LOCAL color = [0,0,0]
-            LOCAL done = false
-            FOR i IN 0 ..< 100 UNTIL done DO
-                z := csqr(z) + [x,y]
-                IF dot[z,z] > 4 THEN
-                    LOCAL cr = (i-1)-log(log(dot[z,z])/log 2)/log 2
-                    color := [0.95+.012*cr, 1, .2+.4*(1+sin(.3*cr))]
-                    done := true
-                END
-            END
-        IN srgb.hsv color;
-
 Comments:
  * The uppercase keywords are "shouty" and will need to be subdued using
    syntax colouring.
@@ -268,31 +337,6 @@ Comments:
    at least happens consistently.
  * Can introduce this new syntax mostly without breaking backward compatibility.
    I will rename sRGB.HSV to srgb.hsv. The old reserved words are deprecated.
-
-lowerFix notation
------------------
-Mixfix keywords are all lowercase. Regular identifiers must contain an
-uppercase character. Like the standard coding convention for Ada.
-Two adjacent mixfix keywords means chaining.
-Not backward compatible with Curv 0.4.
-
-    if A then B else C <=> 'if then else'[A,B,C]
-
-    Colour [X,Y,_,_] =
-        begin (
-            local Z = [X,Y];
-            local Color = [0,0,0];
-            local Done = False;
-            for I in 0 ..< 100 while !Done do (
-                Z := Csqr(Z) + [X,Y];
-                if Dot[z,z] > 4 then (
-                    local CR = (i-1)-Log(Log(Dot[Z,Z])/Log 2)/Log 2;
-                    Color := [0.95+.012*CR, 1, .2+.4*(1+Sin(.3*CR))];
-                    Done := True;
-                );
-            );
-        )
-        in sRGB.HSV Color;
 
 Backfix notation
 ----------------

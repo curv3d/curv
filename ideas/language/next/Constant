@@ -1,0 +1,48 @@
+Constant expressions are part of the language *semantics* in Curv Next.
+* Literals such as `42` and `#foo` are constant.
+* An immutable local variable is constant if its definiens is constant.
+* A lambda expression is constant if all of its nonlocal variables are
+  constant.
+* A function call expression `f x` is constant if `f` is constant
+  and `x` is constant.
+
+Why are constant expressions semantically important?
+* Within SubCurv code, constants can use the full Curv language.
+* MetaFunctions are now first class values, but a metafunction value
+  in function position must be constant in order to call it.
+
+Semantic syntax colouring gives us a way to see constants in the code.
+Constants have a different colour than dynamic expressions.
+
+The compiler evaluates constant expressions at compile time.
+These expressions can panic, which yields a compile time error.
+These expressions can diverge, which means the compiler diverges.
+* We need ways to manage and debug this situation.
+* Don't want the compiler to crash the Unix process if it runs out of stack
+  or runs out of memory.
+
+Local variables:
+* Under the old rules, whether a local variable is constant depends on whether
+  it is mutable, which depends on whether there are assignment statements that
+  modify it.
+* But now, this introduces some non-locality to the question of whether a
+  local variable is constant or dynamic. You can't just look at the definition
+  to see if it is constant.
+* So maybe I need syntax to distinguish mutable and non-mutable variable
+  definitions. Eg, 'x = 2' (value binding) vs 'var x = 2' (mutable binding)
+  or `mut x = 2`.
+
+The Error Function:
+In the new language, we will write
+    !error msg
+to imperatively panic with an error message.
+* In the old language, 'error msg' just immediately fails when evaluated.
+  That would work for `!error msg`, *except* that `msg` could be a constant,
+  which forces `error msg` to be evaluated at compile time, causing a
+  compile time error, which is not desired.
+* Therefore, in the new language, `error msg` now returns a function E
+  that fails (with the specified message) when applied to an argument.
+  This works correctly with `!error msg` and also works correctly with
+  universal compile time constant expression evaluation.
+* The new definition of 'error' has different behaviour and supports
+  different idioms.

@@ -66,7 +66,7 @@ How? Lazy evaluation of list comprehensions. `linear_union` returns a shape
 whose dist function contains a lazy reduce over a lazy list, which compiles
 into a GLSL for loop.
 
-Or, `linear_union{n: nreps, f:i->shape}`
+Or, `linear_union{n: nreps, f: i->shape}`
 is the union of `[for (i in 0..<n) f i]`.
 
 How is the colour function compiled? Same way as the dist function.

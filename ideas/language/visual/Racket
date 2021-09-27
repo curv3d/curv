@@ -1,0 +1,9 @@
+"Adding Interactive Visual Syntax to Textual Code" OOPSLA Nov 2020
+https://www2.ccs.neu.edu/racket/pubs/oopsla20-abf.pdf
+
+Text is the primary representation of source code, but it is extended with
+interactive visual diagrams to comment on and illustrate the code. This
+is *not* the same as node based visual programming, since the diagrams are
+problem specific.
+
+Text and visual syntax may be arbitrarily composed.

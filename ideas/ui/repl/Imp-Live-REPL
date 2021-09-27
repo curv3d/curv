@@ -1,0 +1,32 @@
+Jamie Brandon, "live REPL" user interfaces.
+* evaluates as you type
+
+https://scattered-thoughts.net/writing/making-live-repls-behave
+how to implement (using Zig)
+* No matter how long the evaluation takes, it never blocks the UI.
+* As soon as you type, it stops what it was doing and runs the new code.
+* If the program tries to allocate all memory, the interpreter aborts rather
+  than crashing your computer.
+* Correctly cleaning up after interpreter aborts.
+
+Nice breakdown of the implementation alternatives. There's generally poor
+language support for these requirements, which Up/Techne should support.
+
+Their approach:
+* Use zig's async support to allow pausing/resuming the interpreter at manually
+  added points.
+* Use a per-interpreter allocator that:
+  * Throws errors if any code, even buried deep in another library,
+    tries to exceed the allocation limit.
+  * Tracks all allocated pages for easy cleanup when resetting the interpreter.
+
+https://scattered-thoughts.net/writing/imp-live-repl/
+a more sophisticated live REPL for the Imp language
+
+Left pane: text editor. Text contains definitions, expressions.
+Right pane: evaluation result of currently selected expression.
+ * If zero width selection (text insertion cursor) then "current expression"
+   is the one behind the cursor. Can easily see intermediate pipeline results
+   by moving the cursor back.
+Watch: Mechanism for watching a subexpression of the expression currently being
+evaluated.

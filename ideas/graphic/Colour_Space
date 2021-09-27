@@ -13,10 +13,10 @@ colour space it belongs to. Colour is complicated. Sorry.
 
 Colour spaces are denoted by named values in Curv.
 Here is a curated list of the most useful colour spaces for Curv to support:
-* linRGB or sRGB.linear
-* sRGB
+* linRGB or sRGB.linear     // required for physically based colour blending
+* sRGB                      // required because it's the web standard
 * sRGB.HSV
-* Oklab, Oklab.hcl
+* Oklab, Oklab.hcl          // best perceptual space I've found so far
 ? LAB
 ? LAB.HCL
 
@@ -256,3 +256,7 @@ equivalent to D50. CSS level 4 defines a `gray` function, and the grey colours
 it generates are based on D50, even though sRGB has a D65 white point.
 
 Oklab uses D65 for compatibility with sRGB.
+
+Colour Picker
+-------------
+Consider using a perceptual colour space for the colour picker?

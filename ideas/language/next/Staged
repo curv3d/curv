@@ -1,0 +1,151 @@
+Staged Metaprogramming
+======================
+Staged programming is a theme for many of the tricky areas of future Curv.
+* `time` and reactive values.
+* Partial evaluation to optimize + codegen GPU distance/colour functions.
+* Abstraction over branded modules. Can't evaluate the module body until the
+  label is available.
+* Algorithmically generated modules (using generators?)
+* Abstraction over assignment statements. Can't capture mutable variable
+  references in a closure, so staging is required.
+* An 'iterative union' primitive?
+
+Inspiration from other projects:
+* Lisp macros? No, macros work at the syntax level. I want something more like
+  partial evaluation (lexically scoped, works on meanings, not phrases).
+* Reactor (dynamic code generation and specialization; explicit JIT).
+  https://github.com/google/swiftshader/blob/master/docs/Reactor.md
+* Zig?
+* Spiral? Staged programming/partial evaluation seem complicated.
+* Scopes?
+* MetaML?
+* online vs offline partial evaluation.
+
+Staged programming APIs are very diverse. The issues are:
+* Representation of unevaluated code.
+* Manual placement of staging annotations, vs automatic.
+  Offline partial evaluation is automatic.
+  Automatic is easier, but no control over structure of output.
+* Quality of error detection and error reporting.
+* Reflection: "the metalanguage is rich enough that every primitive on
+  object-programs can be expressed as a metaprogram".
+* Static typing. MetaML has a staged type system, but for Curv I'm happy to
+  do all metaprogramming in a dynamically typed language, and improve the
+  error reporting using different means. But typing is necessary for the
+  object-programs I'm generating. GPU code is statically typed. If object
+  expressions have static types then the metalanguage can use that to
+  drive specialization.
+* Ergonomics. Different styles of staged/metaprogramming APIs.
+  One style from <http://web.cecs.pdx.edu/~sheard/staged.html>:
+  1. Construction. It should be easy to construct code using some sort of
+     pattern-based object-code templates. Templates should “look like” the
+     object language they represent.
+  2. Splicing. Program fragments should be easy to combine into larger program
+     fragments, this is best accomplished by a parameterizable splicing
+     mechanism such as a ``template-with-holes".
+  3. Typing. In a homogeneous system, object-code has a parametric type, i.e.,
+     there is code with type Int, code with type Float, etc. Type correctness of
+     the meta-program, should guarantee type correctness of the object-programs
+     it constructs.
+  4. Hygiene. Bound variables in templates should be handled in some
+     sophisticated way which guarantees no name clashes, and which obeys the
+     rules of static scoping. Free variables in program templates should refer
+     to the value of the variable at the static location where the template is
+     defined, not where it is eventually executed.
+  5. Run. Object-programs can be run. Generated code can be “tested” inside the
+     meta-system.
+  6. Printing. Object-programs can be printed. This is essential for debugging
+     of meta-programs. The object-programs should be pretty-printed in the
+     manner in which they are normally written by a programmer. They should
+     not be represented by some abstract representation unfamiliar to the
+     programmer.
+  7. Observation. Object-programs have structure. It should be possible to
+     analyze object-programs, take them apart, etc.
+
+Partial Evaluation
+------------------
+Offline partial evaluator:
+  phase 1: Knows which inputs are static, but not their values (via binding
+           time analysis). Generates an annotated program.
+  phase 2: Given the actual static values, generate code by obeying annotations
+           (compute this, generate code for that).
+Online partial evaluator:
+  No preprocessing phase. Make compute/generate decisions based on values.
+  More optimizations, eg 'x+0' is replaced by 'x'.
+
+Online can generate better code. More opportunities for static evaluation
+increase the risk of nontermination or useless specialization.
+Offline is usually faster. A hybrid approach may be best.
+  "A Hybrid Approach To Online And Offline Partial Evaluation"
+is about making online PEs faster.
+
+Zig
+---
+Partial evaluation is a much simpler replacement for macros, generics,
+templates, concepts/traits/typeclasses and conditional compilation.
+It's done using an IR interpreter.
+
+    const std = @import("std");
+almost identical to 'std = file "std"' in Curv. @import is a function that
+returns a struct (struct type or struct value?).
+
+    comptime_int, comptime_float -- types of generic int/float literals
+Curv runtime is a lot like Zig comptime. These types are Num in Curv.
+
+    const x = 42;   -- immutable variable. If definiens is comptime, so is var.
+    var x: i32;     -- mutable variable. runtime.
+    var x: i32 = 1; -- ': i32' required because comptime_int not runtime type.
+    comptime var y: i32 = 2; -- comptime mutable variable. ???
+It seems messed up to allow a statement block containing a mix of comptime
+and runtime assignment statements.
+
+    if (<comptime-boolean-false>) {
+        @compileError("oops"); -- not executed due to comptime guard
+    }
+
+    comptime { <statements> }
+
+    const Point = struct { -- structural or nominal type equivalence?
+        x: i32,
+        y: i32,
+    };
+    -- initialize an array with compile time code
+    var a = init: {
+        var initial_value: [10]Point = undefined;
+        for (initial_value) |*pt, i| {
+            pt.* = Point{
+                .x = @intCast(i32, i),
+                .y = @intCase(i32, i) * 2,
+            };
+        }
+        break :init initial_value;
+    };
+    -- Curv next:
+        data Point {x:: i32, y:: i32};
+        a = [for i in 0..<10 do Point{x:i, y:i*2}];
+
+    struct types can have static definitions as well as field declarations.
+    The former are accessed using '.' notation, so they are like modules.
+
+    -- A function returning a struct is a "generic type".
+    fn LinkedList(comptime T: type) type {
+        return struct {
+            pub const Node = struct {
+                prev: ?*Node,
+                next: ?*Node,
+                data: T,
+            };
+            first: ?*Node,
+            last:  ?*Node,
+            len:   usize,
+        };
+    }
+    -- some type equivalence:
+    const ListOfInts = LinkedList(i32);
+    expect(ListOfInts == LinkedList(i32));
+
+    Struct (Type) Naming
+    All struct (types) are anonymous, but Zig attaches a type name.
+    * If struct is definiens, name is definiendum.
+    * If struct is function result, name is function name + arguments.
+    * Otherwise, "anonymous struct at foo.zig:17:42".

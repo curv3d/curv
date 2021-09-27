@@ -1,0 +1,142 @@
+"Noether: Symmetry in Programming Language Design" 2013 Daira Hopwood
+https://www.youtube.com/watch?v=jm5qWioS9S0
+https://raw.githubusercontent.com/strangeloop/StrangeLoop2013/master/slides/elc/Hopwood-NoetherSymmetryInProgLangDesign.pdf
+
+https://github.com/noether-lang/noether
+Early prototype in Idris; work stopped 2017. Updated slide presentations.
+
+https://github.com/noether-lang/noether/blob/master/doc/presentations/StrangeLoop2014/handling.pdf
+Error handling with guaranteed automatic rollback.
+
+Many programming language techniques help by imposing symmetries,
+which aid reasoning about programs.
+
+A symmetry gives a set of possible transformations that do not change
+a given property. The origin of the idea is math and physics.
+In programming,
+ * Confluence: in a pure language, evaluating in different orders produces
+   the same result.
+ * Moving a call of a pure function to a different time, or task, does not
+   change its result.
+ * Reflexive/symmetric/associative operators and functions.
+ * Alpha renaming (variable renaming).
+ * Adding and removing parallelism annotations; maybe other annotations.
+ * Expansion and abstraction of (functions, macros, modules, type synonyms, ...)
+ * Common subexpression elimination.
+ * Adding and removing staging.
+ * Trait flattening.
+ * Representation changes.
+ * Adding and removing dead code.
+ * Comments and formatting.
+
+To this I would add:
+ * Immutable values can be copied without losing their identity.
+ * Algebra directed design.
+
+Symmetries that "nearly apply" (due to warts and special cases) cause friction
+and complexity for reasoning about code.
+
+Interfering features:
+  Some are harder to eliminate (considered "essential" by author):
+   * side effects; local/task state
+   * failure handling
+   * concurrency
+  Some are not "essential":
+   * dynamic binding
+   * overloading
+   * implicit coercion
+   * introspection (stack, local variables, function code, objects)
+   * unhygienic or textual macros
+   * anything that violates memory safety
+   * anything that violates actor locality
+   * colliding namespaces
+   * global state; floating point modes; other modes
+* A design wart in a feature (eg, module or macro system) can stop it
+  having desired symmetries.
+* With care, similar or better expressiveness can be achieved without
+  problematic features, or with restricted variations on them.
+
+Symmetry Breaking
+-----------------
+* We want the strongest symmetries possible for any given expressiveness
+* Solution: stratified languages.
+* Not a new idea: Erlang, Oz, Haskell, but Noether takes it further.
+* At each level, we add features and break a symmetry.
+* Some symmetries are so useful that they should be preserved globally.
+  Eg, memory safety and actor locality laws.
+* There's a trade-off between optimizing the symmetry-expressiveness profile,
+  and keeping the number of levels small to reduce complexity.
+* If we start by designing with one level per broken symmetry, we can always
+  collapse levels together later.
+* The sublanguages don't have to be nested, but we make them nested:
+  * for simplicity of understanding and teaching the full language
+  * for simplicity of inferring which sublanguage we're in and conveying that
+    to the programmer
+  * to make the design problem of which features depend on others tractable
+  We could relax this constraint if it was important, but haven't needed to
+  for Noether.
+
+Coherence
+---------
+* Getting strong symmetries when a whole program is in a small sublanguage
+  isn't enough.
+* Nontrivial programs are intended to be a mixture of subprograms at different
+  levels. We need to know whether symmetry properties are maintained
+  when mixing levels.
+* Physical analogy:
+  * Sublang with strong symmetries <=> highly ordered phase of matter, solid
+  * Sublang with weaker symmetries <=> less ordered phase of matter, fluid
+  * A material is coherent if it maintains its phase when moved within a less
+    ordered phase. Eg, most solids main their phase and shape when moved
+    in a fluid, unless the fluid corrodes the solid.
+* A sublanguage is coherent if code in that sublanguage maintains its
+  symmetry properties when used anywhere within a larger language.
+  * Eg, a pure function can be executed anywhere in an impure program
+    without losing symmetry (confluence within the function, determinism, etc)
+    unless the impure language has reflective features that break opaqueness
+    of pure functions.
+
+Symmetry and Expressiveness
+---------------------------
+* Language expressiveness is negatively correlated with tractability of
+  programs because more expressive languages typically have fewer symmetries.
+* How do we make programs more tractable without losing expressiveness
+  and performance where needed?
+* The *Principle of Greater Symmetry* is a language-supported programming
+  discipline: aim toward writing the "most symmetrical" program you can
+  to perform the desired task.
+* For each *part* of a program, use the sublanguage that results in the
+  most symmetrical correct program, and make sure that subprograms maintain
+  their symmetries when composed (as far as possible).
+* The *Principle of Greater Symmetry* is related to the *Principle of Least
+  Power* or the *Principle of Least Expressiveness*, but the most
+  symmetrical expression of a specification might not use the smallest or
+  least expressive sublanguage.
+   * Example: the Same Fringe problem is pure-functional more but
+     tractably expressed using generators.
+* The idea is that this will generally make the program more understandable,
+  maintainable, robust, and easier to review for security.
+* Since symmetry is not measurable on a linear scale, comparing programs
+  for symmetry is partly a matter of subjective opinion, but that's life.
+
+Noether programming language
+----------------------------
+* Object-capability, typed, parallel and concurrent, highly optimizable.
+* Stratified sublanguages of increasing expressiveness and decreasing
+  symmetry.
+* Why a new language?
+  * Fewer constraints on optimizing symmetry-expressiveness profile.
+  * Existing languages have features (eg, exception handling, concurrency)
+    that we want to specify and combine in different ways.
+  * Address previously unsolved or solved-only-as-research problems:
+    precise resource control, partial failure, control flow in asynchronous
+    message passing, etc.
+  * Security + expressiveness + speed is already very hard. Adding
+    compatibility with some existing language makes it impossible.
+    (The problem is running existing programs with expected performance.)
+  * Compatibility is overrated. Familiarity is more important.
+  * "A language really defines its own universe, and a language designer
+    has the power to control what can or cannot happen in that universe"
+    Tom Van Cutsem
+
+... and much more ...

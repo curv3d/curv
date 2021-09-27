@@ -1,0 +1,166 @@
+Variants in Curv.next
+---------------------
+In which I explore unified notation for specifying variants.
+A variant is:
+ * A data type that has one or more labelled alternatives.
+ * A data constructor or function, like cube, that has one or more
+   labelled alternatives.
+
+I'm assuming some proposed features of Curv.next:
+* Records are distinct from modules.
+* Arrow values like (foo: 42), which are distinct from records.
+
+Variant Data
+------------
+We need variant POD data, so you can directly express variants in the modelling
+language, rather than indirectly via data type definitions:
+    #niladic
+    (monadic: a)
+    (dyadic: [a,b])
+
+We need variant data types. All the variants share a data type tag which can
+be efficiently tested. Constructor parameters are typed, and the data type tag
+attests that the data conforms to the parameter types. Recursive variant
+data types are supported.
+
+Design alternatives:
+ * One data constructor, takes POD variant value as argument.
+   Need to support recursive POD type definitions.
+ * Multiple data constructors (one per variant).
+   Need to support recursive multi-way data type definitions.
+    * Put constructors in current scope.
+    * Put constructors in a module named after the data type.
+
+Variant Constructor
+-------------------
+A hypothetical kind of value that can be invoked either like this:
+    foo #a
+    foo (b: 1)
+or equivalently like this:
+    foo.a
+    foo.b 1
+
+So there's a constructor (vmatch?) which produces a module.
+And a sum data constructor can also produce this interface.
+
+Alternatively, just as symbols have the property
+    #foo(x) === x.foo
+then arrow values have the property
+    (foo:a)(x) == x.foo(a)
+and you can also write
+    x >> (foo:a)
+    x@(foo:a)
+    x.foo(a)
+Benefit: there is no requirement that 'x' be specially designed to accept
+a POD variant value as an argument, it just has to expose a module interface
+of one member per alternative.
+
+This is very _original_, so I won't implement it unless I find a strong
+use case, some library that needs it.
+ * Why two syntaxes for invoking a variant operation?
+    * The 'foo.b 1' syntax is useful because 'foo.b' can be passed as a
+      combinator argument. '1 >> foo.b', map(foo.b), etc.
+    * The 'foo(b:1)' syntax is useful because you can abstract out the
+      variant part of the expression. I imagine a shape constructor with
+      a record full of constructor arguments, and one of these is a variant
+      that is passed to another underlying constructor.
+      For example, blending kernels:
+            smooth 0.5 .union [a,b]
+         vs smooth 0.5 (union: [a,b])
+ * I imagine an API 'foo' implemented entirely in the modelling language, using
+   POD variant values, which is upgraded to use a sum data constructor to
+   represent the variant. So the question is whether you can do this while
+   preserving backwards compatibility.
+ * There is an argument that if Curv has a rich set of syntax patterns that
+   map onto function calls, plus a general ability to inspect API values,
+   then I can build DSLs from this syntax without macros. Maybe this
+   unusual syntax pattern is part of that toolkit?
+
+------
+Variant types are a feature of statically typed languages.
+They have many names: discriminated unions, enums, variants and algebraic data types.
+The core idea is that a variant type consists of a fixed set of alternatives.
+Each alternative has a name, and optionally a value.
+An enum type is one in which all of the alternatives are just names.
+
+A variant (or variant value) is an instance of a variant type.
+To construct a variant, you need to specify the name of one of the alternatives,
+plus a value, if that alternative carries a value.
+
+In Curv, we don't have explicitly declared variant types. Instead, variants
+can be constructed directly. A variant with just a name is a symbol.
+A variant with a name and a value is a record with a single field.
+    #niladic
+    {monadic: a}
+    {dyadic: (a,b)}
+
+A variant value is queried using pattern matching:
+    match [
+      #niladic -> [],
+      {monadic: a} -> [a],
+      {dyadic: (a,b)} -> [a,b],
+    ]
+
+Variant values are abstract: you use pattern matching to query the value.
+There is another kind of tagged value which preserves the operations
+on the value (eg, Cell tagged values, or Curv terms).
+
+variant_picker
+--------------
+I'd like to define a picker that takes a variant type as an argument.
+It displays a drop-down menu for the tag, plus additional pickers for
+data associated with the current tag value.
+    variant_picker [ alternative, ... ]
+Each alternative is either a symbol, or {tag: {record of pickers}},
+or {tag: [alternative, ...]} if we want an alternate form of nesting.
+The parameter that is bound to a variant_picker has a variant value that
+must be queried using `match`.
+
+Variant Terms
+-------------
+Variant data types introduce a different way to model blending kernels:
+    smooth 0.5 .union [a,b]
+ vs smooth 0.5 {union: [a,b]}
+
+We could unify these approaches by extending `record!` to take a variant
+value as argument, like so:
+    record!#foo    => record.foo
+    record!{bar:a} => record.bar a
+This would allow you to write
+    smooth 0.5 !{union: [a,b]}
+which would allow {union: [a,b]} to be passed as a parameter then given
+to smooth 0.5.
+
+We could also do this in reverse: a piecewise function over variant values
+could export field names for each tag. So,
+    pfun #foo  => pfun.foo => pfun!#foo
+    pfun {a:b} => pfun.a b => pfun!{a:b}
+This idea is inconsistent with callable records and Algebras. It is ambiguous
+if the piecewise function has patterns matching both #foo and {foo: x} --
+the first such pattern would match, I guess.
+
+Also the cube:
+    cube .mitred 5
+    cube #mitred 5   or cube {mitred: 5}
+If I want `cube` to be parametric, and the parameters include the exact/mitred
+alternatives, what's the best way to organize the parameters,
+and what do cube terms look like?
+
+In a GUI, it might be good to present the cube parameters like this:
+    size :: scale_picker = 2;
+    field :: variant_picker[#exact, #mitred] = #exact;
+    blend :: blend_picker = sharp;
+
+Modular Sum Types
+-----------------
+The Modular Programming spec supports data abstraction by bundling a type
+together with its constructors and operations in a module. The type's
+representation is only visible within that module.
+
+Given a modular sum type Foo under this proposal, how is it constructed?
+ 1. A single constructor that takes a variant argument:
+        Foo #a
+        Foo {b: 1}
+ 2. One constructor for each alternative:
+        Foo.a
+        Foo.b 1

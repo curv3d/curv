@@ -15,6 +15,7 @@ Here are the kinds of labelled values. Some of these kinds have
 an associated definition syntax.
  * abstract data, constructed using a data constructor
  * data constructor (`data` definition syntax)
+   This covers two cases: constructor functions, and singleton constructors.
  * labelled functions (`func` definition syntax)
  * constructors, a special category of labelled functions that
    construct labelled values.

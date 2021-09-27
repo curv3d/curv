@@ -1,0 +1,139 @@
+Better Stack Traces
+===================
+Each item in a stack trace has a source location, which is visualized by
+printing lines of source and underlying the specified characters.
+
+Where possible, I would like to annotate stack trace items with "in function F",
+where F is the name of a function whose definition contains the source location.
+The purpose is to make stack traces clearer, so that I can more easily see
+which function failed.
+
+How do we get good quality function names?
+* Function names should be consistent with a function's name when printed.
+
+How do we get those names printed in a stack trace?
+* Function names are associated with expressions that could panic at:
+  parse time, analysis time, or run time (when Exception is constructed).
+
+Current Issues
+--------------
+This mostly works now, except:
+* Functions that are constructed using a combinator do not have the right name.
+  Eg, `rotate` prints as `<function match _>`.
+  Need new definition syntax, eg proposed as:
+     def rotate = match ...
+     func rotate = match ...
+* In a SubCurv trace, function names are `dist` if the argument to
+  make_shape is a scoped record, or function name is missing if argument
+  is a dynamic record. With the new Shape design based on ADA, I'd like
+  to see names like `cube.distance` and `rotate.distance` in the trace.
+
+Previous Brainstorming: Function Names
+--------------------------------------
+In a traditional language (like C), there is no difficulty associating a
+function name with a stack trace element. It's trivial.
+ * All functions have names. Function definitions are different from data
+   definitions. A function definition contains a name. Function definitions
+   cannot be nested. There are no curried functions. There are no lambdas.
+ * All code is contained within functions. There is a main function.
+   Therefore, every stack trace element is associated with a function.
+
+In Curv, getting a C-like stack trace is not so easy.
+ * Some function calls don't have stack frames because they are eliminated
+   by tail call elimination. Eg, when calling
+     union list = reduce[nothing, _union2] list
+   there is no stack frame for 'union', it's replaced by 'reduce _'.
+ * Consider a function of the form
+       foo = match [lambda1, lambda2, ...]
+   What happens if a panic occurs in one of the lambdas?
+   1. Right now, 'foo' is named 'match _'. There's a stack frame for 'match _'.
+      We can fix this with the 'func' proposal for named functions. So now the
+      Piecewise_Function is named foo.
+   2. Even so, if a panic occurs inside a lambda, then we print a stack frame
+      for that lambda, which has no function name. 'match' should propagate
+      its name 'foo' into the lambdas? And then tail-call the lambdas.
+      Now we get a single stack frame for function 'foo' when a lambda panics.
+      Instead of two stack frames, one for the match _ and one for the lambda.
+
+---
+
+If the function that failed is a lambda expression passed as a combinator
+argument, then search outward for a named function that encloses the lambda.
+
+What if there are nested named functions surrounding the source location?
+Maybe print all the names from outermost to innermost?
+This exposes the names of let-bound local variables, and turns those names
+into a 'public interface' used by stack traces. Maybe not a good idea.
+Also, more complex.
+
+What if the 'function' that failed is actually a module (eg like cube or cone)?
+* 'cube 10' is an alias for 'cube.exact 10'. So use 'cube.exact' as the function
+  name?
+* How does this name get assigned? Current code:
+    cube =
+        let
+            cube_m d =
+                let r = d / 2;
+                in make_shape {
+                    dist[x,y,z,t] = max(abs[x,y,z] - r);
+                    bbox = [[-r, -r, -r], [r,r,r]];
+                    is_3d = true;
+                };
+            cube_e d = box.exact[d,d,d];
+        in {
+            ... cube_e 2,
+            call: cube_e,
+            circumratio: sqrt 3,
+            exact: {
+                ... cube_e 2,
+                call: cube_e
+            },
+            mitred: {
+                ... cube_m 2,
+                call: cube_m
+            },
+        };
+  At present, `cube.call` prints as `<function cube_e>`, which is not good
+  (exposes the name of a local variable).
+
+  We are building a module using a field generator, so we need to generate
+  fields with module metadata. So 'name: value' is a field value constructor,
+  and it can include metadata.
+  But, this doesn't explain how the 'cube.call field' is tagged with the name
+  'cube.exact'.
+
+Implementation
+--------------
+I want function names in the stack trace to correspond with the names used
+for printing function values. With that in mind, whether parse time or analysis
+time tagging works depends on the semantics for assigning names to function
+values. There's a proposal for renaming an existing Closure value when
+constructing a module, and that involves dynamic semantics. Eg,
+    func foo = combinator_expression
+can associate the name 'foo' with a function body in a different module and
+source file. So, should I print the name of the function that you called,
+even if that name isn't in the source file of the sourceloc, or should I print
+the function name in the source file, even if you don't know how that particular
+function happened to be called (because it's an implementation detail of the
+function that you did call)?
+
+I think it's clear that I should use dynamic semantics, and that the function
+name I'm printing in the stack trace is sometimes providing additional
+information that can't be gleaned from the source location.
+
+A Frame has a 'Shared<const Function> func_' member. And a function may have
+a name. Can we use this? The frame stack traces the *dynamic* call chain,
+whereas the exclosing function name is a static or lexical property. But we
+can traverse the call chain looking for a function whose definition encloses
+the current source location.
+
+This is expensive, because Phrase::location() has non-constant time (it
+traverses the phrase tree), and traversing the call stack is also non-constant,
+so this is at least quadratic. We are repeating this once per stack frame,
+so overall cubic.
+ * Phrase::location() can be made constant time. Now we are just quadratic.
+
+In the current code base, the function names will be low quality. The
+'cube' function will be reported as 'cube_e'; 'cone' as 'exact'.
+The 'rotate' function prints as <function match _>, but it isn't a Closure
+so it won't be reported.

@@ -1,0 +1,258 @@
+Relational Data Abstraction
+===========================
+In Relational Data Abstraction, the data that represents an abstract value
+is disjoint or separable from the method dictionary which interprets the data,
+and which is required for the value to be used in generic programming.
+
+This separation of data and code permits better modularization, more
+composability, and more expressive programming idioms.
+
+Simple Data
+-----------
+In relational data abstraction, simple labelled data is constructed using named
+constructors. The constructor name is stored in the data as a label. A datum
+only represents the thing in itself (pure data, usually just the constructor
+arguments). Any relationships that the data participates in (eg, operations,
+subtype relationships) are represented *externally* to the data, they are not
+stored *in* the data. The data label (constructor name) is used as the link
+to these external relationships.
+
+I'm using the "relational" slogan because it reminds me of Prolog.
+Facts are separate from rules. You don't put the rules *inside* the facts.
+It reminds me of relational databases and the relational data model.
+In a relational DB, the rows in a table are the simple facts or data, and
+the table names are the labels that are used to relate the data to other data.
+Maybe I can subsume this idea under the more general slogan "value oriented
+programming".
+
+This approach is consistent with the goals of radical orthogonality
+and composability. It's orthogonal because simple data is disjoint to its
+relationships, they aren't complected together. It's composable because this
+design solves the Expression Problem. You can add new data constructors to an
+existing overloaded operation. You can add new overloaded operations to
+an existing data constructor.
+
+What's simple about this approach is the data itself. A datum is a constructor
+name and constructor arguments, that's usually it. When you print a datum,
+you just print the entire representation, and what you see is all there is.
+Data is easy to serialize, transmit across the internet, store in files;
+similar to the benefits of JSON and XML data. You don't expect a JSON file
+or a wordprocessor document to contain all of the code used to interpret
+or perform operations on the data: that is naturally and necessarily separate.
+A .DOC file doesn't contain its own copy of Microsoft Word, for example.
+Instead, files have well known file formats, identified by labels (file
+extensions and magic numbers). Anybody can write a new tool for interpreting
+that file format, without modifying every existing instance of that file format
+to contain the code for the new tool. RDA is based on the same idea.
+
+This is not like OOP languages, CLOS, or Julia, where the labels attached to
+data (class names or type names) form a hierarchy. (That forces you to decide,
+when you construct a value, where it fits in this hierarchy, and prevents
+third-party users of the value from using a different hierarchy.) Instead,
+type hierarchies can be constructed, but they are separate from values.
+You can add an existing data constructor to a type hierarchy, without changing
+the code for the data constructor.
+
+This is not like OOP languages, where there is inheritance of data members
+within classes. There is no data inheritance. We use composition instead.
+
+It's not like Clojure. In Clojure, entities are represented by maps.
+A map contains keys from potentially multiple different namespaces.
+The map describes not just the entity in itself, but it also describes
+how the entity is related to other entities, through these namespaced keys.
+A lot of different concerns are complected together, that's why Clojure needs
+namespaced keys. In RDA, a datum only describes the thing in itself, and
+relationships to other things are described externally, not internally.
+
+RDA uses simple labelled data. The labels behave like 'nominal types', and are
+used to associate the data with methods, in the case of overloaded operations.
+
+How Does It Work?
+-----------------
+How well does this work in practice? Is there much boilerplate?
+Doesn't this involve non-local reasoning, spooky action at a distance?
+How do you see the relationships associated with a value? The relationships
+change depending on the context where operations are invoked, this is nonlocal?
+
+Topics:
+* constructors
+* local operations
+* overloading
+
+Labelled Value Constructors
+---------------------------
+Cases:
+* Nilary constructor.
+* Simple constructor with arguments. The arguments are the data representation.
+* Fancy constructor, with a bidirectional transformation between the arguments
+  and the internal representation.
+
+Labelled values are printed as constructor expressions, which when evaluated
+in the right context, exactly reproduce the original value.
+Constructor expressions can be used in pattern matching.
+
+Algebras
+--------
+An Algebra is a module that encapsulates a 'type', which is a set of values
+together with a set of operations on those values. More specifically, an
+Algebra contains one or more constructors comprising the value set of the type,
+plus a predicate for the value set, plus a set of operations.
+
+An Algebra also has a set of axioms that describe its semantics, but for now
+that will be represented by documentation.
+
+The constructors need not be for labelled values.
+
+Labelled constructors within an Algebra can be local to that Algebra, or they
+can be defined in another module. This flexibility is crucial.
+
+A Unary Algebra is a restricted kind of Algebra where all of the operations
+take exactly one argument belonging to the value set. There are no binary
+operations, for example. Unary Algebras correspond to the kind of algebras
+that are represented by classes in a single-dispatch OOP language.
+
+A Labelled Algebra is restricted to have labelled value constructors.
+
+Theories
+--------
+A Theory is like the type or signature of an Algebra. A Theory contains
+constructor names and operation names and axioms, and declares
+signatures for constructors and operations, but doesn't contain
+an implementation. The operation signatures are needed to implement
+Global Overloading, and are also used for validation (see below).
+
+A Unary Theory is restricted to operations that
+take exactly one argument belonging to the value set.
+The operation signatures make it clear if the Theory is unary.
+
+A Theory can inherit from other Theories (multiple inheritance).
+
+There is a predicate for testing if an Algebra implements a Theory.
+In the case of Theory inheritance, the Algebra is also considered to implement
+the super-theories of the Theory it is declared to implement.
+
+An Algebra can be declared to implement a Theory, and some checking is done.
+If a formal parameter is to be bound to an Algebra, you can specify
+a Theory as a parameter type. So this gives us checked Algebra parameters,
+needed for the Better Error Messages feature.
+
+Algebra Passing Style
+---------------------
+You can write generic algorithms on simple data using local semantics, if you
+explicitly pass algebras around as arguments, using "Scrap Your Typeclasses"
+(value level) or "SML Modules" (module level).
+ * No additional language features are needed to support this.
+ * Works for any kind of algebra, not just unary algebras.
+ * Is verbose, boilerplatey.
+ * Doesn't support heterogenous lists of generic values.
+
+Existential Values
+------------------
+It's a horrible name, a play on Haskell's existential types.
+An existential value is an <Algebra,value> pair, where the value is an
+instance of the Algebra, and the Algebra is unary.
+
+If the Algebra belongs to a Theory, then the Theory provides a predicate
+and/or type for identifying existential values containing that Algebra.
+
+This is a simulation of OOP objects. It has local semantics.
+It's one way to support heterogenous lists of generic values.
+
+I'm not convinced that the Algebra needs to be unary. That's just traditional
+groupthink. To invoke an operation, we can use <Theory>.<opname> <argument>.
+A binary operator can pull the algebras out of the two valueset operands
+and fail if they are unequal or don't match the theory.
+
+Global Overloading
+------------------
+Overloaded functions, inspired by CLOS multiple dispatch generic functions.
+
+Theories are extended so that you can use an overload declaration to declare
+that an Algebra implements a Theory, such that the operations in the Theory
+become overloaded functions. The Algebra must be labelled. The data labels
+are used to dispatch to the correct algebra.
+
+The Theory also provides a predicate for testing if a value belongs to
+one of the Algebras overloaded on the Theory.
+
+The Theory need not be unary, which is another way of saying that this
+supports multiple dispatch.
+
+This involves non-local semantics, which violates a Curv design principle.
+It is anti-modular, but that can be fixed by placing restrictions on where
+the overload declarations can occur and where the labels are defined (on
+a module or package basis).
+
+Generic functions can use these overloaded operators with no bureaucracy.
+
+Scoped Overloading
+------------------
+Overloading inspired by Haskell type classes.
+
+Implicit Algebra arguments are passed from the caller's environment.
+This is more modular and local than 'global overloading', and admits the
+possibility of passing the Algebra explicitly if needed, as in Algebra
+Passing Style.
+
+Generic functions require bureaucracy in order to use this method.
+There need to be declarations of the implicit algebra parameters.
+Two styles can be made to work:
+* At the function level, the declarations are part of the parameter section.
+  The implicit arguments are passed when the function is called, based on
+  the constructors of explicit arguments.
+* At the module level, the declarations are at module scope.
+  The implicit arguments are passed when the module M is referenced as M.F.
+
+Shapes
+------
+There are many shape constructors supporting the same generic operations,
+so we need a Shape Theory, and we need to choose a method of binding an
+algebra to a shape value that supports heterogenous lists.
+
+We also want this method to be used in the modelling language, with no
+bureaucracy.
+
+Here are the options:
+* Existential values.
+  Like OOP, popular in dynamic languages.
+* Global overloading.
+  Like CLOS, popular in dynamic languages. Nonlocal.
+* Scoped overloading.
+  No good, requires bureaucracy. It breaks the property that you can
+  write shape functions using the untyped lambda calculus.
+
+The early impression is that existential values win, for now.
+
+It would be interesting to find a way to do scoped overloading with an
+acceptable level of bureaucracy. Look at some prior art and break down
+the scoped overloading techniques into finer categories.
+See [[Scoped_Overloading]].
+
+Some reality checks.
+
+We don't need nonlocal effects to tell us that `cube 10` is a Shape.
+The cube constructor knows this. The nonlocal overloading feature
+allows some other author in some other package to reinterpret our
+data as a shape, and this requires some complexity or bureaucracy
+to accomplish. But we don't need that complexity for `cube`. A cube value
+should just naturally identify itself as a shape without some extra magic
+"over there". Existential values accomplish this.
+
+    When do we need these nonlocal effects? When I'm reinterpreting someone
+    else's data type, setting up a new default interpretation that is either
+    global or module wide? Maybe I'm customizing how a particular value type
+    is displayed, eg creating a new graphical visualization for colour maps?
+
+        There is no such thing as 'global'. Think of the world wide web of
+        Curv sketches as a single aggregate: platonic values manifested on
+        many different machines. Then think about the actual scope of any
+        so-called 'global' dispatch table. The actual scope of a CLOS dispatch
+        table is a module or at most a package, I think. In the old way of
+        thinking, we could have a 'VM image' scope if Curv becomes an image
+        based system like Smalltalk or Lisp Machine Lisp. But I prefer to
+        model an 'image' as a package that can embed other packages.
+
+If I want to identify 'cube n = box [n,n,n]' then I should be able to
+state this simply. It should remain simple if I upgrade 'cube' to a
+new labelled constructor, with extra properties due to 'cube' being a
+subtype of 'box' with extra symmetries.

@@ -1,0 +1,291 @@
+New Theory Syntax
+-----------------
+A Theory is a module type, with some extra structure.
+
+Syntax:
+    theory <supertheory>, <supertheory>, ... { <member>; <member>; ... }
+where
+    <member> ::= <type> | <operation>
+    <type> ::= type <typename>
+    <operation> ::= <opname> :: <signature> [= <value>]
+                  | overload <opname> :: <signature> [= <value>]
+                  | static <opname> :: <signature> = <value>
+    <signature> ::= <typename>
+                  | '[' <signature>, ... ']'
+                  | '{' <name> : <signature>, ... '}'
+                  | <signature> <signature>... -> <signature>
+                  | <typeexpr>
+
+Syntax notes:
+* Types and operations are mixed together as a member list, because a theory is
+  a module type, and this parallels the structure of a module.
+* Typenames are specially marked, so that 'Th.typename' works.
+* Overloaded operations are specially marked, warranting that 'Th.opname' works,
+  and warranting that the signature is compatible with overloading.
+
+Requirements/parts of a theory:
+* an optional set of type names
+* a set of operation signatures (over the type names)
+* Some operations are overloaded, these are marked.
+* Can add a new operation signature to a theory, without breaking existing
+  clients (algebras), by supplying a default value.
+* Static members have the same value for all algebras, can reference typenames
+  and overloaded operations. Needed because a Theory is also a module. A user
+  of the Theory's module interface doesn't care which operations are 'static'
+  and which are 'overload'.
+* a set of axioms [not represented in the MVP]
+* subtheories/supertheories
+* Can externally add a new data constructor to an existing Theory.
+* Can externally add a new Theory to an existing data constructor.
+
+Operations on Theories:
+* Th(module) -- yields a copy of module that is marked as implementing Th,
+  with the addition of default operation values if operations are missing.
+  If there is a single type T, and if module.T is a constructor, then the
+  resulting module M behaves like M.T in a type or function context.
+* Th -- is a Type containing all modules constructed using Th(m).
+* Th.typename -- a classifier for a value whose type
+  is an instance of a member type.
+* Th.opname -- For overloaded or static operations.
+
+This design seems rather complex, due to the fact that a theory is both a
+module type and a module. There's an obvious parallel with Smalltalk classes
+(both instance variables and class variables) and C++ classes. But it isn't OOP:
+* Operations are functions that are separate from the data type instances.
+  Operations are not *inside* instances, we don't send messages to objects.
+* There is no implementation inheritance, and no concept of 'this' or 'self'.
+* Theories are multisorted, OOP classes are single sorted.
+* A Theory is both a C++ class and a C++ concept. Concepts are multisorted.
+
+Overloading
+-----------
+How do overloaded operations within a shape module look up the algebra (aka
+operation dictionary) for an argument value? There are multiple implementations,
+and Curv could use different implementations for different theories,
+without changing the syntax of a Theory.
+
+ 1. Single dispatch, internal dispatch:
+    This is a limited and dumbed down implementation, good enough for MVP.
+
+    A Theory `Th` with overloaded operations is subject to these restrictions:
+    * The Theory has a single type (call it T).
+    * An overloaded operation F is a function whose first argument has type T.
+      The type T must not appear in subsequent arguments.
+    A participating Algebra must define T internally as a data constructor,
+    it can't define T as an alias for an externally defined data type.
+
+    An instance of Th.T contains a reference to an operation dictionary.
+    `Th.F x` first looks up the value of F in x's operation dictionary.
+
+With internal dispatch, there is no external mapping from a <data type, Theory>
+to an operation dictionary, so the ceremony & language restrictions associated
+with external dispatch is absent, and dispatch has entirely local semantics.
+`Th(alg)` returns a copy of `alg` in which the data type `T` has been modified
+so that instances contain a reference to the operation dictionary.
+A consequence is that given A = Th(alg), then alg.T and A.T are different
+data types.
+
+ 2. Single-sorted multiple dispatch, internal dispatch
+    Fewer restrictions on the signature of an overloaded operation, which
+    now may have multiple arguments of type T. Otherwise, same as #1.
+
+ 3. Multi-sorted multiple dispatch, internal dispatch
+
+ 4. Multiple dispatch, external dispatch
+
+Chimeras
+--------
+A Chimera is an API value that implements several unrelated theories, as a
+kind of 'ad hoc overloading'.
+
+In Curv 0.4, the value `cube` is simultaneously a shape (a prototypical cube),
+a function that constructs cubes, and a module that exports a cube API.
+
+This design is implementable in Curv+Theories: it just needs the Shape,
+Function and Record interfaces to all be Theories.
+
+To support the easy construction of values that implement Record + other
+theories, I could add a record-member definition form that adds a Theory +
+value pair to a record, so that the resulting composite value now implements
+that Theory via that value. The `call` member-name convention is replaced
+by this new mechanism.
+
+This is analogous to delegation in Self.
+
+This mechanism would have restrictions. It really only makes sense for
+"single dispatch theories", which are defined as single-typed theories in
+which all overloaded operations are functions whose first argument is an
+instance of the type, and whose signature does not mention the type other
+than in the first parameter.
+
+Suppose you mix several values into a chimera. If those values implement
+overlapping theories, then the semantics are order-dependent: first value
+in the list that implements a particular theory wins? I'd rather have
+order-independent semantics.
+ * For each mixin value, declare the theory that is being delegated to the
+   value. If the theories are not disjoint, it is an error.
+ * But, this means if two previously disjoint theories are extended to have
+   a common supertheory, then that extension could break existing code.
+ * Instead, I could restrict this feature to chimerical API values,
+   and restrict the set of allowed mixin theories to a fixed set of API
+   theories that are guaranteed to be disjoint.
+
+Whether the Curv 0.4 design of `cube` is a good idea, I don't know.
+The ad-hoc overloading of cube is for terseness and convenience,
+it's not based on requirements derived from algebra-directed design.
+
+The weirdest aspect is that `cube` is simultaneously a data value (a
+prototypical cube) plus an API value with interfaces for constructing cubes.
+This only works because Shape is a single-dispatch theory.
+It doesn't generalize to all data theories.
+
+I have fewer reservations about overloading a pure API value to support
+data construction, type protocol, and module protocol. In fact, this kind
+of thing is common in mainstream languages. Restricting chimerism to API
+theories allows me to have order-independent semantics.
+
+Shapes
+------
+def Shape = theory {
+    type T;
+    overload distance :: T Vec3 -> Num;
+    overload colour :: T Vec3 -> Colour = _ _ -> sRGB[.8,.8,.5];
+    overload bounds :: T -> BBox = _ -> [[-inf,-inf,-inf],[inf,inf,inf]];
+    overload is_2d :: T -> Bool = _ -> false;
+    overload is_3d :: T -> Bool = _ -> false;
+    // missing from make_shape: assert(is_2d || is_3d)
+};
+
+To fix the problem with the missing assert, consider features from other
+languages.
+  'class invariant' from Eiffel, D, etc.
+Example syntax:
+  invariant (sh :: T) is_2d sh || is_3d sh;
+Note that a type and its invariants can be inherited from a supertheory,
+and then additional invariants can be added by subtheories. All the invariants
+for a type (directly declared, and inherited) are brought together and added to
+the constructor for a data type, when the theory is instantiated for an algebra.
+Hopefully we can evaluate invariants at compile time (ie, when the algebra
+is constructed) where possible.
+
+Note that bounds, is_2d, is_3d are functions that recompute the values
+on each call. Can we cache these values as data elements in the instance?
+Maybe use a `cache` pragma for this?
+def Shape = theory {
+    type T;
+    invariant (sh :: T) is_2d sh || is_3d sh;
+    overload distance :: T Vec3 -> Num;
+    overload colour :: T Vec3 -> Colour = _ _ -> sRGB[.8,.8,.5];
+    cache overload bounds :: T -> BBox = _ -> [[-inf,-inf,-inf],[inf,inf,inf]];
+    cache overload is_2d :: T -> Bool = _ -> false;
+    cache overload is_3d :: T -> Bool = _ -> false;
+};
+
+`make` maps a single-sorted theory and an algebra to a data constructor.
+We use this to define shape constructors of varying arities.
+
+### Singleton shape constructors.
+
+If all data constructors are monadic:
+    def everything = make Shape {
+        data T [];
+        distance _ p = -inf;
+        is_2d _ = true;
+        is_3d _ = true;
+    } [];
+
+With variadic data constructors:
+    def everything = make Shape {
+        data T;
+        distance _ p = -inf;
+        is_2d _ = true;
+        is_3d _ = true;
+    };
+
+### Monadic shape constructors (cube).
+
+This is a simple cube with mitred distance field.
+    def cube = make Shape {
+        data T Num;
+        distance (T d) pt = max(abs pt - (d/2));
+        bbox (T d) = [[-(d/2),-(d/2),-(d/2)], [d/2,d/2,d/2]];
+        is_3d _ = true;
+    }
+
+Unlike the original, there is no place to put `let r = d/2`,
+so I duplicate d/2 in multiple places. Note, the original stores `r` in the
+shape, it doesn't store `d`. But to reproduce that here, I need an abstract
+data type that deconstructs r back to d for printing the shape.
+
+Ideas:
+ 1. Use that 'abstract data constructor' syntax in [[Data Types]].
+ 2. Define a mitred cube algebra whose repr is 'r :: Num'.
+    Then define a cube constructor that bidirectionally maps the public
+    interface 'd :: Num' onto the internal representation 'r :: Num'.
+    Just as 'make Th alg' returns a constructor, now I'm mapping one
+    constructor onto another. This is promising.
+
+A wrapper constructor bidirectionally maps a new constructor interface
+onto an existing data constructor with different arguments. This effectively
+creates a new data type that implements the same theories as the existing
+data constructor. In this interface, the new constructor has one argument.
+
+    def cube = constructor {
+        into (d :: Num) = d / 2,
+        from r = r * 2,
+        val = make Shape {
+            data T Num;
+            distance (T r) pt = max(abs pt - r);
+            bbox (T r) = [[-r,-r,-r], [r,r,r]];
+            is_3d _ = true;
+        }
+    }
+
+In Curv 0.4, `cube` is simultaneously a shape, a function & a module.
+(See Chimeras.) For now, let's say that `cube` is not a shape.
+
+
+### -------------------------------------------------------------------------
+
+// For backwards compatibility.
+def make_shape s = Shape {
+    data T {dist, colour, bbox, is_2d, is_3d};
+    distance = self p -> self.dist[p@X,p@Y,p@Z,time];
+    colour = self p -> self.colour[p@X,p@Y,p@Z,time];
+    bounds = self -> self.bbox;
+    is_2d = self -> self.is_2d;
+    is_3d = self -> self.is_3d;
+};
+
+
+// The singleton algebra pattern in Curv+Theories.
+    def everything = Shape {
+        data T = singleton;
+        distance _ p = -inf;
+        is_2d _ = true;
+        is_3d _ = true;
+    } .singleton;
+// Another singleton pattern:
+    def everything = Shape {
+        data T [];
+        distance _ p = -inf;
+        is_2d _ = true;
+        is_3d _ = true;
+    } [];
+The value `everything` belongs to a singleton data type, which doesn't have
+a name in the above code. If we want that name, we could write:
+    def Everything = Shape {
+        data T = singleton;
+        distance _ p = -inf;
+        is_2d _ = true;
+        is_3d _ = true;
+    } .singleton;
+    def everything = Everything.singleton;
+`make` maps a single-sorted theory and an algebra to a data constructor.
+This is a more direct way to define a shape constructor.
+    def everything = make Shape {
+        data T;
+        distance _ p = -inf;
+        is_2d _ = true;
+        is_3d _ = true;
+    };
