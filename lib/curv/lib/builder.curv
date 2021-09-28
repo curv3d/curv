@@ -35,5 +35,9 @@
     in
     [f, shape_prev, origin_history_new, origin_parent];
 
+  with = '><';
+  put = '*';
+  child f state = '{' state >> f >> '}';
+
   done = [f, shape_prev, origin_history, origin_prev] -> shape_prev;
 }

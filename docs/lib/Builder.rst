@@ -22,7 +22,7 @@ The `build` function will return an initial state to work from. This state is:
 [union, nothing, [[0, 0, 0]], [0, 0, 0]]
 ```
 
-## '><' function
+## '><' function (alternatively 'with')
 
 Arguments: f :: is_func, state
 Returns: state with a new combiner_function
@@ -32,7 +32,7 @@ combining operation will be used on the following shapes.
 
 Example: `'><' ((smooth 0.5).union)
 
-## '*' function
+## '*' function (alternatively 'put')
 
 Arguments: s :: is_shape, p :: is_vec3, state
 Returns: state with a new shape
@@ -43,7 +43,7 @@ on the parent and the  current position passed to `'*'`.
 
 Example: `'*' (sphere 10) [20, 0, 0]`
 
-## '{' and '}' functions
+## '{' and '}' functions (alternatively 'child')
 
 Arguments: stack
 Returns: stack with last origin pushed or popped to/from the origins stack
@@ -54,3 +54,19 @@ are positioned relative to it.
 
 Note this **only** modifies the origin stack and nothing else, like the
 `combiner_function`.
+
+Using `child` allows for less typing.
+
+Arguments: shape, state
+Returns: state with a new shape
+
+Example: 
+
+```
+head ctx = ctx
+  >> put (box) [0, 0, 0]; // No need to close with '{'.
+
+object = build
+  >> child head
+  >> done;
+```
