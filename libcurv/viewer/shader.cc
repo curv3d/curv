@@ -151,7 +151,7 @@ GLuint Shader::compileShader(
     std::string prolog = "";
     const char* epilog = "";
 
-    prolog += curv::geom::glsl_version;
+    prolog += curv::viewer::glsl_version;
     prolog += "\n#define GLSLVIEWER 1\n";
 
     // Test if this is a shadertoy.com image shader. If it is, we need to

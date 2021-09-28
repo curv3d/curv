@@ -13,7 +13,7 @@
 #endif
 #include <fstream>
 
-namespace curv { namespace geom {
+namespace curv { namespace io {
 
 // A structure for building a C++ source file, compiling it, and getting
 // the results. This holds the C++ source code and the compiled binary.

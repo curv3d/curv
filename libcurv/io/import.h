@@ -9,7 +9,7 @@ namespace curv {
 
 struct System;
 
-namespace geom {
+namespace io {
 
 // Add importers for graphical file formats.
 void add_importers(System&);

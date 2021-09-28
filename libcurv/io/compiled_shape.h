@@ -11,7 +11,7 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
-namespace curv { namespace geom {
+namespace curv { namespace io {
 
 extern "C" {
     typedef void (*Cpp_Dist_Func)(const glm::vec4* in, float* out);

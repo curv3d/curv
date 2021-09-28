@@ -198,7 +198,7 @@ void export_cpp(Value value,
         throw Exception(cx, "not a shape");
     }
     ofile.open();
-    geom::export_cpp(shape, ofile.ostream());
+    io::export_cpp(shape, ofile.ostream());
 }
 
 void export_json(Value value,
@@ -254,13 +254,13 @@ void export_jgpu(Value value,
 // wrapper that exports image sequences if requested
 void export_all_png(
     const Shape_Program& shape,
-    geom::Image_Export& ix,
+    io::Image_Export& ix,
     double animate,
     Output_File& ofile)
 {
     if (animate <= 0.0) {
         // export single image
-        geom::export_png(shape, ix, ofile);
+        io::export_png(shape, ix, ofile);
         return;
     }
 
@@ -284,7 +284,7 @@ void export_all_png(
         auto opath = stringify(prefix, num, suffix);
         Output_File oofile{shape.system()};
         oofile.set_path(opath->c_str());
-        geom::export_png(shape, ix, oofile);
+        io::export_png(shape, ix, oofile);
         oofile.commit();
         //std::cerr << ".";
         //std::cerr.flush();
@@ -309,7 +309,7 @@ void export_png(Value value,
     const Export_Params& params,
     Output_File& ofile)
 {
-    geom::Image_Export ix;
+    io::Image_Export ix;
 
     int xsize = 0;
     int ysize = 0;

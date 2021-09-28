@@ -527,7 +527,7 @@ void Viewer::initGL()
     }
 
     // Set window and context parameters.
-    geom::glfw_set_context_parameters();
+    glfw_set_context_parameters();
     if (headless_) {
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     }
@@ -541,7 +541,7 @@ void Viewer::initGL()
         exit(-1);
     }
     glfwMakeContextCurrent(window_);
-    if (!geom::opengl_init()) {
+    if (!opengl_init()) {
         std::cerr << "ABORT: Can't load OpenGL library\n";
         exit(-1);
     }
@@ -580,7 +580,7 @@ void Viewer::initGL()
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
     ImGui_ImplGlfw_InitForOpenGL(window_, false);
-    ImGui_ImplOpenGL3_Init(geom::glsl_version);
+    ImGui_ImplOpenGL3_Init(glsl_version);
     //ImGui::StyleColorsDark();
     //ImGui::StyleColorsClassic();
     ImGui::StyleColorsLight();

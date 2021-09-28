@@ -83,7 +83,7 @@ Currently, all of the relevant command line options are -O options.
 Algorithm for parsing configuration and -O options.
 * error checking: I want to report invalid -O options, and invalid config
   settings.
-* For each internal options structure, like geom::Frag_Export, there is a
+* For each internal options structure, like io::Frag_Export, there is a
   Parse_Opt function that validates a specific name/value pair,
   modelled after parse_frag_opt(). This validates a name/value pair from
   either the config, or from a -O option.

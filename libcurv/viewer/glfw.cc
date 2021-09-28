@@ -4,7 +4,7 @@
 
 #include <libcurv/viewer/glfw.h>
 
-namespace curv { namespace geom {
+namespace curv { namespace viewer {
 
 // Curv currently requires OpenGL 3.3.
 // It's the most recent version of OpenGL that runs on my late 2010 Macbook Air.

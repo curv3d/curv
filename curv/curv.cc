@@ -46,8 +46,8 @@ make_system(const char* argv0, std::list<const char*>& libs, std::ostream& out,
     if (isatty(2)) sys.use_colour_ = true;
 #endif
     try {
-        curv::geom::add_builtins(sys);
-        curv::geom::add_importers(sys);
+        curv::io::add_builtins(sys);
+        curv::io::add_importers(sys);
         if (argv0 != nullptr) {
             const char* CURV_LIBDIR = getenv("CURV_LIBDIR");
             namespace fs = boost::filesystem;
@@ -305,7 +305,7 @@ main(int argc, char** argv)
     // This can fail, so we do as much argument validation as possible
     // before this point.
     curv::System& sys(make_system(usestdlib, libs, std::cerr, verbose, depr));
-    atexit(curv::geom::remove_all_tempfiles);
+    atexit(curv::io::remove_all_tempfiles);
 
     try {
         Config config;

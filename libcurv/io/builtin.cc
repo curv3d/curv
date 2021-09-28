@@ -13,7 +13,7 @@
 #include <libcurv/sc_compiler.h>
 #include <libcurv/record.h>
 
-namespace curv { namespace geom {
+namespace curv { namespace io {
 
 // Run a unit test by compiling it to C++, thus testing the SC compiler's
 // C++ code generator.

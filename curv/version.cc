@@ -47,7 +47,7 @@ print_gpu(std::ostream& out)
         return;
     }
     glfwMakeContextCurrent(window);
-    if (!curv::geom::opengl_init()) {
+    if (!curv::viewer::opengl_init()) {
         *gout << "GPU: can't load OpenGL library\n";
         return;
     }

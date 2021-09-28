@@ -6,7 +6,7 @@
 #include <libcurv/system.h>
 #include <libcurv/exception.h>
 
-namespace curv { namespace geom {
+namespace curv { namespace io {
 
 void import_png(const Filesystem::path &path, Program&, const Context& cx)
 {

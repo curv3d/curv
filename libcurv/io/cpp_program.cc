@@ -21,7 +21,7 @@
 
 // TODO: Add Windows support by means of LoadLibrary() and friends
 
-namespace curv { namespace geom {
+namespace curv { namespace io {
 
 const char Cpp_Program::standard_header[] =
     "#include <glm/common.hpp>\n"

@@ -19,7 +19,7 @@ extern "C" {
 #include <unistd.h>
 }
 
-namespace curv { namespace geom {
+namespace curv { namespace io {
 
 namespace fs = Filesystem;
 

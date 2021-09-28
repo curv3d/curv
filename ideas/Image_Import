@@ -98,10 +98,10 @@ TODO:
             exporter->call(value, prog, eparams, ofile);
             ofile.commit();
         } else {
-            curv::geom::Shape_Program shape{prog};
+            curv::Shape_Program shape{prog};
             if (shape.recognize(value)) {
                 print_shape(shape);
-                curv::geom::viewer::Viewer viewer;
+                curv::viewer::Viewer viewer;
                 viewer.set_shape(shape);
                 viewer.run();
             } else {

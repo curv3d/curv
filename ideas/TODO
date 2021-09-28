@@ -157,7 +157,7 @@ Current TODO List:
   * refactor Viewer + View_Server. View_Server should not know that Viewer uses
     GLFW. Maybe Viewer has a single event queue that includes set_shape and quit
   * Viewer_Opts
-  * mesh: geom::mesh_write & Mesh_Write_Opts
+  * mesh: io::mesh_write & Mesh_Write_Opts
   * dfmt -> <libcurv/format.h>
   * Location ctor takes Shared<const Source>
   * Source should contain a prefix length (don't put this in Scanner).
@@ -165,7 +165,7 @@ Current TODO List:
     Program::location() uses above in case where program not compiled.
     Program no longer needs to know about Scanner::ptr_.
   * geom uses System::console(), not std::cerr
-  * remove global variables from geom::viewer
+  * remove global variables from curv::viewer
 * Image Export.
   * transparent background (exports RGBA, not RGB)
   * speed up -O animate= (compile shape once)

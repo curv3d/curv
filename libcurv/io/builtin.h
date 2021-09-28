@@ -7,7 +7,7 @@
 
 #include <libcurv/system.h>
 
-namespace curv { namespace geom {
+namespace curv { namespace io {
 
 void add_builtins(System_Impl&);
 

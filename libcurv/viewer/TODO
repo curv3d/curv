@@ -248,7 +248,7 @@ The multi-threaded design I created for Linux won't work on macOS:
 
 Solution (for libcurv)
 ----------------------
-curv::geom::viewer should not create a window, should not create a thread,
+curv::viewer should not create a window, should not create a thread,
 should not own the OpenGL frame-drawing main loop, and should not poll or
 register callbacks for input events. It should present an IMGUI style API.
 It should not use GLFW directly. It should just use OpenGL, operating on
@@ -266,14 +266,14 @@ in the same process, and can efficiently share memory and GPU resources.
 The UI app is responsible for creating windows, creating OpenGL contexts,
 obtaining and dispatching input events, running main loops, creating threads.
 
-curv::geom::viewer is compatible with sharing texture assets between viewer
+curv::viewer is compatible with sharing texture assets between viewer
 windows. This is done by enabling sharing when the context is created, and
 the caller (UI) creates the context. Direct mode rendering requires that all
 shared contexts are in the same process, so I don't want a multiprocess design.
 
 gcurv:
 Create a Qt application. The Viewer and IDE windows are Qt windows.
-The Viewer window contains an OpenGL viewport that curv::geom::viewer renders
+The Viewer window contains an OpenGL viewport that curv::viewer renders
 into.
 
 curv:

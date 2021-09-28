@@ -17,7 +17,7 @@
 #include <cstring>
 #include <iostream>
 
-namespace curv { namespace geom {
+namespace curv { namespace io {
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"

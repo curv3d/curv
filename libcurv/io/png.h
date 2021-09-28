@@ -12,7 +12,7 @@ namespace curv {
 struct Output_File;
 struct Shape_Program;
 
-namespace geom {
+namespace io {
 
 // Image export parameters
 struct Image_Export : public Render_Opts

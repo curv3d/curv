@@ -22,7 +22,7 @@ struct Std_System : public System_Impl
 {
     Std_System() : System_Impl(sconsole)
     {
-        curv::geom::add_builtins(*this);
+        curv::io::add_builtins(*this);
         load_library("../lib/curv/std.curv");
     }
 };

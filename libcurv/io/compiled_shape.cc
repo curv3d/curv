@@ -8,7 +8,7 @@
 #include <libcurv/function.h>
 #include <libcurv/system.h>
 
-namespace curv { namespace geom {
+namespace curv { namespace io {
 
 Compiled_Shape::Compiled_Shape(Shape_Program& rshape)
 :

@@ -17,7 +17,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-namespace curv { namespace geom {
+namespace curv { namespace viewer {
 
 // Set parameters for the OpenGL context version and profile, before creating
 // a window in glfw. Curv currently requires OpenGL 3.2, since that seems to

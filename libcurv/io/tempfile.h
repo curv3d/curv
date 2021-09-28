@@ -7,7 +7,7 @@
 
 #include <libcurv/filesystem.h>
 
-namespace curv { namespace geom {
+namespace curv { namespace io {
 
 unsigned make_tempfile_id();
 Filesystem::path register_tempfile(unsigned id, const char* suffix);
