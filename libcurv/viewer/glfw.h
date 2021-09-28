@@ -2,8 +2,8 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#ifndef LIBCURV_GEOM_GLFW_H
-#define LIBCURV_GEOM_GLFW_H
+#ifndef LIBCURV_VIEWER_GLFW_H
+#define LIBCURV_VIEWER_GLFW_H
 
 // A platform-independent header for OpenGL programming.
 // * We use glad/glad.h as a platform-independent header file for OpenGL.

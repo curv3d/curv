@@ -2,8 +2,8 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#ifndef LIBCURV_GEOM_CPP_PROGRAM_H
-#define LIBCURV_GEOM_CPP_PROGRAM_H
+#ifndef LIBCURV_IO_CPP_PROGRAM_H
+#define LIBCURV_IO_CPP_PROGRAM_H
 
 #include <libcurv/filesystem.h>
 #include <libcurv/sc_compiler.h>

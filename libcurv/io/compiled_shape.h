@@ -2,8 +2,8 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#ifndef LIBCURV_GEOM_COMPILED_SHAPE_H
-#define LIBCURV_GEOM_COMPILED_SHAPE_H
+#ifndef LIBCURV_IO_COMPILED_SHAPE_H
+#define LIBCURV_IO_COMPILED_SHAPE_H
 
 #include <libcurv/io/cpp_program.h>
 #include <libcurv/shape.h>
