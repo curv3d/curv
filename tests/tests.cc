@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <libcurv/geom/tempfile.h>
+#include <libcurv/io/tempfile.h>
 extern "C" {
 #include <stdlib.h>
 }

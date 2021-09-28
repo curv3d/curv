@@ -2,7 +2,7 @@
 // Licensed under the Apache Licence, version 2.0
 // See https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/geom/compiled_shape.h>
+#include <libcurv/io/compiled_shape.h>
 
 #include <libcurv/context.h>
 #include <libcurv/function.h>

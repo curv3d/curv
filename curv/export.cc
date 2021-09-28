@@ -4,8 +4,8 @@
 
 #include "export.h"
 
-#include <libcurv/geom/compiled_shape.h>
-#include <libcurv/geom/png.h>
+#include <libcurv/io/compiled_shape.h>
+#include <libcurv/io/png.h>
 #include <libcurv/viewer/viewer.h>
 
 #include <libcurv/context.h>

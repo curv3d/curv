@@ -2,7 +2,7 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/geom/png.h>
+#include <libcurv/io/png.h>
 
 #include <libcurv/shape.h>
 #include <libcurv/viewer/viewer.h>

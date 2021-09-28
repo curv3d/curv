@@ -12,7 +12,7 @@
 
 #include "export.h"
 #include "encode.h"
-#include <libcurv/geom/compiled_shape.h>
+#include <libcurv/io/compiled_shape.h>
 #include <libcurv/shape.h>
 #include <libcurv/exception.h>
 #include <libcurv/context.h>

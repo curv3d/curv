@@ -11,7 +11,7 @@
 #include <libcurv/string.h>
 #include <libcurv/system.h>
 
-#include <libcurv/geom/builtin.h>
+#include <libcurv/io/builtin.h>
 
 using namespace std;
 using namespace curv;

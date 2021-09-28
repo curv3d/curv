@@ -123,10 +123,10 @@ file(GLOB LibCurvSrc "libcurv/*.cc")
 add_library(libcurv ${LibCurvSrc})
 set_property(TARGET libcurv PROPERTY OUTPUT_NAME curv)
 
-FILE(GLOB LibCurvGeomSrc "libcurv/geom/*.cc" "libcurv/viewer/*.cc")
-add_library(libcurv_geom ${LibCurvGeomSrc})
-set_property(TARGET libcurv_geom PROPERTY OUTPUT_NAME curv_geom)
-target_link_libraries(libcurv_geom PUBLIC imgui)
+FILE(GLOB LibCurvIoSrc "libcurv/io/*.cc" "libcurv/viewer/*.cc")
+add_library(libcurv_io ${LibCurvIoSrc})
+set_property(TARGET libcurv_io PROPERTY OUTPUT_NAME curv_io)
+target_link_libraries(libcurv_io PUBLIC imgui)
 
 file(GLOB Src "curv/*.c" "curv/*.cc")
 add_executable(curv ${Src})
@@ -143,7 +143,7 @@ else ()
     set(LibOmp "")
 endif ()
 set(Libs
-    libcurv_geom libcurv imgui glfw glad ${LibOpenGL} replxx double-conversion
+    libcurv_io libcurv imgui glfw glad ${LibOpenGL} replxx double-conversion
     Boost::iostreams Boost::filesystem Boost::system ${LibOpenVDB} tbb
     ${LibHalf} pthread ${LibDl} ${LibOmp})
 
@@ -151,9 +151,9 @@ target_link_libraries(curv PUBLIC ${Libs})
 
 file(GLOB TestSrc "tests/*.cc")
 add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})
-target_link_libraries(tester PUBLIC gtest pthread libcurv libcurv_geom double-conversion Boost::iostreams Boost::filesystem Boost::system)
+target_link_libraries(tester PUBLIC gtest pthread libcurv libcurv_io double-conversion Boost::iostreams Boost::filesystem Boost::system)
 
-set_property(TARGET curv libcurv libcurv_geom tester PROPERTY CXX_STANDARD 17)
+set_property(TARGET curv libcurv libcurv_io tester PROPERTY CXX_STANDARD 17)
 
 if (APPLE)
     set(ompflags "-Xpreprocessor -fopenmp")

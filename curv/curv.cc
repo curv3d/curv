@@ -28,9 +28,9 @@ extern "C" {
 #include <libcurv/source.h>
 #include <libcurv/system.h>
 
-#include <libcurv/geom/builtin.h>
-#include <libcurv/geom/import.h>
-#include <libcurv/geom/tempfile.h>
+#include <libcurv/io/builtin.h>
+#include <libcurv/io/import.h>
+#include <libcurv/io/tempfile.h>
 #include <libcurv/viewer/viewer.h>
 
 namespace fs = curv::Filesystem;

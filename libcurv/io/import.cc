@@ -2,7 +2,7 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/geom/import.h>
+#include <libcurv/io/import.h>
 #include <libcurv/system.h>
 #include <libcurv/exception.h>
 

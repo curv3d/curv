@@ -22,8 +22,8 @@ There are 3 libraries in the libcurv directory:
              Only depends on boost and double-conversion.
   libcurv/viewer -- Graphics window for rendering shapes using GPU.
                     Depends on libcurv, OpenGL, Glad, GLFW.
-  libcurv/geom -- Import and export various file formats.
-                  Depends on libcurv, viewer, and file-format libraries.
+  libcurv/io -- Import and export various file formats.
+                Depends on libcurv, viewer, and file-format libraries.
 
 LibCurv
 -------

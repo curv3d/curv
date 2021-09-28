@@ -5,7 +5,7 @@
 #ifndef LIBCURV_GEOM_COMPILED_SHAPE_H
 #define LIBCURV_GEOM_COMPILED_SHAPE_H
 
-#include <libcurv/geom/cpp_program.h>
+#include <libcurv/io/cpp_program.h>
 #include <libcurv/shape.h>
 #include <ostream>
 #include <glm/vec3.hpp>

@@ -2,9 +2,9 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/geom/builtin.h>
+#include <libcurv/io/builtin.h>
 
-#include <libcurv/geom/cpp_program.h>
+#include <libcurv/io/cpp_program.h>
 
 #include <libcurv/analyser.h>
 #include <libcurv/context.h>
