@@ -286,7 +286,7 @@ stroke{d, from: a, to: b} =
     };
 
 polyline {
-        d :: (a->is_num a && a > 0),
+        d :: (a->is_num a && a >= 0),
         v :: (a->is_list a && count a > 0 && and(map is_vec2 a))
     } =
     let r = d / 2;
