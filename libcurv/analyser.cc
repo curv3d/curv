@@ -588,6 +588,19 @@ Where_Phrase::analyse(Environ& env, Interp terp) const
 Shared<Meaning>
 Binary_Phrase::analyse(Environ& env, Interp) const
 {
+    // warn about ambiguous syntax: 'f -1' parses as 'f - 1'
+    if (op_.kind_ == Token::k_plus || op_.kind_ == Token::k_minus) {
+        if (op_.first_white_ != op_.first_) { // space before op
+            auto rtok = right_->location().token();
+            if (rtok.first_white_ == rtok.first_) { // no space before right
+                env.sstate_.system_.warning(
+                    Exception(At_Phrase(*this, env),
+                      "ambiguous syntax\n"
+                      "An expression like 'f -1' parses as 'f - 1'.\n"
+                      "You should instead write 'f (-1)' or 'f - 1'."));
+            }
+        }
+    }
     switch (op_.kind_) {
     case Token::k_or:
         return make<Or_Expr>(
