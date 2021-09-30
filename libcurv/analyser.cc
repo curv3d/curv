@@ -1004,6 +1004,23 @@ Bracket_Phrase::analyse(Environ& env, Interp) const
 Shared<Meaning>
 Call_Phrase::analyse(Environ& env, Interp) const
 {
+    // warn about ambiguous syntax: 'f a(b)' parses as '(f a)(b)'
+    if (is_juxta()) {
+        auto argtok = arg_->location().token();
+        if (argtok.first_white_ == argtok.first_) { // no space before arg
+            auto call = cast<Call_Phrase>(function_);
+            if (call && call->is_juxta()) { // function is 'f a'
+                auto atok = call->arg_->location().token();
+                if (atok.first_white_ != atok.first_) { // space before a
+                    env.sstate_.system_.warning(
+                        Exception(At_Phrase(*this, env),
+                          "ambiguous syntax\n"
+                          "An expression like 'f a[b]' parses as '(f a)[b]'.\n"
+                          "You should instead write 'f (a[b])' or 'f a [b]'."));
+                }
+            }
+        }
+    }
     return function_->analyse(env, Interp::expr())->call(*this, env);
 }
 
