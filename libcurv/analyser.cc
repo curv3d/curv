@@ -685,6 +685,21 @@ Shared<Meaning> Apply_Lens_Phrase::analyse(Environ& env, Interp) const
 
 Shared<Meaning> Dot_Phrase::analyse(Environ& env, Interp) const
 {
+    // warn about ambiguous syntax: 'f a.b' which parses as '(f a).b'
+    if (op_.first_white_ == op_.first_) { // no space before dot
+        auto call = cast<Call_Phrase>(left_);
+        if (call && call->is_juxta()) { // left of dot is 'f arg'
+            auto argtok = call->arg_->location().token();
+            if (argtok.first_white_ != argtok.first_) { // space before arg
+                env.sstate_.system_.warning(
+                    Exception(At_Phrase(*this, env),
+                        "ambiguous syntax\n"
+                        "An expression like 'f a.b' parses as '(f a).b'.\n"
+                        "You should instead write 'f (a.b)' or 'f a .b'."));
+            }
+        }
+    }
+    // analyse
     if (auto id = cast<const Identifier>(right_)) {
         return make<Dot_Expr>(
             share(*this),
