@@ -1,4 +1,30 @@
-* test Windows port, then announce
+Fix problem with union seams, caused by mesh exporter.
+Support additional meshers with sharp edge handling.
+
+Clean up documentation
+* remove or fix anything from docs directory that is old or out of date.
+* make sure everything in the version 0.5 release notes is documented.
+
+make_shape documentation:
+* the fields of a shape value
+* The t in [x,y,z,t] means the time in seconds since the beginning of the animation. This lets you create animated shapes.
+* Distance functions are written in a staticallly typed, restricted subset of Curv which is called "SubCurv". Unfortunately, curried functions like quadratic p0 p1 p2 w0 w1 w2 t are not yet supported in SubCurv. You must instead use quadratic [p0, p1, p2, w0, w1, w2, t]: use a single argument that is a list.
+
+Tutorials:
+* translating GLSL into Curv
+* fillets and rounds
+* blob & skeleton based modelling
+* strokes & sweeps
+
+transliterating GLSL into Curv -- docs/language/GLSL_to_Curv.rst
+   float x = 1.0;   =>    local x = 1;
+   x = x + 1;       =>    x := x + 1;
+   v.x  =>   v.[X]
+   v.xy =>  v.[[X,Y]]
+   dot(v1,v2)  =>  dot[v1,v2]
+   vec(x,y)  =>  [x,y]
+
+---------
 * auto detection of c++ compiler for '-O jit' default value
 
 Finish imperative:
