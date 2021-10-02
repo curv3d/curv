@@ -11,7 +11,6 @@
 #include <glm/geometric.hpp>
 
 #include "export.h"
-#include "encode.h"
 #include <libcurv/io/compiled_shape.h>
 #include <libcurv/io/mesh.h>
 #include <libcurv/shape.h>
