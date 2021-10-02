@@ -26,14 +26,14 @@ struct Compiled_Shape final : public Shape
 
     Compiled_Shape(Shape_Program&);
 
-    virtual double dist(double x, double y, double z, double t) override
+    virtual double dist(double x, double y, double z, double t) const override
     {
         glm::vec4 in{x,y,z,t};
         float out;
         dist_(&in, &out);
         return out;
     }
-    virtual Vec3 colour(double x, double y, double z, double t) override
+    virtual Vec3 colour(double x, double y, double z, double t) const override
     {
         glm::vec4 in{x,y,z,t};
         glm::vec3 out;

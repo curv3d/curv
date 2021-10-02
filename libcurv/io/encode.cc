@@ -1,5 +1,7 @@
 #include "encode.h"
 
+namespace curv::io {
+
 // https://stackoverflow.com/questions/342409/how-do-i-base64-encode-decode-in-c/41094722#41094722
 std::string base64_encode(const unsigned char *src, size_t len) {
     unsigned char *out, *pos;
@@ -43,3 +45,5 @@ std::string base64_encode(const unsigned char *src, size_t len) {
 
     return outStr;
 }
+
+} // namespace

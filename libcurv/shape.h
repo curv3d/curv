@@ -55,8 +55,8 @@ struct Shape
     bool is_2d_;
     bool is_3d_;
     BBox bbox_;
-    virtual double dist(double x, double y, double z, double t) = 0;
-    virtual Vec3 colour(double x, double y, double z, double t) = 0;
+    virtual double dist(double x, double y, double z, double t) const = 0;
+    virtual Vec3 colour(double x, double y, double z, double t) const = 0;
 };
 
 struct Shape_Program final : public Shape
@@ -97,10 +97,10 @@ struct Shape_Program final : public Shape
     Shape_Program(const Shape_Program&, Shared<Record>, Viewed_Shape*);
 
     // Invoke the shape's `dist` function.
-    double dist(double x, double y, double z, double t);
+    double dist(double x, double y, double z, double t) const;
 
     // Invoke the shape's `colour` function.
-    Vec3 colour(double x, double y, double z, double t);
+    Vec3 colour(double x, double y, double z, double t) const;
 };
 
 } // namespace

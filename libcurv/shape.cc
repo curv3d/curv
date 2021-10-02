@@ -138,7 +138,7 @@ Shape_Program::Shape_Program(
 }
 
 double
-Shape_Program::dist(double x, double y, double z, double t)
+Shape_Program::dist(double x, double y, double z, double t) const
 {
     At_Program cx(*this);
     Shared<List> point = List::make({Value{x}, Value{y}, Value{z}, Value{t}});
@@ -147,7 +147,7 @@ Shape_Program::dist(double x, double y, double z, double t)
 }
 
 Vec3
-Shape_Program::colour(double x, double y, double z, double t)
+Shape_Program::colour(double x, double y, double z, double t) const
 {
     At_Program cx(*this);
     Shared<List> point = List::make({Value{x}, Value{y}, Value{z}, Value{t}});
