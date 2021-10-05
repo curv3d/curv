@@ -130,6 +130,7 @@ struct VDB_Mesh : public Mesh
 void describe_mesh_opts(std::ostream& out)
 {
     out <<
+    "-O mgen=#vdb|#dce : Mesh generation algorithm (default #vdb).\n"
     "-O jit : Fast evaluation using JIT compiler (uses C++ compiler).\n"
     "-O vsize=<voxel size>\n"
     "-O adaptive=<0...1> : Deprecated. Use meshlab to simplify mesh.\n"
@@ -141,6 +142,51 @@ void describe_colour_mesh_opts(std::ostream& out)
     out <<
     "-O colouring=#face|#vertex (default #face)\n"
     ;
+}
+
+struct Voxel_Timer
+{
+    const Vec3i& voxelrange_min_;
+    const Vec3i& voxelrange_max_;
+    std::chrono::time_point<std::chrono::steady_clock> start_time_;
+
+    Voxel_Timer(const Vec3i& vmin, const Vec3i& vmax)
+    : voxelrange_min_(vmin), voxelrange_max_(vmax)
+    {
+        start_time_ = std::chrono::steady_clock::now();
+    }
+
+    void print_stats()
+    {
+        std::chrono::time_point<std::chrono::steady_clock> end_time =
+            std::chrono::steady_clock::now();
+        std::chrono::duration<double> render_time = end_time - start_time_;
+        int nvoxels =
+            (voxelrange_max_.x() - voxelrange_min_.x() + 1) *
+            (voxelrange_max_.y() - voxelrange_min_.y() + 1) *
+            (voxelrange_max_.z() - voxelrange_min_.z() + 1);
+        std::cerr
+            << "Rendered " << nvoxels
+            << " voxels in " << render_time.count() << "s ("
+            << int(nvoxels/render_time.count()) << " voxels/s).\n";
+        std::cerr.flush();
+    }
+};
+
+void print_mesh_stats(Mesh_Stats& stats)
+{
+    if (stats.ntri == 0 && stats.nquad == 0) {
+        std::cerr << "WARNING: no mesh was created (no volumes were found).\n"
+          << "Maybe you should try a smaller voxel size.\n";
+    } else {
+        if (stats.ntri > 0)
+            std::cerr << stats.ntri << " triangles";
+        if (stats.ntri > 0 && stats.nquad > 0)
+            std::cerr << ", ";
+        if (stats.nquad > 0)
+            std::cerr << stats.nquad << " quads";
+        std::cerr << ".\n";
+    }
 }
 
 void export_mesh(Mesh_Format format, curv::Value value,
@@ -156,9 +202,17 @@ void export_mesh(Mesh_Format format, curv::Value value,
     Mesh_Export opts;
     for (auto& i : params.map_) {
         Param p{params, i};
-        if (p.name_ == "jit")
+        if (p.name_ == "mgen") {
+            auto val = p.to_symbol();
+            if (val == "vdb")
+                opts.mgen_ = Mesh_Gen::vdb;
+            else if (val == "dce")
+                opts.mgen_ = Mesh_Gen::dce;
+            else
+                throw curv::Exception(p, "'mgen' must be #vdb or #dce");
+        } else if (p.name_ == "jit") {
             opts.jit_ = p.to_bool();
-        else if (p.name_ == "vsize") {
+        } else if (p.name_ == "vsize") {
             opts.vsize_ = p.to_double();
             if (opts.vsize_ <= 0.0) {
                 throw curv::Exception(p, "'vsize' must be positive");
@@ -238,87 +292,72 @@ void export_mesh(Mesh_Format format, curv::Value value,
         << " voxels. Use '-O vsize=N' to change voxel size.\n";
     std::cerr.flush();
 
-    openvdb::initialize();
+    switch (opts.mgen_) {
+    case Mesh_Gen::vdb:
+      {
+        openvdb::initialize();
 
-    // Create a FloatGrid and populate it with a signed distance field.
-    std::chrono::time_point<std::chrono::steady_clock> start_time, end_time;
-    start_time = std::chrono::steady_clock::now();
+        // Create a FloatGrid and populate it with a signed distance field.
+        Voxel_Timer vtimer(voxelrange_min, voxelrange_max);
 
-    // 2.0 is the background (or default) distance value for this
-    // sparse array of voxels. Each voxel is a `float`.
-    openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(2.0);
+        // 2.0 is the background (or default) distance value for this
+        // sparse array of voxels. Each voxel is a `float`.
+        openvdb::FloatGrid::Ptr grid = openvdb::FloatGrid::create(2.0);
 
-    // Attach a scaling transform that sets the voxel size in world space.
-    grid->setTransform(
-        openvdb::math::Transform::createLinearTransform(voxelsize));
+        // Attach a scaling transform that sets the voxel size in world space.
+        grid->setTransform(
+            openvdb::math::Transform::createLinearTransform(voxelsize));
 
-    // Identify the grid as a signed distance field.
-    grid->setGridClass(openvdb::GRID_LEVEL_SET);
+        // Identify the grid as a signed distance field.
+        grid->setGridClass(openvdb::GRID_LEVEL_SET);
 
-    // Populate the grid.
-    // I assume each distance value is in the centre of a voxel.
-    auto accessor = grid->getAccessor();
-    if (cshape != nullptr) {
-        auto voxels = std::make_unique<float[]>(vx * vy *vz);
-        #pragma omp parallel for // uses multiple threads, since cshape->dist is thread safe.
-        for (int x = voxelrange_min.x(); x <= voxelrange_max.x(); ++x) {
-            for (int y = voxelrange_min.y(); y <= voxelrange_max.y(); ++y) {
-                for (int z = voxelrange_min.z(); z <= voxelrange_max.z(); ++z) {
-                    int i = (x - voxelrange_min.x()) * vy * vz
-                        + (y - voxelrange_min.y()) * vz
-                        + (z - voxelrange_min.z());
-                    voxels[i] = cshape->dist(x*voxelsize, y*voxelsize, z*voxelsize, 0.0);
+        // Populate the grid.
+        // I assume each distance value is in the centre of a voxel.
+        auto accessor = grid->getAccessor();
+        if (cshape != nullptr) {
+            auto voxels = std::make_unique<float[]>(vx * vy *vz);
+            #pragma omp parallel for // uses multiple threads, since cshape->dist is thread safe.
+            for (int x = voxelrange_min.x(); x <= voxelrange_max.x(); ++x) {
+                for (int y = voxelrange_min.y(); y <= voxelrange_max.y(); ++y) {
+                    for (int z = voxelrange_min.z(); z <= voxelrange_max.z(); ++z) {
+                        int i = (x - voxelrange_min.x()) * vy * vz
+                            + (y - voxelrange_min.y()) * vz
+                            + (z - voxelrange_min.z());
+                        voxels[i] = cshape->dist(x*voxelsize, y*voxelsize, z*voxelsize, 0.0);
+                    }
+                }
+            }
+            for (int x = voxelrange_min.x(); x <= voxelrange_max.x(); ++x) {
+                for (int y = voxelrange_min.y(); y <= voxelrange_max.y(); ++y) {
+                    for (int z = voxelrange_min.z(); z <= voxelrange_max.z(); ++z) {
+                        int i = (x - voxelrange_min.x()) * vy * vz
+                            + (y - voxelrange_min.y()) * vz
+                            + (z - voxelrange_min.z());
+                        accessor.setValue(openvdb::Coord{x,y,z}, voxels[i]);
+                    }
+                }
+            }
+        } else {
+            for (int x = voxelrange_min.x(); x <= voxelrange_max.x(); ++x) {
+                for (int y = voxelrange_min.y(); y <= voxelrange_max.y(); ++y) {
+                    for (int z = voxelrange_min.z(); z <= voxelrange_max.z(); ++z) {
+                        accessor.setValue(openvdb::Coord{x,y,z},
+                            shape.dist(x*voxelsize, y*voxelsize, z*voxelsize, 0.0));
+                    }
                 }
             }
         }
-        for (int x = voxelrange_min.x(); x <= voxelrange_max.x(); ++x) {
-            for (int y = voxelrange_min.y(); y <= voxelrange_max.y(); ++y) {
-                for (int z = voxelrange_min.z(); z <= voxelrange_max.z(); ++z) {
-                    int i = (x - voxelrange_min.x()) * vy * vz
-                        + (y - voxelrange_min.y()) * vz
-                        + (z - voxelrange_min.z());
-                    accessor.setValue(openvdb::Coord{x,y,z}, voxels[i]);
-                }
-            }
-        }
-    } else {
-        for (int x = voxelrange_min.x(); x <= voxelrange_max.x(); ++x) {
-            for (int y = voxelrange_min.y(); y <= voxelrange_max.y(); ++y) {
-                for (int z = voxelrange_min.z(); z <= voxelrange_max.z(); ++z) {
-                    accessor.setValue(openvdb::Coord{x,y,z},
-                        shape.dist(x*voxelsize, y*voxelsize, z*voxelsize, 0.0));
-                }
-            }
-        }
-    }
-    end_time = std::chrono::steady_clock::now();
-    std::chrono::duration<double> render_time = end_time - start_time;
-    int nvoxels =
-        (voxelrange_max.x() - voxelrange_min.x() + 1) *
-        (voxelrange_max.y() - voxelrange_min.y() + 1) *
-        (voxelrange_max.z() - voxelrange_min.z() + 1);
-    std::cerr
-        << "Rendered " << nvoxels
-        << " voxels in " << render_time.count() << "s ("
-        << int(nvoxels/render_time.count()) << " voxels/s).\n";
-    std::cerr.flush();
-
-    // convert grid to a mesh
-    VDB_Mesh mesh(opts.adaptive_, grid);
-
-    // output a mesh file
-    auto stats = write_mesh(format, mesh, shape, opts, out);
-
-    if (stats.ntri == 0 && stats.nquad == 0) {
-        std::cerr << "WARNING: no mesh was created (no volumes were found).\n"
-          << "Maybe you should try a smaller voxel size.\n";
-    } else {
-        if (stats.ntri > 0)
-            std::cerr << stats.ntri << " triangles";
-        if (stats.ntri > 0 && stats.nquad > 0)
-            std::cerr << ", ";
-        if (stats.nquad > 0)
-            std::cerr << stats.nquad << " quads";
-        std::cerr << ".\n";
+        vtimer.print_stats();
+        VDB_Mesh mesh(opts.adaptive_, grid);
+        auto stats = write_mesh(format, mesh, shape, opts, out);
+        print_mesh_stats(stats);
+        break;
+      }
+    case Mesh_Gen::dce:
+      {
+        throw curv::Exception(cx, "mesh generator #dce not implemented");
+      }
+    default:
+        throw curv::Exception(cx, "mesh export: unknown mesh generator");
     }
 }

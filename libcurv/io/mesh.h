@@ -21,9 +21,16 @@ enum class Mesh_Format {
     gltf
 };
 
+// Mesh generators
+enum class Mesh_Gen {
+    vdb,
+    dce
+};
+
 // Mesh file export parameters
 struct Mesh_Export
 {
+    Mesh_Gen mgen_ = Mesh_Gen::vdb;
     bool jit_ = false;
     double vsize_ = 0.0;
     double adaptive_ = 0.0;
