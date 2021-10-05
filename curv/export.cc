@@ -344,14 +344,14 @@ void export_png(Value value,
       #else
         // bug #67
         if (shape.bbox_.infinite2() || shape.bbox_.empty2()) {
-            shape.bbox_.xmin = -10.0;
-            shape.bbox_.ymin = -10.0;
-            shape.bbox_.xmax = +10.0;
-            shape.bbox_.ymax = +10.0;
+            shape.bbox_.min.x = -10.0;
+            shape.bbox_.min.y = -10.0;
+            shape.bbox_.max.x = +10.0;
+            shape.bbox_.max.y = +10.0;
         }
       #endif
-        double dx = shape.bbox_.xmax - shape.bbox_.xmin;
-        double dy = shape.bbox_.ymax - shape.bbox_.ymin;
+        double dx = shape.bbox_.max.x - shape.bbox_.min.x;
+        double dy = shape.bbox_.max.y - shape.bbox_.min.y;
         if (!xsize && !ysize) {
             if (dx > dy)
                 xsize = 500;

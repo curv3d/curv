@@ -97,12 +97,12 @@ GPU_Program::write_json(std::ostream& out) const
     out << "{"
         << "\"is_2d\":" << (is_2d_ ? "true" : "false")
         << ",\"is_3d\":" << (is_3d_ ? "true" : "false")
-        << ",\"bbox\":[[" << dfmt(bbox_.xmin, dfmt::JSON)
-            << "," << dfmt(bbox_.ymin, dfmt::JSON)
-            << "," << dfmt(bbox_.zmin, dfmt::JSON)
-            << "],[" << dfmt(bbox_.xmax, dfmt::JSON)
-            << "," << dfmt(bbox_.ymax, dfmt::JSON)
-            << "," << dfmt(bbox_.zmax, dfmt::JSON)
+        << ",\"bbox\":[[" << dfmt(bbox_.min.x, dfmt::JSON)
+            << "," << dfmt(bbox_.min.y, dfmt::JSON)
+            << "," << dfmt(bbox_.min.z, dfmt::JSON)
+            << "],[" << dfmt(bbox_.max.x, dfmt::JSON)
+            << "," << dfmt(bbox_.max.y, dfmt::JSON)
+            << "," << dfmt(bbox_.max.z, dfmt::JSON)
         << "]],";
     vshape_.write_json(out);
     out << "}";
@@ -114,12 +114,12 @@ GPU_Program::write_curv(std::ostream& out) const
     out << "{\n"
         << "  is_2d: " << Value{is_2d_} << ";\n"
         << "  is_3d: " << Value{is_3d_} << ";\n"
-        << "  bbox: [[" << dfmt(bbox_.xmin, dfmt::JSON)
-            << "," << dfmt(bbox_.ymin, dfmt::JSON)
-            << "," << dfmt(bbox_.zmin, dfmt::JSON)
-            << "],[" << dfmt(bbox_.xmax, dfmt::JSON)
-            << "," << dfmt(bbox_.ymax, dfmt::JSON)
-            << "," << dfmt(bbox_.zmax, dfmt::JSON)
+        << "  bbox: [[" << dfmt(bbox_.min.x, dfmt::JSON)
+            << "," << dfmt(bbox_.min.y, dfmt::JSON)
+            << "," << dfmt(bbox_.min.z, dfmt::JSON)
+            << "],[" << dfmt(bbox_.max.x, dfmt::JSON)
+            << "," << dfmt(bbox_.max.y, dfmt::JSON)
+            << "," << dfmt(bbox_.max.z, dfmt::JSON)
         << "]];\n";
     vshape_.write_curv(out);
     out << "}\n";

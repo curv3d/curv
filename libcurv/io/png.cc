@@ -64,8 +64,8 @@ export_png(
     glm::dvec2 image_coverage = glm::dvec2(p.size) * p.pixel_size;
     glm::dvec2 overpaint = image_coverage - shape_size;
     glm::dvec2 origin = {
-        shape.bbox_.xmin - overpaint.x/2.0 + p.pixel_size/2.0,
-        shape.bbox_.ymax + overpaint.y/2.0 - p.pixel_size/2.0,
+        shape.bbox_.min.x - overpaint.x/2.0 + p.pixel_size/2.0,
+        shape.bbox_.max.y + overpaint.y/2.0 - p.pixel_size/2.0,
     };
     (void) origin; // TODO
 

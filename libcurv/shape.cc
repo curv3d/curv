@@ -42,12 +42,12 @@ BBox::from_value(Value val, const Context& cx)
     maxs->assert_size(3, maxcx);
 
     BBox b;
-    b.xmin = mins->at(0).to_num(cx);
-    b.ymin = mins->at(1).to_num(cx);
-    b.zmin = mins->at(2).to_num(cx);
-    b.xmax = maxs->at(0).to_num(cx);
-    b.ymax = maxs->at(1).to_num(cx);
-    b.zmax = maxs->at(2).to_num(cx);
+    b.min.x = mins->at(0).to_num(cx);
+    b.min.y = mins->at(1).to_num(cx);
+    b.min.z = mins->at(2).to_num(cx);
+    b.max.x = maxs->at(0).to_num(cx);
+    b.max.y = maxs->at(1).to_num(cx);
+    b.max.z = maxs->at(2).to_num(cx);
     return b;
 }
 

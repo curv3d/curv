@@ -251,9 +251,9 @@ void export_mesh(Mesh_Format format, curv::Value value,
     }
 
     Vec3d size(
-        shape.bbox_.xmax - shape.bbox_.xmin,
-        shape.bbox_.ymax - shape.bbox_.ymin,
-        shape.bbox_.zmax - shape.bbox_.zmin);
+        shape.bbox_.max.x - shape.bbox_.min.x,
+        shape.bbox_.max.y - shape.bbox_.min.y,
+        shape.bbox_.max.z - shape.bbox_.min.z);
     double volume = size.x() * size.y() * size.z();
     double infinity = 1.0/0.0;
     if (volume == infinity || volume == -infinity) {
@@ -274,13 +274,13 @@ void export_mesh(Mesh_Format format, curv::Value value,
     // margin for error, I'll say that we need to populate voxels 2 units away
     // from the surface.
     Vec3i voxelrange_min(
-        int(floor(shape.bbox_.xmin/voxelsize)) - 2,
-        int(floor(shape.bbox_.ymin/voxelsize)) - 2,
-        int(floor(shape.bbox_.zmin/voxelsize)) - 2);
+        int(floor(shape.bbox_.min.x/voxelsize)) - 2,
+        int(floor(shape.bbox_.min.y/voxelsize)) - 2,
+        int(floor(shape.bbox_.min.z/voxelsize)) - 2);
     Vec3i voxelrange_max(
-        int(ceil(shape.bbox_.xmax/voxelsize)) + 2,
-        int(ceil(shape.bbox_.ymax/voxelsize)) + 2,
-        int(ceil(shape.bbox_.zmax/voxelsize)) + 2);
+        int(ceil(shape.bbox_.max.x/voxelsize)) + 2,
+        int(ceil(shape.bbox_.max.y/voxelsize)) + 2,
+        int(ceil(shape.bbox_.max.z/voxelsize)) + 2);
 
     int vx = voxelrange_max.x() - voxelrange_min.x() + 1;
     int vy = voxelrange_max.y() - voxelrange_min.y() + 1;

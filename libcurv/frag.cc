@@ -50,10 +50,10 @@ void export_frag_2d(
         "const vec4 bbox = vec4(-10.0,-10.0,+10.0,+10.0);\n";
     } else {
         out << "const vec4 bbox = vec4("
-            << bbox.xmin << ","
-            << bbox.ymin << ","
-            << bbox.xmax << ","
-            << bbox.ymax
+            << bbox.min.x << ","
+            << bbox.min.y << ","
+            << bbox.max.x << ","
+            << bbox.max.y
             << ");\n";
     }
     out <<
@@ -153,14 +153,14 @@ void export_frag_3d(
     } else {
         out
         << "const vec3 bbox_min = vec3("
-            << dfmt(bbox.xmin, dfmt::EXPR) << ","
-            << dfmt(bbox.ymin, dfmt::EXPR) << ","
-            << dfmt(bbox.zmin, dfmt::EXPR)
+            << dfmt(bbox.min.x, dfmt::EXPR) << ","
+            << dfmt(bbox.min.y, dfmt::EXPR) << ","
+            << dfmt(bbox.min.z, dfmt::EXPR)
             << ");\n"
         << "const vec3 bbox_max = vec3("
-            << dfmt(bbox.xmax, dfmt::EXPR) << ","
-            << dfmt(bbox.ymax, dfmt::EXPR) << ","
-            << dfmt(bbox.zmax, dfmt::EXPR)
+            << dfmt(bbox.max.x, dfmt::EXPR) << ","
+            << dfmt(bbox.max.y, dfmt::EXPR) << ","
+            << dfmt(bbox.max.z, dfmt::EXPR)
             << ");\n";
     }
 

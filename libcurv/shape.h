@@ -25,27 +25,28 @@ struct Viewed_Shape;
 // axis aligned bounding box
 struct BBox
 {
-    double xmin, ymin, zmin;
-    double xmax, ymax, zmax;
+    glm::dvec3 min, max;
+    BBox() {}
+    BBox(glm::dvec3 bmin, glm::dvec3 bmax) : min(bmin), max(bmax) {}
     bool empty2() const {
-        return (xmin >= xmax || ymin >= ymax);
+        return (min.x >= max.x || min.y >= max.y);
     }
     bool empty3() const {
-        return (xmin >= xmax || ymin >= ymax || zmin >= zmax);
+        return (min.x >= max.x || min.y >= max.y || min.z >= max.z);
     }
     bool infinite2() const {
-        return (xmin == -INFINITY || ymin == -INFINITY ||
-                xmax == +INFINITY || ymax == +INFINITY);
+        return (min.x == -INFINITY || min.y == -INFINITY ||
+                max.x == +INFINITY || max.y == +INFINITY);
     }
     bool infinite3() const {
-        return (xmin == -INFINITY || ymin == -INFINITY || zmin == -INFINITY ||
-                xmax == +INFINITY || ymax == +INFINITY || zmax == +INFINITY);
+        return min.x == -INFINITY || min.y == -INFINITY || min.z == -INFINITY
+            || max.x == +INFINITY || max.y == +INFINITY || max.z == +INFINITY;
     }
     glm::dvec2 size2() const {
-        return glm::dvec2(xmax - xmin, ymax - ymin);
+        return glm::dvec2(max.x - min.x, max.y - min.y);
     }
     glm::dvec3 size3() const {
-        return glm::dvec3(xmax - xmin, ymax - ymin, zmax - zmin);
+        return max - min;
     }
     static BBox from_value(Value, const Context&);
 };
