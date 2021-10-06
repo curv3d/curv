@@ -19,9 +19,6 @@
 #include <libcurv/die.h>
 #include <omp.h>
 
-using openvdb::Vec3s;
-using openvdb::Vec3d;
-using openvdb::Vec3i;
 using namespace curv::io;
 
 void export_mesh(Mesh_Format, curv::Value value,
@@ -63,11 +60,6 @@ void export_gltf(curv::Value value,
 {
     ofile.open();
     export_mesh(Mesh_Format::gltf, value, prog, params, ofile.ostream());
-}
-
-inline glm::vec3 V3(Vec3s v)
-{
-    return glm::vec3{v.x(), v.y(), v.z()};
 }
 
 struct VDB_Mesh : public Mesh
@@ -123,7 +115,8 @@ struct VDB_Mesh : public Mesh
     }
     virtual glm::vec3 vertex(unsigned i)
     {
-        return V3(mesher_.pointList()[i]);
+        auto pt = mesher_.pointList()[i];
+        return glm::vec3{pt.x(), pt.y(), pt.z()};
     }
 };
 
@@ -146,11 +139,11 @@ void describe_colour_mesh_opts(std::ostream& out)
 
 struct Voxel_Timer
 {
-    const Vec3i& voxelrange_min_;
-    const Vec3i& voxelrange_max_;
+    const glm::ivec3& voxelrange_min_;
+    const glm::ivec3& voxelrange_max_;
     std::chrono::time_point<std::chrono::steady_clock> start_time_;
 
-    Voxel_Timer(const Vec3i& vmin, const Vec3i& vmax)
+    Voxel_Timer(const glm::ivec3& vmin, const glm::ivec3& vmax)
     : voxelrange_min_(vmin), voxelrange_max_(vmax)
     {
         start_time_ = std::chrono::steady_clock::now();
@@ -162,9 +155,9 @@ struct Voxel_Timer
             std::chrono::steady_clock::now();
         std::chrono::duration<double> render_time = end_time - start_time_;
         int nvoxels =
-            (voxelrange_max_.x() - voxelrange_min_.x() + 1) *
-            (voxelrange_max_.y() - voxelrange_min_.y() + 1) *
-            (voxelrange_max_.z() - voxelrange_min_.z() + 1);
+            (voxelrange_max_.x - voxelrange_min_.x + 1) *
+            (voxelrange_max_.y - voxelrange_min_.y + 1) *
+            (voxelrange_max_.z - voxelrange_min_.z + 1);
         std::cerr
             << "Rendered " << nvoxels
             << " voxels in " << render_time.count() << "s ("
@@ -250,11 +243,11 @@ void export_mesh(Mesh_Format format, curv::Value value,
             "You are in SLOW MODE. Use '-O jit' to speed up rendering.\n";
     }
 
-    Vec3d size(
+    glm::dvec3 size(
         shape.bbox_.max.x - shape.bbox_.min.x,
         shape.bbox_.max.y - shape.bbox_.min.y,
         shape.bbox_.max.z - shape.bbox_.min.z);
-    double volume = size.x() * size.y() * size.z();
+    double volume = size.x * size.y * size.z;
     double infinity = 1.0/0.0;
     if (volume == infinity || volume == -infinity) {
         throw curv::Exception(cx, "mesh export: shape is infinite");
@@ -273,18 +266,18 @@ void export_mesh(Mesh_Format format, curv::Value value,
     // surrounding the sphere boundary, both inside and outside. To provide a
     // margin for error, I'll say that we need to populate voxels 2 units away
     // from the surface.
-    Vec3i voxelrange_min(
+    glm::ivec3 voxelrange_min(
         int(floor(shape.bbox_.min.x/voxelsize)) - 2,
         int(floor(shape.bbox_.min.y/voxelsize)) - 2,
         int(floor(shape.bbox_.min.z/voxelsize)) - 2);
-    Vec3i voxelrange_max(
+    glm::ivec3 voxelrange_max(
         int(ceil(shape.bbox_.max.x/voxelsize)) + 2,
         int(ceil(shape.bbox_.max.y/voxelsize)) + 2,
         int(ceil(shape.bbox_.max.z/voxelsize)) + 2);
 
-    int vx = voxelrange_max.x() - voxelrange_min.x() + 1;
-    int vy = voxelrange_max.y() - voxelrange_min.y() + 1;
-    int vz = voxelrange_max.z() - voxelrange_min.z() + 1;
+    int vx = voxelrange_max.x - voxelrange_min.x + 1;
+    int vy = voxelrange_max.y - voxelrange_min.y + 1;
+    int vz = voxelrange_max.z - voxelrange_min.z + 1;
 
     std::cerr
         << "vsize=" << voxelsize << ": "
@@ -317,30 +310,30 @@ void export_mesh(Mesh_Format format, curv::Value value,
         if (cshape != nullptr) {
             auto voxels = std::make_unique<float[]>(vx * vy *vz);
             #pragma omp parallel for // uses multiple threads, since cshape->dist is thread safe.
-            for (int x = voxelrange_min.x(); x <= voxelrange_max.x(); ++x) {
-                for (int y = voxelrange_min.y(); y <= voxelrange_max.y(); ++y) {
-                    for (int z = voxelrange_min.z(); z <= voxelrange_max.z(); ++z) {
-                        int i = (x - voxelrange_min.x()) * vy * vz
-                            + (y - voxelrange_min.y()) * vz
-                            + (z - voxelrange_min.z());
+            for (int x = voxelrange_min.x; x <= voxelrange_max.x; ++x) {
+                for (int y = voxelrange_min.y; y <= voxelrange_max.y; ++y) {
+                    for (int z = voxelrange_min.z; z <= voxelrange_max.z; ++z) {
+                        int i = (x - voxelrange_min.x) * vy * vz
+                            + (y - voxelrange_min.y) * vz
+                            + (z - voxelrange_min.z);
                         voxels[i] = cshape->dist(x*voxelsize, y*voxelsize, z*voxelsize, 0.0);
                     }
                 }
             }
-            for (int x = voxelrange_min.x(); x <= voxelrange_max.x(); ++x) {
-                for (int y = voxelrange_min.y(); y <= voxelrange_max.y(); ++y) {
-                    for (int z = voxelrange_min.z(); z <= voxelrange_max.z(); ++z) {
-                        int i = (x - voxelrange_min.x()) * vy * vz
-                            + (y - voxelrange_min.y()) * vz
-                            + (z - voxelrange_min.z());
+            for (int x = voxelrange_min.x; x <= voxelrange_max.x; ++x) {
+                for (int y = voxelrange_min.y; y <= voxelrange_max.y; ++y) {
+                    for (int z = voxelrange_min.z; z <= voxelrange_max.z; ++z) {
+                        int i = (x - voxelrange_min.x) * vy * vz
+                            + (y - voxelrange_min.y) * vz
+                            + (z - voxelrange_min.z);
                         accessor.setValue(openvdb::Coord{x,y,z}, voxels[i]);
                     }
                 }
             }
         } else {
-            for (int x = voxelrange_min.x(); x <= voxelrange_max.x(); ++x) {
-                for (int y = voxelrange_min.y(); y <= voxelrange_max.y(); ++y) {
-                    for (int z = voxelrange_min.z(); z <= voxelrange_max.z(); ++z) {
+            for (int x = voxelrange_min.x; x <= voxelrange_max.x; ++x) {
+                for (int y = voxelrange_min.y; y <= voxelrange_max.y; ++y) {
+                    for (int z = voxelrange_min.z; z <= voxelrange_max.z; ++z) {
                         accessor.setValue(openvdb::Coord{x,y,z},
                             shape.dist(x*voxelsize, y*voxelsize, z*voxelsize, 0.0));
                     }
