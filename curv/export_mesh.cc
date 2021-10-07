@@ -8,6 +8,7 @@
 #include <chrono>
 #include <openvdb/openvdb.h>
 #include <openvdb/tools/VolumeToMesh.h>
+#include <dce/Contouring.hpp>
 #include <glm/geometric.hpp>
 
 #include "export.h"
@@ -137,14 +138,61 @@ void describe_colour_mesh_opts(std::ostream& out)
     ;
 }
 
+struct Voxel_Config
+{
+    double cellsize;
+    glm::ivec3 range_min, range_max;
+    glm::ivec3 gridsize;
+    int nvoxels;
+
+    // Configure the voxel grid based on command line arguments.
+    Voxel_Config(curv::BBox shape_bbox,
+                 double vsize_opt,
+                 const curv::Context& shape_cx)
+    {
+        glm::dvec3 shape_size = shape_bbox.max - shape_bbox.min;
+        double volume = shape_size.x * shape_size.y * shape_size.z;
+        if (std::isinf(volume)) {
+            throw curv::Exception(shape_cx, "mesh export: shape is infinite");
+        }
+
+        if (vsize_opt > 0.0) {
+            cellsize = vsize_opt;
+        } else {
+            cellsize = cbrt(volume / 100'000);
+            if (cellsize < 0.1) cellsize = 0.1;
+        }
+
+        // This is the range of voxel coordinates.
+        // For meshing to work, we need a thin band of voxels surrounding
+        // the shape boundary. To provide a margin for error, I'll say
+        // we need to populate voxels 2 units away from the surface.
+        range_min = glm::ivec3(
+            int(floor(shape_bbox.min.x/cellsize)) - 2,
+            int(floor(shape_bbox.min.y/cellsize)) - 2,
+            int(floor(shape_bbox.min.z/cellsize)) - 2);
+        range_max = glm::ivec3(
+            int(ceil(shape_bbox.max.x/cellsize)) + 2,
+            int(ceil(shape_bbox.max.y/cellsize)) + 2,
+            int(ceil(shape_bbox.max.z/cellsize)) + 2);
+
+        gridsize = range_max - range_min + 1;
+        nvoxels = gridsize.x * gridsize.y * gridsize.z;
+
+        std::cerr
+            << "vsize=" << cellsize << ": "
+            << gridsize.x << "*"  << gridsize.y << "*" << gridsize.z
+            << " voxels. Use '-O vsize=N' to change voxel size.\n";
+        std::cerr.flush();
+    }
+};
+
 struct Voxel_Timer
 {
-    const glm::ivec3& voxelrange_min_;
-    const glm::ivec3& voxelrange_max_;
+    const Voxel_Config& vox_;
     std::chrono::time_point<std::chrono::steady_clock> start_time_;
 
-    Voxel_Timer(const glm::ivec3& vmin, const glm::ivec3& vmax)
-    : voxelrange_min_(vmin), voxelrange_max_(vmax)
+    Voxel_Timer(const Voxel_Config& vox) : vox_(vox)
     {
         start_time_ = std::chrono::steady_clock::now();
     }
@@ -154,15 +202,45 @@ struct Voxel_Timer
         std::chrono::time_point<std::chrono::steady_clock> end_time =
             std::chrono::steady_clock::now();
         std::chrono::duration<double> render_time = end_time - start_time_;
-        int nvoxels =
-            (voxelrange_max_.x - voxelrange_min_.x + 1) *
-            (voxelrange_max_.y - voxelrange_min_.y + 1) *
-            (voxelrange_max_.z - voxelrange_min_.z + 1);
         std::cerr
-            << "Rendered " << nvoxels
+            << "Rendered " << vox_.nvoxels
             << " voxels in " << render_time.count() << "s ("
-            << int(nvoxels/render_time.count()) << " voxels/s).\n";
+            << int(vox_.nvoxels/render_time.count()) << " voxels/s).\n";
         std::cerr.flush();
+    }
+};
+
+struct DCE_Mesh : public Mesh
+{
+    const Voxel_Config& vox;
+    dce::Field& field;
+    dce::TriMesh mesh;
+    DCE_Mesh(const Voxel_Config& v, dce::Field& f)
+    : vox(v), field(f), mesh(dce::dualContouring(f))
+    {
+    }
+    virtual void each_triangle(std::function<void(const glm::ivec3& tri)> f)
+    {
+        for (auto t : mesh.triangles)
+            f(glm::ivec3(t[0], t[1], t[2]));
+    }
+    virtual void each_quad(std::function<void(const glm::ivec4& quad)> f)
+    {
+    }
+    virtual void all_triangles(std::function<void(const glm::ivec3& tri)> f)
+    {
+        for (auto t : mesh.triangles)
+            f(glm::ivec3(t[0], t[1], t[2]));
+    }
+    virtual unsigned num_vertices()
+    {
+        return mesh.vecs.size();
+    }
+    virtual glm::vec3 vertex(unsigned i)
+    {
+        auto pt = mesh.vecs[i];
+        // TODO: convert pt to world coordinates
+        return glm::vec3{pt[0], pt[1], pt[2]};
     }
 };
 
@@ -180,6 +258,28 @@ void print_mesh_stats(Mesh_Stats& stats)
             std::cerr << stats.nquad << " quads";
         std::cerr << ".\n";
     }
+}
+
+void dce_eval(
+    const curv::Shape& shape, glm::dvec3 pt, double cellsz, dce::Plane& cell)
+{
+    double dist = shape.dist(pt.x, pt.y, pt.z, 0.0);
+    cell.dist = dist / cellsz;
+    const float EPSILON = 1e-6;
+    double dx = shape.dist(pt.x+EPSILON, pt.y, pt.z, 0.0);
+    double dy = shape.dist(pt.x, pt.y+EPSILON, pt.z, 0.0);
+    double dz = shape.dist(pt.x, pt.y, pt.z+EPSILON, 0.0);
+    dce::Vec3 nor(dx - dist, dy - dist, dz - dist);
+    nor.normalize();
+#if 0
+    std::cout <<
+        "at " << pt.x << "," << pt.y << "," << pt.z <<
+        " d " << dist <<
+        " normal " << nor.x << "," << nor.y << "," << nor.z << "\n";
+#endif
+    nor = dce::Vec3(pt.x, pt.y, pt.z);
+    nor.normalize();
+    cell.normal = nor;
 }
 
 void export_mesh(Mesh_Format format, curv::Value value,
@@ -230,7 +330,6 @@ void export_mesh(Mesh_Format format, curv::Value value,
 
     std::unique_ptr<curv::io::Compiled_Shape> cshape = nullptr;
     if (opts.jit_) {
-        //std::chrono::time_point<std::chrono::steady_clock> cstart_time, cend_time;
         auto cstart_time = std::chrono::steady_clock::now();
         cshape = std::make_unique<curv::io::Compiled_Shape>(shape);
         auto cend_time = std::chrono::steady_clock::now();
@@ -243,55 +342,14 @@ void export_mesh(Mesh_Format format, curv::Value value,
             "You are in SLOW MODE. Use '-O jit' to speed up rendering.\n";
     }
 
-    glm::dvec3 size(
-        shape.bbox_.max.x - shape.bbox_.min.x,
-        shape.bbox_.max.y - shape.bbox_.min.y,
-        shape.bbox_.max.z - shape.bbox_.min.z);
-    double volume = size.x * size.y * size.z;
-    double infinity = 1.0/0.0;
-    if (volume == infinity || volume == -infinity) {
-        throw curv::Exception(cx, "mesh export: shape is infinite");
-    }
-
-    double voxelsize;
-    if (opts.vsize_ > 0.0) {
-        voxelsize = opts.vsize_;
-    } else {
-        voxelsize = cbrt(volume / 100'000);
-        if (voxelsize < 0.1) voxelsize = 0.1;
-    }
-
-    // This is the range of voxel coordinates.
-    // For meshing to work, we need to specify at least a thin band of voxels
-    // surrounding the sphere boundary, both inside and outside. To provide a
-    // margin for error, I'll say that we need to populate voxels 2 units away
-    // from the surface.
-    glm::ivec3 voxelrange_min(
-        int(floor(shape.bbox_.min.x/voxelsize)) - 2,
-        int(floor(shape.bbox_.min.y/voxelsize)) - 2,
-        int(floor(shape.bbox_.min.z/voxelsize)) - 2);
-    glm::ivec3 voxelrange_max(
-        int(ceil(shape.bbox_.max.x/voxelsize)) + 2,
-        int(ceil(shape.bbox_.max.y/voxelsize)) + 2,
-        int(ceil(shape.bbox_.max.z/voxelsize)) + 2);
-
-    int vx = voxelrange_max.x - voxelrange_min.x + 1;
-    int vy = voxelrange_max.y - voxelrange_min.y + 1;
-    int vz = voxelrange_max.z - voxelrange_min.z + 1;
-
-    std::cerr
-        << "vsize=" << voxelsize << ": "
-        << vx << "*"  << vy << "*" << vz
-        << " voxels. Use '-O vsize=N' to change voxel size.\n";
-    std::cerr.flush();
-
     switch (opts.mgen_) {
     case Mesh_Gen::vdb:
       {
+        Voxel_Config vox(shape.bbox_, opts.vsize_, cx);
         openvdb::initialize();
 
         // Create a FloatGrid and populate it with a signed distance field.
-        Voxel_Timer vtimer(voxelrange_min, voxelrange_max);
+        Voxel_Timer vtimer(vox);
 
         // 2.0 is the background (or default) distance value for this
         // sparse array of voxels. Each voxel is a `float`.
@@ -299,7 +357,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
 
         // Attach a scaling transform that sets the voxel size in world space.
         grid->setTransform(
-            openvdb::math::Transform::createLinearTransform(voxelsize));
+            openvdb::math::Transform::createLinearTransform(vox.cellsize));
 
         // Identify the grid as a signed distance field.
         grid->setGridClass(openvdb::GRID_LEVEL_SET);
@@ -308,34 +366,34 @@ void export_mesh(Mesh_Format format, curv::Value value,
         // I assume each distance value is in the centre of a voxel.
         auto accessor = grid->getAccessor();
         if (cshape != nullptr) {
-            auto voxels = std::make_unique<float[]>(vx * vy *vz);
+            auto voxels = std::make_unique<float[]>(vox.nvoxels);
             #pragma omp parallel for // uses multiple threads, since cshape->dist is thread safe.
-            for (int x = voxelrange_min.x; x <= voxelrange_max.x; ++x) {
-                for (int y = voxelrange_min.y; y <= voxelrange_max.y; ++y) {
-                    for (int z = voxelrange_min.z; z <= voxelrange_max.z; ++z) {
-                        int i = (x - voxelrange_min.x) * vy * vz
-                            + (y - voxelrange_min.y) * vz
-                            + (z - voxelrange_min.z);
-                        voxels[i] = cshape->dist(x*voxelsize, y*voxelsize, z*voxelsize, 0.0);
+            for (int x = vox.range_min.x; x <= vox.range_max.x; ++x) {
+                for (int y = vox.range_min.y; y <= vox.range_max.y; ++y) {
+                    for (int z = vox.range_min.z; z <= vox.range_max.z; ++z) {
+                        int i = (x - vox.range_min.x) * vox.gridsize.y * vox.gridsize.z
+                            + (y - vox.range_min.y) * vox.gridsize.z
+                            + (z - vox.range_min.z);
+                        voxels[i] = cshape->dist(x*vox.cellsize, y*vox.cellsize, z*vox.cellsize, 0.0);
                     }
                 }
             }
-            for (int x = voxelrange_min.x; x <= voxelrange_max.x; ++x) {
-                for (int y = voxelrange_min.y; y <= voxelrange_max.y; ++y) {
-                    for (int z = voxelrange_min.z; z <= voxelrange_max.z; ++z) {
-                        int i = (x - voxelrange_min.x) * vy * vz
-                            + (y - voxelrange_min.y) * vz
-                            + (z - voxelrange_min.z);
+            for (int x = vox.range_min.x; x <= vox.range_max.x; ++x) {
+                for (int y = vox.range_min.y; y <= vox.range_max.y; ++y) {
+                    for (int z = vox.range_min.z; z <= vox.range_max.z; ++z) {
+                        int i = (x - vox.range_min.x) * vox.gridsize.y * vox.gridsize.z
+                            + (y - vox.range_min.y) * vox.gridsize.z
+                            + (z - vox.range_min.z);
                         accessor.setValue(openvdb::Coord{x,y,z}, voxels[i]);
                     }
                 }
             }
         } else {
-            for (int x = voxelrange_min.x; x <= voxelrange_max.x; ++x) {
-                for (int y = voxelrange_min.y; y <= voxelrange_max.y; ++y) {
-                    for (int z = voxelrange_min.z; z <= voxelrange_max.z; ++z) {
+            for (int x = vox.range_min.x; x <= vox.range_max.x; ++x) {
+                for (int y = vox.range_min.y; y <= vox.range_max.y; ++y) {
+                    for (int z = vox.range_min.z; z <= vox.range_max.z; ++z) {
                         accessor.setValue(openvdb::Coord{x,y,z},
-                            shape.dist(x*voxelsize, y*voxelsize, z*voxelsize, 0.0));
+                            shape.dist(x*vox.cellsize, y*vox.cellsize, z*vox.cellsize, 0.0));
                     }
                 }
             }
@@ -348,7 +406,49 @@ void export_mesh(Mesh_Format format, curv::Value value,
       }
     case Mesh_Gen::dce:
       {
-        throw curv::Exception(cx, "mesh generator #dce not implemented");
+        Voxel_Config vox(shape.bbox_, opts.vsize_, cx);
+        dce::Field field(dce::Vec3u(
+            vox.gridsize.x,vox.gridsize.y,vox.gridsize.z));
+        Voxel_Timer vtimer(vox);
+
+        if (cshape != nullptr) {
+            // Multi-threaded: cshape->dist and field are thread safe.
+            #pragma omp parallel for
+            for (int x = vox.range_min.x; x <= vox.range_max.x; ++x) {
+                for (int y = vox.range_min.y; y <= vox.range_max.y; ++y) {
+                    for (int z = vox.range_min.z; z <= vox.range_max.z; ++z) {
+                        dce::Vec3u ipt(
+                            x - vox.range_min.x,
+                            y - vox.range_min.y,
+                            z - vox.range_min.z);
+                        dce_eval(*cshape,
+                            {x*vox.cellsize, y*vox.cellsize, z*vox.cellsize},
+                            vox.cellsize, field[ipt]);
+                    }
+                }
+            }
+        } else {
+            // Single-threaded, since shape.dist is not thread safe.
+            for (int x = vox.range_min.x; x <= vox.range_max.x; ++x) {
+                for (int y = vox.range_min.y; y <= vox.range_max.y; ++y) {
+                    for (int z = vox.range_min.z; z <= vox.range_max.z; ++z) {
+                        dce::Vec3u ipt(
+                            x - vox.range_min.x,
+                            y - vox.range_min.y,
+                            z - vox.range_min.z);
+                        //std::cout<<"["<<ipt.x<<","<<ipt.y<<","<<ipt.z<<"] ";
+                        dce_eval(shape,
+                            {x*vox.cellsize, y*vox.cellsize, z*vox.cellsize},
+                            vox.cellsize, field[ipt]);
+                    }
+                }
+            }
+        }
+        vtimer.print_stats();
+        DCE_Mesh mesh(vox, field);
+        auto stats = write_mesh(format, mesh, shape, opts, out);
+        print_mesh_stats(stats);
+        break;
       }
     default:
         throw curv::Exception(cx, "mesh export: unknown mesh generator");

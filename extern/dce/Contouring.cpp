@@ -157,7 +157,7 @@ namespace dce
 		}
 		
 		if (numDistant > 0) {
-			std::cerr << "Warning: " << numDistant << " vertices far outside voxel. They where clamped." << std::endl;
+			std::cerr << "Warning: " << numDistant << " vertices far outside voxel. They were clamped." << std::endl;
 		}
 	}
 	
