@@ -201,7 +201,7 @@ that dispatches to << or >> as n is >0 or <0. Mitigating factors:
 * Add a `Nat` type to SubCurv.
 
 Final design:
-    bshift n
+    bshift n b
 
 literals
 --------
@@ -224,6 +224,7 @@ it matches the lib.random source. Using 'b' or 'x' to distinguish
 them seems good. It's good if this *isn't* confused with a numeral.
 
     b"1110"   x"EF0"
+    #b"1110"  #x"EF0"
     #b[1110]  #x[EF0]
     #[1110]   #[xEF0]   -- #[...] is a blist literal in both cases
 

@@ -1,5 +1,15 @@
 Algebraic Effects
 =================
+Quick summary: Algebraic Effects are an interesting alternative to pure
+functional programming (since monads and monad composition are a big pain).
+But they violate my design principles, since they rely on side effects, and
+they don't fully support local reasoning. Effect types assist reasoning, and
+they are an improvement over traditional imperative programming, but they still
+don't allow you to see all the data flow using local reasoning. Koka has an
+effect type that means "this function modifies shared mutable state", but you
+have no idea *which* shared mutable state is being modified. Ugh.
+
+---------
 From Microsoft's Koka paper:
   "Algebraic effects are a purely functional approach to modeling effects.
   They were introduced by Plotkin and Power in 2002.

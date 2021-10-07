@@ -1,0 +1,126 @@
+A Term is an expression comprised of chained function calls, field
+selections, and array indexes.
+
+Use cases (and the need for chaining):
+* field selection and array indexing for data structure traversal.
+* field selection and function call in the terms used for Named Values.
+* `smooth r .union [s1, s2]`
+
+What is the syntax of a Term?
+* How this syntax support chaining?
+* How does the Curv formatter render a term in 'standard' style?
+* What happens to the syntax when a long term is split over multiple lines?
+
+The Current Design
+------------------
+I already have answers to these questions.
+
+Function call `f x`, field selection `r.n` and array indexing `a.[i]`
+are postfix operations with the same precedence (left associative).
+Equal precedence means chaining is supported.
+
+There are two standard styles, the 'tight' style, and the 'loose' style.
+Tight:
+    f(x).foo.[i]
+Loose:
+    f x .foo .[i]
+Both styles support chaining (parentheses don't pile up at the start of
+the term when you add more qualifiers to the end of the term).
+
+The loose style is required when splitting a long term over multiple lines.
+The loose style looks better for calling a curried function:
+    f(a)(b)(c)  vs  f a b c
+The tight style looks better for dotted names:
+    a.b.c
+You can begin a term in the tight style and end it in the loose style.
+    a.b.c x y z
+You get an "ambiguous syntax" warning if you switch from loose to tight
+in the middle of a term:
+    f R.x
+since this looks like it is intended to be parsed as `f(R.x)`.
+
+I get pushback from users, especially in the absence of good documentation
+and guidance.
+* There is a strong expectation that dotted names are written in tight style.
+  People don't even recognize `a .b` as a dotted name.
+  * I've seen this multiple times in my career, including C programmers who
+    don't realize that '.' is a distinct token that can be preceded and
+    followed by whitespace. Maybe it's related to the fact that the decimal
+    point in a numeral *cannot* be preceded or followed by space.
+* People use whitespace to indicate grouping, then are surprised if the code
+  isn't parsed the way they expect based on their whitespace. People are
+  also very sure that using whitespace to guide parsing is a terrible idea.
+* For example, `f a.b` is expected to mean `f(a.b)`, which is totally
+  natural and expected.
+
+Document the current design and educate users, or change the design
+to match common expectations about the dot operator?
+
+Sometimes the Curv formatter needs to split a long term across multiple
+lines. Loose style supports this case. If I try to guarantee that
+dot is never preceded or followed by space when splitting over multiple
+lines then the results are atrocious.
+
+The Dot Operator
+----------------
+ 1. Does '.' bind tighter than juxtaposition, or have the same precedence?
+    Right now, same precedence, so that you can chain terms.
+     * Other people would prefer that 'f R.x' should mean 'f(R.x)'
+       which kind of makes visual sense since the space character in
+       juxtaposition visually binds looser than the dot with no
+       adjacent white space.
+ 
+ 2. If 'smooth R' is a record, then what is the preferred coding style
+    for selecting the field 'union' from the record?
+     * I personally use 'smooth R .union'. My defence of the syntax:
+       * chainability.
+       * if a long term extends over multiple lines, you will do this anyway.
+     * Len's first reaction to this is: 'what does '.union' mean?
+       Is that a symbol value? His suggestion is to write
+         (smooth R).union
+       instead, which he calls 'Lisp-like'. This looks nice but it
+       subverts the chainability of the current precedence rules.
+       It's quite consistent with a higher precedence dot operator.
+     * My alternative idea is 'smooth(R).union', which is chainable, C style,
+       and gets rid of the white space. But it goes against the Haskell
+       style of no superfluous parens around a function argument, and always
+       adding a space between a function and its argument.
+
+There does seem to be a widespread bias that the dot operator should
+be written with no adjacent white space. And there's a bias that it should
+bind very tightly.
+
+In ML derived functional languages with 'f x' function calls,
+it is common for dot of record selection to bind tighter than
+juxtaposition function call, which reflects this bias.
+
+The design of terms in Curv derives from C, where funcall and dot have
+the same binding strength. But C also uses 'f(x)' as the conventional
+style for function call, and 'R.x' as the conventional style for record
+selection, no spaces in either case.
+
+I seem to have three alternatives:
+
+ Dot and Juxta have equal binding strength.
+  a. smooth R .union        -- me
+  b. smooth(R).union        -- more C like
+ Dot binds tighter than Juxta.
+  c. (smooth R).union
+
+I would like an algorithm for automatically formatting Curv.
+It needs to handle the case where a long term wraps line boundaries.
+
+If I use (a.) with total consistency, then it's
+    foo .bar
+instead of
+    foo.bar
+
+------
+smooth r . union is just the same as smooth(r).union. Getting rid of the parens and adding spaces really throws people off, but it's consistent with Haskell syntax in my opinion. Even in C you can write foo . bar instead of foo.bar and it is the same thing. If smooth r is a record, when what syntax do you think I should use to select the field union from the record?
+lee
+ —
+Today at 7:11 PM
+Oh!
+I would preferably keep the parens in. It's not clear that's what it really means!
+(smooth r).union is how I would write it
+(more lisp-like)

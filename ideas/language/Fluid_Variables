@@ -1,0 +1,105 @@
+This feature is tentatively called "fluid variables" after "fluid_let"
+in Scheme. I need a more accurate name.
+* free parameter and parametric expressions.
+  [not to be confused with parametric records]
+* symbolic parameter -- an expression containing symbolic parameters
+  is partially evaluated to produce a symbolic expression.
+  [not to be confused with symbol values]
+* reactive variable (or reactive parameter) and reactive expression.
+  [at least there's no confusion with other Curv features]
+  The feature was original inspired by reactive programming.
+* fluid variables and fluid expressions???
+* dynamic variables??? but it's not like traditional dynamic scoping.
+
+Related Ideas
+-------------
+In elementary algebra, symbols like *x* and *y* are called "variables".
+They denote numbers or quantities whose value is not fixed.
+Sometimes called "unknowns". But these are not *bound variables*
+like the parameter of a function definition or of a quantifier.
+They are instead *free variables*.
+
+Per Mathworld, there are contexts that distinguish two kinds of free variables,
+called 'variables' and 'parameters'. A 'variable' like 'x' or 'y' is an
+implicit function parameter (and see "implicit functions" for more context).
+Whereas the value of a 'parameter' like 'a' or 'b' is defined outside of any
+implicit functions. These 'parameters' are closer to the concept I'm building.
+
+In Mathematica, in other computer algebra systems, and in Pure,
+an expression can contain unbound variables. The expression cannot be
+evaluated, but it can be algebraically reduced to a canonical form.
+
+Lisp has dynamically scoped variables.
+Older Scheme systems have a `fluid-let` form for binding them.
+Common Lisp has "special" variables defined using `defvar`,
+normally using the `*x*` naming convention. These have dynamic scope,
+and constructs that normally define lexically scoped variables will
+change their semantics to dynamic scoping if there is a `defvar` for
+the name of the local variable being defined. This is really fucked up,
+hence the use of the naming convention for special variables.
+
+OpenSCAD has dynamically scoped variables, using the naming
+convention `$x`. Also fucked up semantics which shouldn't be emulated.
+
+Uniform variables in OpenGL.
+
+In Curv 0.5, `time` is proposed to be a "reactive variable". It is bound
+in the standard environment as a reactive variable of type Num, but it
+doesn't normally have a value in the REPL. Expressions of `time` are
+evaluated in the REPL to partially evaluated expressions. The REPL binds
+`time` to a definite number, the elapsed time in seconds from the beginning
+of animation. It is implemented as an OpenGL uniform variable.
+
+In Curv, `last` is proposed to be a variety of reactive variable, like `time`,
+bound in the standard environment with type Num but with no value.
+It only has a value when used as an index value applied to a list L,
+in which case it has the value `count L - 1`.
+
+Free Parameters
+---------------
+A free parameter is a variable that is bound as a member of a module,
+and has a type but not a value. This is intended as an implementation
+for reactive variables like "time", and also for "last".
+
+A free parameter is a named value (or should we say pseudo-value).
+It behaves like the "reactive variables" of Curv 0.5.
+
+When an expression containing a free parameter is evaluated, the result
+is a partially evaluated "symbolic expression" whose evaluation cannot
+be completed until the free parameters are assigned values.
+Symbolic expressions are a superset of free parameters.
+
+The identity of a free parameter is its name (if the name is absolute)
+or the name and the type (if the name is relative). This depends on
+which version of the named value proposal is implemented.
+
+When a symbolic expression is printed, we want to see the list of free
+parameters it depends on, because this information is required for
+local reasoning about the meaning of the symbolic expression.
+
+There is an operation for binding values to free parameters within the
+scope of a symbolic expression. Each free parameter is represented by
+a value, not a name. It would be something like this:
+    bind {time => 0} symbolic_expr
+
+Now suppose we have a named function that contains references to
+free parameters. Or a module whose members include symbolic expressions
+and functions returning symbolic expressions. We will want the ability
+to apply `bind` to these function and module values. Thus we will want
+the ability to examine functions and modules to see if they contain
+free parameters available for binding.
+
+Parametric Records
+------------------
+This whole feature evolved out of the parametric record feature.
+
+What if we redesign parametric records to explicitly use the new
+free parameter mechanism? So
+    parametric
+        name :: type = value,
+        ...
+    in
+        expression
+now returns a symbolic expression, which isn't required to be a record?
+There's a difference, the parameters of a parametric record have initial
+values, whereas the parameters of a symbolic expression do not have values.

@@ -417,6 +417,9 @@ implement, and works really well. The main limitation is that meshes have
 self-intersections and can be non-manifold. There’s a good companion paper
 called “Dual Contouring: The Secret Sauce” which talks about implementation
 details.
+    An older comment from July 2017: My dual contouring implementation is on
+    its way out, because I’m having a lot of trouble making it robust against
+    C1 discontinuities (min/max) that land exactly on the sampling grid.  
 
 Dual Marching Cubes (Nielsen): Weird, and I don’t remember much about it,
 but it apparently inspired Manifold Dual Contouring
