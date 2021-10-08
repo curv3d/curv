@@ -1,5 +1,5 @@
+cmake_minimum_required(VERSION 3.12)
 project(curv)
-cmake_minimum_required(VERSION 3.5)
 
 if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
     message(FATAL_ERROR "Do not use 'cmake .'; instead, just type 'make'")
@@ -44,6 +44,26 @@ endif (APPLE)
 
 # Libraries
 # ===============================================
+
+# required for pkg_check_modules
+find_package(PkgConfig REQUIRED)
+
+# Eigen is used by libfive
+pkg_check_modules(EIGEN REQUIRED eigen3>=3.2.92)
+
+# libfive library
+file(GLOB_RECURSE LibfiveSrc "extern/libfive/libfive/src/*.cpp")
+add_library(libfive ${LibfiveSrc})
+target_include_directories(libfive
+    PUBLIC extern/libfive/libfive/include
+    SYSTEM PUBLIC ${EIGEN_INCLUDE_DIRS})
+set_property(
+    SOURCE extern/libfive/libfive/src/libfive.cpp
+    APPEND PROPERTY COMPILE_DEFINITIONS
+    GIT_TAG="whatever"
+    GIT_REV="whatever"
+    GIT_BRANCH="whatever")
+set_property(TARGET libfive PROPERTY CXX_STANDARD 17)
 
 # DCE library
 file(GLOB DceSrc "extern/dce/*.cpp")

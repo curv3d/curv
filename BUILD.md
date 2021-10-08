@@ -54,7 +54,7 @@ For troubleshooting, look at [issue #88](https://github.com/curv3d/curv/issues/8
 * Open the Terminal application and run the following commands:
   * Install the relevant dependencies used to build `curv`:
 
-  `sudo apt install clang cmake git-core libboost-all-dev libopenexr-dev libtbb-dev libglm-dev gedit dbus-x11`
+  `sudo apt install clang cmake git-core libboost-all-dev libopenexr-dev libtbb-dev libglm-dev libpng-dev libeigen3-dev gedit dbus-x11`
 
   * If you don't already have dev packages for your GPU installed -- eg running a **server version** -- then you'll probably need to also install these:
 
@@ -71,7 +71,7 @@ For troubleshooting, look at [issue #88](https://github.com/curv3d/curv/issues/8
 
 Use `dnf install` to install the following packages:
 * cmake g++
-* boost-devel zlib-devel
+* boost-devel zlib-devel eigen3-devel libpng-devel
 * mesa-libGL-devel libXrandr-devel libXinerama-devel libXcursor-devel libXi-devel
 * mesa-libGLU-devel OpenEXR-devel tbb-devel
 
@@ -89,6 +89,7 @@ Then follow the Ubuntu build instructions.
   * `brew install ilmbase openexr tbb@2020`
   * `brew install glm`
   * `brew install libomp`
+  * `brew install libpng eigen`
   * `cd ~`
   * `git clone --recursive https://github.com/curv3d/curv`
   * `cd curv`

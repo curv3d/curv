@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
-    - run: brew install boost ilmbase openexr tbb@2020 glm libomp
+    - run: brew install boost ilmbase openexr tbb@2020 glm libomp eigen libpng
 
     - name: Run tests
       run: make test
@@ -43,7 +43,7 @@ jobs:
       with:
         msystem: MINGW64
         update: true
-        install: "git diffutils mingw-w64-x86_64-clang make mingw-w64-x86_64-cmake mingw-w64-x86_64-boost mingw-w64-x86_64-mesa mingw-w64-x86_64-openexr mingw-w64-x86_64-intel-tbb mingw-w64-x86_64-glm mingw-w64-x86_64-glew mingw-w64-x86_64-dbus patch mingw-w64-x86_64-openvdb mingw-w64-x86_64-ccache"
+        install: "git diffutils mingw-w64-x86_64-clang make mingw-w64-x86_64-cmake mingw-w64-x86_64-boost mingw-w64-x86_64-mesa mingw-w64-x86_64-openexr mingw-w64-x86_64-intel-tbb mingw-w64-x86_64-glm mingw-w64-x86_64-glew mingw-w64-x86_64-dbus patch mingw-w64-x86_64-openvdb mingw-w64-x86_64-ccache mingw-w64-libpng mingw-w64-eigen3"
 
     - name: ccache cache files
       uses: actions/cache@v2
@@ -86,7 +86,7 @@ jobs:
     - name: Set up dependencies
       run: |
         sudo apt install clang cmake git-core libboost-all-dev libopenexr-dev libtbb-dev libglm-dev dbus-x11
-        sudo apt install libxcursor-dev libxinerama-dev libxrandr-dev libgl-dev libxi-dev
+        sudo apt install libxcursor-dev libxinerama-dev libxrandr-dev libgl-dev libxi-dev libpng-dev libeigen3-dev
 
     - name: Build AppImage
       run: |

@@ -13,6 +13,8 @@ for pkg in $(cat <<END
     mingw-w64-x86_64-dbus
     mingw-w64-x86_64-openvdb
     mingw-w64-x86_64-gtest
+    mingw-w64-libpng
+    mingw-w64-eigen3
     winpty
 END
 )
