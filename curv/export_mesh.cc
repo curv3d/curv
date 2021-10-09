@@ -239,8 +239,29 @@ struct CurvOracle : public libfive::OracleStorage<LIBFIVE_EVAL_ARRAY_SIZE>
 
     void evalInterval(libfive::Interval& out) override
     {
-        // Just pick a big ambiguous value. TODO: scale independent result
-        out = {-10000.0, 10000.0};
+        // Since Curv currently doesn't do interval arithmetic,
+        // return a large interval. Which magic number do I choose?
+        //
+        // mkeeter: If the top-level tree is just this CurvOracle, then
+        // returning [-inf, inf] should be fine; however, if you're
+        // transforming it further, then I agree that the math could get iffy.
+        // You could also return [NaN, NaN], which should cause interval
+        // subdivision to always subdivide (down to individual voxels).
+
+        // This gives rounded edges for a large cube (`cube 9999999`).
+        //out = {-10000.0, 10000.0};
+
+        // This gives the same results (rounded edges) for a large cube.
+        // I'm using infinity because it is "the least magic" alternative
+        // and is not overly scale dependent like 10000 is.
+        out = { -std::numeric_limits<double>::infinity(),
+                 std::numeric_limits<double>::infinity() };
+
+      #if 0
+        // This gives the same results (rounded edges) for a large cube.
+        out = { std::numeric_limits<double>::quiet_NaN(),
+                std::numeric_limits<double>::quiet_NaN() };
+      #endif
     }
     void evalPoint(float& out, size_t index=0) override
     {
