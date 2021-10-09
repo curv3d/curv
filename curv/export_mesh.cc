@@ -235,7 +235,8 @@ void print_mesh_stats(Mesh_Stats& stats)
 struct CurvOracle : public libfive::OracleStorage<LIBFIVE_EVAL_ARRAY_SIZE>
 {
     const curv::Shape& shape_;
-    CurvOracle(const curv::Shape& sh) : shape_(sh) {}
+    double epsilon_;
+    CurvOracle(const curv::Shape& sh, double e) : shape_(sh), epsilon_(e) {}
 
     void evalInterval(libfive::Interval& out) override
     {
@@ -280,36 +281,38 @@ struct CurvOracle : public libfive::OracleStorage<LIBFIVE_EVAL_ARRAY_SIZE>
         // Find one derivative with partial differences.
 
         // TODO: scale-independent epsilon?
-        const float EPSILON = 1e-6;
         float centre, dx, dy, dz;
         Eigen::Vector3f before = points.col(0);
         evalPoint(centre);
 
-        points.col(0) = before + Eigen::Vector3f(EPSILON, 0.0, 0.0);
+        points.col(0) = before + Eigen::Vector3f(epsilon_, 0.0, 0.0);
         evalPoint(dx);
 
-        points.col(0) = before + Eigen::Vector3f(0.0, EPSILON, 0.0);
+        points.col(0) = before + Eigen::Vector3f(0.0, epsilon_, 0.0);
         evalPoint(dy);
 
-        points.col(0) = before + Eigen::Vector3f(0.0, 0.0, EPSILON);
+        points.col(0) = before + Eigen::Vector3f(0.0, 0.0, epsilon_);
         evalPoint(dz);
 
         points.col(0) = before;
 
         // TODO: divide by magnitude (normalize the vector)
         out.push_back(Eigen::Vector3f(
-            (dx - centre) / EPSILON,
-            (dy - centre) / EPSILON,
-            (dz - centre) / EPSILON));
+            (dx - centre) / epsilon_,
+            (dy - centre) / epsilon_,
+            (dz - centre) / epsilon_));
     }
 };
 struct CurvOracleClause : public libfive::OracleClause
 {
     const curv::Shape& shape_;
-    CurvOracleClause(const curv::Shape& sh) : shape_(sh) {}
+    double epsilon_;
+    CurvOracleClause(const curv::Shape& sh, double e) : shape_(sh), epsilon_(e)
+    {}
     std::unique_ptr<libfive::Oracle> getOracle() const override
     {
-        return std::unique_ptr<libfive::Oracle>(new CurvOracle(shape_));
+        return std::unique_ptr<libfive::Oracle>
+            (new CurvOracle(shape_, epsilon_));
     }
     std::string name() const override { return "CurvOracleClause"; }
 };
@@ -470,7 +473,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
         const curv::Shape* sh;
         if (cshape) sh = &*cshape; else sh = &shape;
         libfive::Tree tree(std::unique_ptr<libfive::OracleClause>
-            (new CurvOracleClause(*sh)));
+            (new CurvOracleClause(*sh, vox.cellsize/10)));
         libfive::BRepSettings settings;
         settings.workers = 1; /* crash if workers != 1 */
         settings.min_feature = vox.cellsize;

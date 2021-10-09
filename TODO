@@ -14,8 +14,7 @@ Libfive seems to fix the union seam problem. Remaining libfive issues:
     #cad is the DC mesher, detects edges, may generate bad meshes
     #fractal creates a voxel grid, low pass filter, then use #smooth mesher
   Default is #cad.
-* replace magic numbers with scale-independent expressions
-  * epsilon
+* Bug report in libfive: Scale dependent rendering of a cube.
 * Support additional libfive meshing parameters? These have a low value.
   * `max_err` controls cell merging & quality. default is high quality.
   * `workers` controls parallelism (broken right now).
