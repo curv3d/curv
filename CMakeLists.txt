@@ -65,12 +65,6 @@ set_property(
     GIT_BRANCH="whatever")
 set_property(TARGET libfive PROPERTY CXX_STANDARD 17)
 
-# DCE library
-file(GLOB DceSrc "extern/dce/*.cpp")
-add_library(dce ${DceSrc})
-target_include_directories(dce PUBLIC extern)
-set_property(TARGET dce PROPERTY CXX_STANDARD 17)
-
 # REPLxx library
 file(GLOB ReplxxSrc "extern/replxx/src/*.cxx" "extern/replxx/src/*.cpp")
 add_library(replxx ${ReplxxSrc})
@@ -170,7 +164,7 @@ else ()
 endif ()
 set(Libs
     libcurv_io libcurv imgui glfw glad ${LibOpenGL} replxx double-conversion
-    dce libfive
+    libfive
     Boost::iostreams Boost::filesystem Boost::system ${LibOpenVDB} tbb
     ${LibHalf} pthread ${LibDl} ${LibOmp})
 

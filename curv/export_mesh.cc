@@ -11,7 +11,6 @@
 
 #include <openvdb/openvdb.h>
 #include <openvdb/tools/VolumeToMesh.h>
-#include <dce/Contouring.hpp>
 #include <libfive/oracle/oracle_storage.hpp>
 #include <libfive/oracle/oracle_clause.hpp>
 #include <libfive/tree/tree.hpp>
@@ -131,7 +130,7 @@ struct VDB_Mesh : public Mesh
 void describe_mesh_opts(std::ostream& out)
 {
     out <<
-    "-O mgen=#vdb|#dce|#five : Mesh generation algorithm (default #vdb).\n"
+    "-O mgen=#vdb|#five : Mesh generation algorithm (default #vdb).\n"
     "-O jit : Fast evaluation using JIT compiler (uses C++ compiler).\n"
     "-O vsize=<voxel size>\n"
     "-O adaptive=<0...1> : Deprecated. Use meshlab to simplify mesh.\n"
@@ -217,40 +216,6 @@ struct Voxel_Timer
     }
 };
 
-struct DCE_Mesh : public Mesh
-{
-    const Voxel_Config& vox;
-    dce::Field& field;
-    dce::TriMesh mesh;
-    DCE_Mesh(const Voxel_Config& v, dce::Field& f)
-    : vox(v), field(f), mesh(dce::dualContouring(f))
-    {
-    }
-    virtual void each_triangle(std::function<void(const glm::ivec3& tri)> f)
-    {
-        for (auto t : mesh.triangles)
-            f(glm::ivec3(t[0], t[1], t[2]));
-    }
-    virtual void each_quad(std::function<void(const glm::ivec4& quad)> f)
-    {
-    }
-    virtual void all_triangles(std::function<void(const glm::ivec3& tri)> f)
-    {
-        for (auto t : mesh.triangles)
-            f(glm::ivec3(t[0], t[1], t[2]));
-    }
-    virtual unsigned num_vertices()
-    {
-        return mesh.vecs.size();
-    }
-    virtual glm::vec3 vertex(unsigned i)
-    {
-        auto pt = mesh.vecs[i];
-        // TODO: convert pt to world coordinates
-        return glm::vec3{pt[0], pt[1], pt[2]};
-    }
-};
-
 void print_mesh_stats(Mesh_Stats& stats)
 {
     if (stats.ntri == 0 && stats.nquad == 0) {
@@ -265,28 +230,6 @@ void print_mesh_stats(Mesh_Stats& stats)
             std::cerr << stats.nquad << " quads";
         std::cerr << ".\n";
     }
-}
-
-void dce_eval(
-    const curv::Shape& shape, glm::dvec3 pt, double cellsz, dce::Plane& cell)
-{
-    double dist = shape.dist(pt.x, pt.y, pt.z, 0.0);
-    cell.dist = dist / cellsz;
-    const float EPSILON = 1e-6;
-    double dx = shape.dist(pt.x+EPSILON, pt.y, pt.z, 0.0);
-    double dy = shape.dist(pt.x, pt.y+EPSILON, pt.z, 0.0);
-    double dz = shape.dist(pt.x, pt.y, pt.z+EPSILON, 0.0);
-    dce::Vec3 nor(dx - dist, dy - dist, dz - dist);
-    nor.normalize();
-#if 0
-    std::cout <<
-        "at " << pt.x << "," << pt.y << "," << pt.z <<
-        " d " << dist <<
-        " normal " << nor.x << "," << nor.y << "," << nor.z << "\n";
-#endif
-    nor = dce::Vec3(pt.x, pt.y, pt.z);
-    nor.normalize();
-    cell.normal = nor;
 }
 
 struct CurvOracle : public libfive::OracleStorage<LIBFIVE_EVAL_ARRAY_SIZE>
@@ -367,12 +310,10 @@ void export_mesh(Mesh_Format format, curv::Value value,
             auto val = p.to_symbol();
             if (val == "vdb")
                 opts.mgen_ = Mesh_Gen::vdb;
-            else if (val == "dce")
-                opts.mgen_ = Mesh_Gen::dce;
             else if (val == "five")
                 opts.mgen_ = Mesh_Gen::five;
             else
-                throw curv::Exception(p, "'mgen' must be #vdb|#dce|#five");
+                throw curv::Exception(p, "'mgen' must be #vdb|#five");
         } else if (p.name_ == "jit") {
             opts.jit_ = p.to_bool();
         } else if (p.name_ == "vsize") {
@@ -470,52 +411,6 @@ void export_mesh(Mesh_Format format, curv::Value value,
         }
         vtimer.print_stats();
         VDB_Mesh mesh(opts.adaptive_, grid);
-        auto stats = write_mesh(format, mesh, shape, opts, out);
-        print_mesh_stats(stats);
-        break;
-      }
-    case Mesh_Gen::dce:
-      {
-        Voxel_Config vox(shape.bbox_, opts.vsize_, cx);
-        dce::Field field(dce::Vec3u(
-            vox.gridsize.x,vox.gridsize.y,vox.gridsize.z));
-        Voxel_Timer vtimer(vox);
-
-        if (cshape != nullptr) {
-            // Multi-threaded: cshape->dist and field are thread safe.
-            #pragma omp parallel for
-            for (int x = vox.range_min.x; x <= vox.range_max.x; ++x) {
-                for (int y = vox.range_min.y; y <= vox.range_max.y; ++y) {
-                    for (int z = vox.range_min.z; z <= vox.range_max.z; ++z) {
-                        dce::Vec3u ipt(
-                            x - vox.range_min.x,
-                            y - vox.range_min.y,
-                            z - vox.range_min.z);
-                        dce_eval(*cshape,
-                            {x*vox.cellsize, y*vox.cellsize, z*vox.cellsize},
-                            vox.cellsize, field[ipt]);
-                    }
-                }
-            }
-        } else {
-            // Single-threaded, since shape.dist is not thread safe.
-            for (int x = vox.range_min.x; x <= vox.range_max.x; ++x) {
-                for (int y = vox.range_min.y; y <= vox.range_max.y; ++y) {
-                    for (int z = vox.range_min.z; z <= vox.range_max.z; ++z) {
-                        dce::Vec3u ipt(
-                            x - vox.range_min.x,
-                            y - vox.range_min.y,
-                            z - vox.range_min.z);
-                        //std::cout<<"["<<ipt.x<<","<<ipt.y<<","<<ipt.z<<"] ";
-                        dce_eval(shape,
-                            {x*vox.cellsize, y*vox.cellsize, z*vox.cellsize},
-                            vox.cellsize, field[ipt]);
-                    }
-                }
-            }
-        }
-        vtimer.print_stats();
-        DCE_Mesh mesh(vox, field);
         auto stats = write_mesh(format, mesh, shape, opts, out);
         print_mesh_stats(stats);
         break;

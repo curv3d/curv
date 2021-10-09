@@ -24,7 +24,6 @@ enum class Mesh_Format {
 // Mesh generators
 enum class Mesh_Gen {
     vdb,
-    dce,
     five
 };
 
