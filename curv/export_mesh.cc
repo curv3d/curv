@@ -6,10 +6,18 @@
 #include <cmath>
 #include <cstdlib>
 #include <chrono>
+#include <glm/geometric.hpp>
+#include <omp.h>
+
 #include <openvdb/openvdb.h>
 #include <openvdb/tools/VolumeToMesh.h>
 #include <dce/Contouring.hpp>
-#include <glm/geometric.hpp>
+#include <libfive/oracle/oracle_storage.hpp>
+#include <libfive/oracle/oracle_clause.hpp>
+#include <libfive/tree/tree.hpp>
+#include <libfive/render/brep/mesh.hpp>
+#include <libfive/render/brep/settings.hpp>
+#include <libfive/render/brep/region.hpp>
 
 #include "export.h"
 #include <libcurv/io/compiled_shape.h>
@@ -18,7 +26,6 @@
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
 #include <libcurv/die.h>
-#include <omp.h>
 
 using namespace curv::io;
 
@@ -124,7 +131,7 @@ struct VDB_Mesh : public Mesh
 void describe_mesh_opts(std::ostream& out)
 {
     out <<
-    "-O mgen=#vdb|#dce : Mesh generation algorithm (default #vdb).\n"
+    "-O mgen=#vdb|#dce|#five : Mesh generation algorithm (default #vdb).\n"
     "-O jit : Fast evaluation using JIT compiler (uses C++ compiler).\n"
     "-O vsize=<voxel size>\n"
     "-O adaptive=<0...1> : Deprecated. Use meshlab to simplify mesh.\n"
@@ -282,6 +289,67 @@ void dce_eval(
     cell.normal = nor;
 }
 
+struct CurvOracle : public libfive::OracleStorage<LIBFIVE_EVAL_ARRAY_SIZE>
+{
+    const curv::Shape& shape_;
+    CurvOracle(const curv::Shape& sh) : shape_(sh) {}
+
+    void evalInterval(libfive::Interval& out) override
+    {
+        // Just pick a big ambiguous value. TODO: scale independent result
+        out = {-10000.0, 10000.0};
+    }
+    void evalPoint(float& out, size_t index=0) override
+    {
+        const auto pt = points.col(index);
+        out = shape_.dist(pt.x(), pt.y(), pt.z(), 0.0);
+    }
+    void checkAmbiguous(Eigen::Block<
+        Eigen::Array<bool, 1, LIBFIVE_EVAL_ARRAY_SIZE>,
+        1, Eigen::Dynamic>) override
+    {
+        // Nothing to do here, because we can only find one derivative
+        // per point. Points on sharp features may not be handled correctly.
+    }
+    void evalFeatures(boost::container::small_vector<libfive::Feature, 4>& out)
+    override {
+        // Find one derivative with partial differences.
+
+        // TODO: scale-independent epsilon?
+        const float EPSILON = 1e-6;
+        float centre, dx, dy, dz;
+        Eigen::Vector3f before = points.col(0);
+        evalPoint(centre);
+
+        points.col(0) = before + Eigen::Vector3f(EPSILON, 0.0, 0.0);
+        evalPoint(dx);
+
+        points.col(0) = before + Eigen::Vector3f(0.0, EPSILON, 0.0);
+        evalPoint(dy);
+
+        points.col(0) = before + Eigen::Vector3f(0.0, 0.0, EPSILON);
+        evalPoint(dz);
+
+        points.col(0) = before;
+
+        // TODO: divide by magnitude (normalize the vector)
+        out.push_back(Eigen::Vector3f(
+            (dx - centre) / EPSILON,
+            (dy - centre) / EPSILON,
+            (dz - centre) / EPSILON));
+    }
+};
+struct CurvOracleClause : public libfive::OracleClause
+{
+    const curv::Shape& shape_;
+    CurvOracleClause(const curv::Shape& sh) : shape_(sh) {}
+    std::unique_ptr<libfive::Oracle> getOracle() const override
+    {
+        return std::unique_ptr<libfive::Oracle>(new CurvOracle(shape_));
+    }
+    std::string name() const override { return "CurvOracleClause"; }
+};
+
 void export_mesh(Mesh_Format format, curv::Value value,
     curv::Program& prog,
     const Export_Params& params,
@@ -301,8 +369,10 @@ void export_mesh(Mesh_Format format, curv::Value value,
                 opts.mgen_ = Mesh_Gen::vdb;
             else if (val == "dce")
                 opts.mgen_ = Mesh_Gen::dce;
+            else if (val == "five")
+                opts.mgen_ = Mesh_Gen::five;
             else
-                throw curv::Exception(p, "'mgen' must be #vdb or #dce");
+                throw curv::Exception(p, "'mgen' must be #vdb|#dce|#five");
         } else if (p.name_ == "jit") {
             opts.jit_ = p.to_bool();
         } else if (p.name_ == "vsize") {
@@ -448,6 +518,20 @@ void export_mesh(Mesh_Format format, curv::Value value,
         DCE_Mesh mesh(vox, field);
         auto stats = write_mesh(format, mesh, shape, opts, out);
         print_mesh_stats(stats);
+        break;
+      }
+    case Mesh_Gen::five:
+      {
+        const curv::Shape* sh;
+        if (cshape) sh = &*cshape; else sh = &shape;
+        libfive::Tree tree(std::unique_ptr<libfive::OracleClause>
+            (new CurvOracleClause(*sh)));
+        libfive::BRepSettings settings;
+        settings.workers = 1;
+        libfive::Region<3> region
+            ({shape.bbox_.min.x-.1, shape.bbox_.min.y-.1, shape.bbox_.min.z-.1},
+             {shape.bbox_.max.x+.1, shape.bbox_.max.y+.1, shape.bbox_.max.z+.1});
+        libfive::Mesh::render(tree, region, settings)->saveSTL("five.stl");
         break;
       }
     default:

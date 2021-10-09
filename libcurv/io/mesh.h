@@ -24,7 +24,8 @@ enum class Mesh_Format {
 // Mesh generators
 enum class Mesh_Gen {
     vdb,
-    dce
+    dce,
+    five
 };
 
 // Mesh file export parameters

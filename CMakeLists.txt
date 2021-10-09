@@ -170,7 +170,7 @@ else ()
 endif ()
 set(Libs
     libcurv_io libcurv imgui glfw glad ${LibOpenGL} replxx double-conversion
-    dce
+    dce libfive
     Boost::iostreams Boost::filesystem Boost::system ${LibOpenVDB} tbb
     ${LibHalf} pthread ${LibDl} ${LibOmp})
 
