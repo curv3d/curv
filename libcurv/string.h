@@ -182,11 +182,11 @@ struct String_Ref : public Shared<const String>
     {}
     String_Ref(Shared<const String> str)
     :
-        Shared<const String>(move(str))
+        Shared<const String>(std::move(str))
     {}
     String_Ref(Shared<String> str)
     :
-        Shared<const String>(move(str))
+        Shared<const String>(std::move(str))
     {}
     operator const char*() { return (*this)->c_str(); }
 };

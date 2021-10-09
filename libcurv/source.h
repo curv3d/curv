@@ -33,12 +33,12 @@ struct Source : public Shared_Base, public Range<const char*>
 protected:
     Source(String_Ref name, const char*f, const char*l)
     :
-        Range(f,l), name_(move(name))
+        Range(f,l), name_(std::move(name))
     {}
 public:
     Source(String_Ref name, Type type = Type::curv)
     :
-        Range(nullptr,nullptr), name_(move(name)), type_(type)
+        Range(nullptr,nullptr), name_(std::move(name)), type_(type)
     {}
     bool no_name() const { return name_->empty(); }
     bool no_contents() const { return first == nullptr; }
@@ -52,8 +52,8 @@ struct String_Source : public Source
 
     String_Source(String_Ref name, String_Ref text)
     :
-        Source(move(name), text->data(), text->data() + text->size()),
-        text_(move(text))
+        Source(std::move(name), text->data(), text->data() + text->size()),
+        text_(std::move(text))
     {}
 };
 

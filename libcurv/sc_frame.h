@@ -93,8 +93,8 @@ struct SC_Frame_Base
         sc_(sc),
         root_context_(cx),
         parent_frame_(parent),
-        call_phrase_(move(src)),
-        func_(move(func)),
+        call_phrase_(std::move(src)),
+        func_(std::move(func)),
         nonlocals_(nullptr)
     {}
 };

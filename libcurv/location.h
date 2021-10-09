@@ -31,8 +31,8 @@ public:
 
     Src_Loc(Shared<const Source> source, Token token)
     :
-        source_(move(source)),
-        token_(move(token))
+        source_(std::move(source)),
+        token_(std::move(token))
     {}
 
     /// Modify location to start at 'tok'

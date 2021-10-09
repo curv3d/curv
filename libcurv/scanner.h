@@ -34,7 +34,7 @@ struct Scanner
 
     Scanner(Shared<const Source> s, Source_State& ss, Scanner_Opts opts = {})
     :
-        source_(move(s)),
+        source_(std::move(s)),
         sstate_(ss),
         string_begin_(),
         ptr_(source_->begin() + opts.skip_prefix_),
