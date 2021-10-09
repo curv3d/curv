@@ -293,6 +293,34 @@ struct CurvOracleClause : public libfive::OracleClause
     std::string name() const override { return "CurvOracleClause"; }
 };
 
+struct Libfive_Mesh : public Mesh
+{
+    std::unique_ptr<libfive::Mesh> mesh_;
+    Libfive_Mesh(std::unique_ptr<libfive::Mesh> m) : mesh_(std::move(m)) {}
+    virtual void each_triangle(std::function<void(const glm::ivec3& tri)> f)
+    {
+        for (const auto& tri : mesh_->branes)
+            f(glm::ivec3(tri[0], tri[1], tri[2]));
+    }
+    virtual void each_quad(std::function<void(const glm::ivec4& quad)> f)
+    {
+    }
+    virtual void all_triangles(std::function<void(const glm::ivec3& tri)> f)
+    {
+        for (const auto& tri : mesh_->branes)
+            f(glm::ivec3(tri[0], tri[1], tri[2]));
+    }
+    virtual unsigned num_vertices()
+    {
+        return mesh_->verts.size();
+    }
+    virtual glm::vec3 vertex(unsigned i)
+    {
+        auto pt = mesh_->verts[i];
+        return glm::vec3{pt.x(), pt.y(), pt.z()};
+    }
+};
+
 void export_mesh(Mesh_Format format, curv::Value value,
     curv::Program& prog,
     const Export_Params& params,
@@ -426,7 +454,9 @@ void export_mesh(Mesh_Format format, curv::Value value,
         libfive::Region<3> region
             ({shape.bbox_.min.x-.1, shape.bbox_.min.y-.1, shape.bbox_.min.z-.1},
              {shape.bbox_.max.x+.1, shape.bbox_.max.y+.1, shape.bbox_.max.z+.1});
-        libfive::Mesh::render(tree, region, settings)->saveSTL("five.stl");
+        Libfive_Mesh mesh(libfive::Mesh::render(tree, region, settings));
+        auto stats = write_mesh(format, mesh, shape, opts, out);
+        print_mesh_stats(stats);
         break;
       }
     default:
