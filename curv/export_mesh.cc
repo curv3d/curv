@@ -445,15 +445,21 @@ void export_mesh(Mesh_Format format, curv::Value value,
       }
     case Mesh_Gen::five:
       {
+        Voxel_Config vox(shape.bbox_, opts.vsize_, cx);
         const curv::Shape* sh;
         if (cshape) sh = &*cshape; else sh = &shape;
         libfive::Tree tree(std::unique_ptr<libfive::OracleClause>
             (new CurvOracleClause(*sh)));
         libfive::BRepSettings settings;
-        settings.workers = 1;
+        settings.workers = 1; /* crash if workers != 1 */
+        settings.min_feature = vox.cellsize;
         libfive::Region<3> region
-            ({shape.bbox_.min.x-.1, shape.bbox_.min.y-.1, shape.bbox_.min.z-.1},
-             {shape.bbox_.max.x+.1, shape.bbox_.max.y+.1, shape.bbox_.max.z+.1});
+            ({shape.bbox_.min.x - vox.cellsize,
+              shape.bbox_.min.y - vox.cellsize,
+              shape.bbox_.min.z - vox.cellsize},
+             {shape.bbox_.max.x + vox.cellsize,
+              shape.bbox_.max.y + vox.cellsize,
+              shape.bbox_.max.z + vox.cellsize});
 
         auto start_time = std::chrono::steady_clock::now();
         Libfive_Mesh mesh(libfive::Mesh::render(tree, region, settings));
