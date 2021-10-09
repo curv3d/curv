@@ -454,9 +454,16 @@ void export_mesh(Mesh_Format format, curv::Value value,
         libfive::Region<3> region
             ({shape.bbox_.min.x-.1, shape.bbox_.min.y-.1, shape.bbox_.min.z-.1},
              {shape.bbox_.max.x+.1, shape.bbox_.max.y+.1, shape.bbox_.max.z+.1});
+
+        auto start_time = std::chrono::steady_clock::now();
         Libfive_Mesh mesh(libfive::Mesh::render(tree, region, settings));
-        auto stats = write_mesh(format, mesh, shape, opts, out);
-        print_mesh_stats(stats);
+        auto end_time = std::chrono::steady_clock::now();
+        std::chrono::duration<double> render_time = end_time - start_time;
+        std::cerr
+            << "Rendered " << mesh.mesh_->branes.size()
+            << " triangles in " << render_time.count() << "s\n";
+
+        (void) write_mesh(format, mesh, shape, opts, out);
         break;
       }
     default:
