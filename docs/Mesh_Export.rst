@@ -7,6 +7,8 @@ To export a 3D shape to an STL, OBJ or X3D file, use::
    curv -o foo.obj foo.curv
    curv -o foo.x3d foo.curv
 
+File Formats
+------------
 Which format should you use?
 
 * STL is the most popular format for 3D printed objects.
@@ -28,6 +30,45 @@ Which format should you use?
 Mesh export provides a way to visualize models that are not compatible
 with the viewer (because their distance function is too slow or not
 Lipschitz-continuous). There are examples in `<../examples/mesh_only>`_.
+
+Mesh Generators
+---------------
+There are two mesh generating algorithms, called ``#smooth`` and ``#sharp``.
+They are specified on the command line like this::
+
+    curv -Omgen=#smooth
+    curv -Omgen=#sharp
+
+The ``#smooth`` algorithm is recommended for smooth, organic looking shapes,
+and especially for fractals. It is the fallback algorithm when ``#sharp``
+doesn't work. It mostly generates quads, which makes it good
+for computer graphics models that are imported into mesh editors like Z-Brush.
+The output is guaranteed to be topologically correct (watertight, manifold,
+no self intersections). However, it does not preserve sharp features such as
+edges and corners (instead, rounding them off).
+
+The ``#sharp`` algorithm preserves sharp features, and is recommended for
+CAD-like models with exact or mitred distance fields, made out of primitives
+like ``cube``, ``sphere`` and ``cylinder``, combined using boolean operations
+like ``union`` and ``intersection``, transformed with similarity transformations
+(``move``, ``rotate``, ``reflect``, ``scale``). It has a built in mesh
+simplifier that produces fewer faces than ``#smooth``. For the subset of models
+that work well in ``#sharp``, the output is excellent.
+
+However, certain transformations (such as ``bend`` and ``twist``) result in
+"bent" or "twisted" distance fields that may cause the ``#sharp`` algorithm to
+misbehave and create spiky artifacts. The ``#sharp`` algorithm requires surface
+areas (other than edges) to have smoothly varying normals, so it can't be used
+with pure fractal shapes, which don't have normals. The algorithm is not
+guaranteed to create a topologically correct mesh. If you get a bad mesh, you
+can't import it into OpenSCAD, you may have problems 3D printing it, and it may
+look bad in a 3D CG application (like a game) due to bad face normals.
+
+In these cases, you can fall back to ``#smooth``. You can bring back sharp
+details by increasing the triangle count (decreasing ``vsize``) and then
+simplifying the mesh, as described in the following sections.
+
+The current default is ``#smooth``.
 
 Tweaking parameters to get a better mesh
 ----------------------------------------
