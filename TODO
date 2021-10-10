@@ -1,19 +1,17 @@
 Fix problem with union seams, caused by mesh exporter.
 Support additional meshers with sharp edge handling.
 Libfive seems to fix the union seam problem. Remaining libfive issues:
-* MacOS build is broken
-  * I've reported a libfive bug, waiting for response.
+* -Omgen=#smooth|#sharp
+    #smooth is the OpenVDB mesher, guarantees valid topology, rounds edges
+    #sharp is the DC mesher, detects edges, may generate bad meshes
 * Libfive multithreaded rendering is broken (so I disable it for now)
   * Report a libfive bug with test case.
-* Add SVG export of 2D models
-* -Ores: A single resolution parameter controls VDB, DC 3d and DC 2d SVG export.
-  Replaces `vsize`, since SVG doesn't have voxels.
-  Could also use `res` to control PNG export.
-* -Omstyle=#smooth|#cad|#fractal, replaces -Omgen.
-    #smooth is the OpenVDB mesher, guarantees valid topology, rounds edges
-    #cad is the DC mesher, detects edges, may generate bad meshes
-    #fractal creates a voxel grid, low pass filter, then use #smooth mesher
-  Default is #cad.
+* MacOS build is broken
+  * I've reported a libfive bug, Matt suggested a reasonable fix to his code.
+* #sharp mesher creates artifacts in shreks_donut. I believe that `bend` and
+  `twist` create "bent" or "twisted" distance fields where gradients are not
+  surface normals, and this breaks DC. Add a 'rectify' option that uses
+  Newton's method to construct normals.
 * Bug report in libfive: Scale dependent rendering of a cube.
 * Support additional libfive meshing parameters? These have a low value.
   * `max_err` controls cell merging & quality. default is high quality.
@@ -21,11 +19,30 @@ Libfive seems to fix the union seam problem. Remaining libfive issues:
   * `alg` is dual_contouring, iso_simplex or hybrid. Default is DC.
 
 More meshing:
+* Add SVG export of 2D models
+* -Ores: A single resolution parameter controls VDB, DC 3d and DC 2d SVG export.
+  Replaces `vsize`, since SVG doesn't have voxels.
+  Could also use `res` to control PNG export.
 * Extract #smooth mesher from openvdb, eliminate that dependency.
   * simplify builds on all platforms.
   * create a standalone `curv.exe` on Windows.
-* Add #fractal mesher.
+* Add #fractal mesher: create voxel grid, low pass filter, then use #smooth.
+  True fractals have no surface normals, so #sharp doesn't make sense.
 * Add colour 3D mandelbulb or the like and print it.
+
+Shape metadata:
+* Goal: to put meshing parameters in a shape.
+* optional `meta` shape field. Ignored by shape combinators.
+  Contains render and mesh export configuration. Overrides config file.
+  Overrides command line, just like existing `render` field.
+* `shape >> set_meta {...}`
+* `make_shape {..., meta: {...}}`
+* The config file has a tree structured namespace: `viewer` & `export` trees.
+  This allows you to specify export.aa=4 for PNG export but not for viewing.
+  Metadata should have the same namespace.
+
+Document 'term' phrases. Tight and loose formatting style.
+In Records doc, call out 'R.a' vs 'R .a' style of field selection.
 
 Clean up documentation
 * remove or fix anything from docs directory that is old or out of date.
@@ -49,6 +66,8 @@ transliterating GLSL into Curv -- docs/language/GLSL_to_Curv.rst
    v.xy =>  v.[[X,Y]]
    dot(v1,v2)  =>  dot[v1,v2]
    vec(x,y)  =>  [x,y]
+
+Arrow values: `a: b` and `#a => b`. Used for variants and record fields.
 
 ---------
 * auto detection of c++ compiler for '-O jit' default value
