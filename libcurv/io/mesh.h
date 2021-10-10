@@ -23,16 +23,21 @@ enum class Mesh_Format {
 
 // Mesh generators
 enum class Mesh_Gen {
-    vdb,
-    five
+    smooth,
+    sharp,
+    iso,
+    hybrid
 };
 
 // Mesh file export parameters
 struct Mesh_Export
 {
-    Mesh_Gen mgen_ = Mesh_Gen::vdb;
+    Mesh_Gen mgen_ = Mesh_Gen::smooth;
     bool jit_ = false;
     double vsize_ = 0.0;
+    // eps: epsilon value for computing normal vectors using the method of
+    // partial differences. The default 0 means the system chooses an epsilon.
+    double eps_ = 0.0;
     double adaptive_ = 0.0;
     enum {face_colour, vertex_colour} colouring_ = face_colour;
 };

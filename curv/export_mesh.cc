@@ -130,9 +130,10 @@ struct VDB_Mesh : public Mesh
 void describe_mesh_opts(std::ostream& out)
 {
     out <<
-    "-O mgen=#vdb|#five : Mesh generation algorithm (default #vdb).\n"
+    "-O mgen=#smooth|#sharp : Mesh generator algorithm (default #smooth).\n"
     "-O jit : Fast evaluation using JIT compiler (uses C++ compiler).\n"
     "-O vsize=<voxel size>\n"
+    "-O eps=<small number> : epsilon to compute normal by partial differences\n"
     "-O adaptive=<0...1> : Deprecated. Use meshlab to simplify mesh.\n"
     ;
 }
@@ -280,7 +281,6 @@ struct CurvOracle : public libfive::OracleStorage<LIBFIVE_EVAL_ARRAY_SIZE>
     override {
         // Find one derivative with partial differences.
 
-        // TODO: scale-independent epsilon?
         float centre, dx, dy, dz;
         Eigen::Vector3f before = points.col(0);
         evalPoint(centre);
@@ -296,11 +296,9 @@ struct CurvOracle : public libfive::OracleStorage<LIBFIVE_EVAL_ARRAY_SIZE>
 
         points.col(0) = before;
 
-        // TODO: divide by magnitude (normalize the vector)
-        out.push_back(Eigen::Vector3f(
-            (dx - centre) / epsilon_,
-            (dy - centre) / epsilon_,
-            (dz - centre) / epsilon_));
+        out.push_back(
+            Eigen::Vector3f(dx - centre, dy - centre, dz - centre)
+            .normalized());
     }
 };
 struct CurvOracleClause : public libfive::OracleClause
@@ -360,12 +358,17 @@ void export_mesh(Mesh_Format format, curv::Value value,
         Param p{params, i};
         if (p.name_ == "mgen") {
             auto val = p.to_symbol();
-            if (val == "vdb")
-                opts.mgen_ = Mesh_Gen::vdb;
-            else if (val == "five")
-                opts.mgen_ = Mesh_Gen::five;
+            if (val == "smooth")
+                opts.mgen_ = Mesh_Gen::smooth;
+            else if (val == "sharp")
+                opts.mgen_ = Mesh_Gen::sharp;
+            else if (val == "iso")
+                opts.mgen_ = Mesh_Gen::iso;
+            else if (val == "hybrid")
+                opts.mgen_ = Mesh_Gen::hybrid;
             else
-                throw curv::Exception(p, "'mgen' must be #vdb|#five");
+                throw curv::Exception(p,
+                    "'mgen' must be #smooth|#sharp|#iso|#hybrid");
         } else if (p.name_ == "jit") {
             opts.jit_ = p.to_bool();
         } else if (p.name_ == "vsize") {
@@ -373,6 +376,8 @@ void export_mesh(Mesh_Format format, curv::Value value,
             if (opts.vsize_ <= 0.0) {
                 throw curv::Exception(p, "'vsize' must be positive");
             }
+        } else if (p.name_ == "eps") {
+            opts.eps_ = p.to_double();
         } else if (p.name_ == "adaptive") {
             opts.adaptive_ = p.to_double(1.0);
             if (opts.adaptive_ < 0.0 || opts.adaptive_ > 1.0) {
@@ -406,7 +411,7 @@ void export_mesh(Mesh_Format format, curv::Value value,
     }
 
     switch (opts.mgen_) {
-    case Mesh_Gen::vdb:
+    case Mesh_Gen::smooth:
       {
         Voxel_Config vox(shape.bbox_, opts.vsize_, cx);
         openvdb::initialize();
@@ -467,16 +472,31 @@ void export_mesh(Mesh_Format format, curv::Value value,
         print_mesh_stats(stats);
         break;
       }
-    case Mesh_Gen::five:
+    case Mesh_Gen::sharp:
+    case Mesh_Gen::iso:
+    case Mesh_Gen::hybrid:
       {
         Voxel_Config vox(shape.bbox_, opts.vsize_, cx);
         const curv::Shape* sh;
         if (cshape) sh = &*cshape; else sh = &shape;
+        if (opts.eps_ == 0.0) opts.eps_ = vox.cellsize/10;
         libfive::Tree tree(std::unique_ptr<libfive::OracleClause>
-            (new CurvOracleClause(*sh, vox.cellsize/10)));
+            (new CurvOracleClause(*sh, opts.eps_)));
         libfive::BRepSettings settings;
         settings.workers = 1; /* crash if workers != 1 */
         settings.min_feature = vox.cellsize;
+        switch (opts.mgen_) {
+        case Mesh_Gen::sharp:
+            settings.alg = libfive::DUAL_CONTOURING;
+            break;
+        case Mesh_Gen::iso:
+            settings.alg = libfive::ISO_SIMPLEX;
+            break;
+        case Mesh_Gen::hybrid:
+            settings.alg = libfive::HYBRID;
+            break;
+        default: break;
+        }
         libfive::Region<3> region
             ({shape.bbox_.min.x - vox.cellsize,
               shape.bbox_.min.y - vox.cellsize,
