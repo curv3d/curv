@@ -21,4 +21,4 @@
 	url = https://github.com/g-truc/glm.git
 [submodule "extern/libfive"]
 	path = extern/libfive
-	url = https://github.com/libfive/libfive
+	url = https://github.com/curv3d/libfive
