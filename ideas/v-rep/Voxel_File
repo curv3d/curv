@@ -3,15 +3,44 @@ Voxel File Formats
 Curv will support the import and export of voxel files.
 Which file formats?
 * Formats supported by other tools.
-* If necessary, invent a new format that is more practical than existing
-  alternatives. Eg, because it has really good compression.
+* With good compression?
+* With metadata for mapping raw voxels onto a Curv shape?
+* Do I need to invent a new format to satisfy these requirements?
 
 Types of voxel data I may need to represent:
 * signed distance field. 32 bit floats.
-* intensity field, values between 0 and 1.
+* intensity field, values between 0 and 1. Nats with 1,2,4,8,16,32 bits.
 * colour field: RGB
 * colour field: RGBA
 
+Standard file formats may not have the metadata Curv needs to map voxels
+onto the global coordinate system:
+  { voxel_size:[vx,vy,vz], origin:[ox,oy,oz] }
+So put standard file data + metadata into a container file format,
+or use two sibling files in a directory. Or three files: metadata, SDF, RGB.
+* RSDF -- regularly sampled distance field
+* RSIF -- regularly sampled intensity field
+
+Beyond this simple metadata, I may need to support hierarchical data
+structures that are more efficient to load and process, rather than
+a flat rectangular array of voxels. Maybe it's too expensive to create
+the data structure when loading voxels into a viewer. Eg,
+* VDB
+* Sparse Voxel Octree
+  https://users.aalto.fi/~laines9/publications/laine2010i3d_paper.pdf
+* Mipmap
+* BVH
+
+KTX is the Khronos TeXture format: a universal container format
+for "supercompressed GPU textures". KTX 2.0 supports most of the Vulkan 1.2
+vkFormat texture formats, including VK_FORMAT_R32_SFLOAT (1 32bit float
+per voxel).
+
+GLTX is a Khronos container file format for 3D assets.
+Eg, KTX data + metadata. Maybe it can support Curv metadata?
+
+Older Thoughts
+--------------
 FFV1 is a lossless video format supported by FFmpeg.
 Excellent compression, very fast decode/encode, open source.
 Test this to see if is usable for voxel grids, and if the compression ratio
@@ -31,7 +60,8 @@ That's easy, but measure the compression ratio against the alternatives.
 
 VDB.
 
-The 3MF committee is investigating voxel formats.
+The 3MF committee was investigating voxel formats in 2018.
+Nothing seems to have come of that (2021).
 
 Shapeways just announced Stratasys J750 support! (Launch in 2019.)
 Voxel files are needed to fully exploit the hardware.
