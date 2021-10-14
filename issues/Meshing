@@ -1,0 +1,106 @@
+Improvements to Mesh Export
+===========================
+Libfive integration:
+* waiting for: acceptance of pull request to fix mac build
+* waiting for: fix multithreading crash (or do it myself)
+* Bug report in libfive: Scale dependent rendering of a cube.
+
+Eliminating artifacts from #sharp meshing
+-----------------------------------------
+The #sharp mesher creates artifacts in:
+* shreks_donut (bend)
+* Lee's skull (ellipsoid/jaw join points, mostly)
+* sharply twisted cylinders, in end caps (twist)
+
+The observed artifacts are self-intersections (diagnosed by meshlab)
+and spikes (seen in shreks_donut, twisted cylinders).
+
+A "bent" distance field is one where gradients are not surface normals.
+These kinds of fields are created by bend, twist, ellipsoid.
+My theory is that bent distance fields cause artifacts because libfive/DC
+uses normal vectors that I provide (aka Hermite data) to position and orient
+triangles, and I am supplying gradient vectors that aren't normal to the
+surface.
+
+I tried IQ's "V2" ellipsoid, which is less bent than the standard ellipsoid,
+and the number of self-intersections was somewhat reduced in the skull.
+
+Skinny ellipsoid SDFs are seriously bent near (but not exactly at) the
+skinny ends. Ellipsoids are important for blobby and organic modelling.
+Can I provide a straight or rectified ellipsoid? I looked at 5 alternative
+ellipsoid functions from shadertoy. They either aren't Lipschitz 1 (at the
+ends of skinny ellipsoids), or they are bent in different ways. The only
+way to really fix ellipsoid is Newton's method I think, and that's too
+expensive for general use (sphere tracing).
+
+If it's this hard to fix `ellipsoid`, what about `stretch`?
+Newton's method is again required.
+
+I considered documenting every primitive that creates a "bent" distance field.
+How do I instead fix the problem?
+
+* Fix it in the mesher. Add a 'rectify' option that uses Newton's method
+  to construct normals. It will be much slower, and every SDF query becomes
+  slower. Benefits: a small amount of code in just one place.
+
+* Fix it in the shape compiler. Add a 'rectify' option to the shape compiler
+  which substitutes a more expensive rectified SDF function in any shape SDF
+  that normally has a bent field. Drawbacks: a global change, adding complexity
+  to the `make_shape` API. Benefits:
+  * #sharp meshing *automatically* works correctly, without the need to
+    diagnose artifacts and rerun with -Orectify.
+  * Maybe faster, since not all voxel cells in a model will be computed
+    using Newton's method.
+
+* Fix it in the shape compiler. Add an optional 'gradient' field to make_shape.
+  Maybe with a 'rectified' argument that requests the gradient is a normal.
+  Sometimes a human can provide an efficient hand-written gradient.
+  We could also automatically generate a gradient function using interval
+  arithmetic, and maybe that is more efficient than finite differences?
+  * Maybe ordinary functions also have an optional 'gradient' field?
+  * If gradients and rectified gradients are generally available, they can be
+    used to make more powerful modelling primitives.
+
+Faster #smooth meshing without OpenVDB
+--------------------------------------
+OpenVDB is the dependency from hell. Get rid of it by extracting the smooth
+meshing algorithm and reimplementing to use a flat voxel grid as input.
+Use OMP for parallelism.
+* Simplify builds on all platforms.
+* Create a standalone `curv.exe` on Windows.
+* Voxel grid lookups should be faster than VDB lookups. Meshing should be
+  faster.
+* Now I can reuse the #smooth algorithm for SVG export.
+
+Contouring
+----------
+Add SVG export of 2D models.
+* -Ores: A single resolution parameter controls VDB, DC 3d and DC 2d SVG export.
+  Replaces `vsize`, since SVG doesn't have voxels.
+  Could also use `res` to control PNG export.
+* Generalize the #smooth mesher I extracted from OpenVDB to support 2D.
+  SVG export can use #smooth or #sharp algorithm.
+* Is the option still named `mgen`? (SVG contours are not meshes.)
+
+Fractals
+--------
+* Add #fractal mesher: create voxel grid, low pass filter, then use #smooth.
+  True fractals have no surface normals, so #sharp doesn't make sense.
+* Add colour 3D mandelbulb or the like and print it.
+
+Shape metadata
+--------------
+Goal: to put meshing parameters in a shape.
+* optional `meta` shape field. Ignored by shape combinators.
+  Contains render and mesh export configuration. Overrides config file.
+  Overrides command line, just like existing `render` field.
+* `shape >> set_meta {...}`
+* `make_shape {..., meta: {...}}`
+* The config file has a tree structured namespace: `viewer` & `export` trees.
+  This allows you to specify export.aa=4 for PNG export but not for viewing.
+  Metadata should have the same namespace.
+
+Watertight #sharp meshing
+-------------------------
+The only time I've seen holes in a #sharp mesh is when the bbox is too small.
+Should I fix this by intersecting the model with its own bbox? Low priority.
