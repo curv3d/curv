@@ -1,6 +1,7 @@
 Arrows are a new kind of Plain Old Data.
 They are a generic primitive data structure representing a kind of ordered pair.
 They are closely related to Symbols.
+They are used to represent variant data and to construct/deconstruct records.
 
 POD types: symbol, character, number, arrow, record, list
 
@@ -13,8 +14,8 @@ patterns:
     <pattern> => <pattern>
 
 indexing:
-    arrow.[head]  arrow@head
-    arrow.[tail]  arrow@tail
+    arrow.[head]
+    arrow.[tail]
 where `head` and `tail` are opaque, abstract values. Or, alternatively:
     arrow.head
     arrow.tail
@@ -22,6 +23,12 @@ But note that arrows are disjoint from records, so is dot notation confusing
 in the context of POD? It depends on what the final ADT mechanism looks like.
 Maybe leave this out of an initial implementation and use pattern matching
 for decomposition.
+
+An arrow can be considered to be an ordered pair with special syntax.
+The motivation for distinguishing between [a,b] and a=>b is the syntax.
+Curv is not just a language for programming computers, it is also a language
+for communicating mathematical ideas. The syntax a:b and a=>b can be used
+in any API where it clarifies the meaning of data relationships and API calls.
 
 Arrows are useful wherever the arrow syntax makes sense for constructing
 data structures out of Plain Old Data.
@@ -36,8 +43,17 @@ data type is:
   arrows, for monadic constructors
 
 Curv uses arrows for:
- * constructing records. {a: 1, b: 2}
+ * constructing records. {a: 1, b: 2} or {#a => 1, #b => 2}
+ * deconstructing records. `for (name => val in some_record) ...`
  * internal representation of picker values (simulating an algebraic data type)
+    slider[lo,hi] =
+      { call = is_num;
+        picker = slider: [lo,hi];
+      };
+    slider[lo,hi] =
+      { call: is_num;
+        picker: slider: [lo,hi];    // this looks weird to me
+      };
  * later, sparse arrays are {1=>x,2=>y,7=>k}
 
 Prior art:
@@ -46,5 +62,40 @@ Prior art:
    But pairs are also used to build lists, and arrows do not have this function
    in Curv, where lists are primitive and disjoint from arrows.
  * C++ has std::pair, used to represent an individual mapping in a std::map
- * Some simple, dynamically typed, pure functional languages have
-   labelled values as a kind of POD.
+ * Some dynamically typed, pure functional languages have labelled values
+   as a kind of POD.
+   * In Cell, `:foo` is a symbol, `:foo(expr)` is a tagged value.
+   * In Pointless, `Foo` is a symbol, `Foo(a,b,c)` a labelled tuple,
+     `Foo{a=1,b=2}` a labelled record.
+   * Erlang is sort of like this. Record constructor:
+     #Name{Field1=Expr1,...,FieldK=ExprK}
+
+Weird syntax?
+-------------
+In Curv, all other special syntax for POD data are primary expressions.
+* The exception is negative numerals, and that actually causes problems
+  for function call arguments. Eg, remembering to type `f (-1)` even though
+  `f 1` works.
+In other languages with tagged values, data constructor expressions are
+tightly bound. By contrast, : and => are low precedence operators.
+
+Also, I find this syntax weird:
+    slider[lo,hi] =
+      { call: is_num;
+        picker: slider: [lo,hi];    // this looks weird to me
+      };
+
+Do I want to introduce a primary expression for labelled values?
+ * `#foo:<primary>` is a <primary>
+
+So variant values have a more uniform looking syntax:
+    #foo
+    #foo:arg
+Eg,
+    slider[lo,hi] =
+      { call: is_num;
+        picker: #slider:[lo,hi];
+      };
+
+This new syntax would be specifically used in the case where arrows
+are used to represent variant values.
