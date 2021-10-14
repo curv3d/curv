@@ -33,7 +33,8 @@ Lipschitz-continuous). There are examples in `<../examples/mesh_only>`_.
 
 Mesh Generators
 ---------------
-There are two mesh generating algorithms, called ``#smooth`` and ``#sharp``.
+There are two mesh generating algorithms, called ``#smooth`` and ``#sharp``,
+with complementary strengths and weaknesses.
 They are specified on the command line like this::
 
     curv -Omgen=#smooth
@@ -137,9 +138,9 @@ I recommend an external tool, `MeshLab`_, to simplify the mesh:
 
 Mesh Quality
 ------------
-Curv generates watertight, manifold meshes with no self intersections,
-degenerate triangles, or flipped triangles. These are high quality, defect free
-meshes that can be processed by any software.
+The ``#smooth`` algorithm generates watertight, manifold meshes with no self
+intersections, degenerate triangles, or flipped triangles. These are high
+quality, defect free meshes that can be processed by any software.
 
 * `OpenSCAD`_ requires defect free meshes (otherwise boolean operations fail).
 * Meshs submitted to `Shapeways.com`_ for 3D printing *should* be defect free.
@@ -154,8 +155,8 @@ attempts to repair bad meshes.
 .. _`OpenSCAD`: http://www.openscad.org/
 .. _`ShapeWays.com`: https://shapeways.com/
 
-Curv does not yet support sharp feature detection,
-so the edges of cubes are rounded off. To fix this, decrease the
+The tradeoff for defect free meshes is the lack of sharp feature detection.
+The edges of cubes are rounded off. To fix this, decrease the
 ``vsize`` parameter until the rounding effect is no longer objectionable,
 then use MeshLab to simplify the mesh.
 It's not a perfect solution: you still don't get sharp edges and corners,
