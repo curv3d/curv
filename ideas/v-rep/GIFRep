@@ -41,9 +41,11 @@ offset fields:
 direction field:
     Maps a point onto a vector that points away from the closest point on the
     surface. If the point is on the surface, this is an inverse surface normal.
-    The direction can be ambiguous or undefined. Aka the gradient.
+    The direction can be ambiguous or undefined. Same as the gradient of a
+    Euclidean SDF.
     Use cases:
       * 3D Surface normal for rendering.
+      * Conversion to mesh using Dual Contouring.
       * Morphing between two convex objects that don't overlap: separate
         linear interpolation on the length and angle of the direction vector
         from the point to the closest surface point.

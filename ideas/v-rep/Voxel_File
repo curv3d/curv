@@ -1,43 +1,172 @@
-Voxel File Formats
-==================
+Voxel Files
+===========
 Curv will support the import and export of voxel files.
-Which file formats?
-* Formats supported by other tools.
-* With good compression?
-* With metadata for mapping raw voxels onto a Curv shape?
-* Do I need to invent a new format to satisfy these requirements?
 
-Types of voxel data I may need to represent:
-* signed distance field. 32 bit floats.
-* intensity field, values between 0 and 1. Nats with 1,2,4,8,16,32 bits.
-* colour field: RGB
-* colour field: RGBA
+I'm using the term "voxel file" in a general sense to mean a 3D array of
+numeric data used as a volumetric representation of a 3D Curv shape
+or a 3D graphical value.
 
-Standard file formats may not have the metadata Curv needs to map voxels
-onto the global coordinate system:
+Some 3D graphical value types:
+* signed distance field (shape without colour)
+* colour field
+* intensity field
+* coloured shape (sdf + colour field, two voxel grids)
+
+Voxel types that might be needed:
+* signed distance: 32 bit float.
+* signed distance + normal vector? Useful for sharp mesh generation, etc.
+* density or intensity, values between 0 and 1. Nats with 1,2,4,8,16,32 bits.
+* colour field: RGB.
+* coloured density/intensity field: RGBA
+
+In addition to the voxel grid, we need metadata to map the voxels onto
+the world coordinate system (just as vertices in mesh files have coordinates):
   { voxel_size:[vx,vy,vz], origin:[ox,oy,oz] }
-So put standard file data + metadata into a container file format,
-or use two sibling files in a directory. Or three files: metadata, SDF, RGB.
-* RSDF -- regularly sampled distance field
-* RSIF -- regularly sampled intensity field
+Plus metadata on how the voxels are interpreted, so that the file can be
+properly visualized by a viewer. Density arrays and signed distance arrays
+are rendered quite differently.
 
-Beyond this simple metadata, I may need to support hierarchical data
-structures that are more efficient to load and process, rather than
-a flat rectangular array of voxels. Maybe it's too expensive to create
-the data structure when loading voxels into a viewer. Eg,
+Using Plain Voxel Files
+-----------------------
+Some existing standard voxel file formats like KTX don't have Curv metadata.
+Still, it would be nice to be able to import these files as graphical
+values. A motivating example is: `curv foo.png` displays the image `foo`
+as a graphical value.
+
+These file formats don't have coordinate metadata, so we'll assign
+default coordinates.
+
+We will assign a graphical data type based on the file extension and
+the voxel data type.
+
+Determining the graphical data type:
+* From the voxel format. If the voxel format is an 8 bit Nat, assume it's a
+  density value. If it is a 32 bit float, assume it is a signed distance.
+* From the file extension. If the file extension doesn't specify a graphical
+  type (eg, it's just .ktx) then it is imported as an array value.
+  * Eg, rename `foo.ktx` to `foo.sdf`.
+    * RSDF -- regularly sampled distance field
+    * RSIF -- regularly sampled intensity field
+  * Eg, rename `foo.ktx` to `foo.sdf.ktx` so that it is still compatible
+    with tools that look for the .ktx extension.
+
+Terminology
+-----------
+In common usage, "voxel" grids are density grids. Distance fields, colour
+fields, intensity fields and vector fields are not normally associated
+with the term "voxel". My terminology may cause confusion (where the
+listener assumes voxel == minecraft) or lead to poor google search results.
+
+I'm hampered by the lack of a popular standard term for the data structures
+I want to use. Which also means: a lack of standard file formats and tools
+for this nameless data structure.
+
+File Formats
+------------
+Which file formats?
+* Popular/ubiquitous formats with multiple implementations, supported by
+  multiple libraries and tools?
+* Relevant formats (to creative coding, CG, 3D printing toolchains)?
+* With good compression? Hopefully lossless?
+* GPU friendly? Load data into GPU cheaply.
+* With metadata for mapping raw voxels onto Curv abstractions?
+
+Unfortunately there is a shortage of file formats that satisfy my requirements.
+
+Ultimately, we need a standard voxel file format for 3D printing and Curv
+style geometric modelling.
+
+KTX is the Khronos TeXture format: a universal container format for
+"supercompressed GPU textures". KTX 2.0 supports most of the Vulkan 1.2
+vkFormat texture formats. This looks like an excellent foundation to build on:
+* an institutionalized standard with much tool support;
+* all of the voxel formats I need, including float formats;
+* "supercompression";
+* plus as a bonus mipmaps.
+There is no coordinate metadata or extensible metadata.
+
+SVX is a voxel array format for 3D printing, which Shapeways introduced
+in 2016. It didn't take off. https://abfab3d.com/svx-format/
+It's a reasonable format, layered on ZIP, XML and PNG, with coordinate
+metadata, and multiple channels supporting density, colour and multiple
+materials. Supported by:
+* Voxelizer: read; slice to gcode without using an intermediate mesh.
+* Shapeways? Not sure if still supported. Density only at announcement time,
+  and development allegedly stalled before they stopped talking about it.
+* AbFab3D: read and write?
+
+VDB: density and signed distance fields with coordinate metadata.
+* It's a rather complex format to generate yourself, and libOpenVDB is the
+  most troublesome dependency I've had to deal with (want to get rid of it).
+  Is it too niche for additional VDB import/export libraries to exist?
+* Supposedly GPU friendly, except that GVDB only exists for Cuda.
+Support:
+* Voxelizer
+* OpenVDB project and probably some cinematic CG tools.
+
+.DF3 -- povray only? -- 1/2/4 byte density array
+
+.bvox -- Blender voxel format -- 1 byte density array
+
+There are a number of voxel formats in the niche of scientific, engineering,
+medical data visualization. These are used of outside of the domains that
+Curv targets (creative coding, computer graphics, GPU, 3D printing).
+So the tools that support them are not so interesting to Curv users.
+  Tools:
+    Inviwo
+  Formats:
+    .DCM: Dicom medical scanner data (well known)
+    .PVM (Inviwo, V^3 (www.stereofx.org/volume.html)): 8bit density grid
+
+A New Voxel File Format
+-----------------------
+It's a directory tree containing JSON (metadata) and KTX (voxel data) files.
+The directory name uses a distinguished filename extension?
+
+It can be interpreted as a Curv dirtree, or it can be bundled into a ZIP file,
+which, again, Curv can read as a dirtree.
+
+Because it's composed of ubiquitous standard file formats (JSON, KTX, ZIP)
+which are supported by many libraries and tools, it's easy to read and write
+without specialized tools.
+
+SVX relies on PNG for array data, which can't store float data.
+This new format uses KTX, so it can store signed distances and vectors.
+
+Voxel Trees
+-----------
+I may need to support hierarchical data structures that are more efficient
+to load and process, rather than a flat rectangular array of voxels. Maybe
+it's too expensive to create the data structure when loading voxels into
+a viewer. Eg,
 * VDB
 * Sparse Voxel Octree
   https://users.aalto.fi/~laines9/publications/laine2010i3d_paper.pdf
 * Mipmap
 * BVH
 
-KTX is the Khronos TeXture format: a universal container format
-for "supercompressed GPU textures". KTX 2.0 supports most of the Vulkan 1.2
-vkFormat texture formats, including VK_FORMAT_R32_SFLOAT (1 32bit float
-per voxel).
+Tool Support for Voxel Files
+----------------------------
+assimp is a CG asset import library. It can read voxel files.
 
-GLTX is a Khronos container file format for 3D assets.
-Eg, KTX data + metadata. Maybe it can support Curv metadata?
+voxelizer.com (a voxel based slicer) supports: 
+https://voxelizer.com/knowledge_base/articles/360002717653
+ * .vdb
+ * .svx
+ * medical data file: .dcm
+
+Blender has voxel support (intensity grids)
+https://docs.blender.org/manual/en/2.79/render/blender_render/textures/types/volume/voxel_data.html
+https://blender.stackexchange.com/questions/4875/how-does-blender-voxel-data-work
+* "Blender Voxel" .bvox -- 8 bit intensities
+* 8 bit RAW (grey-scale binary data)
+* Image Sequence -- stack of images, common in CT scans
+
+MagicaVoxel -- a voxel editor
+* Has its own file format -- minecraft style blocky coloured voxels.
+  There's a whole universe of minecraft-like voxel tools and downloadable
+  models, and it's not what I'm looking for. This universe generates most
+  google hits for "voxel" unfortunately.
 
 Older Thoughts
 --------------
@@ -57,8 +186,6 @@ As of 2018, it is moribund. No one really supports it. Shapeways still
 supports it for their service, but they don't mention the format on their
 web site anymore. It uses an array of PNG files inside a ZIP container.
 That's easy, but measure the compression ratio against the alternatives.
-
-VDB.
 
 The 3MF committee was investigating voxel formats in 2018.
 Nothing seems to have come of that (2021).
