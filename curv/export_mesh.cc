@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <chrono>
+#include <thread>
 #include <glm/geometric.hpp>
 #include <omp.h>
 
@@ -483,7 +484,10 @@ void export_mesh(Mesh_Format format, curv::Value value,
         libfive::Tree tree(std::unique_ptr<libfive::OracleClause>
             (new CurvOracleClause(*sh, opts.eps_)));
         libfive::BRepSettings settings;
-        settings.workers = 1; /* crash if workers != 1 */
+        if (cshape)
+            settings.workers = std::thread::hardware_concurrency();
+        else
+            settings.workers = 1;
         settings.min_feature = vox.cellsize;
         switch (opts.mgen_) {
         case Mesh_Gen::sharp:
