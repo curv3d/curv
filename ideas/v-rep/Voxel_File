@@ -26,30 +26,6 @@ Plus metadata on how the voxels are interpreted, so that the file can be
 properly visualized by a viewer. Density arrays and signed distance arrays
 are rendered quite differently.
 
-Using Plain Voxel Files
------------------------
-Some existing standard voxel file formats like KTX don't have Curv metadata.
-Still, it would be nice to be able to import these files as graphical
-values. A motivating example is: `curv foo.png` displays the image `foo`
-as a graphical value.
-
-These file formats don't have coordinate metadata, so we'll assign
-default coordinates.
-
-We will assign a graphical data type based on the file extension and
-the voxel data type.
-
-Determining the graphical data type:
-* From the voxel format. If the voxel format is an 8 bit Nat, assume it's a
-  density value. If it is a 32 bit float, assume it is a signed distance.
-* From the file extension. If the file extension doesn't specify a graphical
-  type (eg, it's just .ktx) then it is imported as an array value.
-  * Eg, rename `foo.ktx` to `foo.sdf`.
-    * RSDF -- regularly sampled distance field
-    * RSIF -- regularly sampled intensity field
-  * Eg, rename `foo.ktx` to `foo.sdf.ktx` so that it is still compatible
-    with tools that look for the .ktx extension.
-
 Terminology
 -----------
 In common usage, "voxel" grids are density grids. Distance fields, colour
@@ -76,30 +52,38 @@ Unfortunately there is a shortage of file formats that satisfy my requirements.
 Ultimately, we need a standard voxel file format for 3D printing and Curv
 style geometric modelling.
 
-KTX is the Khronos TeXture format: a universal container format for
-"supercompressed GPU textures". KTX 2.0 supports most of the Vulkan 1.2
-vkFormat texture formats. This looks like an excellent foundation to build on:
-* an institutionalized standard with much tool support;
-* all of the voxel formats I need, including float formats;
-* "supercompression";
-* plus as a bonus mipmaps.
-There is no coordinate metadata or extensible metadata.
-
 SVX is a voxel array format for 3D printing, which Shapeways introduced
 in 2016. It didn't take off. https://abfab3d.com/svx-format/
 It's a reasonable format, layered on ZIP, XML and PNG, with coordinate
 metadata, and multiple channels supporting density, colour and multiple
-materials. Supported by:
+materials. Can't store floats or signed distances. Almost nobody supports it.
+Supported by:
 * Voxelizer: read; slice to gcode without using an intermediate mesh.
-* Shapeways? Not sure if still supported. Density only at announcement time,
-  and development allegedly stalled before they stopped talking about it.
+* Shapeways? Not sure if still supported. AFAIK, development stalled years
+  ago and they stopped advertising support on their web site. AFAIK, density
+  only, and they convert to triangle mesh first, so no real benefit over
+  triangles in terms of how complex a model you can send to them.
 * AbFab3D: read and write?
 
+KTX 2.0 is the Khronos TeXture format: a universal container format for
+"supercompressed GPU textures". KTX 2.0 supports most of the Vulkan 1.2
+vkFormat texture formats. This looks like an excellent foundation to build on:
+* An institutionally backed standard with good library/tool support.
+* All of the voxel formats I need, including float formats.
+* GPU friendly compression that is portable across GPU families because it
+  can be transcoded to the compression your GPU hardware supports. A 2021
+  development I won't find in older voxel formats. (SVX has PNG arrays but
+  this is better compression than PNG, although worse than video compression.)
+* Extensible metadata (key/value pairs).
+* Plus as a bonus mipmaps (used in some SDF voxel engines for efficiency).
+
 VDB: density and signed distance fields with coordinate metadata.
+* Built and maintained by large corporations for cinematic CG.
 * It's a rather complex format to generate yourself, and libOpenVDB is the
   most troublesome dependency I've had to deal with (want to get rid of it).
-  Is it too niche for additional VDB import/export libraries to exist?
+  Not sure if additional/independent VDB import/export libraries exist?
 * Supposedly GPU friendly, except that GVDB only exists for Cuda.
+  Building open source portable GPU support is a large project.
 Support:
 * Voxelizer
 * OpenVDB project and probably some cinematic CG tools.
@@ -115,11 +99,47 @@ So the tools that support them are not so interesting to Curv users.
   Tools:
     Inviwo
   Formats:
-    .DCM: Dicom medical scanner data (well known)
+    .DCM: Dicom medical scanner data (lots of tool support)
     .PVM (Inviwo, V^3 (www.stereofx.org/volume.html)): 8bit density grid
 
-A New Voxel File Format
------------------------
+Voxel File Formats supported by Curv
+------------------------------------
+I'm good with adding support for voxel formats that other Curv users
+need to use, so that they can hook up Curv with other tools in a
+creative coding / CG / 3D printing tool chain. One possibility is
+a command line tool for converting between different voxel formats.
+Also need a mesh -> voxel converter.
+
+The "native" Curv voxel format should be based on KTX 2.
+SVX relies on PNG for array data, which can't store float data.
+KTX can store signed distances and vectors and has better compression than SVX.
+
+By default, KTX files don't have Curv metadata. It would be nice to import
+these files as graphical values. A motivating example is: `curv foo.png`
+displays the image `foo` as a graphical value.
+
+If a voxel file doesn't have coordinate metadata, we'll assign default
+coordinates.
+
+We will assign a graphical data type based on the file extension and
+the voxel data type. For example:
+* From the voxel format. If the voxel format is an 8 bit Nat, assume it's a
+  density value. If it is a 32 bit float, assume it is a signed distance.
+* From the file extension. If the file extension doesn't specify a graphical
+  type (eg, it's just .ktx) then it is imported as an array value.
+  * Eg, rename `foo.ktx` to `foo.sdf`.
+    * RSDF -- regularly sampled distance field
+    * RSIF -- regularly sampled intensity field
+  * Eg, rename `foo.ktx` to `foo.sdf.ktx` so that it is still compatible
+    with tools that look for the .ktx extension.
+
+Native Curv Voxel File Format
+-----------------------------
+In some cases, we can just add Curv metadata to a KTX file to specify
+a graphical value. But a coloured shape requires two KTX files, for
+the signed distance field and for the colour field. How do we manage
+multiple files in a single Curv value?
+
 It's a directory tree containing JSON (metadata) and KTX (voxel data) files.
 The directory name uses a distinguished filename extension?
 
@@ -130,9 +150,6 @@ Because it's composed of ubiquitous standard file formats (JSON, KTX, ZIP)
 which are supported by many libraries and tools, it's easy to read and write
 without specialized tools.
 
-SVX relies on PNG for array data, which can't store float data.
-This new format uses KTX, so it can store signed distances and vectors.
-
 Voxel Trees
 -----------
 I may need to support hierarchical data structures that are more efficient
@@ -142,7 +159,7 @@ a viewer. Eg,
 * VDB
 * Sparse Voxel Octree
   https://users.aalto.fi/~laines9/publications/laine2010i3d_paper.pdf
-* Mipmap
+* Mipmap (part of KTX)
 * BVH
 
 Tool Support for Voxel Files
@@ -170,6 +187,11 @@ MagicaVoxel -- a voxel editor
 
 Older Thoughts
 --------------
+Is there GPU friendly lossless compression that can be used in a voxel
+file format?
+* "GPU-Accelerated Lossless Data Compressors Survey"
+  https://github.com/dingwentao/GPU-lossless-compression
+
 FFV1 is a lossless video format supported by FFmpeg.
 Excellent compression, very fast decode/encode, open source.
 Test this to see if is usable for voxel grids, and if the compression ratio
