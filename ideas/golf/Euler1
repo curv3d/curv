@@ -1,0 +1,78 @@
+Project Euler #1
+
+If we list all the natural numbers below 10 that are multiples of 3 or 5,
+we get 3, 5, 6 and 9. The sum of these multiples is 23.
+
+Find the sum of all the multiples of 3 or 5 below 1000.
+Answer is: 233168
+
+An imperative solution:
+    do  local total = 0;
+        for (n in 1..999)
+            if (n `mod` 3 == 0 || n `mod` 5 == 0)
+                total := total + n;
+    in total
+
+This can be transformed into a 2-element pipeline using a list comprehension:
+    [for (n in 1..999) if (n `mod` 3 == 0 || n `mod` 5 == 0) n] >> sum
+
+Break it down to a 3-element pipeline:
+    1..999 >> filter(n->n `mod` 3 == 0 || n `mod` 5 == 0) >> sum
+
+Note there is code duplication: the expression pattern n `mod` _ == 0
+appears twice. What if the input was a list of prime factors, instead of
+hard coding the two prime factors 3 and 5?
+
+Then we could write:
+    1..999 >> filter(n->n `mod` [3,5] `equal` 0 >> or) >> sum
+
+We can replace the filter call with 4 pipeline elements:
+    0..999 >>`lmap mod`[3,5] >>`equal`0 >>or >>where_true >>sum
+
+using this definition of the K 'where' operator:
+    where_true mask = [for (n in 0..<count mask) if (mask[n]) n]
+
+Note that 1..999 was replaced by 0..999 to conform to the where_true interface.
+
+The result is a 6 stage pipeline. This is 'hard core' pipeline programming.
+It's more difficult to read than earlier versions, but it has its own
+advantages, due to the modularity of the pipeline.
+ * You can examine the pipeline output at each stage to understand how the
+   program works.
+ * You can lift out individual components, or strings of components,
+   and directly reuse them.
+
+-------------
+In K: +/&~&/(!1e3)!/:3 5
+https://github.com/kevinlawler/kona/wiki/PE1-Explained
+
+1..20
+
+1..20 >> map (x->x `mod` [3,5])
+
+1..20 >> map (x->x `mod` [3,5]) >> transpose >> min
+
+1..20 >> map (x->x `mod` [3,5]) >> transpose >> min >> (x->x `equal` 0)
+1..20 >> map (x->x `mod` [3,5]) >> transpose >> min >> into equal [0]
+1..20 >> map (x->x `mod` [3,5]) >> transpose >> min `equal` 0
+
+1..20 >>`lmap mod`[3,5] >>`equal`0 >>or >>where_true >>sum
+
+// APL compress operator
+compress[mask,array]=[for (n in 0..<count array) if (mask[n]) array[n]];
+
+let b= 1..20 >> map (x->x `mod` [3,5]) >> transpose >> min `equal` 0
+in compress[b,1..20]
+
+// K where operator
+wher mask = [for (n in 0..<count mask) if (mask[n]) n]
+
+(1..20)[wher(1..20 >> map (x->x `mod` [3,5]) >> transpose >> min `equal` 0)]
+wher(0..20 >> map (x->x `mod` [3,5]) >> transpose >> min `equal` 0)
+0..20 >> map (x->x `mod` [3,5]) >> transpose >> min `equal` 0 >> wher
+
+//(1..20)[wher(1..20 >> map(`mod` [3,5]) >> transpose >> min >> `equal` 0)]
+
+0..999 >> map (x->x `mod` [3,5]) >> transpose >> min `equal` 0 >> wher >> sum
+//0..999 >> map (`mod` [3,5]) >> flip >> min >> `equal` 0 >> wher >> sum
+
