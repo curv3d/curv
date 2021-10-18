@@ -2,7 +2,6 @@ Improvements to Mesh Export
 ===========================
 Libfive integration:
 * waiting for: acceptance of pull request to fix mac build
-* waiting for: fix multithreading crash (or do it myself)
 * Bug report in libfive: Scale dependent rendering of a cube.
 
 Eliminating artifacts from #sharp meshing
@@ -21,6 +20,9 @@ My theory is that bent distance fields cause artifacts because libfive/DC
 uses normal vectors that I provide (aka Hermite data) to position and orient
 triangles, and I am supplying gradient vectors that aren't normal to the
 surface.
+
+Frisken 2000 says that finite differences gradient estimation on a grid can
+cause C1 discontinuities at cell boundaries. Maybe that's related.
 
 I tried IQ's "V2" ellipsoid, which is less bent than the standard ellipsoid,
 and the number of self-intersections was somewhat reduced in the skull.
@@ -60,6 +62,22 @@ How do I instead fix the problem?
   * Maybe ordinary functions also have an optional 'gradient' field?
   * If gradients and rectified gradients are generally available, they can be
     used to make more powerful modelling primitives.
+
+* Convert the SDF to a density grid, then use distance transform to create
+  a Euclidean sampled SDF. Cool, but after filtering out aliasing above the
+  Nyquist frequency, won't we have rounded the sharp edges? A binary density
+  grid will have higher resolution for a given memory cost (eg 3x3x3 density
+  bits is 27 bits, per each 32 bit float in SDF grid. This make edges sharper?
+  But 27 times as many evaluations. So use an octree (adaptively sampled
+  distance field, ADF) and restrict fine subdivision to the surface region?
+  Then run a distance transform on the octree?? Distance transform requires a
+  flat grid, so only run the DT on high res octree nodes of uniform cell size
+  close to the isosurface. Libfive already builds an octree, so can I hack
+  libfive to do finite differences with optional distance transform?
+
+* I can provide exact ellipse and ellipsoid. Use a parameter in skull.curv
+  and a command line option -Pexact to use exact ellipsoid when exporting,
+  defaulting to fast ellipsoid when previewing.
 
 Faster #smooth meshing without OpenVDB
 --------------------------------------
@@ -104,3 +122,16 @@ Watertight #sharp meshing
 -------------------------
 The only time I've seen holes in a #sharp mesh is when the bbox is too small.
 Should I fix this by intersecting the model with its own bbox? Low priority.
+
+Union Seams in Smooth Meshing
+-----------------------------
+Why do union seams occur? It must be in the SDF. If I knew the cause, maybe
+I could fix it? (In the SDF, or in the voxel generation, or in the mesher?)
+I've been unsuccessful in finding it by probing the SDF using the interpreter.
+It must be in the voxel grid, but I've looked and can't see it there either.
+Maybe I need a more powerful way to visualize SDF voxel grids.
+* Export the SDF as a voxel grid then load it into a visualizer tool. Which?
+
+The problem will become less important if I can reduce the frequency of
+artifacts in the Sharp mesher, which doesn't have union seams.
+I understand the Sharp mesher artifacts better.
