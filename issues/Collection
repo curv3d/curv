@@ -1,0 +1,97 @@
+This project adds generic operations on collections.
+Prerequisite: Arrows
+
+A Collection is a list or a record.
+
+Curv 0.5 introduces some generic operations on collections:
+    ... C
+    C.[i]
+
+This proposal provides additional generic operations on Collections,
+consistent with the behaviour of the `...` operator.
+This is the first phase of a project that will eventually yield
+a fully specified Collection algebra and that will eventually support
+the Generator Protocol.
+
+All collections are ordered (see also Python 3.7 and Javascript ES).
+Records are ordered alphabetically by field name.
+This order is exposed by: the `...` operator, the `for` operator,
+the `indices` function, and by conversion to a string.
+
+count C
+    number of elements in C
+
+indices C
+    An ordered list of the index values for the elements of C.
+    You can use one this index values `i` in the context `C.[i]`.
+alt name: keys. But keys returns a list of index values, so...
+
+`fields` is deprecated.
+
+defined(C.[i]) when C is a list.
+
+for (pattern in C) ...
+    If C is a list, then iterate over the elements.
+    If C is a record, then iterate over key/value pairs (represented as arrows).
+
+## Future Work
+
+The Collection interface is not yet complete and coherent.
+That work is deferred until I implement Algebraic Data Abstraction,
+and create a fully specified algebraic Theory of collections.
+For now, just implement high value operations.
+
+Try to fully specify the semantics of the Collection API by writing
+axioms or laws, solely in terms of Collection methods. Are there missing
+methods I need to write all the axioms? Then add them.
+
+The Collection interface will be a key part of the future Generator Protocol.
+
+Methods that might be missing:
+
+is_collection X
+    true if X is a collection
+
+clear C
+    Construct a new empty instance of the datatype of C.
+    The imperative form C!clear removes all elements from an existing
+    collection and is a standard member of OOP Collection classes.
+add E C
+    Add one element to the end of C (for a record, overriding an existing
+    member with the same field name).
+append C1 C
+    Add all of the elements of C1 to C, in order of C1.
+    Note that C1 and C may have different collection datatypes,
+    and the result has the same type as C.
+
+Using clear/add/append we can write generic algorithms that create new
+collections from existing collections.
+
+The Generator Protocol works by creating an empty collection variable C,
+then calling `C!add E` if an expression generator evaluates to E,
+and calling `C!append C1` if `... C1` is executed.
+
+Not sure about these:
+
+map F C
+    Return a copy of C from which each element X is replaced by F X.
+filter F C
+    Copy of C from which elements X for which F X is false are removed.
+
+`map` is weird because it can change key values in a record, and introduce
+duplicate keys: remove duplicate keys (last one wins) or report error.
+
+## Prior Art
+
+Python:
+   map and for consistently iterate over the keys of a dictionary.
+
+Javascript:
+   for (i in object) -- iterate over keys (enumerable properties) of an object
+   for (i of iterable) -- elements of an Array, items of a Map,
+        same as the 'for' in this proposal. Doesn't work an Object
+        like {a:1,b:2} for historical reasons. 'Map' is fairly new and
+        should have better designed semantics than Object which is a mess.
+   myMap.forEach(function(value,key){...})
+   no 'map' function over Maps or Objects.
+   Javascript ES echoes my choice to iterate over key/elem record items.
