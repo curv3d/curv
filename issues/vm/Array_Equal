@@ -1,11 +1,15 @@
+Curv 0.5 update: `equal` was removed.
+The future replacement is the ~==~ family of operators,
+which have more constrained semantics than `equal`.
+Some of the same implementation considerations will apply.
+
 The `equal` function needs some work. Issues:
  * Does Curv produce mathematically correct results for reactive arguments
    (regardless of performance)? Consider nums, vecs, bool32s, broadcasting.
  * Are these results (see above) vectorized when possible?
  * SubCurv should support bool32 and bool32_vec arguments.
- * Consider if `are_equal` is a better name than `equal`.
 
-In SubCurv, it should be expanded to support any argument [a,b]
+SubCurv should be extended to support any argument [a,b]
 where equal[a,b] gives a bool_plex result.
 
 Here's the beginnings of a new Prim class satisfying this:

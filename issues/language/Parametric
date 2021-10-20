@@ -6,5 +6,5 @@ parametric records
 * Fields cannot be updated using `PR.field := val` or `update #field val PR`.
   This reports an error, because the field is now out of sync with the
   constructor, and the record would be printed incorrectly.
-* `PR@param`: `param` is a builtin lens for fetching and updating the
+* `PR.[param]`: `param` is a builtin lens for fetching and updating the
   constructor argument.

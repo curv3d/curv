@@ -1,0 +1,141 @@
+New syntax for imperative definitions
+=====================================
+Corequisite: deprecate and remove imperative generators, which conflict
+with the Procedure feature and the Imperative Metaprogramming idea.
+
+Benefits of new syntax:
+* Terser.
+* Closer to common practice: 'var' keyword is found in Javascript and
+  many other popular languages.
+* Distinguishes mutable/immutable bindings. Motivation:
+  * semantic highlighting of variable names. Different colours for mutable,
+    immutable, constant.
+  * `let` bindings should be immutable, so that I can document them as
+    always having substitution semantics.
+  * I have a crazy idea to make a metaprogramming protocol for imperative
+    control structures, which return a procedure that takes an environment
+    record as an argument. This environment contains in-scope mutable bindings
+    (but not immutable bindings). So it's good to distinguish mutable bindings.
+
+Syntax (pure imperative contexts only, not in generators):
+  var x = 0;            // immutable
+  var y := 1;           // mutable
+  var (x = 0, y := 1);  // simultaneous definitions?
+  x = 0;                // error: did you mean assignment or definition?
+  f x = -x;             // error I guess.
+  var f x = -x;         // looks weird.
+  var f x := -x;        // nope. or, quite possible given 'f x: -x' works.
+  include ...;          // immutable
+  test ...;
+
+Unified definition documentation.
+  a = b        // recursive def, restricted to let and modules
+  f x = -x     // recursive def, restricted to let and modules. Traditional.
+  def a = b    // recursive, restricted to modules.
+  def f x = -x // recursive, restricted to modules.
+  var x = 0    // sequential def, restricted to do
+  var x := 0   // sequential def, restricted to do
+  include R    // any context
+  test S       // any context
+
+The REPL?
+  All of the above definition types work and they have visible differences
+  in the REPL: scoping rules, & assignment is only legal to a mutable variable.
+  This is different from the current situation, where local definitions are
+  illegal in the REPL.
+  In the current REPL, local defs can only be part of a compound statement,
+  in which case they have a local scope.
+
+  The language no longer distinguishes 'local include'/'include'
+  and 'local test'/'test'. These would not be distinguishable in the REPL
+  anyway. There is no context in Curv 0.5 where 'local test' and 'test'
+  are distinguishable.
+
+ML-style function definitions:
+  f x = -x
+  f x: -x
+  var f x = -x
+  var v x := -x
+  v x := -x
+The first form is provided because it is traditional in Haskell and other
+ML family languages. It is an equational definition.
+The rest are unnecessary, not required by tradition, confusing.
+So I should deprecate 'f x: -x'. This affects shape definitions.
+    make_shape {
+        dist[x,y,z,_] = max[x,y,z] - r;
+        bbox = [[-r,-r,-r],[r,r,r]];
+        is_3d = true;
+    }
+vs
+    make_shape {
+        dist[x,y,z,_] : max[x,y,z] - r,
+        bbox : [[-r,-r,-r],[r,r,r]],
+        is_3d : true,
+    }
+vs
+    make_shape {
+        dist: [x,y,z,_] -> max[x,y,z] - r,
+        bbox: [[-r,-r,-r],[r,r,r]],
+        is_3d: true,
+    }
+
+'def' for named values:
+    def a = b
+    def f x = x + 1
+This syntax mostly only makes sense in modules.
+The proposals waffle on whether they strictly restricted to modules.
+There's no reason to support imperative versions.
+
+Brainstorming
+-------------
+Terser, distinguishes mutable/immutable variable bindings.
+* The syntax no longer needs to be unambiguous when used in a list
+  or dynamic record constructor, so I have more freedom.
+* The current syntax is verbose (eg 'local include ...').
+* I now have motivation for distinguishing mutable vs immutable
+  variable definitions in imperative code:
+  * semantic highlighting of variable names. Different colours for mutable,
+    immutable, constant.
+  * `let` bindings should be immutable, so that I can document them as
+    always having substitution semantics.
+* In a mutable variable definition, should the initial value be
+  preceded by `=` or `:=`?
+  * In Algol 68, the `=` denotes an immutable binding,
+    while `:=` initializes a mutable binding.
+  * In Modula 3, 'CONST x = 0' and 'VAR y := 1'.
+* I still don't want to use `foo = 42` style definitions in imperative
+  code because it isn't an assignment statement and I want to issue an
+  error message asking to change this to a definition or an assignment.
+* The current syntax is elegant and orthogonal. However, now I am proposing
+  to add mutable variable definition syntax which isn't available in 
+  a declarative context, so I'm breaking symmetry.
+* The current syntax supports simultaneous definitions (which can't see
+  one another), and this is useful. `local (x=y, y=x)`. Stupid example.
+Proposal:
+* `x=0` is an error.
+* `var immutable=0` and `var mutable := 1`.
+  More generally this will be 'var <pattern> := <expr>'.
+* What happens to `local f x = x + 1`? Probably never used right now.
+  * `var f = x -> x + 1` is fine.
+  * `var f x = x + 1` can be supported. A bit weird. Could be undocumented
+    but suggested as replacement in deprecation mesage.
+  * Can't use `f x := x + 1`. Too weird.
+* The other definition forms are used unchanged, and their bindings are
+  immutable: include file`, `test (statements)`.
+* simultaneous definitions? `var (x=y,y:=x)`
+Possible confusion over 'var'?
+In Curv, a 'variable' is like in Haskell or math or logic, it's a named
+value usually, or can be a named object in the imperative sublanguage.
+But in Pascal, VAR is mutable and CONST is immutable. In Javascript,
+  var x = 1; -- mutable, historical messed up scoping
+  let x = 1; -- mutable, lexical scoping
+  const x = 1; -- immutable, lexical scoping
+In Swift,
+  var x = 1; -- mutable
+  let x = 1; -- immutable (opposite of Javascript, yay)
+In Go,
+  var x int = 1; -- mutable
+  y := 1;    -- mutable, type inference
+The good news: it is widely understood that 'var x = 1' is a variable
+definition. The bad news: 'var' consistently means mutable in other well
+known languages. Beyond that, there is much variability in syntax.

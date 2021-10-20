@@ -1,5 +1,5 @@
 This project adds generic operations on collections.
-Prerequisite: Arrows
+Prerequisite: Pairs
 
 A Collection is a list or a record.
 
@@ -32,7 +32,7 @@ defined(C.[i]) when C is a list.
 
 for (pattern in C) ...
     If C is a list, then iterate over the elements.
-    If C is a record, then iterate over key/value pairs (represented as arrows).
+    If C is a record, then iterate over key/value pairs (represented as pairs).
 
 ## Future Work
 
@@ -66,6 +66,9 @@ append C1 C
 
 Using clear/add/append we can write generic algorithms that create new
 collections from existing collections.
+
+See [[vm/Array_Rep]] for an efficient implementation of clear/add/append.
+It's a growable list representation that behaves like std::vector in C++.
 
 The Generator Protocol works by creating an empty collection variable C,
 then calling `C!add E` if an expression generator evaluates to E,

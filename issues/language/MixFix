@@ -1,0 +1,141 @@
+New Mixfix Syntax
+=================
+The following list of mixfix forms includes `module`, needed to eliminate
+semicolons under the offside syntax proposal.
+
+    if A then B else C
+    for A in B until C do E
+    while A do B
+    begin A in B
+    let A in B
+    parametric A in B
+    test A
+    module A
+    proc A in B
+    switch A case B then C ...
+
+Goals:
+* cleaner, more consistent, more pronounceable.
+* parens are used only for grouping, not as keywords or syntax.
+* leading and interior keywords are disjoint, hence 'begin'.
+* supports optional offside syntax, like Haskell/Python.
+  no braces required for statement grouping.
+* semicolon free syntax, like Javascript/Python/Go/Swift,
+  but optional and achieved using offside syntax (like Haskell)
+
+According to Hermans (pronounceable programming research),
+I should avoid homonyms like 'for' pronounced the same as '4',
+because it confuses non-English speakers.
+Instead use the 'foreach' keyword. Prior art:
+ * 'Foreach loop' Wikipedia article says that a loop traversing each
+   item in a collection is a 'foreach' loop (concept name).
+ * C#, C++ std::for_each, D, Javascript array.forEach, Perl, PHP
+On the other hand, Curv is nobody's first language, and most popular
+languages use 'for', which is shorter.
+
+New grammar (with 'where' removed):
+  item ::= pipeline
+    | 'include' item
+    | 'local' item
+    | 'test' item
+    | pipeline '=' item
+    | pipeline ':=' item
+    | pipeline ':' item
+    | pipeline '->' item
+    | pipeline '<<' item
+    | 'if' item 'then' item
+    | 'if' item 'then' item 'else' item
+    | 'for' item 'in' item 'do' item
+    | 'for' item 'in' item 'until' item 'do' item
+    | 'while' item 'do' item
+    | 'begin' list 'in' item
+    | 'let' list 'in' item
+    | 'parametric' list 'in' item
+This has the dangling else ambiguity. Fixing that is complicated, and not
+very important.
+
+Offside Syntax
+--------------
+This is tricky and not fully worked out.
+
+If a mixfix keyword is at the end of the line, then the text on the following
+lines can be indented, and is then interpreted in offside mode as forming
+a single <listing> argument, with no semicolons required.
+The next mixfix keyword at the original indent level is the
+continuation of the mixfix form.
+
+Options
+ 1. Mixfix keywords are reserved words. These reserved words are partitioned
+    into initial and non-initial keywords. If the next token at
+    the original indent level is:
+     a. a non-initial keyword, then it is the continuation of the mixfix form.
+     b. an initial keyword, then it begins a new <item> phrase.
+     c. not a keyword, it begins a new <item> phrase.
+    In offside mode, a mixfix phrase can be continued onto another line
+    at same indentation without a preceding offset argument if the initial
+    token on the line is a non-initial keyword.
+ 2. Mixfix keywords are reserved words. But there is no initial/noninitial
+    distinction. The next token at the original indent level must be a
+    mixfix keyword, and is the continuation of the mixfix form. The
+    special keyword `end` can be used to terminate the mixfix form when the
+    previous argument is an offside phrase.
+ 3. Like #2, except mixfix keywords are stropped (uppercase).
+ 3. Like #1, except with stropping.
+
+Option #1 will be most familiar to pythonists.
+    if ... then
+        some
+        statements
+    if ... then
+        other statements
+        statements
+    switch val
+    case pat1 then
+        something
+    case pat2 then
+        something else
+    !print "foo"
+Option #2 requires the use of 'end', and also requires the cases
+in a switch to be indented.
+    if ... then
+        some
+        statements
+    end
+    if ... then
+        other statements
+        statements
+    end
+    switch val
+      case pat1 then
+        something
+      case pat2 then
+        something else
+    !print "foo"
+Option #3 is #2 with stropped keywords.
+    IF ... THEN
+        some
+        statements
+    END
+    IF ... THEN
+        other statements
+        statements
+    END
+    SWITCH val
+      CASE pat1 THEN
+        something
+      CASE pat2 THEN
+        something else
+    !print "foo"
+Option #4 is #1 with stropping.
+    #IF ... THEN
+        some
+        statements
+    #IF ... THEN
+        other statements
+        statements
+    #SWITCH val
+    CASE pat1 THEN
+        something
+    CASE pat2 THEN
+        something else
+    !print "foo"

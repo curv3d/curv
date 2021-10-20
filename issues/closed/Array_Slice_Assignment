@@ -156,12 +156,15 @@ index values are not allowed. For a runtime index vector, duplicate index
 values can't be excluded, so updates are processed left to right, and the
 last assignment wins.
 
-In Python, a list slice that denotes a contiguous subsequence, with indices in
-ascending order, can be replaced by a new sublist with a different length.
-If the index value (range) is not contiguous or not ascending, this is an error.
-In SubCurv, you can't change the size of an array at runtime, and we report this
-at compile time. We don't support this in Curv, it's not an important use case.
-It's an error in K.
+In Python, a list slice is denoted by start and end indexes (with an optional
+step). If the step is 1, it denotes a contiguous subsequence, with indices in
+ascending order, which can be replaced by a new sublist with a different length.
+These Python list slice semantics are incompatible with the multi-dimensional
+array slice semantics supported by Curv 0.5, where indices can be duplicated,
+need not be contiguous, have no order restrictions. Array slicing is a higher
+priority for Curv, as it is needed in SubCurv for GPU programming. If list
+slicing were to be added, then it needs to be a new operation with a different
+name, or a new kind of index value.
 
 We will use K assignment semantics. It's a generalization of the semantics we
 need for GLSL, and it works on arbitrary trees.

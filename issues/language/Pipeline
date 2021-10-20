@@ -4,11 +4,11 @@ These ideas make it easier to write Curv programs as simple pipelines.
 This is still at the brainstorming stage.
 * Collapse the common left-associative binary algebraic operators to one
   precedence level. Chaining these operators gives a left-to-right pipeline.
-    <List>  , ;
+    <Listing>  , ;
     <Item>  low precedence right associative; if/let/for control structures
     <Pipeline> left associative algebraic operators
     <Prefix> The unary - operator
-    <Postfix> f x; r.n; a.[i]
+    <Term> f x; r.n; a.[i]
 * Reify the common binary algebraic operators. '+' is a function bound
   in the standard environment; a+b means '+'[a,b].
 * User defined pipeops.

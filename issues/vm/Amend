@@ -1,13 +1,17 @@
 amend: update a collection using a lens
 =======================================
+I want to improve the implementation of `amend`:
+* failure semantics
+* copy-on-write for efficiency
+
 two syntaxes:
-    c @ index := item
+    c.[index] := item
     c >> amend index item
 
 differences:
- * 'amend' fails if the index value is bad, or doesn't index the collection.
- * @ := panics if the collection variable has a type constraint that rejects
-   the new item value. Won't worry about this in Curv 0.5.
+ * 'amend' should fail if the index is bad, or doesn't index the collection.
+ * .[]:= should panic if the collection variable has a type constraint that
+   rejects the new item value.
 
 implementation
 

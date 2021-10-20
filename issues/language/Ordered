@@ -1,5 +1,5 @@
 Symbols are lexicographically ordered. #a < #b is true.
-Characters are ordered under the String proposal.
+Characters are ordered by code point.
 
 Rationale:
  * Symbol ordering defines the iteration ordering of a record,
@@ -9,14 +9,16 @@ Rationale:
    when you assign meaning to specific symbols, and want to compare symbol
    values. In those other languages, strings are also ordered lexicographically.
 
-A relational operator < <= > >= now accepts two numbers or two symbols.
+A relational operator < <= > >= now accepts two numbers, symbols or chars.
 (but not mixed types, that is an error)
 
-max and min now accept either a list of symbols or a list of numbers.
+max and min now accept a nonempty list of symbols, numbers or chars.
 max[#a,#b] => #b
+max "max" == #"x"
 max[] and min[] are now errors.
 
 sort[#b,#c,#a] => [#a,#b,#c]
+sort "max" => "amx"
 
 Notes
 -----
