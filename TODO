@@ -1,39 +1,16 @@
-Libfive integration:
-* MacOS build is broken
-  * I've reported a libfive bug, Matt suggested a reasonable fix to his code.
-* timer for #smooth mesh generator, for comparison with #sharp.
-* Libfive multithreaded rendering is broken (so I disable it for now)
-  * Report a libfive bug with test case.
-* Bug report in libfive: Scale dependent rendering of a cube.
+=> Meshing roadmap
+* the road to 3MF slice export
+  * add SVG export
 
-Better #sharp meshing:
-* #sharp mesher creates artifacts in shreks_donut. I believe that `bend` and
-  `twist` create "bent" or "twisted" distance fields where gradients are not
-  surface normals, and this breaks DC. Add a 'rectify' option that uses
-  Newton's method to construct normals.
+Bug: REPL aborts if viewer cannot be opened.
 
-More meshing:
-* Add SVG export of 2D models
-* -Ores: A single resolution parameter controls VDB, DC 3d and DC 2d SVG export.
-  Replaces `vsize`, since SVG doesn't have voxels.
-  Could also use `res` to control PNG export.
-* Extract #smooth mesher from openvdb, eliminate that dependency.
-  * simplify builds on all platforms.
-  * create a standalone `curv.exe` on Windows.
-* Add #fractal mesher: create voxel grid, low pass filter, then use #smooth.
-  True fractals have no surface normals, so #sharp doesn't make sense.
-* Add colour 3D mandelbulb or the like and print it.
+=> Pairs
+=> Collections (requires Pairs)
 
-Shape metadata:
-* Goal: to put meshing parameters in a shape.
-* optional `meta` shape field. Ignored by shape combinators.
-  Contains render and mesh export configuration. Overrides config file.
-  Overrides command line, just like existing `render` field.
-* `shape >> set_meta {...}`
-* `make_shape {..., meta: {...}}`
-* The config file has a tree structured namespace: `viewer` & `export` trees.
-  This allows you to specify export.aa=4 for PNG export but not for viewing.
-  Metadata should have the same namespace.
+Document `var!newval`.
+
+Document 'parametric' better, as a general way to specify parameters of
+a shape. Add `-Pid=value` to override shape parameters on command line.
 
 Document 'term' phrases. Tight and loose formatting style.
 In Records doc, call out 'R.a' vs 'R .a' style of field selection.
@@ -60,8 +37,6 @@ transliterating GLSL into Curv -- docs/language/GLSL_to_Curv.rst
    v.xy =>  v.[[X,Y]]
    dot(v1,v2)  =>  dot[v1,v2]
    vec(x,y)  =>  [x,y]
-
-Arrow values: `a: b` and `#a => b`. Used for variants and record fields.
 
 ---------
 * auto detection of c++ compiler for '-O jit' default value
