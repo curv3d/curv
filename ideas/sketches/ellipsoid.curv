@@ -1,0 +1,85 @@
+parametric
+    dX :: slider[1,10] = 10;
+    dY :: slider[1,10] = 10;
+    dZ :: slider[1,10] = 10;
+in let
+  // better ellipsoid by IQ -- sdbEllipsoidV2
+  // from https://iquilezles.org/www/articles/ellipsoids/ellipsoids.htm
+  // Better distance field, unless very skinny eg ellipsoid[1,1,10]
+  // Reduces no. of self-intersections in #sharp meshing.
+  // Shadertoy commentary <https://www.shadertoy.com/view/tdS3DG>
+  // > @edubart, 2021-03-13
+  // > There is a numeric error in the improved version in case p=vec2(0,0),
+  // > then k1,k2=0, and we have 0/0 division in the return. So the distance
+  // > is wrong in the exact center.
+  ellipsoid2 d =
+    let r = d/2; in
+    make_shape {
+      dist[x,y,z,_] =
+        let
+          p = [x,y,z];
+          k1 = mag(p/r);
+          k2 = mag(p/(r*r));
+        in k1 * (k1 - 1)/k2;
+      is_3d = true;
+      bbox = [[-r.[X],-r.[Y],-r.[Z]], [r.[X],r.[Y],r.[Z]]];
+    };
+  // IQ, sdaEllipsoidV3 -- more Euclidean, but not Lipschitz 1 if very skinny
+  // from https://iquilezles.org/www/articles/ellipsoids/ellipsoids.htm
+  ellipsoid3 d =
+    let r = d/2; in
+    make_shape {
+      dist[x,y,z,_] =
+        let
+          p = [x,y,z];
+          k1 = mag(p/r);
+        in mag p * (1 - 1/k1);
+      is_3d = true;
+      bbox = [[-r.[X],-r.[Y],-r.[Z]], [r.[X],r.[Y],r.[Z]]];
+    };
+
+  // IQ improved - from https://www.shadertoy.com/view/3s2fRd
+  // a tweaked version of ellipsoid2
+  ellipsoid4 d =
+    let r = d/2; in
+    make_shape {
+      dist[x,y,z,_] =
+        let
+          p = [x,y,z];
+          k1 = mag(p/r);
+          k2 = mag(p/(r*r));
+        in if (k1<1) (k1-1) * min r else k1 * (k1-1)/k2;
+      is_3d = true;
+      bbox = [[-r.[X],-r.[Y],-r.[Z]], [r.[X],r.[Y],r.[Z]]];
+    };
+  
+  // mla, 2020-05-28
+  // You could try the standard implicit equation + gradient division:
+  ellipsoid5 d =
+    let r = d/2;
+        A = 1/(r*r);
+    in make_shape {
+      dist[x,y,z,_] =
+        let
+          p = [x,y,z];
+          pA = p*A;
+          d = dot[pA,p] - 1;
+        in d / (2 * mag pA);
+      is_3d = true;
+      bbox = [[-r.[X],-r.[Y],-r.[Z]], [r.[X],r.[Y],r.[Z]]];
+    };
+
+    // Max norm ellipsoid by sjb
+    // based on http://gamma.cs.unc.edu/RECONS/maxnorm.pdf
+    // at https://www.shadertoy.com/view/Mt2XWG
+
+/*
+"Most of the public attempts at ‘closest point on an ellipsoid’ are either slow,
+unstable in corner cases, or both." (Alex Evans, Media Molecule, SIGGRAPH 2015)
+This is the best solution I've found yet:
+Anton's version: https://www.shadertoy.com/view/ldsGWX
+*/
+    // @AntonAlog's DistanceToEllipsoidStereo looks perfect in the shadertoy.
+
+
+in ellipsoid2 [dX,dY,dZ] >> show_dist >> show_axes

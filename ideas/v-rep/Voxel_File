@@ -14,7 +14,10 @@ Some 3D graphical value types:
 
 Voxel types that might be needed:
 * signed distance: 32 bit float.
-* signed distance + normal vector? Useful for sharp mesh generation, etc.
+* vector field. Unreal Engine supports them for particle systems. There's
+  a Blender plugin. Surface normals for CG rendering and sharp mesh generation.
+  ?? github project uses SDF+vector field for advanced blends.
+  IQ uses gradients for many purposes. Probably lots of modelling uses.
 * density or intensity, values between 0 and 1. Nats with 1,2,4,8,16,32 bits.
 * colour field: RGB.
 * coloured density/intensity field: RGBA
