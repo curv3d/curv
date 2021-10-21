@@ -90,6 +90,28 @@ functions, and only have debug effects) from impure procedures (which
 can modify the implicit imperative state, and are not functions, and
 can only be invoked in the context of `... x!P`).
 
+In the latest design for imperative programming with objects from TUPL,
+generator syntax is just a shorthand that calls 'add' and 'append' on
+an implicit (unnamed) state variable G.
+    expr     <=> G!add expr
+    ... expr <=> G!append expr
+    !expr    <=> G!expr
+
+Possible solutions:
+ 1. Get rid of statement generators. If you want to introduce mutable variables
+    into a compound generator, rewrite the primitive generators to use an
+    explicit state variable. It's a line-by-line transliteration using the
+    code equivalences given above.
+ 2. Keep statement generators. But if you want to abstract over state
+    variables in a statement generator, *then* you need to do the rewrite
+    described in #1. And then you can use a procedure to abstract over the
+    state variables. (Statement generators aren't valid in a procedure body.)
+ 3. Allow a procedure body to contain a statement generator. Now it is a
+    generator procedure, which can only be invoked using special new syntax.
+
+Solution #1 seems the simplest and cleanest. It also simplifies the story
+about the difference between comma and semicolon.
+
 No Generator Procedures
 -----------------------
 For now, as a simplification, I wish to remove generator procedures and

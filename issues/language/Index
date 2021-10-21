@@ -1,0 +1,12 @@
+add
+    get Index Tree
+    set Index NewVal Tree
+deprecate
+    amend, in favour of set
+
+Rationale:
+documentation will talk about the common idiom of getter and setter
+functions. In Curv, an index I encapsulates both, and you use
+    get I
+    set I
+to convert an index to a getter and setter.

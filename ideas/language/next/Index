@@ -1,25 +1,61 @@
 Index Values (Lenses)
 =====================
 Make a choice:
-* index values are disjoint from functions
-* index values are functions
+ 1. index values are disjoint from functions
+ 2. index values are functions
 
-0. They are disjoint
+Right now, #1 is already implemented, and the get/set API is trivial to add.
+Let's go with that for now.
+
+The design for #2 is really unclear, and we can switch to that model later
+if a good and compelling design emerges.
+
+1. They are disjoint
 --------------------
 What are the benefits?
+* Avoiding a mess: how to correctly unify functions with indexes.
+  It's non-intuitive that '0' can be applied like a function to a list.
+  * This seems like ad-hoc overloading of function call syntax because it
+    isn't clear that Indexes are functions, that they form a Function algebra
+    or that I can make a Function theory that primitive functions and indexes
+    both implement.
+  * Better to keep indexes separate: `get 0` is a getter function for `0`.
 * If user defined index values are abstract values (they implement the Index
   theory using Algebra Data Abstraction), and therefore not record values,
   then records could work as implicit pick indexes. Eg,
     [4,5,6].[{a:0,b:1}] => {a:4,b:5}
-* Figuring out how to correctly unify functions with indexes is complicated...
+* `sRGB` can be both a colourspace index and a colour constructor function.
+    sRGB[r,g,b] => aColour
+    aColour.[sRGB] => [r,g,b]
 
-1. They are functions
+Many languages have the concept of getter and setter functions, which are
+abstract functions for accessing data structure elements. Getters and setters
+come in pairs.
+
+In Curv, index values know how to both get and set.
+To convert an index value into a getter or setter function, you write:
+    get I T
+    set I newval T
+
+An API can provide just an abstract index value `foo`, instead of providing
+both `get_foo` and `set_foo`. You can recover the latter functions by
+writing `get foo` and `set foo`.
+
+I think the explicitness of `get 0 a` is easier to understand than `0 a`.
+
+2. They are functions
 ---------------------
-This is inspired by the Algebraic Data Abstraction proposal, wherein operations
-on abstract data types are functions. If an ADT is a collection, then there
-are operations for accessing the elements, which ought be functions, so that
-you can extend the interface to allow both setting and getting elements without
-switching to a new operation syntax. So index values are functions.
+This is inspired by Algebraic Data Abstraction, wherein operations on abstract
+data types are functions. An Algebra can provide a function for extracting a
+value from an instance, then later make this function bidirectional and turn
+it into a lens, without breaking backward compatibility.
+
+There are potentially many functions that could be made bidirectional
+(`reverse` is an example), without breaking backward compatibility.
+Having a rich set of bidirectional functions points us in the direction
+of a solution to the view-update problem. Maybe.
+
+So index values are functions.
 
   This is analogous to how locatives behave either as expressions or locations,
   depending on context (right or left of a :=). And closely related, given
@@ -52,6 +88,9 @@ overloaded Map operation, which is the function call syntax. We can still
 have separate 'compose' and 'tpath' operations, and not try to join those
 into a single overloaded compose operation, which would encounter difficulties
 with the meaning of 'compose[]'.
+ * 'compose[]' returns 'id', a branded value belonging to the Function theory.
+   'id x' is 'x'. A Theory that extends Function must also extend the meaning
+   of 'id'
 
 So the two interpretations may be equivalent in the function and index APIs.
 

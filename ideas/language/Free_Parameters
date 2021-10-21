@@ -1,0 +1,33 @@
+Free Parameters
+===============
+An alternative to the Fluid_Variables proposal,
+and an alternative to reactive values in Curv 0.5.
+
+A free parameter is a kind of named global variable
+with a type and a default value.
+
+A parametric value is a special kind of value that consists of three parts:
+* pexpr: An expression over one or more free parameters.
+* ptype: A type, specifing the set of values that the expression ranges over.
+  This type is derived from the expression.
+* pval: An ordinary (non-parametric) value, which is the result of evaluating
+  the expression using the default values of each free parameter.
+
+A free parameter is a special case of a parametric value.
+
+You can query a parametric value PV to determine what free parameters it
+depends on.
+
+You can substitute a parameter in PV for a another value, creating a new
+value by partial evaluation of the expression. This operation is not merely
+ordinary function call notation because functions can be parametric.
+
+The 'parametric' operator now constructs parametric values of any type,
+not just records.
+
+`time` is now a free parameter with default value 0.
+This will fix some bugs that currently exist, involving reactive values
+in bbox which prevent parametric images from being viewed.
+
+`rectify` is a free parameter that controls whether we use expensive algorithms
+to provide an exact distance field. Used for #sharp mesh export. Default false.

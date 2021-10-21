@@ -2,5 +2,7 @@ Things to deprecate for Curv 0.6
 
 * 'f x: x + 1' style fields
 * 'fields' (see Collection)
-* 'local' definitions (see Imperative_Variables)
+* 'local' definitions (see Definition)
 * imperative generators
+* deprecate 'log n' for 'ln n'
+* deprecate 'amend' for 'set' (see Index)

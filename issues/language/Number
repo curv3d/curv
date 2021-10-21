@@ -1,0 +1,50 @@
+Negative Zero
+-------------
+Get rid of -0. Rationale:
+ * Simplifies ==. For pure data (no functions),
+   x==y iff f x == f y for all functions f.
+   This axiom is violated by -0.
+ * Simplifies primitive numeric operations, which need to have ad hoc,
+   non-principle based semantics for how -0 is handled.
+   The number system is now based on a well known mathematical structure,
+   affine extended reals (modulo floating point imprecision).
+ * -0 is a garbage number that isn't an integer and isn't a real.
+   There is no mathematical model or set of axioms that you can use to
+   predict how math primitives should behave when passed -0.
+   With -0 gone, we can classify numbers using a conventional hierarchy:
+     Int <: Real <: Num
+Implementation: do it in Value constructor for number values.
+
+Bigints
+-------
+Add infinite precision integers. Rationale:
+ * They are handy. Can exactly represent a signed or unsigned 64 bit
+   integer. Javascript now supports them.
+ * Useful for generalizing the bitstring operators that convert between
+   integers and bitstrings.
+Implementation: more work. In all relevant numeric primitives that operate on
+floats, check if the result is >= 2^52 and if precision was lost (by checking
+floating point flags) and if args are integers. If needed, redo operation using
+bitints.
+
+Logarithm
+---------
+Currently, just `log x` -- natural logarithm. But GLSL also has log2(x).
+Add log base b. It needs a different name than natural log.
+
+* `ln x` for natural log, since `log x` is ambiguous (means natural log in
+  math, common log in chemistry).
+
+* `log b x` -- same arg order as $log_b x$ in math notation.
+  Use `x >> log b` for pipelining, map(log b) for combinator programming.
+  Use partial evaluation to convert `log 2` and `log 10` to internal
+  log2 and log10 primitives.
+  C, Javascript, etc `log2(x),log10(x)` => log 2 x, log 10 x
+
+Cube Root
+----
+cbrt
+
+Hexadecimal Real Numerals
+-------------------------
+Just follow the C standard, use a standard library to parse.

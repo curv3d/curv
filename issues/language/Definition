@@ -22,9 +22,9 @@ Syntax (pure imperative contexts only, not in generators):
   var y := 1;           // mutable
   var (x = 0, y := 1);  // simultaneous definitions?
   x = 0;                // error: did you mean assignment or definition?
-  f x = -x;             // error I guess.
-  var f x = -x;         // looks weird.
-  var f x := -x;        // nope. or, quite possible given 'f x: -x' works.
+  f x = -x;             // error, recursive defn in imperative context
+  var f x = -x;         // syntax error
+  var f x := -x;        // syntax error
   include ...;          // immutable
   test ...;
 
@@ -72,12 +72,14 @@ vs
         bbox : [[-r,-r,-r],[r,r,r]],
         is_3d : true,
     }
-vs
+vs:
     make_shape {
-        dist: [x,y,z,_] -> max[x,y,z] - r,
+        dist: [x,y,z,_] -> max[x,y,z] - r, // close to idiomatic Javascript
         bbox: [[-r,-r,-r],[r,r,r]],
         is_3d: true,
     }
+The use of arrow functions in Javascript is making it idiomatic to define
+named functions using lambda expressions. So don't worry about that.
 
 'def' for named values:
     def a = b

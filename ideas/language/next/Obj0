@@ -108,9 +108,9 @@ and sequence expressions. It won't be familiar: the full exposition needs to
 reside in a low level tier of the language hierarchy. It needs to be justified
 as a tool for creating easy-to-use high level library abstractions.
 
-To start with, the killer apps are "debug actions" and "linear union".
+To start with, the killer apps are "debug actions" and "procedural union".
 
-linear_union #(for (i in list) f i)
+proc_union #(for (i in list) f i)
     The argument is an unevaluated shape generator, which is executed in the
     GPU. I.e., the `for` loop is part of the generated distance function.
     By contrast, `union[for (i in list) f i]` generates a list of shapes,
