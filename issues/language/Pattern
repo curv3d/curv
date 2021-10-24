@@ -1,0 +1,12 @@
+Transform Patterns
+------------------
+Transform patterns are an abstraction mechanism that lets
+you define new pattern matching operations using functions.
+
+`pat <: func` is a transform pattern. Apply `func` to the argument.
+Fail if `func arg` fails. Otherwise match `func arg` against pat.
+Pronounce '<:' as 'from'.
+Same precedence as '::', left associative.
+Data flows left to right when <: and :: are chained.
+
+The left argument to `<:` is called a Schema. See [[Schema]].

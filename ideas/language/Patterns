@@ -6,15 +6,13 @@ Variable binding patterns:
     which fails if `is type arg` is false, otherwise matches pat.
   * `pat <: func` is a transform pattern. Apply `func` to the argument.
     Fail if `func arg` fails. Otherwise match `func arg` against pat.
-    Pronounce '<:' as 'from'. Alt syntax: ':<<'.
+    Pronounce '<:' as 'from'. Alt syntax: ':<<'. Not '<<', wrong precedence.
   * `pat when cond` matches pat, then evaluates cond with pat's bindings,
     and fails if cond is false. Alt. syntax: `pat if cond` (like Python, Rust)
     OCaml uses 'when'.
   * Since `pat :: predicate` no longer works, what's the replacement? Ideas:
-    - `pat ?: predicate`. Alt syntax `:?`.
     * `pat <: ensure predicate`.
-    - `foo when predicate foo`.
-    - `pat :: If predicate`. Not happy with this.
+    - `pat ?: predicate`. Alt syntax `:?`.
   Variable names line up on the left.
   :: and <: are left associative, same precedence, chainable. In a chain,
   the argument value flows left to right until it is matched by the pattern.

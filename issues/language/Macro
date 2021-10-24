@@ -1,0 +1,24 @@
+User-defined macros.
+Rationale: abstraction over statements, or polymorphic phrase abstraction.
+
+Macros are first class values, which are bound to names by-value.
+A macro is invoked in function position of a function call, but this
+only works if the macro expression is constant. So we introduce the concept
+of a constant into the language semantics.
+
+With this change, it becomes possible to define a module called `std`
+which contains all of the standard bindings, including macros.
+
+Lisp macros map syntax trees => syntax trees. Hygiene is a problem,
+with gensym and the competing Scheme macro systems. Mapping the resulting
+syntax tree back to the original source is a problem. So not the Lisp model.
+
+Internally, Curv macros map [syntax tree, environment] => bound meaning.
+They're straightforward, no big problems. I'm sure these kind of macros have
+been implemented many times. They aren't really macros in the traditional
+sense of source=>source transformations. Internally they are called
+metafunctions, and what they do is called analysis (prior to evaluation).
+* Chris Hanson's "Syntactic Closures" seem similar to the system I want.
+  https://people.csail.mit.edu/jaffer/slib/Syntactic-Closures.html
+
+Lexically scoped quasiquotations.

@@ -4,6 +4,7 @@ These ideas make it easier to write Curv programs as simple pipelines.
 This is still at the brainstorming stage.
 * Collapse the common left-associative binary algebraic operators to one
   precedence level. Chaining these operators gives a left-to-right pipeline.
+  What remains are 5 precedence levels.
     <Listing>  , ;
     <Item>  low precedence right associative; if/let/for control structures
     <Pipeline> left associative algebraic operators
@@ -12,11 +13,8 @@ This is still at the brainstorming stage.
 * Reify the common binary algebraic operators. '+' is a function bound
   in the standard environment; a+b means '+'[a,b].
 * User defined pipeops.
-* Infix pattern operators have higher precedence than pipeline operators.
-    pipeline ::= pattern -> pipeline
-  Except this should be 'pipeline ::= pattern -> item'?
-  You can add ___ >> x -> ___ into a pipeline to capture values at
-  one pipeline stage and reuse them further along.
+* Pipeline lambdas: ___ >> x -> ___ captures a value for later reuse.
+  No parens required around the lambda (chainability). How does the syntax work?
 * The ~ modifier for mapping infix operators over arrays. [[Tilde_Dmap_Smap]]
 * Generalized ` operators have 4 forms:
     `postfix`
@@ -36,3 +34,54 @@ This is still at the brainstorming stage.
       `+`1  <=>  a->a`+`1  <=>  a->a+1
     So this gives us right sections of infix operators, and it works for
     making a section of binary '-'.
+
+Pipeline Lambda
+---------------
+___ >> x -> ___
+
+Two design options:
+ 1) All right-associative infix operators have the same precedence, including
+    pattern operators. Lambda parameters with infix operators must be
+    parenthesized. This means:
+     * More parens in match expressions. (But maybe switch will replace match?)
+     * Consistency with parameters in 'f x y = ...' function definitions,
+       and with arguments in function calls.
+     * Possible support for multiparameter 'x y -> ...' lambda expressions.
+ 2) Infix pattern operators bind tighter than right associative infix function
+    operators. This preserves the syntax of match expressions.
+    The argument of 'when' needs to be parenthesized if it contains a pipeline
+    operator, so parens can still occur.
+
+### Pipeline Lambda Syntax #2
+I don't want to require the left argument of -> to be a primary or postfix,
+because I don't want to parenthesize pattern infix operators in match
+expressions.
+
+But, this alternative is more complicated.
+
+So the infix pattern operators have higher precedence than pipeline operators.
+These are :: <: when & |
+* '::' is no longer a pipeline operator. Use 'require' instead.
+* The argument of 'when' needs to be parenthesized if it contains a
+  pipeline operator.
+
+pipeline ::= pattern
+  | pattern -> item
+  | pipeline pipeop pattern
+  | pipeline pipeop pattern -> item
+
+pattern ::= prefix
+  | pattern :: prefix
+  | pattern <: prefix
+  | pattern when prefix
+  | pattern & prefix
+  | pattern | prefix
+
+prefix ::= postfix
+  | - prefix
+  | + prefix
+  | backtickop prefix
+
+Note. It would also be possible to use this grammar:
+  item ::= pattern -> item
+  pipeline ::= pipeline pipeop pattern -> pipeline

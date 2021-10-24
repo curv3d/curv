@@ -1,0 +1,5 @@
+Record field assignment should create new fields by default.
+    var R := {};
+    R.foo := 0;
+    R == {foo: 0}
+This is restricted only if the type of the mutable variable doesn't permit.

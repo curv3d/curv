@@ -1,0 +1,191 @@
+Schemas
+=======
+A schema is used for validating and normalizing data.
+
+Once data is validated, it can be optionally "normalized", which may involve:
+* Mapping equivalent variants onto a single canonical form.
+* Converting the validated data to a more efficient representation for
+  further processing. This representation could be a data type that is
+  unable to represent invalid data.
+
+The philosophy of combining validation and normalization into a single
+step is well argued in the classic blog post "Parse Don't Validate"
+by Lexi Lambda, where this process is called "parsing".
+
+Schemas are used in Curv programs in the following contexts:
+* To validate (and normalize) function arguments.
+  Within the pattern language, the '<:' operator is used to apply
+  a schema to a function argument. Eg, `paramname <: schema`.
+* A schema can be viewed as a reified pattern value. The idioms for building
+  schema values can be viewed as a metaprogramming facility for constructing
+  new patterns. The `<:` operator converts a schema value to a pattern.
+* Schemas can be viewed as a DSL for writing unit tests.
+  The statement `myvar!schema` is an assertion that panics if `myvar`
+  does not conform to the schema.
+
+Schema Representation
+---------------------
+A Schema is naturally represented by a function that takes the value to be
+validated and normalized as an argument. If the argument fails validation,
+the function call fails. Otherwise, the argument is returned as a result.
+If normalization is performed, then the normalized result is returned.
+
+Schemas overlap with several other concepts/representations:
+* Predicate function: test if a value is a member of a set.
+* Type: defines a "structured set" of values with an associated efficient
+  representation. Is not a function (does not implement Function protocol).
+* Data type: a special kind of type. Every value is an instance of a
+  data type.
+* Single-sorted algebra: contains a single type T, and implements
+  Type protocol (delegated to T). Usually also implements
+  Function protocol (for the type's primary constructor function):
+  this is for convenience: `Char 65` instead of `Char.make 65`.
+  Support for this design pattern is why types are not functions.
+
+Schemas subsume the capabilities of both predicates and types.
+Only schemas can normalize / parse a value into a more convenient form.
+
+There's a DSL for making types, and a DSL for making schemas.
+Eg we need Tuple and Record constructors for both cases.
+To avoid duplicate DSLs, we want constructors like Tuple and Record to be
+polymorphic across types and schemas. So integrate types and schemas into a
+common representation.
+
+Alternatives:
+ a. The common representation is a function. Algebras have explicit
+    constructor functions. Some function combinators have dual use
+    as type/schema combinators. Eg,
+        id -- the Any type
+        match -- union of types
+    This is a very obscure parsimony, however.
+ b. The common representation is an ADT that is not a function.
+    Single sorted algebras may have implicit constructor functions.
+    This is a well known shorthand/convention in many popular languages.
+Decision: #b, types and schemas are abstract.
+
+Alternatives:
+ 1. There are no types, just schemas. We don't have :: and <: operators,
+    just the :: operator.
+ 2. Schema is a generalized Type, Type is a subtype of Schema. Rationale:
+     * It is useful to distinguish :: and <: because the latter makes it
+       explicit that the argument value might be normalized.
+     * I think that objects and mutable variables have types but they do not
+       have schemas. A mutable variable definition like
+          var x :: T := 0
+       means that any value assigned to x must have type T. If I supported
+       the use of schemas here, as
+           var x <: S := 0
+       then assigning a value to x causes that value to be transformed by
+       the schema?
+
+------------------------------------------------------------------------------
+If there is going to be substantial work put into creating a DSL
+for these things, it's best not to have duplicate DSLs for predicates,
+types and schemas. Just have schemas.
+* Schema is a generalized Type. It doesn't behave like a function.
+* You can make a Schema from a "schema function" or from a predicate.
+  And you can convert a Schema to either of these function forms.
+* Just have `foo :: <schema>` patterns, not type and predicate patterns.
+  So I don't need the `<:` transform pattern operator.
+* Combine the "reified pattern" DSL with the type DSL giving the Schema DSL.
+
+Note: I had thought it an advantage to distinguish :: and <: so you can
+tell if the argument value is being transformed. Not sure if this matters.
+If it matters, then Type is a subtype of Schema that doesn't transform args
+and :: and <: are both provided.
+But we still have a unified DSL for constructing types/schemas.
+
+Pattern Metaprogramming
+-----------------------
+We can reify patterns as schemas and apply them using :: or <:
+There are schema equivalents to all primitive pattern syntax,
+so we can define pattern combinators using schemas.
+
+For now, two APIs are defined: function rep and ADT rep.
+-- Okay, I notice that the Type DSL already covers these cases.
+
+Match any value (<identifier>)
+    id
+    Any
+
+Predicate pattern (pat :: predicate) -- old syntax
+    `ensure P X` fails (not aborts) when P X is false.
+    `If P` -- convert predicate to type
+
+Type pattern (pat :: type) -- proposed new syntax in Type proposal
+    `as type` fails if arg is not a member of type.
+    Otherwise it returns arg, which may be transformed into a more efficient
+    internal representation (but this transformation preserves equality).
+    -- ADT api: type is already a schema.
+
+Literal patterns (42, #foo, etc)
+    A function F such that F A X fails if X != A, otherwise yields X.
+    ==A
+    eq A
+    ensure_eq A
+    assert_eq A -- a name found in many testing frameworks
+    Eq A
+
+List pattern [pat1,pat2]
+    ensure_list [schema1,schema2]
+    Tuple[schema1,schema2]
+
+Record patterns
+    ensure_record {a:schema1, b:schema2, ...}
+    Record{a:schema1, b: schema2}
+        This should be a macro to support full record pattern syntax,
+        with field renaming and default values.
+
+Transform pattern (pat <: schema)
+    schema
+
+Or pattern (pat1 || pat2)
+    match[schema1,schema2]
+    Union [schema1, schema2]
+
+And pattern (pat1 && pat2)
+     -- The && pattern binds (disjoint) variables from both patterns.
+        Eg like (x && [a,b]) binds x to the entire value.
+        So we must return the results of applying all the argument schemas.
+            This example doesn't make sense in schema space unless we
+            are capturing the untransformed and transformed argument.
+            I think this is low priority for the schema DSL.
+            Maybe not useful enough to warrant being in stdlib.
+
+capply[f1,f2] arg == [f1 arg, f2 arg]
+    capply{a:f1,b:f2} arg == {a: f1 arg, b: f2 arg}
+      Apply a collection of functions to an argument, returning a collection
+      of results. `capply`
+
+    Apply [s1, s2]
+    Apply {a:s1, b:s2}
+      Apply a collection of schemas to an argument, returning a collection
+      of results.
+
+    In other languages:
+     -- Atlas in Q'Nial
+     -- `cons` (the Construction functional) in FP/FL
+     -- similar to `pick` in the Lens proposal
+     -- `sequence` in Haskell
+     -- `Through` in Mathematica: Through[{f,g}[x]] -> {f[x],g[x]}
+
+Guarded pattern (pat when cond)
+    Without backtracking:
+        guard pred sc = compose[ensure pred, sc]
+    Succeeds if pred is true and sc succeeds.
+
+    Guard pred sc
+
+    With backtracking: needs its own syntax.
+        The question concerns this code:
+            (pat1 || pat2) if cond
+        If pat1 succeeds and cond fails, don't fail the entire match.
+        Instead, backtrack and try pat2.
+
+Constructor patterns (C pat)
+    Test if argument was constructed using constructor C with a constructor
+    argument matching pat.
+
+JSON Import
+-----------
+Can I somehow use schemas to import and validate JSON data?

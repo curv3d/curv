@@ -13,17 +13,18 @@ if a good and compelling design emerges.
 1. They are disjoint
 --------------------
 What are the benefits?
-* Avoiding a mess: how to correctly unify functions with indexes.
-  It's non-intuitive that '0' can be applied like a function to a list.
-  * This seems like ad-hoc overloading of function call syntax because it
-    isn't clear that Indexes are functions, that they form a Function algebra
-    or that I can make a Function theory that primitive functions and indexes
-    both implement.
-  * Better to keep indexes separate: `get 0` is a getter function for `0`.
-* If user defined index values are abstract values (they implement the Index
-  theory using Algebra Data Abstraction), and therefore not record values,
-  then records could work as implicit pick indexes. Eg,
+* Intuitive: It's non-intuitive that '0' can be applied like a function
+  to a list. The explicitness of `get 0` is easier to understand.
+* Avoid a semantic tarpit: how to correctly unify functions with indexes
+  using an algebra. '0 a' seems like ad-hoc overloading of function call
+  syntax because it isn't clear that Indexes are functions, that they form
+  a Function algebra or that I can make a Function theory that primitive
+  functions and indexes both implement.
+* Record indexes: If user defined index values are abstract values (they
+  implement the Index theory using Algebra Data Abstraction), and therefore
+  not record values, then records can work as implicit pick indexes. Eg,
     [4,5,6].[{a:0,b:1}] => {a:4,b:5}
+    include lib.web_colour >> get{white: #porcelain}
 * `sRGB` can be both a colourspace index and a colour constructor function.
     sRGB[r,g,b] => aColour
     aColour.[sRGB] => [r,g,b]
@@ -41,14 +42,13 @@ An API can provide just an abstract index value `foo`, instead of providing
 both `get_foo` and `set_foo`. You can recover the latter functions by
 writing `get foo` and `set foo`.
 
-I think the explicitness of `get 0 a` is easier to understand than `0 a`.
-
 2. They are functions
 ---------------------
 This is inspired by Algebraic Data Abstraction, wherein operations on abstract
 data types are functions. An Algebra can provide a function for extracting a
 value from an instance, then later make this function bidirectional and turn
 it into a lens, without breaking backward compatibility.
+* the Principle of Uniform Reference?
 
 There are potentially many functions that could be made bidirectional
 (`reverse` is an example), without breaking backward compatibility.

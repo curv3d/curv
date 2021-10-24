@@ -1,5 +1,26 @@
+Definition Syntax Roadmap
+=========================
+A number of proposals are under development that add new definitional forms.
+This collects all the syntax together.
+
+Object Definitions
+------------------
+The Object proposal adds "object definitions" which bind a name
+to a newly constructed object. An object name might not be an expression,
+and the right side is not an expression, so I don't want to confuse object
+bindings with mutable variable bindings. The 'var' keyword is not used.
+
+    object <pattern> = <new-object>
+or:
+    loc <pattern> = <new-location>
+
+Named Value Definitions
+-----------------------
+def <identifier> = <expression>
+def <identifier> <param>... = <expression>
+
 New syntax for imperative definitions
-=====================================
+-------------------------------------
 Corequisite: deprecate and remove imperative generators, which conflict
 with the Procedure feature and the Imperative Metaprogramming idea.
 
@@ -28,28 +49,26 @@ Syntax (pure imperative contexts only, not in generators):
   include ...;          // immutable
   test ...;
 
-Unified definition documentation.
-  a = b        // recursive def, restricted to let and modules
-  f x = -x     // recursive def, restricted to let and modules. Traditional.
-  def a = b    // recursive, restricted to modules.
-  def f x = -x // recursive, restricted to modules.
-  var x = 0    // sequential def, restricted to do
-  var x := 0   // sequential def, restricted to do
-  include R    // any context
-  test S       // any context
+Unified definition documentation
+--------------------------------
+a = b        // recursive def, restricted to let and modules
+f x = -x     // recursive def, restricted to let and modules.
+def a = b    // recursive, restricted to modules.
+def f x = -x // recursive, restricted to modules.
+var x = 0    // sequential def, restricted to do
+var x := 0   // sequential def, restricted to do
+include R    // any context
+test S       // any context
+object <pattern> = <new-object>    // any context
 
-The REPL?
-  All of the above definition types work and they have visible differences
-  in the REPL: scoping rules, & assignment is only legal to a mutable variable.
-  This is different from the current situation, where local definitions are
-  illegal in the REPL.
-  In the current REPL, local defs can only be part of a compound statement,
-  in which case they have a local scope.
+All definition types work and have distinct semantics in the REPL.
+ * `a = b` and `var a = b` have distinct scoping rules for right side.
+ * `var a := b`: assignment is only legal to a mutable variable.
 
-  The language no longer distinguishes 'local include'/'include'
-  and 'local test'/'test'. These would not be distinguishable in the REPL
-  anyway. There is no context in Curv 0.5 where 'local test' and 'test'
-  are distinguishable.
+This is an improvement over Curv 0.5, where
+ * local definitions are illegal (except in a compound statement).
+ * 'local include/include' and 'local test/test' are distinguished by the
+   language but could not be distinguished in the REPL.
 
 ML-style function definitions:
   f x = -x
@@ -58,28 +77,16 @@ ML-style function definitions:
   var v x := -x
   v x := -x
 The first form is provided because it is traditional in Haskell and other
-ML family languages. It is an equational definition.
-The rest are unnecessary, not required by tradition, confusing.
-So I should deprecate 'f x: -x'. This affects shape definitions.
-    make_shape {
-        dist[x,y,z,_] = max[x,y,z] - r;
-        bbox = [[-r,-r,-r],[r,r,r]];
-        is_3d = true;
-    }
-vs
-    make_shape {
-        dist[x,y,z,_] : max[x,y,z] - r,
-        bbox : [[-r,-r,-r],[r,r,r]],
-        is_3d : true,
-    }
-vs:
+ML family languages. It is an equational definition. Some users (with
+Javascript experience) will ignore this form and use lambdas for definitions.
+
+The remaining forms are unnecessary, not required by tradition, confusing.
+So I will deprecate 'f x: -x'. This affects shape definitions. New style:
     make_shape {
         dist: [x,y,z,_] -> max[x,y,z] - r, // close to idiomatic Javascript
         bbox: [[-r,-r,-r],[r,r,r]],
         is_3d: true,
     }
-The use of arrow functions in Javascript is making it idiomatic to define
-named functions using lambda expressions. So don't worry about that.
 
 'def' for named values:
     def a = b

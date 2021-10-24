@@ -2,99 +2,107 @@ Imperative Programming project
 ==============================
 I want to clean up and improve the imperative programming features.
 
-* Deprecate and remove imperative generators. Generators are declarative.
-  You can't declare mutable local variables and you can't mutate a local
-  variable inherited from an outer scope. This simplifies the language:
-  * Fixes my problem with 'generator procedures'. Adding a way to abstract
-    mutable varibles out of an imperative generator into a procedure is just
-    too complicated and baroque.
-  * Now there is no reason to use ';' inside a list constructor or
-    a dynamic record constructor. Only commas, only declarative code.
-  * Now you can't declare a mutable local variable inside a list constructor
-    or a dynamic record constructor. So one of the constraints driving the
-    syntax design for local definitions has gone away. I don't need to
-    distinguish 'local a=b' from 'a=b' to avoid ambiguity between module
-    and record literals.
+Long term plan:
+* compound locatives: add {a:loc1,b:loc2}, document
+* mutate statements: loc!f -- document
+* Deprecate and remove imperative generators.
+* New action syntax.
+* New syntax for imperative definitions. [[Definitions]]
+* Switch statement.
+* Procedures.
+* Generator metaprogramming.
+Speculative:
+* Objects (imperative i/o)
+* Imperative metaprogramming (macros)
+* New syntax for control structures. [[Mixfix]]
 
-* Cleaner looking, more pronounceable syntax for imperative code.
-  * Consistent mixfix syntax for control structures, instead of a
-    mashup of Haskell and Javascript.
-  * Semicolons are permitted but not required in imperative code,
-    just like many top-ten languages (Python, Javascript, Go, Swift).
-  * Compound statement arguments need not be parenthesized or braced.
-    (Unlike Javascript, Go, Swift, which use braces.)
-    I'll use mixfix syntax + offside syntax instead.
-    * Most top 10 languages use braces, so it will be controversial.
-      And offside syntax is controversial. But I've already diverged from
-      mainstream by using () instead of {} to delimit compound statements.
-      And Python is #1. So the new syntax will be more understandable:
-          if x > y then
-            print x
-          else
-            print y
-          end
-      vs old style
-          if (x > y) (
-            print x;
-          ) else (
-            print y;
-          )
+Deprecate and remove imperative generators
+------------------------------------------
+Generators are declarative. You can't declare mutable local variables
+and you can't mutate a local variable inherited from an outer scope.
+* Simplifies the syntax of generators.
+* No longer have two competing local variable syntaxes in generators.
+* Eliminates need for ';' inside a list constructor or dynamic record
+  constructor. Now only commas, only declarative code.
+* Imperative Generators conflict with New Imperative Definition Syntax.
+* Imperative Generators conflict with Procedures.
+* Imperative Generators conflict with Generator Metaprogramming.
+* Imperative Generators conflict with Imperative Metaprogramming.
 
-* procedures (statements abstracted over mutable variables)
+Generator Metaprogramming
+-------------------------
+#(<generator>) is a reified generator value, an unevaluated generator G.
+To execute G within a generator, use `!G`.
 
-* switch statement
+A Generator Value is actually a procedure whose argument is a collection
+variable C. Within a generator,
+* An expression generator E is equivalent to `C!add E`.
+* A spread generator `...E` is equivalent to `C!append E`.
+* A bang generator `!P` is equivalent to `C!P`.
 
-Consistent algol-like premixfix syntax for control structures
-(not a mixture of Javascript/C-like and Algol/Haskell-like).
-Also, prepare for later introduction of optional offside syntax.
+New Action Syntax
+-----------------
+`!print "foo"` instead of `print "foo"`.
+`print "foo"` is an action value. You need !<action> to cause the side effect.
+This works in declarative generators and in imperative code.
+* You can add print statements to a generator, even once imperative generators
+  are removed. The `!` prevents confusion with a function call
+  which would add a value to the value stream.
 
-    Rename `do` operator to `begin`, and deprecate `do`.
-    This is because I want initial mixfix keywords to be distinct
-    from non-initial mixfix keywords, to make code easier to read.
+By itself, `print "foo"` is an identity function that prints to the
+console log as a side effect.
+The `!F` statement in an imperative context is equivalent to `[]!F`.
 
-    `begin` has the syntax 'begin <item> in <item>'.
-    So <item> needs to be parenthesized if it contains semicolons.
+Procedures
+----------
+with mixfix:
+    proc <locative-pattern> in <statement>
+    proc <locative-pattern> in begin <statement> in <result>
+without mixfix:
+    proc <locative-pattern> -> <statement>
+    proc <locative-pattern> -> begin <statement> in <result>
 
-    Remove `where` (not premixfix).
+Switch statement
+----------------
+with mixfix:
+    switch <expr> case <pat> then <phrase> ...
+without mixfix:
+    switch <primary-expr> [ <case>; ... ]
+    <case> ::= <pat> -> <phrase> | proc <locpat> -> <stmt>
+    This syntax can be easily exchanged for 'match' syntax
+    and supports procedure cases.
 
-    Deprecate use of top-level semicolons in a `let` head,
-    which now should be parenthesized in that case.
+Rationale: 'match' doesn't work for imperative statements.
+'switch' is a macro, not a function.
 
-    Introduce consistent mixfix syntax for all imperative operators.
-    (With backward compatibility, deprecating C-style syntax.)
-        if <condition> then <item>
-        if <condition> then <item> else <item>
-        for <pattern> in <collection> do <statement>
-        while <condition> do <statement>
+Objects (imperative i/o)
+------------------------
+Objects are a representation of mutable state.
+An object is a container that holds state which changes over time.
+State is represented by immutable values.
 
-    Rename `!=` to `/=` since `!` is a ubiquitous imperative operator
-    with nothing to do with negation.
+Objects have nothing to do with OOP. Maybe call them Locations.
 
-Implement procedures.
+Objects may be bound to names, but object names are not in general expressions.
+Named mutable variables are a special case of named objects.
+There are multiple functional abstractions over objects: this is a big
+proposal.
 
-    proc <locative-pattern> is <statement>
-    proc <locative-pattern> is begin <statement> in <result>
+Imperative metaprogramming
+--------------------------
+The goal is abstraction over statements, eg DIY imperative control structures.
+How?
+* Macros, as in Lisp. This works. Existing control structures like 'if'
+  can be recast as macros (no need to change syntax).
+* Reify statements as values. You can reify a statement as a procedure value,
+  but then you have to pass the mutable variables that the statement reads or
+  modifies as explicit parameters. Possible, but inconvenient.
+* Reify statements as objects. A reified statement is an object that
+  captures references to the mutable variables it reads or modifies.
+  Per the Object proposal, it can't be bound to a local variable, but it
+  can be passed as a parameter.
+  * But note, the syntax for passing an object as an argument is not the
+    same as function call syntax. Currently I use `obj!f` to indicate
+    an effect. So some serious syntax design is required.
 
-    The mixfix syntax is compatible with later introduction
-    of optional offside syntax.
-
-Optional offside syntax.
-Eliminates the requirement for semicolons in imperative code.
-But you can still use parenthesized statement blocks and semicolons.
-(Python, Javascript, Go, Swift don't require the imperative semicolon.)
-
-    In previous release, make it an error for `let` head to contain
-    top level semicolons (which are not inside parentheses).
-
-    Eg, compare
-        begin (
-            stmt1;
-            stmt2;
-            stmt3;
-        ) in resultexpr
-    with
-        begin
-            stmt1
-            stmt2
-            stmt3
-        in resultexpr
+At present, the answer is macros. `switch` is a macro.

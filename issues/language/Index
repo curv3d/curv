@@ -1,3 +1,7 @@
+Roadmap for Index values
+========================
+get, set
+--------
 add
     get Index Tree
     set Index NewVal Tree
@@ -10,3 +14,18 @@ functions. In Curv, an index I encapsulates both, and you use
     get I
     set I
 to convert an index to a getter and setter.
+
+make_index
+----------
+make_index {get: tree -> value_at_index, set: nuval tree -> new_tree}
+
+make_index returns an ADT instance (not POD data), which is distinct
+from a record. Hence make_index does not prevent us from using records
+as indices in the future.
+
+This is a simple and basic API for defining custom index values in the
+most common case. For some sophisticated indexes we need a richer API (later).
+Goal: to use this for the Colour ADT (colourspace indexes).
+
+This is deferred until we have user-defined datatypes
+and we can define the Colour ADT.

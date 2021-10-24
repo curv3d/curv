@@ -139,3 +139,75 @@ Option #4 is #1 with stropping.
     CASE pat2 THEN
         something else
     !print "foo"
+
+Mixfix: Cleaner, more consistent & pronounceable syntax for imperative code
+---------------------------------------------------------------------------
+  * Consistent mixfix syntax for control structures, instead of a
+    mashup of Haskell and Javascript.
+  * Semicolons are permitted but not required in imperative code,
+    just like many top-ten languages (Python, Javascript, Go, Swift).
+  * Compound statement arguments need not be parenthesized or braced.
+    (Unlike Javascript, Go, Swift, which use braces.)
+    I'll use mixfix syntax + offside syntax instead.
+    * Most top 10 languages use braces, so it will be controversial.
+      And offside syntax is controversial. But I've already diverged from
+      mainstream by using () instead of {} to delimit compound statements.
+      And Python is #1. So the new syntax will be more understandable:
+          if x > y then
+            print x
+          else
+            print y
+          end
+      vs old style
+          if (x > y) (
+            print x;
+          ) else (
+            print y;
+          )
+
+Consistent algol-like premixfix syntax for control structures
+(not a mixture of Javascript/C-like and Algol/Haskell-like).
+Also, prepare for later introduction of optional offside syntax.
+
+    Rename `do` operator to `begin`, and deprecate `do`.
+    This is because I want initial mixfix keywords to be distinct
+    from non-initial mixfix keywords, to make code easier to read.
+
+    `begin` has the syntax 'begin <item> in <item>'.
+    So <item> needs to be parenthesized if it contains semicolons.
+
+    Remove `where` (not premixfix).
+
+    Deprecate use of top-level semicolons in a `let` head,
+    which now should be parenthesized in that case.
+
+    Introduce consistent mixfix syntax for all imperative operators.
+    (With backward compatibility, deprecating C-style syntax.)
+        if <condition> then <item>
+        if <condition> then <item> else <item>
+        for <pattern> in <collection> do <statement>
+        while <condition> do <statement>
+
+    Rename `!=` to `/=` since `!` is a ubiquitous imperative operator
+    with nothing to do with negation.
+
+Optional offside syntax.
+Eliminates the requirement for semicolons in imperative code.
+But you can still use parenthesized statement blocks and semicolons.
+(Python, Javascript, Go, Swift don't require the imperative semicolon.)
+
+    In previous release, make it an error for `let` head to contain
+    top level semicolons (which are not inside parentheses).
+
+    Eg, compare
+        begin (
+            stmt1;
+            stmt2;
+            stmt3;
+        ) in resultexpr
+    with
+        begin
+            stmt1
+            stmt2
+            stmt3
+        in resultexpr

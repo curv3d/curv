@@ -57,10 +57,10 @@ clear C
     The imperative form C!clear removes all elements from an existing
     collection and is a standard member of OOP Collection classes.
 add E C
-    Add one element to the end of C (for a record, overriding an existing
+    Add one element/field to the end of C (for a record, overriding an existing
     member with the same field name).
 append C1 C
-    Add all of the elements of C1 to C, in order of C1.
+    Add all of the elements/fields of C1 to C, in order of C1.
     Note that C1 and C may have different collection datatypes,
     and the result has the same type as C.
 
@@ -74,6 +74,12 @@ The Generator Protocol works by creating an empty collection variable C,
 then calling `C!add E` if an expression generator evaluates to E,
 and calling `C!append C1` if `... C1` is executed.
 
+capply C X
+    Apply a collection of functions to an argument, and return
+    a collection of results. Eg, capply {a:f,b:g} x => {a:f x,b:g x}.
+    This is a list or record constructor, with the elements
+    lifted to the function level.
+
 Not sure about these:
 
 map F C
@@ -81,8 +87,13 @@ map F C
 filter F C
     Copy of C from which elements X for which F X is false are removed.
 
-`map` is weird because it can change key values in a record, and introduce
-duplicate keys: remove duplicate keys (last one wins) or report error.
+Two ways for map/filter to work on records:
+ * Operate on elements, like capply.
+     map F R <=> {for (nm=>el in R) nm=>F el}
+ * Operate on fields, like for/add/append.
+     map F R <=> {for (fld in R) F fld}
+   Then `map` can change key values in a record and introduce duplicate keys.
+   Just like `for`.
 
 ## Prior Art
 
@@ -90,7 +101,8 @@ Python:
    map and for consistently iterate over the keys of a dictionary.
 
 Javascript:
-   for (i in object) -- iterate over keys (enumerable properties) of an object
+   for (i in object) -- iterate over keys (enumerable properties) of an Object.
+     Not useful on Map (a subclass of Object, like Curv Record).
    for (i of iterable) -- elements of an Array, items of a Map,
         same as the 'for' in this proposal. Doesn't work an Object
         like {a:1,b:2} for historical reasons. 'Map' is fairly new and
@@ -98,3 +110,10 @@ Javascript:
    myMap.forEach(function(value,key){...})
    no 'map' function over Maps or Objects.
    Javascript ES echoes my choice to iterate over key/elem record items.
+
+Ruby:
+    for i in {a:1,b:2} do ... end
+        iterates over fields, name/value pairs, as: [:a,1] [:b,2].
+        Like this proposal.
+    {a:1,b:2}.map {|x|print(x,"\n"}
+        iterates over fields.

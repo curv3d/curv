@@ -316,6 +316,9 @@ Resolution:
 
 When using an algebra as a type conversion function, it bugs me to have case
 distinctions between `String` and `repr`, `Char` and `ucode`, `Bool` and `bit`.
+ * Instead of using algebras as functions, use explicitly named constructor
+   functions. Eg, String.make, Char.make, Bool.make. Then all constructor
+   functions are consistently lowercase.
  * I could go all Java and use the names String.repr, Char.ucode, Bool.bit. Eh.
  * Some languages get by fine with using lower case names for everything in the
    standard library. Like C++, which I am very familiar with. This might be
