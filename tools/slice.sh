@@ -2,24 +2,33 @@
 
 FILE=$1
 VSIZE=$2
-OUTDIR=${3:-"slices"}
+OUTDIR=${3:-"density"}
 
 FDUR=0.01
+
 DIMENSIONS=$(curv -x "file \"$FILE\" >> size")
-WIDTH=$(echo "$DIMENSIONS" | echo "scale=10 ; $(jq '.[0]') / $VSIZE" | bc )
-HEIGHT=$(echo "$DIMENSIONS" | echo "scale=10 ; $(jq '.[1]') / $VSIZE" | bc )
-DEPTH=$(echo "$DIMENSIONS" | jq '.[2]')
+WIDTH=$(echo "$DIMENSIONS"  | jq '.[0]')
+HEIGHT=$(echo "$DIMENSIONS" | jq '.[1]')
+DEPTH=$(echo "$DIMENSIONS"  | jq '.[2]')
 TOTAL_DURATION=$(echo "scale=10 ; ($DEPTH / $VSIZE) * $FDUR" | bc)
-BASENAME=$(basename "$FILE" ".curv")
+
+BASENAME="slice"
 DIRNAME=$(dirname "$FILE")
-OUTPUT="$DIRNAME"'/'"$BASENAME"'-*';
+OUTPUT="$BASENAME"'-*';
+
+XSIZE=$(echo "scale=10 ; $WIDTH  / $VSIZE" | bc )
+YSIZE=$(echo "scale=10 ; $HEIGHT / $VSIZE" | bc )
+ZSIZE=$(echo "scale=10 ; $DEPTH  / $VSIZE" | bc )
+VSIZE_METERS=$(echo "scale=10 ; $VSIZE / 1000" | bc )
+
+cd "$DIRNAME"
 
 curv                         \
 -o "$OUTPUT.png"             \
 -O animate="$TOTAL_DURATION" \
 -O fdur=$FDUR                \
--O xsize=$WIDTH              \
--O ysize=$HEIGHT             \
+-O xsize=$XSIZE              \
+-O ysize=$XSIZE              \
 -x "
 (
   {vsize,shape} ->
@@ -38,7 +47,34 @@ curv                         \
     render: {bg: black};
   }
 )
-{ shape=file \"$FILE\", vsize=$VSIZE }";
+{ shape=file \"$(basename $FILE)\", vsize=$VSIZE }";
 
-mkdir -p "$DIRNAME/$OUTDIR";
-mv "$DIRNAME/$BASENAME-"*".png" "$DIRNAME/$OUTDIR/";
+mkdir -p "$OUTDIR";
+mv "$BASENAME-"*".png" "$OUTDIR/";
+for i in "$OUTDIR/$BASENAME-"*".png"
+do
+  convert $i -colorspace gray $i
+done
+
+echo "
+<?xml version=\"1.0\"?>
+
+<grid version=\"1.0\" gridSizeX=\"$WIDTH\" gridSizeY=\"$HEIGHT\" gridSizeZ=\"$DEPTH\"
+   voxelSize=\"$VSIZE_METERS\" subvoxelBits=\"8\" slicesOrientation=\"Y\" >
+
+    <channels>
+        <channel type=\"DENSITY\" bits=\"8\" slices=\"$OUTDIR/$BASENAME-%03d.png\" />
+    </channels>
+
+    <material>
+        <material id="1" urn="urn:shapeways:materials/1" />
+    </material>
+
+    <metadata>
+        <entry key=\"author\" value=\"$USER\" />
+        <entry key=\"creationDate\" value=\"$(date -I)\" />
+    </metadata>
+</grid>" > manifest.xml;
+
+zip -r $(basename "$FILE" .curv).svx manifest.xml "$OUTDIR"/
+rm -r manifest.xml "$OUTDIR"
