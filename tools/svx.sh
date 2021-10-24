@@ -1,4 +1,7 @@
 #!/bin/sh
+#
+# Usage: svx.sh [curv-source-file] [vsize]
+# 
 
 FILE=$1
 VSIZE=$2
