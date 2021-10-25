@@ -58,21 +58,17 @@ mkdir "$OUTDIR"
 mv "$BASENAME-"*".png" "$OUTDIR/"
 for i in "$OUTDIR/$BASENAME-"*".png"
 do
-  convert $i -colorspace gray $i
+  convert $i -colorspace gray PNG24:"$i"
 done
 
 echo "<?xml version=\"1.0\"?>
 
 <grid version=\"1.0\" gridSizeX=\"$XSIZE\" gridSizeY=\"$YSIZE\" gridSizeZ=\"$ZSIZE\"
-   voxelSize=\"$VSIZE_METERS\" subvoxelBits=\"8\" slicesOrientation=\"Y\" >
+   voxelSize=\"$VSIZE_METERS\" subvoxelBits=\"8\" slicesOrientation=\"Z\" >
 
     <channels>
         <channel type=\"DENSITY\" bits=\"8\" slices=\"$OUTDIR/$BASENAME-%03d.png\" />
     </channels>
-
-    <material>
-        <material id=\"1\" urn=\"urn:shapeways:materials/1\" />
-    </material>
 
     <metadata>
         <entry key=\"author\" value=\"$USER\" />
