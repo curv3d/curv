@@ -19,15 +19,16 @@ BASENAME="slice"
 DIRNAME=$(dirname "$FILE")
 OUTPUT="$BASENAME"'-*';
 
-XSIZE=$(echo "scale=10 ; $WIDTH  / $VSIZE" | bc )
-YSIZE=$(echo "scale=10 ; $HEIGHT / $VSIZE" | bc )
-ZSIZE=$(echo "scale=10 ; $DEPTH  / $VSIZE" | bc )
+XSIZE=$(echo "$WIDTH  / $VSIZE" | bc )
+YSIZE=$(echo "$HEIGHT / $VSIZE" | bc )
+ZSIZE=$(echo "$DEPTH  / $VSIZE" | bc )
 VSIZE_METERS=$(echo "scale=10 ; $VSIZE / 1000" | bc )
 
 cd "$DIRNAME"
 
 curv                         \
 -o "$OUTPUT.png"             \
+-O taa=6                     \
 -O animate="$TOTAL_DURATION" \
 -O fdur=$FDUR                \
 -O xsize=$XSIZE              \
@@ -52,17 +53,17 @@ curv                         \
 )
 { shape=file \"$(basename $FILE)\", vsize=$VSIZE }";
 
-mkdir -p "$OUTDIR";
-mv "$BASENAME-"*".png" "$OUTDIR/";
+rm -r "$OUTDIR" &> /dev/null
+mkdir "$OUTDIR"
+mv "$BASENAME-"*".png" "$OUTDIR/"
 for i in "$OUTDIR/$BASENAME-"*".png"
 do
   convert $i -colorspace gray $i
 done
 
-echo "
-<?xml version=\"1.0\"?>
+echo "<?xml version=\"1.0\"?>
 
-<grid version=\"1.0\" gridSizeX=\"$WIDTH\" gridSizeY=\"$HEIGHT\" gridSizeZ=\"$DEPTH\"
+<grid version=\"1.0\" gridSizeX=\"$XSIZE\" gridSizeY=\"$YSIZE\" gridSizeZ=\"$ZSIZE\"
    voxelSize=\"$VSIZE_METERS\" subvoxelBits=\"8\" slicesOrientation=\"Y\" >
 
     <channels>
@@ -70,7 +71,7 @@ echo "
     </channels>
 
     <material>
-        <material id="1" urn="urn:shapeways:materials/1" />
+        <material id=\"1\" urn=\"urn:shapeways:materials/1\" />
     </material>
 
     <metadata>
@@ -79,5 +80,7 @@ echo "
     </metadata>
 </grid>" > manifest.xml;
 
-zip -r $(basename "$FILE" .curv).svx manifest.xml "$OUTDIR"/
+ZIP_FILE=$(basename "$FILE" .curv).svx
+rm "$ZIP_FILE"
+zip -r "$ZIP_FILE" manifest.xml "$OUTDIR"/
 rm -r manifest.xml "$OUTDIR"
