@@ -28,6 +28,7 @@ DIRNAME=$(dirname "$FILE")
 OUTPUT="$BASENAME"'-*';
 
 VSIZE_METERS=$(curv -x "$VSIZE / 1000")
+SLICE_AXIS=Z
 
 cd "$DIRNAME"
 
@@ -38,7 +39,7 @@ curv                         \
 -O animate="$FDUR*$ZSIZE"    \
 -O fdur=$FDUR                \
 -O xsize=$XSIZE              \
--O ysize=$XSIZE              \
+-O ysize=$YSIZE              \
 -x "
 (
   {vsize,shape} ->
@@ -73,7 +74,7 @@ done
 echo "<?xml version=\"1.0\"?>
 
 <grid version=\"1.0\" gridSizeX=\"$XSIZE\" gridSizeY=\"$YSIZE\" gridSizeZ=\"$ZSIZE\"
-   voxelSize=\"$VSIZE_METERS\" subvoxelBits=\"8\" slicesOrientation=\"Z\" >
+   voxelSize=\"$VSIZE_METERS\" subvoxelBits=\"8\" slicesOrientation=\"$SLICE_AXIS\" >
 
     <channels>
         <channel type=\"DENSITY\" bits=\"8\" slices=\"$OUTDIR/$BASENAME-%0${n}d.png\" />
