@@ -8,11 +8,14 @@ Here are the possibilities for fast expression evaluation:
 * Internal JIT: generate machine code into local memory, then execute it.
   Forbidden in iOS (Zee wanted to do an iOS port). Impossible in WASM (per Wasm3
   readme). Complicated, as I need to generate low level IR for the JIT library.
-* Generate C++, compile to *.so or *.dll, dlopen and execute. Forbidden in iOS.
-  Native only: Not workable in WASM/web browser.
-* WASM/JIT: Generate an external WASM module and then execute it.
-  * https://github.com/indutny/wasm-jit/
-  * JIT based x86 emulator in WASM: leaningtech.com/cheerpx
+* External JIT: generate machine code into external storage (a file, or an
+  external WASM module), then execute it.
+  * Generate C++, compile to *.so or *.dll, dlopen and execute. Forbidden in
+    iOS. Native only: Not workable in WASM/web browser.
+  * WASM/JIT: Generate an external WASM module and then execute it.
+    * https://github.com/indutny/wasm-jit/
+    * JIT based x86 emulator in WASM: leaningtech.com/cheerpx
+  * Emit LLVM IR and compile to native code, WASM or SPIR-V? Not sure.
 * GPU compute. Super fast for appropriate work loads. Strangely, this is the
   only universal option for optimized native code execution.
 * AOT compiler. Generate C++, compile to native code or WASM.
