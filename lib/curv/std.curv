@@ -64,7 +64,7 @@ sort a =
         []
     else
         let first = a.[0];
-            rest = a[1..<count a];
+            rest = a.[1..<count a];
         in [...sort[for (e in rest) if (e < first) e],
             first,
             ...sort[for (e in rest) if (e >= first) e]];
