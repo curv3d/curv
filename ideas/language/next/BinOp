@@ -1,0 +1,57 @@
+Binary Operators
+================
+How are they encoded? As `f[a,b]` or as `f a b`?
+
+Many common binary operators are monoids, and are encoded as reduction
+operators taking a list of arguments, so `f[a,b]` is the special case
+for two arguments. This is to avoid the code duplication of `max`
+and `maximum` found in Haskell.
+
+Because of this, infix operators like
+    a `max` b
+are an alt syntax for pair-encoded binary operators:
+    max[a,b]
+
+The canonical way to write a function with 2 or 3 arguments is 'f x y'.
+So for binary operators where the two arguments don't have the same type
+or don't play the same role, it's more idiomatic to use Currying.
+ * Eg, I have proposed
+     log b n
+   because the argument order directly corresponds to math notation $log_b n$.
+ * Eg, `shiftl n bstr`.
+ * Eg, `lerp [a,b] i` inspired by d3-interpolate.
+ * Eg, `mod m a`?
+
+Then we can use partial applications as combinator arguments, eg:
+    log 2
+    shiftl 4
+    lerp [a,b]
+    frac = mod 1
+
+BUT if I use Currying then the proposed ~ operator won't work for iterating
+over the first argument.
+
+So define another combinator?
+    uncurry f [a,b] = f a b
+then use
+    a `uncurry shiftl`~ b
+Note `uncurry` is in Haskell, so this is a standard name.
+
+BUT if I use Currying then the amap/smap APIs don't work.
+So I need curry and pair versions.
+    amap f  -- unary
+    amap2 f -- curried binary
+    amapl f -- list argument
+
+-----------------------------------------------------------------------
+There is a theme here. Two ways to do it, creating cognitive load,
+because there's a decision to make when defining a binary operator.
+
+In Haskell, the choice is always to Curry.
+In mainstream languages, the choice is always to pair.
+
+Although: Haskell has reduction functions like sum and maximum.
+And mainstream languages have variadic functions.
+
+An n-ary function should take a list argument if it is a reduction function
+or an algebraic binary magma function. Otherwise curried.

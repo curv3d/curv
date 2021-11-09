@@ -16,9 +16,9 @@ Schemas are used in Curv programs in the following contexts:
 * To validate (and normalize) function arguments.
   Within the pattern language, the '<:' operator is used to apply
   a schema to a function argument. Eg, `paramname <: schema`.
-* A schema can be viewed as a reified pattern value. The idioms for building
-  schema values can be viewed as a metaprogramming facility for constructing
-  new patterns. The `<:` operator converts a schema value to a pattern.
+* A schema value is a reified pattern. The idioms for building schema
+  values are a metaprogramming facility for constructing new patterns.
+  The `<:` operator converts a schema value to a pattern.
 * Schemas can be viewed as a DSL for writing unit tests.
   The statement `myvar!schema` is an assertion that panics if `myvar`
   does not conform to the schema.

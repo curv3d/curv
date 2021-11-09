@@ -1,0 +1,21 @@
+White-space sensitive parsing
+=============================
+The parser gets extremely confused if you omit commas and semicolons.
+The error messages are not helpful.
+The primary situation where this causes problems is that a comma or semicolon
+is missing from the end of a line. This is hard to see, and the user is
+looking at the indentation to understand the program structure.
+
+The problem is made worse by Curv's grammar, with 'f x y' style function calls,
+and very general surface grammar. There isn't enough information in the token
+stream to figure out where the <item> boundaries should be in a <listing>
+if a separator is missing and if I ignore whitespace.
+
+To produce better error messages, I should detect when the indentation and
+whitespace indicate a different parse than the token stream (with whitespace
+ignored).
+
+Curv's parser needs to work this way to produce results as good as mainstream
+languages. Most modern languages treat newline as lexically significant, even
+if they don't use Python's syntax. I think that all of the languages with
+Haskell style function calls have whitespace sensitive parsing.

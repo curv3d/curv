@@ -3,6 +3,13 @@ Definition Syntax Roadmap
 A number of proposals are under development that add new definitional forms.
 This collects all the syntax together.
 
+Goals:
+* All of the definition syntax is documented in one place.
+* Consistency in syntax and semantics.
+* The syntax of a definition, in isolation, gives its semantics.
+* And you can observe those semantics using the REPL,
+  since any definition can be executed in the REPL.
+
 Object Definitions
 ------------------
 The Object proposal adds "object definitions" which bind a name
@@ -14,15 +21,46 @@ bindings with mutable variable bindings. The 'var' keyword is not used.
 or:
     loc <pattern> = <new-location>
 
-Named Value Definitions
------------------------
+Branded Value Definitions
+-------------------------
 def <identifier> = <expression>
 def <identifier> <param>... = <expression>
+
+These definitions are potentially legal in any context, but nonlocal references
+are restricted to be constants or parameters of branded value constructors.
+
+Data Type Definitions
+---------------------
+data <identifier> <TypeSpec> ...
+data <identifier> = <Alternative> | <Alternative> | ...
+
+These are potentially legal in any context. They are branded value definitions.
 
 New syntax for imperative definitions
 -------------------------------------
 Corequisite: deprecate and remove imperative generators, which conflict
 with the Procedure feature and the Imperative Metaprogramming idea.
+
+Goal: Distinguish mutable/immutable variable bindings. Motivation:
+ * After experience with Curv 0.5, I feel that variables should not be
+   mutable unless explicitly defined as such in an imperative `do` clause.
+ * `let` bindings should be immutable, so that I can document them as
+   always having substitution semantics.
+ * In Curv.next, constant expressions have special semantic properties.
+   Now we need to reason about whether a given expression is constant.
+   Now there is a benefit to syntax highlighting and semantic markers
+   which assist in this.
+ * Mutable variable definitions can be typed, but these are object types
+   that are enforced on assignment. These types may be a subset of the schemas
+   that can be used in immutable variable definitions.
+ * I have a crazy idea to make a metaprogramming protocol for imperative
+   control structures, which return a procedure that takes an environment
+   record as an argument. This environment contains in-scope mutable bindings
+   (but not immutable bindings). So it's good to distinguish mutable bindings.
+
+But, by making this distinction, we break the symmetry between definitions
+in imperative (`do`) and functional (`let`, module) contexts. Now there is a
+kind of definition only legal in imperative context.
 
 Benefits of new syntax:
 * Terser.
@@ -33,10 +71,6 @@ Benefits of new syntax:
     immutable, constant.
   * `let` bindings should be immutable, so that I can document them as
     always having substitution semantics.
-  * I have a crazy idea to make a metaprogramming protocol for imperative
-    control structures, which return a procedure that takes an environment
-    record as an argument. This environment contains in-scope mutable bindings
-    (but not immutable bindings). So it's good to distinguish mutable bindings.
 
 Syntax (pure imperative contexts only, not in generators):
   var x = 0;            // immutable
@@ -49,14 +83,34 @@ Syntax (pure imperative contexts only, not in generators):
   include ...;          // immutable
   test ...;
 
+Critique of the 'var' keyword:
+* All of the above definitional forms define variables.
+  Why use 'var' specifically for sequentially scoped local variables?
+* In other languages that have a 'var' keyword, this specifically defines
+  a mutable variable, and mutability is what 'var' is supposed to mean.
+  So it's odd that `var x = 0` is an immutable definition.
+
+I like the 'my' keyword in Perl/Raku for defining lexically scoped
+local variables. It's terse, it doesn't connote mutability, and it's fluent
+(plain English, pronouncable, not an abbreviation).
+* Also, if we need it, 'my f x = x + 1' is less weird
+  than 'var f x = x + 1' given the connotations of 'var'.
+
+So an alternative is:
+    my x = 0;       // immutable, sequentially scoped variable.
+    my y := 1;      // mutable, sequentially scoped variable.
+Or,
+    val x = 0;       // immutable, sequentially scoped variable.
+    var y := 1;      // mutable, sequentially scoped variable.
+
 Unified definition documentation
 --------------------------------
 a = b        // recursive def, restricted to let and modules
 f x = -x     // recursive def, restricted to let and modules.
 def a = b    // recursive, restricted to modules.
 def f x = -x // recursive, restricted to modules.
-var x = 0    // sequential def, restricted to do
-var x := 0   // sequential def, restricted to do
+my x = 0     // sequential def, restricted to do
+my x := 0    // sequential def, restricted to do
 include R    // any context
 test S       // any context
 object <pattern> = <new-object>    // any context

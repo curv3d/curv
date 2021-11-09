@@ -1,0 +1,263 @@
+Variant Values are the dynamically typed equivalent to algebraic types
+in Haskell or enum types in Rust. You don't need to define a type first,
+because all of the constructor expressions are defined in advance.
+You just start using variant value literals.
+
+A variant value is a name followed by zero or more argument values:
+    #alpha
+    #bravo 17
+    #charlie 0 "foo"
+    ...
+
+The corresponding data patterns are:
+    #alpha
+    #bravo <pat1>
+    #charlie <pat1> <pat2>
+    ...
+
+The `is_variant` predicate is true for all of the above variants.
+
+As a special case, a variant with no arguments is called a symbol.
+    is_symbol #foo == #true
+
+Variants are general purpose POD values. Now, POD supports algebraic
+data: both sum and product data. The five POD types are:
+    Numbers
+    Characters
+    Variants (including Symbols)
+    Lists
+    Records
+
+Metaprogramming
+---------------
+The above API is sufficient. However, for metaprogramming we may wish some
+additional lower-level operations:
+    variant_name v => returns symbol at head
+    variant_args v => list of 0 or more arguments
+Maybe these should be index values?
+
+Use cases
+---------
+Symbols are used to represent field names in records.
+
+Curv represents value picker configuration internally as variants:
+
+* ``#slider[low,high]``
+* ``#int_slider[low,high]``
+* ``#scale_picker``
+* ``#checkbox``
+* ``#colour_picker``
+
+The directory export proposal [[Dir_Export]] proposes to use tagged values
+to describe files that are to be exported. The tag name is the file format
+and the payload contains the value to be exported plus export parameters.
+    #dir {foo: #obj {shape: sphere, vsize: 0.1}}
+
+Previous Brainstorming
+======================
+A variant value with a name and a value is a tagged value.
+Possible syntaxes:
+ 0. {bar: 42} -- singleton record
+ 1. (bar: 42) -- pair
+ 2. A tagged value expression is a primary expression.
+    (This seems like a good syntax category for literals.)
+        constructor: #bar(42)
+        predicate:   is_tagged #bar(42) == true
+        pattern:     #bar(x)
+    There is no space between the tag name and the argument.
+    The parentheses may be omitted if the argument is [..] {..} or "..".
+ 3. A symbol #bar is a function mapping an arg onto a tagged value.
+    This eliminates the "magic parenthesis" problem of first syntax.
+        constructor: #bar 42
+                     mysym 42
+        predicate:   is_tagged (#bar 42) == true
+        pattern:     #bar x
+    This syntax allows the tag to be dynamic.
+    Depends on current Index proposal where indexes are not functions.
+ 4. An explicit function or infix operator is used to construct a tagged value.
+        constructor: tag #bar 42
+        predicate:   is_tagged (tag #bar 42) == true
+        pattern: tag #bar x
+             or: tag t x
+    This syntax permits pattern matching to extract the tag name.
+
+Curried tagged values (supporting partial application). A tagged value can
+be called as a function, constructing another longer tagged value:
+ 3. #foo x y
+ 4. tag #foo x y
+
+Dynamic Tags (First syntax)
+---------------------------
+How do I construct a tagged value when the tag is a symbol-valued expression?
+    tagged #foo 42
+
+Can I use pattern matching to extract the tag as a symbol value?
+    tagged <pat1> <pat2>
+More generally you should be able to use constructor expressions for
+pattern matching. Thus 'f x' patterns are constructor patterns.
+
+Are there index values for extracting the components of a tagged value?
+With the ADA proposal, perhaps these are
+    Tagged.tag
+    Tagged.payload
+and the corresponding getter functions are
+    get (Tagged.tag)
+    get (Tagged.payload)
+This just needs to be possible, not super terse.
+
+Metaprogramming (Second syntax)
+-------------------------------
+If symbols are constructor functions, and '#foo x' is a constructor pattern,
+then what is the datatype of a tagged value under ADA? The issue is that each
+datatype has its own distinct constructors. Does each symbol represent a
+distinct data type?
+
+The Variant Constructor
+-----------------------
+This is a weird idea that I keep coming back to.
+There is a hypothetical kind of value that can be invoked either like this:
+    foo #a
+    foo (#b 1)
+or equivalently like this:
+    foo.a
+    foo.b 1
+
+This idea originally comes from the APIs I designed for the Shape library.
+Expressions like
+    cube.mitred
+    smooth 0.5 .intersection [a,b]
+The "variant constructor" is a kind of metaprogramming for abstracting over
+a "variant path" like
+    .foo        // niladic case
+    .bar x      // monadic case
+that is applied to a module value. The idea is to abstract these paths into
+values that can be passed as arguments. So, why not abstract them as variant
+values?
+
+This idea is related to another unsolved problem.
+- At tier one of the modelling language, there are no user-defined types.
+  There is just POD data. Variant values are represented as POD, eg like
+    #foo
+    #bar x
+- At a lower tier, we introduce ADA, modules & user defined data types. 
+  So now we define a module T that encapsulates a data type, its constructors,
+  and its operations. Suppose this data type has variants? How is that
+  modelled? Does each variant of T have its own named constructor, like this:
+    T.foo
+    T.bar x
+  That is conventional practice. But it isn't consistent with the POD way of
+  representing variant data. So maybe there should be a single constructor,
+  aliased with T (ie `T.call`) that takes a POD variant as an argument:
+    T #foo
+    T (#bar x)
+Behold! This is another example of the variant constructor pattern.
+
+Prior Art
+---------
+Some dynamically typed, pure functional languages have tagged values
+as a kind of POD.
+ * In Cell, `:foo` is a symbol, `:foo(expr)` is a tagged value.
+ * In Pointless, `Foo` is a symbol, `Foo(a,b,c)` a tagged tuple,
+   `Foo{a=1,b=2}` a tagged record.
+ * Erlang is sort of like this. Record constructor:
+   #Name{Field1=Expr1,...,FieldK=ExprK}
+
+Syntax Choices
+--------------
+Considerations for tagged values in the Dir_Export proposal.
+
+This is an opportunity to test out different syntaxes for tagged values.
+    {dir:{foo: {obj:{shape: sphere, vsize: 0.1}}}}  -- Curv 0.5 recommendation
+    dir:{foo: obj:{shape: sphere, vsize: 0.1}}      -- in [[Pair]]
+    #dir:{foo: #obj:{shape: sphere, vsize: 0.1}}    -- in [[Pair]] 
+    #dir=>{foo: #obj=>{shape: sphere, vsize: 0.1}}  -- in [[Pair]] 
+    #dir{foo: #obj{shape: sphere, vsize: 0.1}}
+
+I don't like using `:` to mark record fields and to also mark tags.
+It will be very common for the payload of a tagged value to be a record.
+The final syntax avoids this.
+
+The final syntax is visually consist for variant values:
+    #foo
+    #bar(42)
+
+In this syntax
+    #dir{foo: #obj{shape: sphere, vsize: 0.1}}
+a #tag is directly followed (no whitespace) by a delimited primary expression.
+This depends on the current Index proposal where symbols are not functions.
+
+It uses parentheses as special syntax.
+    Eg, #foo(x) in a constructor or pattern.
+This problem goes away if we view #foo as a function that constructs
+a tagged value. Then we can write `#foo x`.
+
+The final (hash) syntax conflicts with the #b"1010" bitstring syntax.
+
+Using Pairs to represent Tagged Values
+--------------------------------------
+I previously proposed that fields are used to represent variant values,
+the dynamically typed version of Haskell algebraic data types.
+  #foo -- variant with just a name, no payload
+  foo: a -- variant with a name and payload.
+Fields are now viewed as generic labeled values, closely related to symbols.
+
+In practice the syntax is weird.
+I find myself wanting distinct syntax for denoting a record field
+vs constructing a labelled value. The former should have loose binding,
+the latter should be a primary expression (or term).
+
+In Curv, all other special syntax for POD data are primary expressions.
+* The exception is negative numerals, and that actually causes problems
+  for function call arguments. Eg, remembering to type `f (-1)` even though
+  `f 1` works.
+In other languages with tagged values, data constructor expressions are
+tightly bound. By contrast, : and => are low precedence operators.
+
+Fields would be used in the internal representation of picker values
+(the #picker field has an algebraic data type).
+But I find this syntax weird:
+  slider[lo,hi] =
+    { call: is_num;
+      picker: slider: [lo,hi];    // this looks weird to me (nested field)
+        // because the outer field denotes a record field
+        // and the inner field constructs POD data (a labelled value)
+        // and they have the same syntax.
+    };
+
+Do I want to introduce a primary expression for labelled values?
+ * `#foo:<primary>` is a <primary>
+
+So variant values have a more uniform looking syntax:
+    #foo
+    #foo:arg
+Eg,
+    slider[lo,hi] =
+      { call: is_num;
+        picker: #slider:[lo,hi];
+      };
+
+This new syntax would be specifically used in the case where pairs
+are used to represent variant values.
+
+If I'm going to use #variantname in the syntax for monadic variant constructor,
+then why not use
+    #name => data
+So then
+    slider[lo,hi] =
+      { call: is_num;
+        picker: #slider => [lo,hi];
+      };
+It's an <item>, not a <primary>.
+
+If I'm going to use different syntax to encode record fields (a: b)
+and variant values (#a:b), then is there a compelling reason to
+encode both as pairs? Well, the `a=>b` syntax is used in both cases
+to construct or pattern match a pair when `a` is non-constant.
+Note that I'd have to choose a fixed representation
+when printing these values in both cases.
+
+I can already use `{a: b}` to encode a variant value with a payload,
+and that syntax is already a <primary> expression.
+
+So the question is: what advantage is there for separating records
+from variant values?

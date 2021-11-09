@@ -1,0 +1,25 @@
+POD
+---
+POD (Plain Old Data) is a small, simple collection of generic data types
+that can be used to represent any kind of data. POD is used for exploratory
+and creative programming, where you are more focussed on solving a problem
+or expressing an artistic idea, and less focussed on software engineering,
+or building a product that can be used by others. POD lets you focus on your
+idea without bogging you down in low level decisions about which data structures
+are more efficient for which use cases.
+
+POD is an evolutionary descendant of JSON:
+* Instead of 3 magic named values (true, false and null), POD has symbols,
+  which are generalized named values, including #true, #false and #null.
+* Instead of strings and arrays, "abc" and [1,2,3], as distinct data types,
+  POD has a single unified ordered sequence data type, the List, and it has
+  a character data type, so that a string is a list of characters.
+* POD supports algebraic data, both sums and products, while JSON only
+  has products. POD provides variant values to represent sums.
+
+There are 5 POD data types:
+ * Numbers
+ * Characters
+ * Variants (including Symbols)
+ * Lists
+ * Records

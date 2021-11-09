@@ -10,14 +10,14 @@ deprecate
 
 Rationale:
 documentation will talk about the common idiom of getter and setter
-functions. In Curv, an index I encapsulates both, and you use
+functions. In Curv, an index `I` encapsulates both, and you use
     get I
     set I
 to convert an index to a getter and setter.
 
 make_index
 ----------
-make_index {get: tree -> value_at_index, set: nuval tree -> new_tree}
+make_index {get: tree -> value_at_index, set: newval tree -> new_tree}
 
 make_index returns an ADT instance (not POD data), which is distinct
 from a record. Hence make_index does not prevent us from using records

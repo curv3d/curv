@@ -10,6 +10,14 @@ Let's go with that for now.
 The design for #2 is really unclear, and we can switch to that model later
 if a good and compelling design emerges.
 
+The benefit of #2 is in ADA when an Algebra exports a getter function and
+you want to upgrade that to be an index while retaining bkwd compat. Well,
+maybe we support this case by allowing *some* index values to be functions,
+without requiring that all are. Eg, under ADA, Function and Index are disjoint
+theories, but an algebra can implement both. So when an index/getter
+is used as a function (eg, passed as argument to `compose`) then it loses
+its index nature.
+
 1. They are disjoint
 --------------------
 What are the benefits?
@@ -82,6 +90,13 @@ what it means:
       application, id and compose.
     * Maybe it is the Map theory and the Function algebra, where a Map is more
       general than a Function. An Index is a Map.
+
+Later thought:
+Not sure if it makes sense for Index to be a subtheory of Function.
+Let's say they are disjoint, and index algebras can implement Function if
+it is desired. If Function is a theory, then the juxta operator (f x) is
+overloaded for each algebra that implements Function. So YES juxta is
+overloaded.
 
 Even with the algebraic gloss, we can still choose to only have one
 overloaded Map operation, which is the function call syntax. We can still

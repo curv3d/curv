@@ -1,0 +1,93 @@
+List Slices
+===========
+Issues:
+ 1. Tail slices: `a.[i..<count a]` is verbose, repeats `a`.
+ 2. End-relative indexes, like Python with -1, -2, or Raku *-1, *-2,
+    or C# ^1, ^2. Terser than count a - 1, count a - 2.
+ 3. Segment slices: a contiguous slice with ascending indices
+    can be amended to another list of different count.
+    * How does this interact with tslice?
+    * Common approach is a special index type that is a contiguous ascending
+      integer sequence and not a general list. Conflicts with POD philosophy.
+
+Proposal
+--------
+Range syntax i..j remains a POD list constructor.
+We reject designs that add a bunch of list-like user-visible types with
+complex usage restrictions. Keeping ranges as lists preserves simplicity.
+* Fix #1 and #2 using `last` as a free parameter. So the syntax is:
+    a.[i..last], a.[last], a.[last-1]
+* Fix #3 using ascending contiguous integer lists as segment indexes.
+
+Magic `i..` syntax
+------------------
+`a.[i..]` means `a.[i..<count a]`.
+This fixes issue #1, has much prior art.
+How?
+ * `i..` is a special value (not a numeric range),
+   which is used only as a list index value.
+ * `i..` is an infinite range value, which is treated differently
+   than finite ranges for indexing a list.
+Prior art: Rust
+  Range expressions:
+    a .. b   // type Range          works in `for`
+    a ..     // type RangeFrom      works in `for`
+    .. b     // type RangeTo        doesn't work in `for`
+    ..       // type RangeFull
+    a ..= b  // type RangeInclusive
+    ..= b    // type RangeToInclusive
+Prior art: C#8
+    a .. b   // type Range -- half-open interval like Rust
+    ..a      // Range.EndAt(a)
+    a..      // Range.StartAt(a)
+    ^0, ^1, ...  // special Index values: last elem, 2nd last elem, ...
+    thus: a[0..^1]
+Prior art: F#
+    a[i..j]  a[i..]  a[..j]     -- inclusive interval
+    range operator returns an IEnumerable
+
+Is i..j an inclusive or half-open integer range? Despite Rust and C#, most
+prior art favours an inclusive range.
+Swift:
+    a...b  -- inclusive
+    a..<b  -- half-open
+Ruby:
+    a..b   -- inclusive range
+    a...b  -- half-open range
+    array.slice(a,b)
+Pascal, Haskell, Raku: a..b an inclusive range
+Algol68: a[3:7] or a[3..7] is a trimmed array, inclusive interval
+
+Magic `last` value
+------------------
+`a.[i..last]` means `a.[i..<count a]`.
+Also, `a.[last]`, `a.[last-1]`, `a.[last-2]`, etc.
+This fixes issues #1 and #2.
+How? `last` is a free parameter, type Integer, with no default.
+
+Magic `i..j` (Ranges, not Lists)
+--------------------------------
+Currently `1..5` is POD data, it is a list.
+To support segment slices, we treat `1..5` as a Range value, distinct
+from the List `[1,2,3,4,5]`, but ranges implement the List protocol.
+A range with contiguous ascending integer elements is an index that
+supports segment slicing of lists.
+
+Segment Indexes are a new type
+------------------------------
+A new data type is introduced for segment slice indexes, and the syntax is
+distinct from `i..j`. I have considered `i=>j`. We could optionally
+support Pythonic end indexes, eg `a.[1=>-1]`
+
+Segment Indexes are lists
+-------------------------
+In the case of `amend ixlist newlist L`,
+where `count ixlist` /= `count newlist`,
+we fail unless ixlist contains contiguous ascending integers.
+As an internal optimization, ranges have a special representation that makes
+this fast, even though externally they are still POD lists.
+
+Generalized Segment Slicing
+---------------------------
+Like previous, but we eliminate the requirement for contiguous ascending
+integers, and we use some ad-hoc behaviour when this requirement isn't met.

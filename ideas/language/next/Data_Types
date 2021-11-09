@@ -16,14 +16,11 @@ UDT Requirements:
 * constructor functions
 * instances print as constructor expressions
 * constructor expressions can be used as patterns
-* index values as selectors
+* index values can be used as selectors
 * equality and referential transparency
 
 Other considerations:
 * Backwards compatibility with POD based functional interfaces?
-  This is possible using a `match` with cases for the old POD values
-  and the new UDT values. No special features required.
-  So it's just a question of how convenient this is (and how important it is).
 * Metaprogramming: construct a UDT algorithmically?
 
 An operation on a UDT is a function:
@@ -41,12 +38,14 @@ Data Types
 Every boxed Curv value contains a type tag, which is used for dynamic
 dispatching. This is a statement about the Curv VM.
 
-I've considered two models:
-* All type tags are disjoint. This is similar to Scheme, where primitive types
-  are disjoint.
-* Type tags form a hierarchy. Julia is like this, with the restriction that
-  only leaf-node tags can be attached to values.
-I prefer to keep things simple.
+Type tags are disjoint. They don't form a hierarchy. You don't declare
+relationships between two data types (they both implement the same
+interface) in the data type definition itself. Because data and operations
+are orthogonal, disjoint in value-oriented programming (unlike OOP).
+
+Instead, there is an orthogonal concept of Theories (aka interfaces)
+and Theory inheritance. An interface can be extended to support a data type
+without modifying the code for that data type. See ADA.
 
 A value's type tag is determined when it is constructed. In fact, I believe
 that it is uniquely determined by the value's constructor (and not by any
@@ -65,110 +64,82 @@ Data types are used by theories for efficient dynamic dispatch of overloaded
 operations. A theory used for dynamic dispatch may require its types to be
 data types.
 
-If we use the simple design, where all data types are disjoint, then every
-value has a unique data type associated with it. This means, in theory, we
-can provide an operation that returns a value's data type. I don't have a
-use for this. But, Python has a type(x) function that seems to implement this.
-In Julia, only the leaf nodes of the tag tree can be associated with objects,
-so in this scheme also, a value has a unique data type which is either the 
-same as or disjoint from the data types of other values.
+Data types are disjoint, so every value has a unique data type associated with
+it. We could provide an operation that returns a value's data type. I have no
+high level use for this. It would be part of a low-level metaprogramming API.
 
-Singleton Data Types
---------------------
-A singleton data type has exactly one instance (called a 'singleton' for short).
-I want singletons to be labelled values (in most cases): this labelled value
-is the constructor of the data type (even though it isn't a function), and
-constructors should be labelled values. So I need to extend the definition
-of 'labelled value' to allow this.
-
-In a data type with a single constructor, which is a function, the constructor
-can also be the data type. A single value can be both a function and a type,
-by implementing both the function theory and the type theory.
-Unfortunately, it's not possible for a singleton to be its own data type.
-Because that would conflict with the existence of singleton types such as Num.
-* I assume that Num is a singleton that implements the Type theory.
-  Num can't be a singleton type that includes only itself, because Num is
-  already the type of numbers.
-* Can all types belong to the same data type? If they do, then the problem is
-  that each value has a unique data type. A singleton can't belong to its own
-  singleton data type and also belong to the type data type at the same time.
-
-Too many contradictions. In Curv, a singleton value cannot denote both itself
-and the singleton data type to which it belongs.
-* Haskell can give the same name to both concepts because it has different
-  name spaces for types and values. That can't work in Curv.
-
-No matter. Regardless of this, data constructors can be distinguished from
-other values, and there can be contexts where a data constructor is used
-to represent its data type.
-
-Three Designs for Data Constructors
------------------------------------
- 1. single monadic constructor
- 2. single variadic constructor
- 3. multiple constructors of varying arities
-
-### 1. single monadic constructor
-A data type has exactly one constructor, with exactly one argument.
- * For a singleton data type, the argument is [].
- * For a sum data type, the argument is a symbol `#foo`
-   or an arrow `bar: 42`.
-
-In the modelling language, you use POD to represent all your data
-(instead of defining new data types). You use symbols and arrows to represent
-sum types. There is a direct upgrade path from this style, where the POD value
-becomes the data constructor argument.
-
-### 2. single variadic constructor
-A data type has exactly one constructor, which can have zero, one, or
-multiple curried arguments.
- * For a singleton data type, the constructor is niladic.
- * For a sum data type, the constructor is monadic, and the argument is
-   a symbol `#foo` or an arrow `bar: 42`.
-
-### 3. multiple constructors of varying arities
- * For a singleton data type, the constructor is niladic.
- * For a sum data type, there are multiple constructors, like in Haskell.
-
-Simple Data Constructors
+Data Product Definitions
 ------------------------
-A simple data constructor is defined like this:
-    data CtorName ArgType0 ArgType1 ... -- 1 or more arg types
+A product-style data definition has the syntax:
+    data <identifier> <TypeSpec>...
+where the <identifier> is bound to a branded data type algebra in the local
+environment, and there are one or more occurrences of <TypeSpec>, which
+specifies the type of a constructor argument.
 
-This syntax defines a constructor function that also denotes a data type.
-Can you use this syntax to define a singleton type? Well yes, if there
-is a single constructor argument whose parameter type has one value.
-You can do this:
-    data Foo [];
-    def foo = Foo [];
-So 'Foo' is the data type and 'foo' is the sole instance of 'Foo'.
+For example,
+    data Foo Num
+defines a user-defined data type called `Foo`, which has a single constructor
+argument, which is a number. To construct an instance of `Foo`, use
+    Foo 42
+This overloading of the name `Foo` works because Foo is actually an Algebra,
+where `Foo.T` is the new data type, and `Foo.call` is the constructor function.
 
-The shape library needs data constructors with zero or more curried arguments.
-With the above workaround for singletons, I think this is covered.
-    everything
-    cube 10
-    rotate (45*deg) cube
+A <TypeSpec> is either a type expression, or a POD expression that is
+convertable to a type. Eg, [T1,T2] and {a:T1,b:T2} are POD values that are
+converted to Tuple and Record types.
 
-Sum types could be defined like this:
-    data MySumType (Enum [#foo, #bar, baz: Num])
-
-Haskell-Inspired Data Constructors
-----------------------------------
-Another possibility is Haskell-like data type definitions:
-    data TypeName = ctorspec1 | ctorspec2 | ...
-where a ctorspec is a constructor name followed by zero or more argspecs,
-and an argspec is a primary expression denoting a type.
+Data Sum Definitions
+--------------------
+A data sum definition has the syntax:
+    data <identifier> = ctorspec1 | ctorspec2 | ...
+where there are one or more <ctorspecs>s,
+and a <ctorspec> is a constructor name followed by zero or more <TypeSpec>s.
+Recursive definitions are supported.
 
 This separates the data type name from the constructor names,
 and allows for multiple constructor names. For singleton constructors,
 it avoids the problem cited earlier of overloading a constructor name
 with a data type name.
 
+For example,
+    data LispList = nil | pair [Any, LispList];
+
+There are two constructor syntaxes supported. Either:
+    LispList.nil
+    LispList.pair[42, LispList.nil]
+or:
+    LispList #nil
+    LispList (#pair[42, #nil])
+The former syntax gives curried constructor functions that can be passed as
+arguments. The latter syntax permits library APIs to parse and validate POD
+variant values passed as arguments, and is also a kind of metaprogramming for
+abstracting over the syntax for invoking a data sum constructor.
+
 (We can imagine an alternate reality where each constructor name also has
 an associated data type, which would then require a hierarchical space of
 data tags. But there's no real requirement for this, and it's better to keep
-data type definitions simple. If you need a type with multiple constructors,
+data type semantics simple. If you need a type with multiple constructors,
 where each constructor has its own type, then you can use theories for this.)
+
+Singleton Data Types
+--------------------
+It looks like we should be able to extend data product definitions to have zero
+constructor arguments, so that
+    data Foo
+defines a singleton data type with exactly one instance, called `Foo`.
+
+This appears to lead to a contradiction. The value `Foo` denotes both a data
+type, and also its sole instance. This may be incoherent: it depends on type
+semantics. The corresponding Haskell `data` definition can give the same name
+to both concepts because it has different name spaces for types and values.
+
+You could use
+    data Foo []
+and use Foo[] to construct the singleton instance.
+
+Data sum definitions can be used for singleton types. Eg,
+    data Foo = foo
+Now Foo is the type and Foo.foo is the singleton instance.
 
 Abstract Data Constructors
 --------------------------
@@ -191,7 +162,7 @@ which has exactly one argument.
   to a constructor argument).
 * 'deconstruct' is used when matching an instance against a constructor pattern.
 
-This feature could be handled using a Theory, similar to how Haskell has
+This feature could be implemented using a Theory, similar to how Haskell has
 a type class Show and Rust has a trait. This Theory provides a bidirectional
 mapping between the internal representation and the constructor argument.
 
@@ -275,40 +246,19 @@ equality of value and equality of printed representation. Maybe later.]
 
 TODO: figure out how this interacts with Theories and operation overloading.
 
-Strawman #A: Constructors
---------------------------
-Only this:
-    data CtorName ArgType
-Ultimate simplicity, and is a subset of #H. Could be extended to #H later.
+Shapes
+------
+The shape library needs data constructors with zero or more curried arguments.
+    everything
+    cube 10
+    rotate (45*deg) cube
 
-If you are modelling your data using POD, then algebraic type instances
-look like this:
-    #foo
-    bar: 1
+We need a workaround for singletons.
 
-In proposal #A, you lift this to an abstract type by adding a single
-constructor name that takes symbols and arrows as an argument, like this:
-    data Dat Enum[#foo, bar: Num]
-So now the instances look like this:
-    Dat #foo
-    Dat (bar: 1)
-(Unlike proposal #H, which would use this:)
-    Foo
-    Bar 1
-
-Could you make the new interface fully backward compatible with POD?
- * Sure, nothing special required. Just use a `match` with cases for
-   the new UDT and the old POD.
- * Use a transform pattern in operations with a UDT argument, like this:
-      f (x <: CtorName) = ...
-   And we specify that CtorName is an idempotent function.
-
-   ??? But the usual Haskell idiom is pattern matching on the ctor, like this:
-      f (CtorName x) = ...
-
-Metaprogramming: This proposal allows UDTs to be constructed algorithmically,
-since all the complexity is in the ArgType, which is a runtime value.
-
-Selectors
----------
+Indices
+-------
 Index values for a UDT.
+
+Metaprogramming
+---------------
+Constructing a UDT algorithmically.

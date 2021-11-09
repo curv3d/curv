@@ -5,6 +5,8 @@ and an alternative to reactive values in Curv 0.5.
 
 A free parameter is a kind of named global variable
 with a type and a default value.
+* The default value is not required, eg for the proposed `last` parameter,
+  see [[Slice]].
 
 A parametric value is a special kind of value that consists of three parts:
 * pexpr: An expression over one or more free parameters.
@@ -40,6 +42,9 @@ in bbox which prevent parametric images from being viewed.
 
 `rectify` is a free parameter that controls whether we use expensive algorithms
 to provide an exact distance field. Used for #sharp mesh export. Default false.
+
+`last` is a free parameter, type Int, no default value, used as a List index.
+See [[Slice]].
 
 Parameter Identity
 ------------------

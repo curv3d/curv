@@ -10,3 +10,20 @@ Same precedence as '::', left associative.
 Data flows left to right when <: and :: are chained.
 
 The left argument to `<:` is called a Schema. See [[Schema]].
+
+Variant Patterns
+----------------
+#foo
+#bar <pat1>
+#baz <pat1> <pat2>
+
+Constructor Patterns
+--------------------
+In general, data patterns are constructor patterns.
+This extension permits patterns of the form `f <pat1> <pat2> ...`
+where `f` is a possibly curried constructor function.
+
+This means we need to distinguish certain functions as constructor
+functions, so that they contain the protocol for implementing these patterns.
+Initially the only constructor patterns will be primitive.
+Later, with ADA we will have user defined constructor functions.

@@ -1,0 +1,23 @@
+Curv is an expressive programming language, where one of the design goals is
+that you can parameterize any program with respect to any part of the program.
+
+To achieve this goal, we need to support metaprogramming. I'm using the term
+in a general sense.
+
+Metaprogramming is the ability to treat code as data. This data can then
+be processed to generate more code, which can be executed.
+
+Next, I'll give examples demonstrating why "abstracting over any part of a
+program" requires metaprogramming, and I'll show that this can take many forms.
+
+Examples
+--------
+:Lambdas & Closures:
+  In the early days of programming, there were only named function definitions.
+  You couldn't abstract over functions (pass as arguments, return as results).
+  There were no lambda expressions and no lexical closures.
+
+  In order to abstract over a function body (minus its name), we had to reify
+  the function body as a value: this led to lambdas and closures. This
+  reification means that lambda closures are an early example of a
+  metaprogramming API introduced to support abstraction over parts of a program.

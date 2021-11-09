@@ -1,0 +1,47 @@
+Identity of Branded Values
+==========================
+Several design alternatives. Current choice: The Unconditioned.
+
+The Absolute
+------------
+The original branded value proposal.
+Brands are absolute pathnames, which are constant expressions in any
+environment.
+Value equivalence is pathname equivalence.
+The first element of a pathname identifies a source file that denotes a
+branded value.
+Restricts programming of branded values to the "top level", not inside
+local variable scopes.
+
+The Unrestricted
+----------------
+The original labelled value proposal.
+'def' definitions can be used anywhere, without restriction.
+Brands are often relative and do not uniquely identify a value.
+
+The Unconditioned
+-----------------
+A synthesis of The Absolute and The Unrestricted (cf: Hegel, dialectic).
+
+Goals:
+ * A brand uniquely identifies a branded value, and it also points you at
+   the source code for generating the value (like The Absolute).
+   This is important for understanding programs.
+ * Root of term is not restricted to occupying an entire source file.
+   Let-local definitions can be used (like The Unrestricted).
+
+In the source code of a 'def' definition, or of a constructor function,
+nonlocal bindings are required to be either constant, or to be constructor
+function parameters.
+
+This is a generalization of The Absolute where the first element of a pathname
+can be a <filename,lineno,colno> triple, denoting a branded value literal.
+
+This sacrifices a "referential transparency" related goal in favour of
+the ability to uniquely map a branded value onto the source code that
+generated it. The limitation is: you can't copy the source code for a
+branded definition (to a new source code location) without changing its
+identity. Well, The Absolute has this limitation as well.
+
+The Unconditioned has a simple implementation that doesn't involve
+function value equivalence.

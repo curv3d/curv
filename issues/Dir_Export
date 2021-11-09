@@ -1,0 +1,47 @@
+Goal: To export a directory containing multiple files.
+Each file can have any of the file formats supported by Curv export.
+We already support directory import.
+
+Use cases:
+* Export a directory containing animation frames (as PNG files)
+  for conversion to an animated GIF or a WEBM.
+* Export a `manifest.xml` text file and a directory full of slice files
+  (as PNGs) for conversion to an SVX file.
+* Export a collection of STL files (one file per colour/material)
+  for multicolour/multimaterial printing on an FDM 3D printer.
+* Export a collection of STL files together with a manifest or bill of
+  materials, as a collection of objects that will be separately printed
+  and assembled into a larger project.
+
+The input is a Curv program that declaratively describes the directory
+structure, including all of the parameters for constructing each file,
+and the output is a directory. We could also support zip files.
+    curv -o foo.dir foo.curv
+    curv -o foo.zip foo.curv
+In the first case, the extension ".dir" is removed and a directory named "foo"
+is created. If the output directory "foo" already exists,
+we will 'rm -rf foo' before creating a new directory, in preference to
+overlaying the new files on top of the existing directory structure.
+
+So now we need a way to declaratively describe the file tree that we
+wish to export.
+
+How about tagged values, where the tag name is the export format,
+and the payload contains a value to be exported and export parameters.
+See [[Variant]].
+
+    #dir{foo: #obj{shape: sphere, vsize: 0.1}}
+
+If I want to export a series of slices of a shape as PNGs,
+then I could use a loop:
+
+    {shape, nslices} ->
+        #dir {
+            for (i in 0..<nslices)
+                "slice-$i" => #png {shape: shape>>move[0,0,i]>>slice}
+        }
+
+Is this loop as efficient as the PNG animation exporter?
+Can it be made as efficient? My goals are:
+* to express ideas in the most obvious form possible;
+* to make it easy to reason about performance.

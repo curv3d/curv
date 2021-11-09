@@ -1,0 +1,57 @@
+User-defined macros.
+Rationale: abstraction over statements, polymorphic phrase abstraction, etc.
+
+Consider the primitive forms (deep grammar) implemented by the analyser
+on top of the surface grammar. As in Lisp, these could be represented by
+macros (primitive or user defined). These forms have the following powers:
+ * Abstraction over non-expressions. Polymorphism over phrase types,
+   eg `if`, `let`, etc.
+ * Lazy evaluation, eg `if`, `while`.
+ * The ability to bind variables: `let`, `->`, etc.
+
+High Level Macros
+-----------------
+Lisp pioneered the use of macros to solve these problems.
+Lisp-style macros are low level and hard to use, and are known for producing
+error messages that are hard to interpret by the macro user. (Rust has this
+problem as well.) So I'm looking for ways to raise the level of abstraction,
+simplify use, eliminate footguns.
+
+The Scheme community have tried to achieve this. But they are building
+on top of the Lisp technology base, which is syntactic macros that map
+syntax trees onto syntax trees. I disagree with this representation:
+* Hygiene is a problem, with gensym and the competing Scheme macro systems.
+* Mapping the resulting syntax tree back to the original source is a problem.
+
+Internally, Curv macros map [syntax tree, environment] => bound meaning.
+They're straightforward, no big problems. I'm sure these kind of macros have
+been implemented many times. They aren't really macros in the traditional
+sense of source=>source transformations. Internally they are called
+metafunctions, and what they do is called analysis (prior to evaluation).
+* Chris Hanson's "Syntactic Closures" seem similar to the system I want.
+  https://people.csail.mit.edu/jaffer/slib/Syntactic-Closures.html
+
+A high level interface traditionally involves a syntax pattern language
+and lexically scoped quasiquotations.
+
+How about a functional API similar to parser combinators? These parsers
+map syntax trees to bound operation trees. A combinator approach means high
+level pluggable components that prevent mistakes (by the macro developer)
+and provide good error reporting to the macro user.
+
+These could be called "macro combinators". Prior art?
+ * https://github.com/lexi-lambda/hackett/issues/51
+
+A high level macro facility can be built on top of a low-level facility.
+
+Macros as Values
+----------------
+Macros are first class values, which are bound to names by-value.
+A macro is invoked in function position of a function call, but this
+only works if the macro expression is constant. So we introduce the concept
+of a constant into the language semantics.
+
+With this change, it becomes possible to define a module called `std`
+which contains all of the standard bindings, including macros.
+
+Also, macros as values means no barriers to macro combinators.

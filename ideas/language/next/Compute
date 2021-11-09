@@ -1,0 +1,91 @@
+High Performance Compute
+========================
+Curv should become a unified CPU/GPU compute language:
+ * High performance bulk computation on CPU and GPU.
+ * Portable: supports native CPU, WASM, and WebGPU compute shaders.
+ * Safe: value-oriented programming, WebGPU not Vulkan.
+Portability and safety will compromise performance and will constrain
+the high-perf coding model.
+
+A Curv high-performance programming model that combines ideas from Julia
+and WebGPU, and is portable.
+ * First, you describe a computation (that requires high performance),
+ * then you compile it into an optimized representation,
+ * then you run it.
+Portability:
+ * WebGPU: build a compute pipeline.
+ * WASM: generate an external WASM module that is statically typed with
+   monomorphic functions (like Julia JIT).
+ * Native code: generate a module containing statically typed monomorphic code
+   that is optimized by LLVM.
+Compilation/optimization requires SubCurv, a restricted subset of Curv
+(which may have CPU and GPU flavours).
+
+Compiling SubCurv converts IR to
+ * WebGPU on native: SPIR-V or WGSL
+ * WebGPU on WASM: WGSL
+ * native: optimized machine code
+ * WASM: WASM
+Large data constants are supplied as arguments, not compiled into module.
+At minimum I need WGSL, native, WASM output.
+What libraries do I use to compile IR? How many targets must I compile IR to?
+ * LLVM IR. Generates native and WASM (with tail calls!).
+   Generate SPIR-V using https://github.com/KhronosGroup/SPIRV-LLVM-Translator
+   works with latest LLVM, is bidirectional. OpenCL focus. No proper Vulkan
+   support: this may be several years away: 2022 or 2023?
+ * SPIR-V -> LLVM IR: use SPIRV-LLVM-Translator (but: no Vulkan)
+ * MLIR spv dialect
+      -> SPIR_V -> WGSL
+      -> MLIR llvm -> LLVM IR (ongoing project, missing primitives)
+ * C++ (native only) -> machine code
+ * WGSL
+ * GLSL -> WGSL or SPIR-V
+ * Rust-GPU?
+I'll live with the current C++/GLSL design for a while longer.
+WASM support is still in the definitional phase.
+
+Compute Shaders 101: https://www.youtube.com/watch?v=DZRn_jNZjbw
+
+The CUDA programming model:
+* One language for CPU + GPU code.
+* Code/data are automatically copied to GPU as needed (unified address space).
+* __global__ annotates a CPU/GPU function.
+* Calls to GPU kernels (from CPU functions) look like function calls:
+    vector_add<<128,1>>(out, d_a, b, N)
+* CUDA 3.1 (2010) supports recursion, function and data pointers on the GPU.
+  Needs hardware with compute capability 2.0 (but from 2010, right?)
+  The size of stack for each CUDA thread is very small.
+See also OpenCL, Rust-GPU.
+
+Compute shaders are an alternative to CUDA, work differently:
+* WGSL restrictions: low level, no recursion, no function pointers.
+* explicit dispatch: submit work, completion is async.
+* explicit copying between CPU and GPU buffers.
+
+The CUDA gap is narrowing fast (with recent GPUs, last 2-5 years).
+* Memory model for atomics (Vulkan only; ~50% on Windows, ~25% on Android)
+* 16 bit floats, 8 bit integers (machine learning)
+* Descriptor indexing: access to large arrays of buffers
+* Today, we can exploit _most_ of a GPU's compute power via compute shaders.
+  Not true a few years ago.
+
+Higher level abstractions that compile to compute shaders:
+ * IREE (ML tensorflow)
+ * rust-gpu: what abstractions can I steal?
+
+Academic high level parallel GPU languages: RL has limited enthusiasm.
+Focus on low-level control for ultimate performance.
+Compute shader abstraction layers:
+ * wgpu or piet-gpu-hal (RL's abstraction over metal/vulkan/dx12)
+   wgpu runs on web and WASM, piet-gpu-hal probably has better performance
+   wgpu cares about security, protection against malicious code, so should Curv.
+
+4 levels of compute shader capability, but only 2 accessible with WebGPU.
+ 0. Shadertoy -- no interthread communication. Random access buffer reads.
+    One output per thread. Can use fragment shader for this.
+ 1. WebGPU/OpenGL 4.3/GLES 3.1/DX 11/Vulkan 1.0:
+    Shared memory & workgroup level barriers. Random access buffer read/write.
+    Atomics. 32 bit scalars.
+
+Wgpu vs dawn - RL feels that wgpu is more general, dawn is more Chrome specific.
+Naga is lighter for shader compilation.

@@ -1,11 +1,11 @@
 Things to deprecate for Curv 0.6
 
-* 'f x: x + 1' style fields
-* 'fields' (see Collection)
+* 'f x: x + 1' style fields (for `f: x -> x + 1`)
+* 'fields' for 'indices' (see Collection)
 * 'local' definitions (see Definition)
 * imperative generators
-* deprecate 'log n' for 'ln n'
-* deprecate 'amend' for 'set' (see Index)
+* 'log n' for 'ln n' (see Number)
+* 'amend' for 'set' (see Index)
 
 Things to report as an error (for one release, before new syntax comes in).
 

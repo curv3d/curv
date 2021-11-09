@@ -28,8 +28,8 @@ you can write:
     for (key=>val in myrecord) ...
 
 Similar features in other languages:
- * The a=>b syntax comes from Ruby/PHP, where it denotes a key/value pair
-   in a hash/array literal. PHP also has 'a=>b' patterns.
+ * The a=>b syntax comes from Ruby/PHP/Perl/Raku, where it denotes a key/value
+   pair in a hash/array literal. PHP also has 'a=>b' patterns.
  * The dotted pair in Lisp -- `(a . b)` -- which is used to represent
    name=>value pairs in property lists.
  * std::pair in C++ -- `std::pair(a, b)` -- which is used to represent
@@ -67,26 +67,15 @@ Creative Uses of Pair Syntax
 APIs can choose to use a=>b pair syntax in preference to [a,b]
 in contexts where the => symbol is more evocative of the API semantics.
 
-Curv does not currently support string slicing: the kind where
-the index is a contiguous sequence of integers in ascending order,
-and is defined by start and end index values. String slices have two features:
- 1. You can amend a string slice by assigning another list of different length.
- 2. String slices can be specified Python-style, where -1 is the index for the
-    final element of the string.
-String slices are incompatible with the array slicing that Curv supports,
-which is derived from array languages. To support string slices, we could add
-a new index type, eg string_slice[first,last]. Or we could use a pair:
-    str.[i=>j]
-This is a clean evocative syntax. It doesn't allow for omitting the first
-or last indexes. We could define `last = -1` to allow for more readable
-slices, eg `str.[0=>last]`.
-
 In shape constructors:
  * stroke {d: diameter, from: point1, to: point2}
    stroke d (point1 => point2)
    stroke [size: d, point1 => point2]
  * half_plane [p1, p2]
    half_plane (p1 => p2)
+
+I considered then rejected using i=>j to denote the start/end index
+of a segment index (see [[Slice]]).
 
 Critique: is it a good idea to overload the meaning of pair values,
 going beyond the mathematical origins of a mapping from one value to another?
@@ -99,81 +88,3 @@ going beyond the mathematical origins of a mapping from one value to another?
   * Dotted pairs (in Lisp) and std::pair (in C++) have exactly this character.
 
 I'm not going to implement any of these "creative use" ideas right away.
-
-Variant Values
---------------
-I previously proposed that fields are used to represent variant values,
-the dynamically typed version of Haskell algebraic data types.
-  #foo -- variant with just a name, no payload
-  foo: a -- variant with a name and payload.
-Fields are now viewed as generic labeled values, closely related to symbols.
-
-Some dynamically typed, pure functional languages have labelled values
-as a kind of POD.
- * In Cell, `:foo` is a symbol, `:foo(expr)` is a tagged value.
- * In Pointless, `Foo` is a symbol, `Foo(a,b,c)` a labelled tuple,
-   `Foo{a=1,b=2}` a labelled record.
- * Erlang is sort of like this. Record constructor:
-   #Name{Field1=Expr1,...,FieldK=ExprK}
-I find Cell's data model elegant, and this would be similar.
-
-But in practice the syntax is weird.
-I find myself wanting distinct syntax for denoting a record field
-vs constructing a labelled value. The former should have loose binding,
-the latter should be a primary expression (or term).
-
-In Curv, all other special syntax for POD data are primary expressions.
-* The exception is negative numerals, and that actually causes problems
-  for function call arguments. Eg, remembering to type `f (-1)` even though
-  `f 1` works.
-In other languages with tagged values, data constructor expressions are
-tightly bound. By contrast, : and => are low precedence operators.
-
-Fields would be used in the internal representation of picker values
-(the #picker field has an algebraic data type).
-But I find this syntax weird:
-  slider[lo,hi] =
-    { call: is_num;
-      picker: slider: [lo,hi];    // this looks weird to me (nested field)
-        // because the outer field denotes a record field
-        // and the inner field constructs POD data (a labelled value)
-        // and they have the same syntax.
-    };
-
-Do I want to introduce a primary expression for labelled values?
- * `#foo:<primary>` is a <primary>
-
-So variant values have a more uniform looking syntax:
-    #foo
-    #foo:arg
-Eg,
-    slider[lo,hi] =
-      { call: is_num;
-        picker: #slider:[lo,hi];
-      };
-
-This new syntax would be specifically used in the case where pairs
-are used to represent variant values.
-
-If I'm going to use #variantname in the syntax for monadic variant constructor,
-then why not use
-    #name => data
-So then
-    slider[lo,hi] =
-      { call: is_num;
-        picker: #slider => [lo,hi];
-      };
-It's an <item>, not a <primary>.
-
-If I'm going to use different syntax to encode record fields (a: b)
-and variant values (#a:b), then is there a compelling reason to
-encode both as pairs? Well, the `a=>b` syntax is used in both cases
-to construct or pattern match a pair when `a` is non-constant.
-Note that I'd have to choose a fixed representation
-when printing these values in both cases.
-
-I can already use `{a: b}` to encode a variant value with a payload,
-and that syntax is already a <primary> expression.
-
-So the question is: what advantage is there for separating records
-from variant values?

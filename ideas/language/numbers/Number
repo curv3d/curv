@@ -14,6 +14,7 @@ I would like to add Int and Nat as subsets of Num (to the modelling language).
 * Is -0 an Int? No good answer; getting rid of -0 solves the problem.
   Note `frac(-0) === -0`, and -0 is a weird indefinite number that is like a
   quantum superposition of 0 and a negative infinitesimal. So probably not Int.
+I now say that inf and -0 are not integers and they are not real numbers.
 
 SubCurv will be getting a set of 'machine' number types. The interpreter
 can run native SubCurv functions on the CPU or GPU and read values back.
@@ -232,6 +233,14 @@ to 0 when it is computed by native operations.
 
 My main concern is compatibility between Curv and SubCurv,
 ability to test SubCurv code in the Curv REPL.
+
+Note that -0 is not guaranteed to exist in SubCurv due to the vagueness
+of floating point on GPUs. From the WGSL standard:
+> Implementations may ignore the sign of a zero. That is, a zero with a
+> positive sign may behave like a zero a with a negative sign, and vice versa.
+
+It's also the case that
+> Implementations may assume that NaNs, infinities are not present.
 
 Big Integers
 ------------

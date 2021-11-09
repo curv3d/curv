@@ -40,21 +40,24 @@ Boolean operations (which are extended to bstrings):
     `bit true` | `bit false` yield 1 or 0
     and or xor not
 Bstring literals:
-    #b"1011", #x"D2"
+    b"1011",  x"D2"
+    "1011"b,  "D2"x
+    0b"1011", 0x"D2"
+    or use ordinary functions, not special syntax.
 Bstring operations:
-    bshift n bstring -- n is positive or negative shift size
+    shl, shr, ashr -- curried shift operators, matching WGSL
+        shiftl, shiftr, ashiftr
     bsum[b1,b2,b3]
-    bproduct[b1,b2,b3]
 Bstring conversions:
-    bstring_to_float32 <bstring>
-    float32_to_bstring <num>
-The following rely on bigint support, see [[Numbers]]:
+    bstring_to_float32 <bstring>        or bstr_to_float32
+    float32_to_bstring <num>            or float32_to_bstr
+The following depend on bigint support, see [[Numbers]]:
     bstring_to_nat <bstring>
     nat_to_bstring <count> <nat>
       or, int_to_bstring <count> <int>
 
-bit #b"1011" == [1,0,1,1]
-bool [1,0,1,1] == #b"1011"
+bit b"1011" == [1,0,1,1]
+bool [1,0,1,1] == b"1011"
 
 Bstring Literals
 ----------------
@@ -87,6 +90,7 @@ This is proving to be the most difficult problem. Alternatives:
     and as the Set constructor.
 
     Problem: it looks as if #[1011 xD2] might be legal, which is complicated.
+    Otherwise why is the x inside the brackets?
 
 #b[1101], #x[D2]
 #b"1011", #x"D2"
@@ -102,14 +106,38 @@ This is proving to be the most difficult problem. Alternatives:
 
     Note: ambiguous since #b "1011" are two valid tokens.
 
-#0b[1101]
-#0b"1101"
-#0x[D2FA]
-#0x"D2FA"
-    Avoids the ambiguity of previous syntax.
-    Avoids the implied complexity of allowing a mix of binary and hex
-    sequences within #[...].
-    But: the '0' prefix is normally associated with numerals, not arrays.
+    Note: conflicts with the Tagged Value proposal.
+
+0b"1101"
+0x"D2FA"
+    0b and 0x are morphemes which denote "base 2" and "base 16".
+    They can be used in the context 0b1011 and 0b"1101".
+    * No lexical ambiguity. Doesn't conflict with existing syntax.
+
+So far I am preferring a string syntax "..." over an array syntax [...]
+or numerals. So, what is prior art, what are the options?
+ * SQL-99   B'1110' or X'E'
+ * VHDL     B"1110" or X"E", internal _ can be used as separator
+ * LDAP     '1110'B
+ * C++11    "1110"b or "1110"_b
+ * Rust     b"1110" -- byte literal, "1110"b -- user defined literal
+ * Python   b"1110" -- byte string
+
+I like the idea of supporting either binary or hex blist literals,
+it matches the lib.random source. Using 'b' or 'x' to distinguish
+them seems good. It's good if this *isn't* confused with a numeral.
+
+    b"1110"   x"EF0"    -- conflicts with f"foo"
+    "1110"b   "EF0"x    -- conflicts with f"abc"x
+    #b"1110"  #x"EF0"   -- conflicts with [[Variant]]
+    0b"1110"  0x"EF0"
+
+No Special Syntax:
+Use functions called bstr and xstr
+    bstr"1110"  xstr"EF0"
+Except that 'bool' already takes a list of bool representing values
+and converts them to a blist. Suppose `bool` is extended
+to map #"0"=>false and #"1"=>true. Then bool"1110" will also work.
 
 Encoding
 --------
@@ -163,6 +191,7 @@ Common Proposal (shared by Blist and Bitstring proposals):
    This needs support for curried functions in SubCurv.
  * Replace `bool32_sum` with `bsum`, it adds 1 or more blists of the same count.
  * Ditto for `bool32_product`, or remove it.
+   * signed or unsigned product?
  * Implement a compact blist representation, one bit per element.
 
 Blist Proposal:
@@ -174,6 +203,20 @@ Bitstrings: consider the Bits not Bools proposal.
 
 Shift operators
 ---------------
+There are 3 bit shift operators defined by WGSL. We will use WGSL semantics,
+not C/C++ "undefined behaviour" semantics. The Curv names are a direct
+transcription of the long form English names: "arithmetic shift right" etc.
+    shiftl, shiftr, ashiftr
+They are curried (see [[BinOp]]):
+    shiftl n bstr
+The 'n' (# positions to shift) is an integer taken '`mod` count bstr' (WGSL).
+
+WGSL scalar shift:
+    bstr << n       =>  bstr >>shiftl n
+WGSL vector shift:
+    vbstr << n      =>  vbstr ~>>shiftl n
+since the shift operators can't be vectorized [[AMap]].
+
     a `lshift` n
     a `rshift` n
 isn't compatible with a blist pipeline. Consider instead:
@@ -200,8 +243,17 @@ that dispatches to << or >> as n is >0 or <0. Mitigating factors:
 * The `n` argument is normally constant.
 * Add a `Nat` type to SubCurv.
 
-Final design:
-    bshift n b
+What if I find a noise algorithm that requires a signed right shift?
+Then I need 3 shift operators. Two kinds of right shift: wikipedia calls
+them "logical shift" and "arithmetic shift". Note: all 3 operators are well
+defined in WGSL, even if C/C++ has undefined behaviour. Naming, prior art:
+    shl, shr, ashr
+    Forth: lshift, rshift, arshift
+    Ada: Shift_Right, Shift_Right_Arithmetic
+
+Arguments: pair or Curried?
+    x `shl` 2 == shl[x,2]
+    x >> shl 2 == shl 2 x
 
 literals
 --------
