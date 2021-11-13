@@ -9,8 +9,6 @@ extern "C" {
 }
 #include <iostream>
 #include <fstream>
-#include <istream>
-#include <ostream>
 #include <iterator>
 #include <string>
 
@@ -91,11 +89,10 @@ const char help_prefix[] =
 "   Live programming mode. Evaluate & display result each time file changes.\n"
 "   -e : Open editor window. $CURV_EDITOR overrides default editor.\n"
 "        With 'curv -le', filename is optional, defaults to 'new.curv'.\n"
-"   If filename is "-", curv reads from stdin.\n"
 "curv [-o arg] [-x] [options] filename\n"
 "   Batch mode. Evaluate file, display result or export to a file.\n"
 "   -o format : Convert to specified file format, write data to stdout.\n"
-"   If filename is "-", curv reads from stdin.\n"
+"   If filename is '-', curv reads from stdin.\n"
 ;
 
 const char help_infix[] =
