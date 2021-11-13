@@ -9,6 +9,8 @@ extern "C" {
 }
 #include <iostream>
 #include <fstream>
+#include <iterator>
+#include <string>
 
 #include "config.h"
 #include "export.h"
@@ -90,6 +92,7 @@ const char help_prefix[] =
 "curv [-o arg] [-x] [options] filename\n"
 "   Batch mode. Evaluate file, display result or export to a file.\n"
 "   -o format : Convert to specified file format, write data to stdout.\n"
+"   If filename is '-', curv reads from stdin.\n"
 ;
 
 const char help_infix[] =
@@ -336,6 +339,15 @@ main(int argc, char** argv)
         curv::Program prog{sys};
         if (expr) {
             auto source = curv::make<curv::String_Source>("", filename);
+            prog.compile(std::move(source));
+        } else if (strcmp("-", filename) == 0) {
+            std::cin >> std::noskipws;
+
+            std::istream_iterator<char> it(std::cin);
+            std::istream_iterator<char> end;
+            std::string results(it, end);
+
+            auto source = curv::make<curv::String_Source>("", results);
             prog.compile(std::move(source));
         } else {
             curv::import(curv::Filesystem::path(filename),
