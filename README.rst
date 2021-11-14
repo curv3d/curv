@@ -40,11 +40,23 @@ Getting Started
 ===============
 * To install the software, see `<BUILD.md>`_.
 * The documentation is here: `<docs/README.rst>`_.
-* Mailing list: `<https://groups.google.com/d/forum/curv>`_.
-  You can join the mailing list using your Google account (or you'll be prompted to create an account).
-  If you don't want to have a Google account, then send email to `doug@moens.org`
-  and I will send you an invitation to join the list.
 * To contribute, see `<CONTRIBUTING.md>`_.
+
+Community
+=========
+There is a high-volume Discord channel operated by Lee (@lf94),
+currently showing off Lee's CAD projects (in Curv) and discussing
+development of the next version of Curv.
+Here's an invite: `<https://discord.gg/ZSPXaMNWfW>`_.
+You'll need to create a Discord userid to participate.
+
+There is a Github Discussions page:
+`<https://github.com/curv3d/curv/discussions>`_.
+
+There is a low-volume mailing list: ``curv@googlegroups.com``,
+connected to a web forum: `<https://groups.google.com/d/forum/curv>`_.
+You can join the mailing list using your Google account (or you'll be prompted
+to create an account).
 
 Hardware and OS Requirements
 ============================
