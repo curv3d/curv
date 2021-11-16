@@ -5,6 +5,16 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
     message(FATAL_ERROR "Do not use 'cmake .'; instead, just type 'make'")
 endif ()
 
+# This is set to 1 on Lee's underpowered server.
+# It disables the libfive and openvdb dependencies, which require
+# lots of memory to compile.
+set(LEAN_BUILD 0)
+file(GLOB LeanSensitiveSrc curv/export_mesh.cc)
+set_property(
+    SOURCE ${LeanSensitiveSrc}
+    APPEND PROPERTY COMPILE_DEFINITIONS
+    LEAN_BUILD=${LEAN_BUILD})
+
 execute_process(COMMAND sh -c "${CMAKE_SOURCE_DIR}/cmake/make_version.sh"
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
@@ -155,6 +165,11 @@ set_property(TARGET libcurv_io PROPERTY OUTPUT_NAME curv_io)
 target_link_libraries(libcurv_io PUBLIC imgui)
 
 file(GLOB Src "curv/*.c" "curv/*.cc")
+if (LEAN_BUILD)
+    file(GLOB FatSrc "curv/libfive_mesher.cc" "curv/vdb_mesher.cc")
+    list(REMOVE_ITEM Src ${FatSrc})
+    message(lean source ${Src})
+endif ()
 add_executable(curv ${Src})
 target_compile_definitions(curv PRIVATE REPLXX_STATIC=1)
 
@@ -168,11 +183,16 @@ if (APPLE)
 else ()
     set(LibOmp "")
 endif ()
+if (LEAN_BUILD)
+    set(FatLibraries "")
+else ()
+    set(FatLibraries libfive ${LibOpenVDB} tbb ${LibHalf})
+endif ()
 set(Libs
     libcurv_io libcurv imgui glfw glad ${LibOpenGL} replxx double-conversion
-    libfive tmc
-    Boost::iostreams Boost::filesystem Boost::system ${LibOpenVDB} tbb
-    ${LibHalf} pthread ${LibDl} ${LibOmp})
+    tmc ${FatLibraries}
+    Boost::iostreams Boost::filesystem Boost::system
+    pthread ${LibDl} ${LibOmp})
 
 target_link_libraries(curv PUBLIC ${Libs})
 

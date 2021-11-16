@@ -151,6 +151,9 @@ void export_mesh(Mesh_Format format, curv::Value value,
     if (cshape) pshape = &*cshape; else pshape = &shape;
     bool multithreaded = (cshape != nullptr);
 
+#if LEAN_BUILD
+    tmc_mesher(*pshape, multithreaded, opts, cx, format, out);
+#else
     switch (opts.mgen_) {
     case Mesh_Gen::smooth:
         vdb_mesher(*pshape, multithreaded, opts, cx, format, out);
@@ -166,4 +169,5 @@ void export_mesh(Mesh_Format format, curv::Value value,
     default:
         throw curv::Exception(cx, "mesh export: unknown mesh generator");
     }
+#endif
 }
