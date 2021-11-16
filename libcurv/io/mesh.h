@@ -26,7 +26,8 @@ enum class Mesh_Gen {
     smooth,
     sharp,
     iso,
-    hybrid
+    hybrid,
+    tmc
 };
 
 // Mesh file export parameters
