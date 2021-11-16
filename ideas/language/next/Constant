@@ -10,6 +10,11 @@ Why are constant expressions semantically important?
 * Within SubCurv code, constants can use the full Curv language.
 * MetaFunctions are now first class values, but a metafunction value
   in function position must be constant in order to call it.
+* Branded modules and functions cannot reference non-constant nonlocals
+  unless they are parameters of a surrounding branded function.
+  (Unconditioned Identity proposal.)
+* When an anonymous function is printed, the function body is printed,
+  and also the values of non-constant nonlocals. (Full Metal Equality.)
 
 Semantic syntax colouring gives us a way to see constants in the code.
 Constants have a different colour than dynamic expressions.
