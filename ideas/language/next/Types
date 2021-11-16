@@ -1,0 +1,174 @@
+User Defined Types
+==================
+Curv has a high level "creative coding" dialect and a lower level "software
+engineering" dialect. User defined types are part of the software engineering
+dialect.
+
+The creative coding dialect doesn't have user defined types (just POD and
+functions), but it can access libraries written in the software engineering
+dialect, which may export their own types.
+
+The reason Curv has a software engineering dialect at all is to permit the
+development of libraries that support creative coding. These libraries should
+have good error checking, high performance, and provide easy to use interfaces
+at the proper level of abstraction. Types are part of this: they exist to
+support the creative coding dialect.
+
+Use cases:
+ 1. Input validation (eg check that function arguments have the correct type).
+ 2. Validation and normalization. Validate an input, then convert it to a
+    normalized form that is easier or faster to process. This normal form has
+    a type that provides no way to represent an invalid state. This use case
+    is called a "schema".
+ 3. Compact, efficient representation of bulk data.
+ 4. Abstract data types that hide their representation.
+
+You can define a type that describes POD data, and use it to:
+ * Validate a POD argument. (#1)
+ * Convert the argument to a more compact and efficient internal
+   representation that is still POD data, and is indistinguishable from the
+   original POD data. (#2, #3)
+
+You can also define new abstract data types that hide their representation
+behind constructor and accessor functions. ADTs are a heavy weight tool
+that should only be used if they improve ease of use over just using POD
+data. Otherwise, prefer to use POD data in your public APIs.
+
+Even if you initially think that ADTs are the way to go, there may be a
+simpler and more general design that uses existing general purpose types.
+As software engineers, we are often trained to program by creating many
+narrow, special purpose ADTs that aren't composable with anything else.
+This conflicts with the Curv design philosophy of building software from
+a small number of orthogonal primitives that can be composed together in
+a large number of ways.
+
+Type API
+========
+The goals of this API are:
+ * To provide types that describe POD data,
+ * and that represent large POD arrays efficiently (for GPU programming).
+   Types are used to specify and reason about data representations.
+ * To provide type equivalents for the is_foo type predicates in Curv 0.5.
+ * Type names like 'Bool' that appear in SC compiler error messages will now
+   be Curv type expressions with documented semantics.
+
+Curv is a dynamically typed language where all data is represented by
+immutable values, and all values occupy a single universal set.
+
+The Curv creative coding dialect allows you to talk about integers like `42`
+in a simple and general way, independent of whether the integer is represented
+internally as `i8`, `i16`, `i32`, `i64`, `isize`, `u8`, `u16`, `u32`, `u64`,
+`usize`, `f32`, `f64`, `BigInt`, or `BigUInt`, and without grappling with the
+complexities of generic programming using a higher order static type system.
+Because this kind of insanely complex bureaucratic bullshit is a barrier
+to creative coding.
+
+Nevertheless, when you are attempting to do software engineering in Curv,
+then it is useful to have the concept of a type. Types are useful for
+validating input and for specifying the in-memory representation of values
+for writing high performance code.
+
+So Curv has type values. A type is a set of values plus a representation.
+* The set of all values is the type `Any`, and all other types are subsets
+  of `Any`.
+* A type also has a representation. If a variable is statically restricted to
+  containing just the values contained in a type T, then often, a more efficient
+  representation can be used to represent the variable. For example, the
+  representation for type Any is a 64 bit "NaN box", but the representation
+  for type Bool only requires 1 bit. So if you have a large array of Bools,
+  it's more efficient to use the more compact representation.
+
+At this point, I want to emphasize that the same value can belong to multiple
+types (because a type is a set of values), and that a value stored in memory
+can have multiple representations. This is transparent to the user when using
+the creative coding dialect. For example,
+ * A boolean value (true or false) could be represented in 1 bit, or in 8
+   bits on the CPU (where the byte is the smallest addressable unit of memory),
+   or in 32 bits on the GPU (where the 32 bit word is the smallest addressable
+   unit of memory), or as a 64 bit boxed value.
+ * The integer 42 could be represented using the 14 different Rust types that
+   I mentioned earlier, or as a 64 bit boxed value.
+
+In short, Curv values are simple, abstract concepts that exist independent
+of a particular representation, and this is a consequence of Curv's "dynamic
+typing" mind set. In the "static typing" mind set, you often do not consider
+values independent of a specific type and representation, which is great for
+reasoning about data validation and performance, but adds a lot of complexity
+and is thus a barrier to creative coding.
+
+In Curv 0.5, types are represented by predicate functions, but this no longer
+works in Curv.next, because:
+* Types are a special case of schemas, and schemas cannot be represented by
+  predicates.
+* Types have a representation, and shoehorning a representation into a
+  predicate function is a bit kludgy.
+So now, types are a new kind of abstract value represented by type Type.
+
+Type Constructors
+-----------------
+Any -- set of all values
+Type -- set of all type values
+Func
+Primitive_Func
+Index
+
+Num -- numbers
+Char -- characters
+
+Variant
+Symbol
+Enum [#foo, #bar T, #baz T1 T2]
+Bool = Enum [#false, #true]
+
+List -- an arbitrary list, equivalent to Array 1 Any
+Array R T -- an R-dimensional rectangular array, elements of type T
+Array [count1,count2,...] T -- fixed size multi-dimensional rectangular array
+Tuple [T1,T2,T3,...] -- fixed size list with per-element types
+String = Array 1 Char
+
+Record {name1: type1, ...}
+    The argument to 'Record' is a record whose elements are types,
+    specifying the minimum set of fields that must be present.
+    'Record{}' describes an arbitrary record.
+Struct {name1: type1, ...}
+    A Struct is a record with a fixed set of fields, and an efficient
+    representation.
+
+All predicate
+    Set of all values for which `predicate` is true.
+    An upgrade path for converting predicate patterns to type patterns.
+
+Type Operations
+---------------
+is T -- predicate function. eg `is_num x` replaced by `is Num x`.
+pat :: T
+    A pattern that fails unless argument has type T.
+    (Do we optimize the representation of T if it matches, without changing
+    the value? This is an implementation/performance question.)
+    For backwards compatibility, we simultaneously support but
+    deprecate `pat :: predicate`.
+expr :: type
+require type expr
+as T x -- fail if `is T x` is false. Returns `x` otherwise, which may also
+    be optimized.
+
+SubCurv Types
+-------------
+The following types map directly onto WGSL Plain Types in SubCurv:
+    bool -> Bool
+    u32 -> Array [32] Bool
+    i32 -> Int
+    f32 -> Num
+
+Algebras
+========
+A mini version of this feature from ADA is needed for:
+ * Updating picker values to behave as types, not as predicates.
+ * Replacing (char,is_char) with Char, and so on.
+
+Just as a module with a `call` field behaves like a function,
+a module with a `T` field now behaves like a type. That's it.
+
+examples:
+    slider[lo,hi] = { T: Num, picker: #slider[lo,hi] }
+    Char.T is the character type, Char.call is the old `char` function.
