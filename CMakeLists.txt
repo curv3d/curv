@@ -65,6 +65,12 @@ set_property(
     GIT_BRANCH="whatever")
 set_property(TARGET libfive PROPERTY CXX_STANDARD 17)
 
+# tmc library
+add_library(tmc
+    extern/dmc/DualMarchingCubes.cpp
+    extern/dmc/UniformGrid.cpp)
+set_property(TARGET tmc PROPERTY CXX_STANDARD 17)
+
 # REPLxx library
 file(GLOB ReplxxSrc "extern/replxx/src/*.cxx" "extern/replxx/src/*.cpp")
 add_library(replxx ${ReplxxSrc})
@@ -164,7 +170,7 @@ else ()
 endif ()
 set(Libs
     libcurv_io libcurv imgui glfw glad ${LibOpenGL} replxx double-conversion
-    libfive
+    libfive tmc
     Boost::iostreams Boost::filesystem Boost::system ${LibOpenVDB} tbb
     ${LibHalf} pthread ${LibDl} ${LibOmp})
 
