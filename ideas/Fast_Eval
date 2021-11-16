@@ -15,7 +15,14 @@ Here are the possibilities for fast expression evaluation:
   * WASM/JIT: Generate an external WASM module and then execute it.
     * https://github.com/indutny/wasm-jit/
     * JIT based x86 emulator in WASM: leaningtech.com/cheerpx
-  * Emit LLVM IR and compile to native code, WASM or SPIR-V? Not sure.
+  * LLVM IR to native code, WASM or SPIR-V? In 2021, SPIR-V is not in LLVM.
+    Khronos has a repo, WIP, focussed on OpenCL SPIR not Vulkan SPIR-V.
+  * MLIR has LLVM & SPIR-V/Vulkan backends. github.com/google/IREE?
+    Distinct spv and llvm IR dialects, not a single IR with multiple targets.
+  * SPIR-V -> LLVM translator in MLIR.
+  * .NET/Mono CIL (an IR). Linux/MacOS/Windows/Android, profiling JIT.
+    Java like VM, OOP, stack machine, generational GC. Optional LLVM backend.
+    AOT compile to LLVM bitcode, then WASM.
 * GPU compute. Super fast for appropriate work loads. Strangely, this is the
   only universal option for optimized native code execution.
 * AOT compiler. Generate C++, compile to native code or WASM.
