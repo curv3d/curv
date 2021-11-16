@@ -147,31 +147,22 @@ void export_mesh(Mesh_Format format, curv::Value value,
         std::cerr <<
             "You are in SLOW MODE. Use '-O jit' to speed up rendering.\n";
     }
+    const curv::Shape* pshape;
+    if (cshape) pshape = &*cshape; else pshape = &shape;
+    bool multithreaded = (cshape != nullptr);
 
     switch (opts.mgen_) {
     case Mesh_Gen::smooth:
-      {
-        const curv::Shape* sh;
-        if (cshape) sh = &*cshape; else sh = &shape;
-        vdb_mesher(*sh, cshape != nullptr, opts, cx, format, out);
+        vdb_mesher(*pshape, multithreaded, opts, cx, format, out);
         break;
-      }
     case Mesh_Gen::sharp:
     case Mesh_Gen::iso:
     case Mesh_Gen::hybrid:
-      {
-        const curv::Shape* sh;
-        if (cshape) sh = &*cshape; else sh = &shape;
-        libfive_mesher(*sh, cshape != nullptr, opts, cx, format, out);
+        libfive_mesher(*pshape, multithreaded, opts, cx, format, out);
         break;
-      }
     case Mesh_Gen::tmc:
-      {
-        const curv::Shape* sh;
-        if (cshape) sh = &*cshape; else sh = &shape;
-        tmc_mesher(*sh, cshape != nullptr, opts, cx, format, out);
+        tmc_mesher(*pshape, multithreaded, opts, cx, format, out);
         break;
-      }
     default:
         throw curv::Exception(cx, "mesh export: unknown mesh generator");
     }
