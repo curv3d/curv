@@ -2,9 +2,8 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <extern/tmc/cpp_dmc/UniformGrid.h>
-//#include <extern/tmc/cpp_dmc/Volumes.h>
-#include <extern/tmc/cpp_dmc/DualMarchingCubes.h>
+#include <extern/dmc/UniformGrid.h>
+#include <extern/dmc/DualMarchingCubes.h>
 #include <omp.h>
 
 #include "mesher.h"

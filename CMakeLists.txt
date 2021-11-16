@@ -67,9 +67,8 @@ set_property(TARGET libfive PROPERTY CXX_STANDARD 17)
 
 # tmc library
 add_library(tmc
-    extern/tmc/cpp_dmc/DualMarchingCubes.cpp
-    extern/tmc/cpp_dmc/UniformGrid.cpp)
-target_include_directories(tmc PUBLIC extern/tmc/cpp_dmc)
+    extern/dmc/DualMarchingCubes.cpp
+    extern/dmc/UniformGrid.cpp)
 set_property(TARGET tmc PROPERTY CXX_STANDARD 17)
 
 # REPLxx library

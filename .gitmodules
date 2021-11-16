@@ -22,6 +22,3 @@
 [submodule "extern/libfive"]
 	path = extern/libfive
 	url = https://github.com/curv3d/libfive
-[submodule "extern/tmc"]
-	path = extern/tmc
-	url = https://github.com/curv3d/tmc
