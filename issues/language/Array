@@ -1,0 +1,4 @@
+amap F A
+    map F onto each scalar in A. It is depth-polymorphic.
+amap2 F [A1,A2]
+    Vectorize a binary scalar operation.

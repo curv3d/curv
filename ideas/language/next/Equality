@@ -1,3 +1,225 @@
+Full Metal Equality
+===================
+A single universal equality operator (x==y) with five axioms:
+ 1. Reflexive: x==x.
+ 2. Symmetric: if x==y then y==x.
+ 3. Transitive: if x==y and y==z then x==z.
+ 4. For any ordinary function f, if x==y then f x == f y.
+    (Related to Leibniz's Identity of Indiscernables.)
+ 5. If two values print the same, they are equal.
+    There is an isomorphism between "printed representation" and equality.
+
+Ordinary vs Test Functions
+--------------------------
+A test function can inspect the internal representation of Curv values
+and make distinctions that violate the equality axioms. It can distinguish
+between two different internal representations of the same value, which
+compare equal, thus violating the fourth axiom.
+
+Test functions are needed for debugging and unit testing.
+They may also be needed internally for high performance implementations of
+ordinary functions. All of these are software engineering concerns.
+
+We would like all functions in the creative coding dialect to be ordinary
+functions, so that Axiom 4 works for equality. We could guarantee this
+nice behaviour in the creative coding dialect by adding more bureaucracy
+to the software engineering dialect.
+
+The idea is that test functions are "tainted", similar to unsafe functions
+in Rust. Normally, the use of test functions is restricted to test blocks.
+  Test code cannot change the result of a program, and cannot invalidate
+  equational reasoning (in non test code) based on The Axioms.
+
+A function that directly calls a test function outside of a test block is
+"tainted" and marked as being a test function. The taint can be removed
+(when writing high performance but safe code using test functions) using
+some keyword analogous to "unsafe" in Rust.
+
+Data Equality
+-------------
+A data value is one that isn't a function, and contains no functions as
+elements. If x and y are data, then x==y is data equality, which obeys the
+five axioms.
+
+Numbers:
+ * NaN is not a number. NaN equality violates the reflexive axiom.
+ * Negative zero is not a number. NegZero equality violates the fourth axiom.
+
+GPU Numbers:
+ * Code run on the GPU will generate NaN and -0 values, and these values can
+   be stored in huge data structures generated on the GPU, which can then be
+   inspected by Curv code. We can't sanitize huge data structures when they
+   are transferred from GPU to CPU. Generating GPU code that avoids bad values
+   might be too expensive. So we need tools to handle these values safely when
+   they enter the interpreter from the GPU.
+
+Branded Value Equality
+----------------------
+Branded values use Unconditioned brand identity. Two branded
+values are equal iff they have the same brand, and the brand is isomorphic to
+the printed representation. Branded value equality obeys the five axioms.
+
+Function Equality
+-----------------
+We are left with the question of equality for anonymous functions.
+
+Anonymous functions should be printed as lambda expressions that, when
+evaluated, return a function that is equal to the original.
+
+ 1. In Curv 0.5, anonymous functions print as "<function>", and all anonymous
+    functions compare equal. This is an equivalence relation but violates the
+    fourth axiom, and the requirement for how functions are printed.
+ 
+ 2. Let's suppose that function equality is supported in a way that satisfies
+    the five axioms. Anon Functions are printed as specified above, and
+    compare equal if their printed reps are equal.
+
+    The fourth axiom partially specifies function equality in a way that is
+    useful to programmers. Consider an anonymous curried function F x y.
+    F x is a function. According to axiom 4, if a == b then F a == F b.
+    Eg if 'F a b = a + b' then F 2 == F (1 + 1) even if we are comparing
+    two distinct closure objects. Mainstream languages with function equality
+    don't offer these semantics, they just compare closure object pointers
+    for equality.
+
+    For another example, using the shape representation of Curv 0.5 (a record
+    containing function closures), then Full Metal function equality means:
+    * Two shapes are equal if they have the same constructor function
+      and the same constructor arguments. Eg, cube 1 == cube 1.
+    * Two shapes are unequal if they are not operationally equivalent.
+    * There is a grey area: two shapes that are constructed differently
+      but that are operationally equivalent may or may not be equal,
+      it depends on the implementation.
+
+    In short, two closures are equal if the lambda bodies are equal and the
+    captured environments are equal. Now we need to define equality for
+    lambda bodies and consider when functions are unequal.
+
+    (a) Function equality is implementation defined (not fully specified).
+        It is guaranteed that two closures are equal if their environments are
+        equal, and their lambda bodies have the same source code location.
+
+        This leaves a grey area:
+        * If two anon functions are generated by evaluating lambda expressions
+          with different source code locations, they are not guaranteed to
+          be equal, even if the lambdas are identical and the environment
+          is identical. Copying an expression to another source code location
+          may not preserve function equality.
+        * If two anon functions are generated from two different evaluations
+          of the same lambda expr, and are operationally equivalent, but 
+          the environment captured by the closure is different, they are
+          not guaranteed to be equal.
+
+        You can get rid of the grey area and nail down equality semantics
+        by using branded shape constructors.
+
+        This design provides useful guarantees to programmers while not
+        imposing a high cost on the implementation, and not preventing
+        optimizations that speed up function calls or reduce the cost
+        of closures. We don't aim to make function equality itself
+        as fast as possible.
+
+        In the intended implementation, a function closure is represented
+        by a pointer to the compiled function body, plus a list of captured
+        nonlocal binding values. Equality is tested by comparing code pointers
+        and comparing the captured environment. The printed rep of an anon
+        function contains:
+        * The values of (at least) non-constant, non-local binding values
+          that are stored in the closure.
+        * The source code of the function body.
+        * An ID that maps back to the source code location corresponding to
+          the closure's code pointer.
+
+    (b) We alter (a) to make equality semantics deterministic.
+         * The source code location of an anon function's lambda is
+           part of its identity, and must be preserved. This is compatible
+           with Unconditioned brand identity, in a possibly useful way,
+           but blocks CSE for lambda expressions.
+         * The values of non-local variables referenced by the lambda are
+           part of the function's identity, and must be preserved in the
+           closure. This forces closures to capture data that isn't
+           relevant to the final result returned by the function.
+
+        Do the benefits of deterministic anon function equality outweigh
+        the drawbacks of the foregone optimizations? The additional
+        guarantees aren't useful as axioms, their only benefit is
+        consistent results across implementations.
+
+    (c) Like (a) or (b), except we hash the function body source code and
+        compare hashes, instead of comparing code pointers. Copying a lambda
+        without changing the code preserves equality. We don't print a
+        source code location. Loosely inspired by Unison.
+
+        The goal is to preserve equational reasoning in the specific case
+        of copying lambda expressions.
+
+    (d) Like (c), except that we preserve equational reasoning even in the
+        presence of semantics-preserving code transformations.
+        Two lambdas that have different code but are semantically equivalent
+        under code transformations guided by The Axioms are equivalent,
+        and are normalized to the same representation when a function is
+        printed.
+
+        As we add more semantics-preserving code transformations to
+        our definition of lambda equivalence, the implementation difficulty
+        goes way up, but we also interfere with a developer's ability to
+        predict function equality in a given code fragment. The rule that
+        equates lambda equivalence with source code location, and that includes
+        a link to the source code in the printed rep of a function, is easy to
+        understand. That source code link is useful: where did this function
+        come from?
+
+ 3. The equality operator fails if either operand is an anonymous function.
+    To be consistent, we must fail if an operand is a data structure containing
+    an anonymous function.
+     * There is an Eq type, a subset of Any, which contains the values that
+       support equality tests. (Kind of like Haskell.) Both arguments to ==
+       must belong to Eq. For a POD data structure to be in Eq, all of its
+       elements must be in Eq. For a branded value to be in Eq, all of the
+       arguments in its brand must be in Eq.
+     * This seems expensive. Naively, equality can't bail out early after
+       determining that two values cannot be equal, it must still examine
+       all the elements of a data structure to see if there are any anonymous
+       functions.
+     * If we bail out early anyway, we get inconsistent behaviour. Whether
+       equality succeeds or fails depends on the order in which data structure
+       elements are examined.
+     * We could optimize this by adding a ternary flag to data structures that
+       potentially might contain anonymous function elements, specifying
+       whether anonymous values are present. This flag has three values:
+       yes, no, undetermined.
+    Suppose that variable x contains either `#none` or `#some a`, where `a`
+    is an arbitrary value (`a` could be an anonymous function).
+    Then `x==#none` will fail, instead of return false, if x is `#some f`.
+    The workaround is to use pattern matching. Option #4 gives the expected
+    behaviour.
+
+ 4. The equality operator fails if you test two anonymous functions for
+    equality. But an anon function is unequal to data or to a branded value.
+    As long as we can determine inequality without comparing two anon functions,
+    we will return a useful result.
+     * To be consistent, while scanning two data structures to compare them
+       for equality, if we test two anon function elements for equality, we
+       shouldn't immediately fail because there might be unequal elements
+       later in the scan that prove inequality.
+     * Therefore, we should extend the equality operator to return a
+       ternary result (yes, no, undetermined), and extend the boolean ops to
+       support ternary inputs, so that we can define equality of data structures
+       by testing the equality of corresponding elements.
+     * It's possible that a==b is false, b==c is false, but a==c fails.
+       We don't have an Eq type to determine if a value can be compared for
+       equality, it's weirder than that.
+
+Surprisingly (to me), I think that 2(a) provides better axioms and guarantees
+that "code works as expected" for the creative coder than 1, 3 or 4.
+And it's so easy to implement. It's surprising because #3 is inspired by
+Haskell, and Haskell's brand is that is has excellent pure functional semantics.
+The lesson, I guess, is that generalizing Haskell's Eq type to a dynamically
+typed setting is treacherous.
+
+Prior art is mostly useless in figuring out this design. Other languages
+suck at this.
+
 Equality, Equivalence & Referential Transparency
 ================================================
 `x == y` is the equality predicate. It is useful for comparing data values,

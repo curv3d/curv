@@ -44,6 +44,7 @@ Bstring literals:
     "1011"b,  "D2"x
     0b"1011", 0x"D2"
     or use ordinary functions, not special syntax.
+    eg, BStr "1011", BStr.hex "D2"
 Bstring operations:
     shl, shr, ashr -- curried shift operators, matching WGSL
         shiftl, shiftr, ashiftr
@@ -56,8 +57,24 @@ The following depend on bigint support, see [[Numbers]]:
     nat_to_bstring <count> <nat>
       or, int_to_bstring <count> <int>
 
+Alternative names using the Type/Algebra proposal:
+    BStr -- a type, == Array 1 Bool
+    BStr "1011"
+    BStr.hex "D2"
+    BStr.to_float32 <bstring>
+    BStr.from_float32 <num>
+    BStr.to_nat <bstring>
+    BStr.to_int <bstring>
+    BStr.from_nat <count> <nat>
+    BStr.from_int <count> <int>
+
 bit b"1011" == [1,0,1,1]
 bool [1,0,1,1] == b"1011"
+
+bit (BStr "1011") == [1,0,1,1]
+Bool [1,0,1,1] == BStr "1011"
+
+Note that 'bit' could be elevated to a type (the set {0,1}).
 
 Bstring Literals
 ----------------
