@@ -68,7 +68,7 @@ struct Voxel_Config
 struct Voxel_Timer
 {
     const Voxel_Config& vox_;
-    std::chrono::time_point<std::chrono::steady_clock> start_time_;
+    std::chrono::time_point<std::chrono::steady_clock> start_time_, end_time_;
 
     Voxel_Timer(const Voxel_Config& vox) : vox_(vox)
     {
@@ -77,9 +77,8 @@ struct Voxel_Timer
 
     void print_stats()
     {
-        std::chrono::time_point<std::chrono::steady_clock> end_time =
-            std::chrono::steady_clock::now();
-        std::chrono::duration<double> render_time = end_time - start_time_;
+        end_time_ = std::chrono::steady_clock::now();
+        std::chrono::duration<double> render_time = end_time_ - start_time_;
         std::cerr
             << "Rendered " << vox_.nvoxels
             << " voxels in " << render_time.count() << "s ("

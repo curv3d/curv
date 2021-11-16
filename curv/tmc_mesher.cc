@@ -113,7 +113,17 @@ void tmc_mesher(
     grid.estimateGradient();
     grid.flip_gradient();
     vtimer.print_stats();
+
     TMC_Mesh mesh(true, grid);
+    auto tnow = std::chrono::steady_clock::now();
+    std::chrono::duration<double> gen_time = tnow - vtimer.end_time_;
+    unsigned nquads = mesh.quad_.size() / 4;
+    std::cerr
+        << "Generated " << nquads
+        << " quads in " << gen_time.count() << "s ("
+        << int(nquads/gen_time.count()) << " quads/s).\n";
+    std::cerr.flush();
+
     auto stats = write_mesh(format, mesh, shape, opts, out);
-    print_mesh_stats(stats);
+    //print_mesh_stats(stats);
 }

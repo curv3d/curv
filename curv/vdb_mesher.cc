@@ -130,7 +130,13 @@ void vdb_mesher(
         }
     }
     vtimer.print_stats();
+
     VDB_Mesh mesh(opts.adaptive_, grid);
+    auto tnow = std::chrono::steady_clock::now();
+    std::chrono::duration<double> gen_time = tnow - vtimer.end_time_;
+    std::cerr << "Generated mesh in " << gen_time.count() << "s\n";
+    std::cerr.flush();
+
     auto stats = write_mesh(format, mesh, shape, opts, out);
     print_mesh_stats(stats);
 }
