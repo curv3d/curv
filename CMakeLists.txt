@@ -66,8 +66,10 @@ set_property(
 set_property(TARGET libfive PROPERTY CXX_STANDARD 17)
 
 # tmc library
-file(GLOB TmcSrc "extern/tmc/cpp_dmc/[A-Z]*.cpp")
-add_library(tmc ${TmcSrc})
+add_library(tmc
+    extern/tmc/cpp_dmc/DualMarchingCubes.cpp
+    extern/tmc/cpp_dmc/Timer.cpp
+    extern/tmc/cpp_dmc/UniformGrid.cpp)
 target_include_directories(tmc PUBLIC extern/tmc/cpp_dmc)
 set_property(TARGET tmc PROPERTY CXX_STANDARD 17)
 
