@@ -12,7 +12,7 @@ void dmc::DualMarchingCubes::dualMC(const double i0, UGrid& ugrid,
 	const int jdim = ugrid.y_size();
 	const int kdim = ugrid.z_size();
 	std::map<int, std::array<int, 5>> m_;
-    std::cout << " ... compute iso-surface" << std::endl;
+    //std::cout << " ... compute iso-surface" << std::endl;
 #pragma omp parallel for
     for (int k = 0; k < (kdim - 1); k++)
 	{
@@ -48,43 +48,43 @@ void dmc::DualMarchingCubes::dualMC(const double i0, UGrid& ugrid,
 			}
 		}
 	}
-    std::cout << " ... projections failed level 1: " << nrProj1 << std::endl;
-    std::cout << " ... projections failed level 2: " << nrProj2 << std::endl;
+    //std::cout << " ... projections failed level 1: " << nrProj1 << std::endl;
+    //std::cout << " ... projections failed level 2: " << nrProj2 << std::endl;
     // collect quadrilaterals
     std::vector<int> colors;
-    std::cout << " ... collect quadrilaterals" << std::endl;
+    //std::cout << " ... collect quadrilaterals" << std::endl;
 	collectQuadrilaterals(quads, colors, m_);
     // remove unused vertices, e.g. at boundaries
     removeUnusedVertices(v, n, quads);
     // count elements
-    std::cout << " ... nr. of vertices: " << v.size() << std::endl;
-    std::cout << " ... nr. of quads: " << (quads.size() / 4) << std::endl;
+    //std::cout << " ... nr. of vertices: " << v.size() << std::endl;
+    //std::cout << " ... nr. of quads: " << (quads.size() / 4) << std::endl;
     if (sFlag)
     {
         // simplify 3X3Y
-        std::cout << " ... mesh simplification - P3X3Y" << std::endl;
+        //std::cout << " ... mesh simplification - P3X3Y" << std::endl;
         simplify3X3Y(v, n, quads, colors);
         // count elements
-        std::cout << " ... nr. of vertices: " << v.size() << std::endl;
-        std::cout << " ... nr. of quads: " << (quads.size() / 4) << std::endl;
+        //std::cout << " ... nr. of vertices: " << v.size() << std::endl;
+        //std::cout << " ... nr. of quads: " << (quads.size() / 4) << std::endl;
         // simplify 3333
-        std::cout << " ... mesh simplification - P3333" << std::endl;
+        //std::cout << " ... mesh simplification - P3333" << std::endl;
         simplify3333(v, n, quads);
         // count elements
-        std::cout << " ... nr. of vertices: " << v.size() << std::endl;
-        std::cout << " ... nr. of quads: " << (quads.size() / 4) << std::endl;
+        //std::cout << " ... nr. of vertices: " << v.size() << std::endl;
+        //std::cout << " ... nr. of quads: " << (quads.size() / 4) << std::endl;
     }
     // compute final halfedge data structure and find out nr. of non-manifold elements
-    std::cout << " ... compute halfedges" << std::endl;
+    //std::cout << " ... compute halfedges" << std::endl;
     const int nr_v{ static_cast<int>(v.size()) };
     std::vector<std::array<int, 5>> he_; // mark manifold and non-manifold halfedges
     std::vector<int> v_;
     std::vector<int> f_;
     halfedges(nr_v, quads, he_, v_, f_);
 	// compute triangles
-    std::cout << " ... compute triangles" << std::endl;
+    //std::cout << " ... compute triangles" << std::endl;
 	collectTriangles(tris, quads, v);
-    std::cout << " ... done!" << std::endl;
+    //std::cout << " ... done!" << std::endl;
 }
 
 
@@ -663,11 +663,12 @@ void dmc::DualMarchingCubes::halfedges(const int nr_v, std::vector<int>& quads, 
             break;
         }
         default:
-            std::cout << " ... ERROR: wrong nr. of faces sharing an edge: " << c << std::endl;
+            std::cerr << " ... ERROR: wrong nr. of faces sharing an edge: " << c << std::endl;
             break;
         }
     }
-    std::cout << " ... nr. of non-manifold edges: " << nr_nonmanifold << std::endl;
+    if (nr_nonmanifold > 0)
+        std::cerr << " ... nr. of non-manifold edges: " << nr_nonmanifold << std::endl;
 }
 
 std::array<int, 4> dmc::DualMarchingCubes::collectNeighbors(const int quad, std::vector<Halfedge>& he, std::vector<int>& he_f)
@@ -866,7 +867,7 @@ void dmc::DualMarchingCubes::vertexValence(const int nr_v, std::vector<Halfedge>
     }
     const int minV = *std::min_element(vV.begin(), vV.end());
     if (minV == 0) {
-        std::cout << "ERROR: there are elements with valence 0" << std::endl;
+        std::cerr << "ERROR: there are elements with valence 0" << std::endl;
     }
 }
 

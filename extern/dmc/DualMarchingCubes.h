@@ -173,7 +173,7 @@ namespace dmc {
 					for (auto v : bndVertices) {
 						bndV.push_back(v);
 					}
-					std::cout << "size of bndV: " << bndV.size() << std::endl;
+					//std::cout << "size of bndV: " << bndV.size() << std::endl;
 					return true;
 				}
 				else {
@@ -723,7 +723,7 @@ namespace dmc {
 				}
 				// copy back
 				const int nr_nv = static_cast<int>(nv.size());
-				std::cout << " ... nr. of unused vertices removed: " << (nr_v - nr_nv) << std::endl;
+				//std::cout << " ... nr. of unused vertices removed: " << (nr_v - nr_nv) << std::endl;
 				v.assign(nv.begin(), nv.end());
 				n.assign(nn.begin(), nn.end());
 			}
