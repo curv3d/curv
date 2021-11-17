@@ -1,0 +1,10 @@
+mimalloc: A fast memory allocator, optimized for language runtimes that use
+reference counting.
+
+https://www.microsoft.com/en-us/research/uploads/prod/2019/06/mimalloc-tr-v1.pdf
+
+Sam Gross is the author of 'nogil', a fork of CPython that removes the GIL,
+and uses mimalloc for performance.
+
+"Notes From the Meeting On Python GIL Removal Between Python Core and Sam Gross"
+https://lukasz.langa.pl/5d044f91-49c1-4170-aed1-62b6763e6ad0/
