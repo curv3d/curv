@@ -19,7 +19,7 @@ Use cases:
  2. Validation and normalization. Validate an input, then convert it to a
     normalized form that is easier or faster to process. This normal form has
     a type that provides no way to represent an invalid state. This use case
-    is called a "schema".
+    is called a "Schema".
  3. Compact, efficient representation of bulk data.
  4. Abstract data types that hide their representation.
 
@@ -172,3 +172,96 @@ a module with a `T` field now behaves like a type. That's it.
 examples:
     slider[lo,hi] = { T: Num, picker: #slider[lo,hi] }
     Char.T is the character type, Char.call is the old `char` function.
+
+Schemas
+=======
+Schemas are a generalization of types that can normalize data, converting
+it to a canonical form. The outputs of this normalization step might have
+a disjoint value set from the inputs. Eg,
+ * "normalize" a string representation of an integer into an integer,
+   or fail if the string has a syntax error.
+ * A schema for JSON import maps an abstract encoding of JSON values to
+   domain specific values. The inputs resemble `#array [#num "42",#false]`.
+
+The philosophy of combining validation and normalization into a single
+step is well argued in the classic blog post "Parse Don't Validate"
+by Lexi Lambda, where this process is called "parsing".
+ * We separate the code that processes input data from the code that
+   validates and normalizes it. We report errors early, with high level
+   error messages, rather than deep in the processing code, leaving users
+   to decode a stack trace. The code is cleaner because the processing logic
+   is not obscured by the error handling logic.
+ * The normalized representation is more efficient to process, it doesn't have
+   multiple ways to represent the same thing, and cannot represent an invalid
+   state.
+
+Schemas are like reified patterns. They have the same power to match and
+normalize data. They can be used to abstract over patterns, when used with
+the <: pattern operator.
+
+"Type" is a subtype of "Schema" that doesn't support normalization.
+Reasons for unifying types and schemas:
+* Like types, schemas have a representation as well as a domain.
+* Types normalize data as well (into a more efficient internal representation,
+  without changing the value set).
+* So that we can have generic type/schema constructors like Array,
+  Struct, Enum, etc. Rather than duplicate all of the type combinators
+  for schemas.
+
+Types are distinguished from schemas:
+* `is type` but not `is schema`.
+* `:: type` but not `:: schema`. Can use a type to declare a mutable
+  variable but not a schema.
+
+Schema API
+----------
+A Schema cannot be called like a function, it conflicts with the Algebra
+proposal.
+
+All of the Type combinators are generalized to be Schema combinators.
+
+`Struct {a :: Num, b :: Num = 0}` is a struct schema that provides a
+default value if the field `b` is missing.
+
+`Schema f` converts a function to a schema S.
+This function can be recovered from S using `as S`.
+
+The pattern 'pat :: type' requires the right argument to be a type.
+The value may be converted to a more efficient representation but
+the value set doesn't change.
+
+The pattern 'pat <: schema' allows the right argument to be a schema,
+and the argument value is normalized before being matched by the left
+pat argument.
+
+The 'is <type> <val>' function requires the first argument to be a type.
+
+as sc x -- Fail if `x` is not in the schema's domain. Otherwise, normalize
+'x' and return the normalized result.
+
+Function Types
+==============
+An idea for future research.
+
+No matter what DSL we design for describing function types, there will always
+be functions that can't be described by the DSL. Automatically determining
+the exact type of a function (for those functions that even have a type)
+is in general possible, although it could be done for special cases. For the
+more general case, annotations within the function will be required to declare
+a type that can then be automatically matched against a function type.
+
+To begin, we could provide simple function types of the form
+    type1 => type2
+and we could provide syntax for annotating a return type within a lambda expr.
+Simply typed functions are the only kind that can run on a GPU, so there may
+be a use for this.
+
+After that, there's an unending complexity spiral as the function type
+DSL is made increasingly more expressive.
+
+Gradual Typing in Racket casts an untyped function to a specific function
+type by wrapping it in code (a proxy) that checks argument and return values.
+This is known to be terribly slow, but there is some research on this.
+Maybe the problem can be mitigated by JIT compiling the function source
+into statically typed code, maybe by monomorphizing it. The Shape Compiler
+is already doing something like this when compiling dist and colour functions.
