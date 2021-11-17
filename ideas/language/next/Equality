@@ -110,8 +110,8 @@ evaluated, return a function that is equal to the original.
           the environment captured by the closure is different, they are
           not guaranteed to be equal.
 
-        You can get rid of the grey area and nail down equality semantics
-        by using branded shape constructors.
+        You can avoid the grey area and control function equality semantics
+        by using branded functions.
 
         This design provides useful guarantees to programmers while not
         imposing a high cost on the implementation, and not preventing
@@ -125,27 +125,73 @@ evaluated, return a function that is equal to the original.
         and comparing the captured environment. The printed rep of an anon
         function contains:
         * The values of (at least) non-constant, non-local binding values
-          that are stored in the closure.
+          that are stored in the closure. A binding value that has no effect
+          on the function result can be omitted as an optimization.
         * The source code of the function body.
-        * An ID that maps back to the source code location corresponding to
-          the closure's code pointer.
+        * An ID that maps back to a source code location corresponding to
+          the closure's code pointer. (This doesn't preclude CSE optimization
+          where two distinct lambda expressions share a code pointer.)
 
-    (b) We alter (a) to make equality semantics deterministic.
+    (b) We strengthen (a) to guarantee that an anonymous function value
+        contains a link to the exact source location of the lambda expression
+        that generated the function value. I think this is useful for
+        understanding program dynamics (where did this function come from?).
+
+        This seems closely related to Unconditioned identity of branded values,
+        which also contain these source location links. We could just say
+        that all API values (functions, modules, etc) have a source location
+        link, regardless of whether they are branded.
+
+    (c) We strengthen (b) to make equality semantics deterministic.
          * The source code location of an anon function's lambda is
-           part of its identity, and must be preserved. This is compatible
-           with Unconditioned brand identity, in a possibly useful way,
-           but blocks CSE for lambda expressions.
+           part of its identity (for equality). Maybe there's a runtime
+           cost to preserving this information when CSE unifies function
+           bodies.
          * The values of non-local variables referenced by the lambda are
            part of the function's identity, and must be preserved in the
            closure. This forces closures to capture data that isn't
            relevant to the final result returned by the function.
 
-        Do the benefits of deterministic anon function equality outweigh
-        the drawbacks of the foregone optimizations? The additional
-        guarantees aren't useful as axioms, their only benefit is
-        consistent results across implementations.
+        There are benefits to preserving source code location and the full
+        set of non-const nonlocal bindings in a function: it's useful for
+        debugging (understanding program dynamics), a separate issue from
+        equational reasoning.
+        * From a C/C++ perspective, I can imagine enabling this feature
+          in debug mode and disabling it in release mode (for performance).
 
-    (c) Like (a) or (b), except we hash the function body source code and
+        I've identified 3 conflicting requirements:
+         1. Mechanical sympathy: make it as easy as possible to understand why
+            two function values are comparing equal, so that you can understand
+            a program's dynamic behaviour and debug it.
+         2. Optimization: the compiler rewrites the program to make it run as
+            quickly as possible, at the expense of (1).
+         3. Equational reasoning. When code is rewritten using The Axioms
+            as rewrite rules then meaning is preserved.
+             * If you copy an expression and evaluate in the same lexical
+               environment as the original, both copies should return the
+               same value.
+             * If you rewrite the copy using The Axioms, the result continues
+               to be equal.
+            WRT anon function equality, this requirement conflicts with (1).
+            If you see two textually distinct function literals then it can
+            be an extreme intellectual effort to *prove* whether the language
+            will treat them as equal, using The Axioms to transform one
+            expression into the other, or to prove that no such transformation
+            exists.
+
+        For the creative coding dialect, the top priority is #1,
+        mechanical sympathy. With respect to functional equality, even
+        Haskell sacrifices equational reasoning (#3) in service of other goals.
+        Haskell statically prohibits function equality, which makes certain
+        intuitively reasonable program transformations illegal.
+
+        Deterministic function equality is best for mechanical sympathy.
+        It gives simple rules for understanding why two function literals are
+        equal or unequal, and ensures consistent portable behaviour across
+        implementations or releases (new optimizations don't break existing
+        programs).
+
+    (d) Like (a,b,c), except we hash the function body source code and
         compare hashes, instead of comparing code pointers. Copying a lambda
         without changing the code preserves equality. We don't print a
         source code location. Loosely inspired by Unison.
@@ -153,7 +199,7 @@ evaluated, return a function that is equal to the original.
         The goal is to preserve equational reasoning in the specific case
         of copying lambda expressions.
 
-    (d) Like (c), except that we preserve equational reasoning even in the
+    (e) Like (d), except that we preserve equational reasoning even in the
         presence of semantics-preserving code transformations.
         Two lambdas that have different code but are semantically equivalent
         under code transformations guided by The Axioms are equivalent,
@@ -164,10 +210,9 @@ evaluated, return a function that is equal to the original.
         our definition of lambda equivalence, the implementation difficulty
         goes way up, but we also interfere with a developer's ability to
         predict function equality in a given code fragment. The rule that
-        equates lambda equivalence with source code location, and that includes
-        a link to the source code in the printed rep of a function, is easy to
-        understand. That source code link is useful: where did this function
-        come from?
+        equates lambda equivalence with source code location is easy to
+        understand, especially if we are including that information in the
+        function anyway, as per (b).
 
  3. The equality operator fails if either operand is an anonymous function.
     To be consistent, we must fail if an operand is a data structure containing
@@ -210,15 +255,15 @@ evaluated, return a function that is equal to the original.
        We don't have an Eq type to determine if a value can be compared for
        equality, it's weirder than that.
 
-Surprisingly (to me), I think that 2(a) provides better axioms and guarantees
+Surprisingly (to me), I think that 2(c) provides better axioms and guarantees
 that "code works as expected" for the creative coder than 1, 3 or 4.
 And it's so easy to implement. It's surprising because #3 is inspired by
-Haskell, and Haskell's brand is that is has excellent pure functional semantics.
-The lesson, I guess, is that generalizing Haskell's Eq type to a dynamically
-typed setting is treacherous.
+Haskell, and Haskell's brand is that it has excellent pure functional semantics.
+The lesson, I guess, is that generalizing Haskell's Eq type and static typing
+mindset to a value-oriented programming language is treacherous.
 
 Prior art is mostly useless in figuring out this design. Other languages
-suck at this.
+suck at this/do not share Curv's design goals.
 
 Equality, Equivalence & Referential Transparency
 ================================================
