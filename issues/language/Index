@@ -1,5 +1,9 @@
 Roadmap for Index values
 ========================
+records are indices
+-------------------
+According to [[ideas/language/next/Index]].
+
 get, set
 --------
 add
