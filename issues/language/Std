@@ -1,0 +1,21 @@
+The `std` keyword
+=================
+Add a new keyword, `std`, which cannot be used as a variable name (unless
+quoted). Initially, the `std` keyword can only be used in one context, which
+is phrases of the form `std.foo`, where `foo` is a standard binding.
+
+Builtin functions like `sin` print as `std.sin`, an expression which means
+the same thing regardless of the environment in which it is evaluated.
+
+Later, we want `std` to denote a record containing all standard bindings.
+Non-value bindings like `print` and `file` are reinterpreted as value
+bindings to Metafunction values, but a metafunction can only be called
+if it is a constant. See [[Macro]] and [[Constant]].
+
+Rationale:
+* Print standard functions using an unambiguous syntax.
+* If you want to locally redefine a standard binding `foo` while referring
+  to the original binding, you can achieve the latter using `std.foo`.
+* Use `std` as a module value, perhaps in some metaprogramming context where
+  you need to supply an environment for analysing an AST.
+

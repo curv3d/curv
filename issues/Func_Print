@@ -78,14 +78,6 @@ bindings in local `let` clauses that are duplicated at the module level.
 
 printing builtin functions
 --------------------------
-Add a new keyword, `std`, which cannot be used as a variable name (unless
-quoted). Initially, the `std` keyword can only be used in one context, which
-is phrases of the form `std.foo`, where `foo` is a standard binding.
-
 Builtin functions like `sin` print as `std.sin`, an expression which means
 the same thing regardless of the environment in which it is evaluated.
-
-Later, we want `std` to denote a record containing all standard bindings.
-Non-value bindings like `print` and `file` are reinterpreted as value
-bindings to Metafunction values, but a metafunction can only be called
-if it is a constant. See [[Macro]] and [[Constant]].
+See [[Std]].
