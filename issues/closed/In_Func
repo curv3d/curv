@@ -23,10 +23,12 @@ This mostly works now, except:
   Need new definition syntax, eg proposed as:
      def rotate = match ...
      func rotate = match ...
+  Moved to: [[issues/Function]]
 * In a SubCurv trace, function names are `dist` if the argument to
   make_shape is a scoped record, or function name is missing if argument
   is a dynamic record. With the new Shape design based on ADA, I'd like
   to see names like `cube.distance` and `rotate.distance` in the trace.
+  Moved to: [[issues/AShape]]
 
 Previous Brainstorming: Function Names
 --------------------------------------

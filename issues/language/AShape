@@ -1,0 +1,33 @@
+Algebraic Shape Abstraction
+===========================
+ADA is a big project, and not fully designed.
+* Branded Values
+* Data Types
+* Algebras
+* Theories
+To make progress, work through concrete use cases.
+
+What is a small, useful subset to implement first?
+* Begin with ADA for Shapes.
+* All Theories are built in. Shape, Index, ...
+* Single sorted theories only, with type named T.
+* Single dispatch only? 'Ordered' has a binary operator. Don't get boxed in.
+* Algebra and theory binding in same location (like an OOP class).
+
+Goals:
+* Shapes constructed using the shape library are branded values that print
+  as constructor expressions. The CSG tree is preserved in the shape value.
+  You can pattern match on shape constructors.
+* Can map shapes onto a high level CSG repr like SVG without modifying the
+  shape library for each mapping. (aka The Expression Problem.)
+* In a SubCurv stack trace, function names are `dist` if the argument to
+  make_shape is a scoped record, or function name is missing if argument
+  is a dynamic record. With ADA, I'd like to see qualified names like
+  `cube.distance` and `rotate.distance` in the trace.
+* Somehow this makes it easier to overcome current limitations of SubCurv:
+  * Write a shape constructor taking a shape-gen function argument.
+* Explain relation of `parametric` shapes to shape constructors.
+
+Shape Library
+-------------
+How would I define the shape constructor `sphere d`?

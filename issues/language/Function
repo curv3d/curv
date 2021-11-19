@@ -1,0 +1,49 @@
+Functions
+=========
+
+Recursive combinator exprs
+--------------------------
+Something like
+    f = match [...];
+won't compile if it is a recursive definition. Fix.
+See [[vm/Recursion]].
+
+Named Functions
+---------------
+This work item is a small step towards Branded Values.
+Currently, function values have an optional name, which is a simple identifier.
+These names appear in stack traces.
+    f x = x + 1
+binds 'x' to a function named 'f'. But a function defined using a combinator
+expression isn't given a name. This affects the quality of stack traces.
+
+We will change the rules that control when a function is given a name.
+    def f x = x + 1;
+    def g = <combinator expression>;
+In the above definitions, the functions contain the names 'f' and 'g'.
+If you don't use 'def' then the function value is not given a name.
+This is a simpler and more consistent rule than what we currently use.
+
+In order to make this change forward compatible with Branded Values,
+we need to restrict the definiens of a 'def' definition to be a constant
+expression. This restriction is partially loosened in the full Branded Values
+implementation.
+
+Printed Representation
+----------------------
+From Full Metal Equality.
+The printed rep of an unnamed (anonymous) function contains:
+ * A lambda expression which, if evaluated in the appropriate environment,
+   reproduces the original function value.
+ * The values of nonlocal variables (captured by the closure) which are
+   non-constant.
+ * The source code location of the lambda expression. Eg, filename, lineno,
+   colno.
+
+Any special issues with mutually recursive functions?
+
+Equality
+--------
+From Full Metal Equality.
+Two closures are equal if the code pointers are equal (same lambda expr)
+and the contents of the captured environments are elementwise equal.
