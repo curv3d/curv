@@ -1,11 +1,21 @@
-All Curv values print as an expression that, when evaluated, exactly
-reproduces the original value (the two values are operationally equivalent).
+Function Printed Representation
+===============================
+Function values print as constructor expressions.
+* Anonymous functions print as lambda expressions.
+  Values of non-constant nonlocal bindings are also printed.
+  Full Metal Equality says we also print source code location.
+* Builtin named functions print as their names, eg `sin`. (Or `std.sin`.)
+* User-defined named functions print as their names.
+  Full Metal Equality says we also print source code location.
+* Partially applied named functions print as eg `match [#Z->0,#S n->n+1]`.
 
-What's missing: functions print as function literals.
+Are there recursive anonymous functions? How are they printed?
+See also [[language/Function]].
 
 TODO:
  * Curv expression pretty-printer. Used initially for printing reactive exprs.
    See CodeFmt issue.
+ * Compiler knows which expressions are constant.
  * Initial 80% solution:
     * Print builtin functions as just their names, as it works today.
     * Print closures as function literals, ignoring the environment, using the

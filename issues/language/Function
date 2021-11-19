@@ -39,8 +39,26 @@ The printed rep of an unnamed (anonymous) function contains:
    non-constant.
  * The source code location of the lambda expression. Eg, filename, lineno,
    colno.
+For full issue see [[Func_Print]].
 
-Any special issues with mutually recursive functions?
+Recursive Anonymous Functions
+-----------------------------
+Are there recursive anonymous functions? How are they printed?
+* In Curv 0.5, all recursive functions are named, making them easy to print.
+* According to Named Functions (and Recursive Combinator Exprs), stamping a
+  function with a name and defining it recursively are orthogonal.
+  So yes there are recursive anonymous functions.
+* If we use Branded Values with Unconditioned Identity, then we can't mandate
+  that all recursive functions are named using 'def' because then they are
+  restricted from containing dynamic nonlocal bindings. So yes there are
+  recursive anonymous functions.
+
+fact = match[0->1,n->n*(fact(n-1))]
+    prints as
+let fact = match[0->1,n->n*(fact(n-1))] in fact
+
+Note that 'fact' is a constant. This is an exception to the rule that we
+don't print constant nonlocal bindings when printing an anonymous function.
 
 Equality
 --------
