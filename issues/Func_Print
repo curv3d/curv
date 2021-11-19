@@ -7,53 +7,74 @@ Function values print as constructor expressions.
 * Builtin named functions print as their names, eg `sin`. (Or `std.sin`.)
 * User-defined named functions print as their names.
   Full Metal Equality says we also print source code location.
-* Partially applied named functions print as eg `match [#Z->0,#S n->n+1]`.
-
-Are there recursive anonymous functions? How are they printed?
-See also [[language/Function]].
+* Partially applied named functions print as a function name followed by
+  argument expressions. Eg `match [#Z->0,#S n->n+1]`.
 
 TODO:
  * Curv expression pretty-printer. Used initially for printing reactive exprs.
-   See CodeFmt issue.
+   See [[CodeFmt]] issue.
  * Compiler knows which expressions are constant.
  * Initial 80% solution:
-    * Print builtin functions as just their names, as it works today.
+    * Print builtin functions as just their names.
     * Print closures as function literals, ignoring the environment, using the
       expression printer. Ignoring the environment is a stopgap measure.
-    * Print piecewise functions as 'match' expressions.
-    * Print composite functions as 'compose' expressions (if Function done).
- * Print the environment of a closure using a `let` clause. A large task.
+    * Print partial applications of builtins as the function name
+      followed by arguments. Eg,
+      * Print piecewise functions as 'match' expressions.
+      * Print composite functions as 'compose' expressions.
+ * Print the non-constant members of the environment of a closure
+   using a `let` clause; see below.
 
-printing nonlocal bindings
---------------------------
-How are nonlocal variables (in a lambda expression) handled?
-As a first approximation, we can print non-recursive lambda expressions as
+Printing Anonymous Functions
+----------------------------
+Non-constant, non-local variables in a lambda expression
+are printed using an enclosing `let` clause:
     let nonlocal1 = val1;
         nonlocal2 = val2;
         ...
     in param -> body
 
-This would currently result in
-    let sin = sin;
-        ...
-for a reference to the 'sin' function in stdlib.
+Rationale:
+* The non-constant nonlocal bindings contain runtime values and printing them
+  helps us to debug code/understand program dynamics.
+* Printing constant nonlocal bindings is impractical.
+  It means printing the full source code of all library dependencies.
+  The same information can be obtained from the source code location of
+  the lambda expression (which Full Metal Equality requires us to print).
 
-To fix this, add a reserved word 'std' which denotes the standard library,
-and cannot be shadowed by a local definition. The sine function now prints
-as `std.sin`, and we now have:
-    let sin = std.sin;
-        ...
+Are there recursive anonymous functions? How are they printed?
+* In Curv 0.5, all recursive functions are named, making them easy to print.
+* According to Named Functions (and Recursive Combinator Exprs), stamping a
+  function with a name and defining it recursively are orthogonal.
+  So yes there are recursive anonymous functions.
+* If we use Branded Values with Unconditioned Identity, then we can't mandate
+  that all recursive functions are named using 'def' because then they are
+  restricted from containing dynamic nonlocal bindings. So yes there are
+  recursive anonymous functions.
 
-To print a recursive function, print a let clause containing all of the bindings
-in the function's recursion group. The let body is just the name of the
-recursive function.
+For a constant recursive function, it's easy. This:
+    let fact = match[0->1,n->n*(fact(n-1))] in fact
+prints as
+    match[0->1,n->n*(fact(n-1))]
+Since 'fact' is a constant, the nonlocal reference 'fact' in the embedded
+lambda expr doesn't need its value to be displayed, according to the
+previous rules.
 
-To summarize, there are initially these cases:
- * builtin functions (eg `std.sin`)
- * non-recursive closure
- * recursive closure
- * piecewise (a `match` expression)
- * composition (a `compose` expression, once the new `compose` is implemented)
+Things get complicated and messy if multiple lambda expressions are printed,
+each with its own environment, with possibly duplicate entries.
+We at least need a check for infinite regress when printing
+a non-constant recursive function.
+
+We might want a smarter pretty-printer that unifies multiple `let` clauses
+where possible, suppressing duplicate entries, making the output terser
+and easier to read. For example, a set of mutually recursive closures
+are called a 'recursion group' and share an environment, and this can be
+used to guide the construction of a shared let clause in the printout.
+
+When printing a module, if a member function references sibling member 
+functions, with or without with recursion, we want those siblings to be printed
+once. Use the module scope as part of the lexical scope and don't include
+bindings in local `let` clauses that are duplicated at the module level.
 
 printing builtin functions
 --------------------------
@@ -64,44 +85,7 @@ is phrases of the form `std.foo`, where `foo` is a standard binding.
 Builtin functions like `sin` print as `std.sin`, an expression which means
 the same thing regardless of the environment in which it is evaluated.
 
-Standard functions defined as closures in `std.curv` can initially be
-printed as closure values, but we eventually need to do better than that.
-
 Later, we want `std` to denote a record containing all standard bindings.
-But what about non-value bindings like `print` and `file`?
-This is a research problem. The following ideas are for a future issue.
- * Note that these bindings will not be found in a closure value's
-   environment.
- * Initially, these are omitted from the `std` record value, until such time
-   as we support metavalues as first class values. A phrase like `std.print`
-   will work, because it is handled specially, but (std).print will fail,
-   because it treats `std` as an expression.
- * This is not composable.
- * With `file`, it's not a value because it is inherently noncomposable.
-   It implicitly depends on the name of the source file from which it is
-   invoked. So in what circumstances can abstracting over a reference to
-   `file` ever work?
- * All standard metavalues except `file` will go away or become values in the
-   Effects proposal. Could convert `file` to a keyword and populate `std` with
-   only value bindings.
-
-printing standard closures
---------------------------
-The main problem is that printing such functions might result in an explosion
-of code, as all dependencies are dragged in, with multiple independent copies
-of dependencies being printed as the dag is converted to a tree.
-
-In a naive implementation, a reference to lib.blend.chamfer will result in
-a let clause with `lib={the entire library}`, which is huge. Imagine multiple
-copies of this, one for each dependency that references `lib`.
-
-We can avoid the biggest problems by implementing a subset of branded values,
-so that we print `std.lib.blend.chamfer` and `std.file"abs_pathname".foo`.
-This means that external dependencies, outside the source file that defines
-a function, are printed as names rather than as function bodies.
-
-referencing sibling functions
------------------------------
-Within a module, if a function references sibling functions, possibly with
-recursion, we want all those siblings to be bound once in the top level let
-clause, and not be duplicated in nested let clauses.
+Non-value bindings like `print` and `file` are reinterpreted as value
+bindings to Metafunction values, but a metafunction can only be called
+if it is a constant. See [[Macro]] and [[Constant]].
