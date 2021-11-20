@@ -8,7 +8,7 @@ endif ()
 # This is set to 1 on Lee's underpowered server.
 # It disables the libfive and openvdb dependencies, which require
 # lots of memory to compile.
-set(LEAN_BUILD 1)
+set(LEAN_BUILD 0)
 file(GLOB LeanSensitiveSrc curv/export_mesh.cc)
 set_property(
     SOURCE ${LeanSensitiveSrc}
