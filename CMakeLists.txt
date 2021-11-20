@@ -8,7 +8,7 @@ endif ()
 # This is set to 1 on Lee's underpowered server.
 # It disables the libfive and openvdb dependencies, which require
 # lots of memory to compile.
-set(LEAN_BUILD 0)
+set(LEAN_BUILD 1)
 file(GLOB LeanSensitiveSrc curv/export_mesh.cc)
 set_property(
     SOURCE ${LeanSensitiveSrc}
@@ -62,18 +62,20 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(EIGEN REQUIRED eigen3>=3.2.92)
 
 # libfive library
-file(GLOB_RECURSE LibfiveSrc "extern/libfive/libfive/src/*.cpp")
-add_library(libfive ${LibfiveSrc})
-target_include_directories(libfive
-    PUBLIC extern/libfive/libfive/include
-    SYSTEM PUBLIC ${EIGEN_INCLUDE_DIRS})
-set_property(
-    SOURCE extern/libfive/libfive/src/libfive.cpp
-    APPEND PROPERTY COMPILE_DEFINITIONS
-    GIT_TAG="whatever"
-    GIT_REV="whatever"
-    GIT_BRANCH="whatever")
-set_property(TARGET libfive PROPERTY CXX_STANDARD 17)
+IF (NOT DEFINED LEAN_BUILD)
+    file(GLOB_RECURSE LibfiveSrc "extern/libfive/libfive/src/*.cpp")
+    add_library(libfive ${LibfiveSrc})
+    target_include_directories(libfive
+        PUBLIC extern/libfive/libfive/include
+        SYSTEM PUBLIC ${EIGEN_INCLUDE_DIRS})
+    set_property(
+        SOURCE extern/libfive/libfive/src/libfive.cpp
+        APPEND PROPERTY COMPILE_DEFINITIONS
+        GIT_TAG="whatever"
+        GIT_REV="whatever"
+        GIT_BRANCH="whatever")
+    set_property(TARGET libfive PROPERTY CXX_STANDARD 17)
+endif()
 
 # tmc library
 add_library(tmc
@@ -241,8 +243,10 @@ if (NOT DEFINED MSYS)
     add_library(dummy cmake/dummy.cc)
     add_library(Blosc::blosc ALIAS dummy)
     add_library(TBB::tbb ALIAS dummy)
-    add_subdirectory(extern/openvdb/openvdb/openvdb EXCLUDE_FROM_ALL)
-    set_property(TARGET openvdb_static PROPERTY CXX_STANDARD 14)
+    if (NOT DEFINED LEAN_BUILD)
+        add_subdirectory(extern/openvdb/openvdb/openvdb EXCLUDE_FROM_ALL)
+        set_property(TARGET openvdb_static PROPERTY CXX_STANDARD 14)
+    endif()
     add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
 endif ()
 
