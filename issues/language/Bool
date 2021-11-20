@@ -1,1 +1,7 @@
 bool = amap(match[0->false,1->true])
+
+This is obsoleted by the Type proposal, which has
+    Bool = {
+        T = Enum[#false,#true];
+        call = amap(match[0->#false,1->#true]);
+    }

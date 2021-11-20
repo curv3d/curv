@@ -2,7 +2,7 @@ Algebraic Shape Abstraction
 ===========================
 ADA is a big project, and not fully designed.
 * Branded Values
-* Data Types
+* Types & Data Types
 * Algebras
 * Theories
 To make progress, work through concrete use cases.
@@ -10,6 +10,7 @@ To make progress, work through concrete use cases.
 What is a small, useful subset to implement first?
 * Begin with ADA for Shapes.
 * All Theories are built in. Shape, Index, ...
+* No theory inheritance, initially.
 * Single sorted theories only, with type named T.
 * Single dispatch only? 'Ordered' has a binary operator. Don't get boxed in.
 * Algebra and theory binding in same location (like an OOP class).
@@ -28,6 +29,100 @@ Goals:
   * Write a shape constructor taking a shape-gen function argument.
 * Explain relation of `parametric` shapes to shape constructors.
 
-Shape Library
--------------
+Shape Theory
+------------
+`Shape` is a built-in theory. Initially hard coded with no syntax
+for user defined theories.
+
+def Shape = theory T {
+    distance: [Num,Num,Num] T => Num;
+    colour: [Num,Num,Num] T => Num;
+    bounds: T => BBox;
+    is_2d: T => Bool;
+    is_3d: T => Bool;
+};
+
+Shape Library (in ADA)
+----------------------
+Each shape constructor in the standard library
+is a branded Data Constructor, which is bound to an Algebra,
+which is an instance of Shape.
+
+Many of the primitive shape constructors (like `sphere`)
+are actually prototypical shapes, which also implement the Function theory,
+and simultaneously behave as constructor functions. How does `sphere`
+work in ADA? How many entities must exist to implement this, and what are
+their relations?
+
+Let's say that there is an auxiliary Algebra called `Sphere`.
+`Sphere.T` is the data type of all sphere shapes.
+The primary constructor is `Sphere d` (which is actually Sphere.call d).
+
+What, then, is `sphere` (which is both a Sphere and a Function)?
+ 1. Can all spheres be called as a function, to be reparameterized
+    with a new diameter? If so, they would be like `parametric` shapes.
+ 2. Or is there a unique `sphere` prototype that is simultaneously
+    a Shape and a Function, which is distinct from `Sphere 2`, since
+    the latter is not a Function. Then `sphere != Sphere 2`.
+
+I think #1 is more elegant.
+So the Sphere algebra implements both Shape and Function.
+
+Then, given Sphere, we could define
+    sphere = Sphere 2;
+Although, this definition causes spheres to print as `Sphere d`
+not as `sphere d`. How do we fix this?
+
+How does the data type Sphere.T know that it should use Sphere as its
+constructor name? When a data type is generated, the constructors must
+also be generated at the same time, so that the data type knows how to
+print itself using constructor expressions. User defined data types are
+intended to be used with ADA, and a single-sorted algebra has different
+fields for the type T and the constructor or constructors. So the thing
+we use for constructing new data types must bind multiple names (for
+the type and for the constructors).
+
+Is it possible for 'sphere' to simultaneously be an Algebra, a constructor
+function, and a prototypical instance of the Sphere data type?
+* Under ADA, 'Algebra' and 'Function' are disjoint theories, and a single
+  data type can implement both theories.
+* The implication is that the prototypical 'sphere' implements the Algebra,
+  Function and Shape theories. And if 'sphere == sphere 2' then every sphere
+  is an Algebra, specifically every sphere is the Sphere algebra.
+
+Under which circumstances can we define 'prototype' values like 'sphere'
+and 'everything'? It could work for implementing any single-sorted Theory
+that doesn't conflict with Algebra and Function.
+
+Maybe
+    make <single-sorted-theory> {parameters} {algebra definitions}
+returns a prototypical value which is:
+ * An Algebra implementing the specified Theory.
+ * A Function that maps a parameter record to an instance of the Algebra.
+ * If all of the parameters have default values, then the prototypical value
+   is also an instance of the Algebra.
+To define `everything`, which has no parameters, we use `{}` as the parameter.
+Parameters can have picker types, which is only relevant for Shapes,
+and in future other graphical value types.
+
 How would I define the shape constructor `sphere d`?
+
+// Curv 0.5
+sphere =
+    let sphere_e d =
+        let r = d / 2;
+        in make_shape {
+            dist[x,y,z,t] = mag[x,y,z] - r;
+            bbox = [[-r,-r,-r],[r,r,r]];
+            is_3d = true;
+        };
+    in make_shape {
+        ... sphere_e 2,
+        call : sphere_e,
+    };
+
+sphere = make Shape {d = 2} {
+    distance [x,y,z] self = mag[x,y,z] - self.d/2;
+    bounds self = let r=self.d/2 in [[-r,-r,-r],[r,r,r]];
+    is_3d self = true;
+};
