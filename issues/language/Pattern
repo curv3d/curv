@@ -9,7 +9,7 @@ Pronounce '<:' as 'from'.
 Same precedence as '::', left associative.
 Data flows left to right when <: and :: are chained.
 
-The left argument to `<:` is called a Schema. See [[Schema]].
+BUT: In the Types proposal, the left argument to <: is a Schema, not a Function.
 
 Variant Patterns
 ----------------

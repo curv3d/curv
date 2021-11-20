@@ -1,6 +1,23 @@
 Functions
 =========
 
+uncurry
+-------
+`uncurry f list`
+Like Haskell, but polymorphic over length of argument list.
+Eg,
+    uncurry f [a,b,c] => f a b c
+
+Rationale: Curv uses both `f a b` and `f [a,b]` argument passing conventions
+in different contexts. The latter is a consequence of Curv being an array
+language: we want to extend operations to work on arrays, and allow argument
+lists to be generated using array operations, in places where this makes
+sense. The former is because some functions naturally make more sense as
+curried functions because partial application is useful with these functions.
+So curry converts from the curried to the uncurried arg passing convention,
+so that curried functions can be used with combinators that take uncurried
+functions (that operate on argument lists).
+
 Recursive combinator exprs
 --------------------------
 Something like

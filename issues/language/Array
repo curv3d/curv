@@ -2,3 +2,14 @@ amap F A
     map F onto each scalar in A. It is depth-polymorphic.
 amap2 F [A1,A2]
     Vectorize a binary scalar operation.
+
+dmap D F A
+    map F onto elements of array A at a depth of D.
+dmap2 [D1,D2] F [A1,A2]
+    map binary function F onto pairs of values selected from A1 and A2
+    at depths of D1 and D2.
+
+a ~op~ b
+    Special syntax for invoking dmap2.
+    Zero or more consecutive ~ characters may occur on either or both sides
+    an infix binary operator.

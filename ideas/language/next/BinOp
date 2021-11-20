@@ -37,11 +37,17 @@ then use
     a `uncurry shiftl`~ b
 Note `uncurry` is in Haskell, so this is a standard name.
 
-BUT if I use Currying then the amap/smap APIs don't work.
-So I need curry and pair versions.
-    amap f  -- unary
-    amap2 f -- curried binary
-    amapl f -- list argument
+Note that `uncurry` is polymorphic on argument count (in Curv).
+But the corresponding `curry` function would need different versions
+for different argument counts: `curry2`, `curry3`, etc. This means that
+combinators that work on uncurried functions can be more general, if we are
+going to support both conventions.
+
+This suggests that the proposed amap2/dmap2 APIs can work on uncurried
+functions (as originally proposed) and you can apply `uncurry` to the
+function argument to use the other convention.
+    amap2 f [a1,a2]
+    dmap2 [d1,d2] f [a1,a2]
 
 -----------------------------------------------------------------------
 There is a theme here. Two ways to do it, creating cognitive load,
