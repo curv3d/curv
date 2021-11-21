@@ -18,7 +18,7 @@ void import(const Filesystem::path& path, Program& prog, const Context& cx)
     System& sys{cx.system()};
 
     // If file is a directory, use directory import.
-    boost::system::error_code errcode;
+    std::error_code errcode;
     if (Filesystem::is_directory(path, errcode))
         return dir_import(path, prog, cx);
     if (errcode)
@@ -42,7 +42,7 @@ void import(const Filesystem::path& path, Program& prog, const Context& cx)
 Value
 import_value(Importer imp, const Filesystem::path& path, const Context& cx)
 {
-    boost::system::error_code errcode;
+    std::error_code errcode;
     auto filekey = Filesystem::canonical(path, errcode);
     if (errcode)
         throw Exception(cx, stringify(path,": ",errcode.message()));

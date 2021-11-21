@@ -60,7 +60,7 @@ remove_all_tempfiles()
 {
     for (auto& file : tempfiles)
     {
-        boost::system::error_code error;
+        std::error_code error;
         fs::remove(file, error);
         if (error)
         {

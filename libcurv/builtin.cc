@@ -23,12 +23,12 @@
 #include <libcurv/system.h>
 
 #include <boost/math/constants/constants.hpp>
-#include <boost/filesystem.hpp>
 
 #include <cassert>
 #include <climits>
 #include <cmath>
 #include <cstdlib>
+#include <filesystem>
 #include <string>
 
 using namespace std;
@@ -1086,7 +1086,7 @@ struct File_Expr : public Just_Expression
         // construct file pathname from argument
         Value arg = arg_->eval(fm);
         auto argstr = value_to_string(arg, Fail::hard, cx);
-        namespace fs = boost::filesystem;
+        namespace fs = std::filesystem;
         fs::path filepath;
         auto caller_filename = syntax_->location().source().name_;
         if (caller_filename->empty()) {

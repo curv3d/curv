@@ -52,7 +52,7 @@ make_system(const char* argv0, std::list<const char*>& libs, std::ostream& out,
         curv::io::add_importers(sys);
         if (argv0 != nullptr) {
             const char* CURV_LIBDIR = getenv("CURV_LIBDIR");
-            namespace fs = boost::filesystem;
+            namespace fs = std::filesystem;
             curv::Shared<const curv::String> stdlib;
             if (CURV_LIBDIR != nullptr) {
                 if (CURV_LIBDIR[0] != '\0') {

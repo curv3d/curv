@@ -4,7 +4,7 @@ extern "C" {
 }
 #include <libcurv/exception.h>
 #include <libcurv/progdir.h>
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 namespace curv {
 

@@ -5,11 +5,11 @@
 #ifndef LIBCURV_PROGDIR_H
 #define LIBCURV_PROGDIR_H
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 namespace curv {
 
-boost::filesystem::path progdir(const char* argv0);
+std::filesystem::path progdir(const char* argv0);
 
 }
 #endif // header guard

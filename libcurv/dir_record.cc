@@ -32,14 +32,14 @@ Dir_Record::Dir_Record(Filesystem::path dir, const Context& cx)
     dir_(dir),
     fields_{}
 {
-    namespace fs = boost::filesystem;
+    namespace fs = std::filesystem;
     System& sys(cx.system());
 
     fs::directory_iterator i(dir);
     fs::directory_iterator end;
     for (; i != end; ++i) {
         auto path = i->path();
-        auto name = path.leaf().string();
+        auto name = path.filename().string();
         auto cname = name.c_str();
         if (cname[0] == '.') continue;
         
@@ -53,7 +53,7 @@ Dir_Record::Dir_Record(Filesystem::path dir, const Context& cx)
         if (ext.empty()) {
             // If a filename has no extension, it is statted to test if it is
             // a directory. If yes, it is imported, otherwise it is ignored.
-            boost::system::error_code errcode;
+            std::error_code errcode;
             if (fs::is_directory(path, errcode))
                 fields_[make_symbol(cname)] = File{dir_import, path, missing};
             else if (errcode)

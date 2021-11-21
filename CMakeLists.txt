@@ -143,7 +143,7 @@ else ()
 endif ()
 
 # Boost library (Windows port required 1.72, 1.65 is latest for Ubuntu 18.04)
-find_package(Boost 1.65 REQUIRED COMPONENTS iostreams filesystem system)
+find_package(Boost 1.65 REQUIRED COMPONENTS iostreams system)
 
 # imdemo, broken in v1.65 of ImGui, need to upgrade to headrev
 #add_executable(imdemo
@@ -193,14 +193,14 @@ endif ()
 set(Libs
     libcurv_io libcurv imgui glfw glad ${LibOpenGL} replxx double-conversion
     tmc ${FatLibraries}
-    Boost::iostreams Boost::filesystem Boost::system
+    Boost::iostreams Boost::system
     pthread ${LibDl} ${LibOmp})
 
 target_link_libraries(curv PUBLIC ${Libs})
 
 file(GLOB TestSrc "tests/*.cc")
 add_executable(tester EXCLUDE_FROM_ALL ${TestSrc})
-target_link_libraries(tester PUBLIC gtest pthread libcurv libcurv_io double-conversion Boost::iostreams Boost::filesystem Boost::system)
+target_link_libraries(tester PUBLIC gtest pthread libcurv libcurv_io double-conversion Boost::iostreams Boost::system)
 
 set_property(TARGET curv libcurv libcurv_io tester PROPERTY CXX_STANDARD 17)
 

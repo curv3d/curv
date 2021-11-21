@@ -5,14 +5,13 @@
 #ifndef LIBCURV_FILESYSTEM_H
 #define LIBCURV_FILESYSTEM_H
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <functional>
 #include <string>
 
 namespace curv {
 
-// Once we migrate to C++17, we'll use std::filesystem instead.
-namespace Filesystem = boost::filesystem;
+namespace Filesystem = std::filesystem;
 
 struct Path_Hash
 {

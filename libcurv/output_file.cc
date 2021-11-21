@@ -5,7 +5,6 @@
 #include <libcurv/output_file.h>
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
-#include <boost/filesystem.hpp>
 
 #ifdef _WIN32
     #include <libcurv/win32.h>
@@ -22,8 +21,9 @@ extern "C" {
 #endif
 }
 
-#include <iostream>
+#include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <string>
 
 namespace curv {
@@ -129,7 +129,7 @@ Output_File::commit()
 
 Output_File::~Output_File()
 {
-    boost::system::error_code error;
+    std::error_code error;
     fs::remove(tempfile_path_, error);
     if (error)
     {
