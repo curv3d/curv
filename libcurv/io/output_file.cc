@@ -2,7 +2,7 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/output_file.h>
+#include <libcurv/io/output_file.h>
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 
@@ -26,10 +26,10 @@ extern "C" {
 #include <iostream>
 #include <string>
 
-namespace curv {
+namespace curv::io {
 
-namespace fs = Filesystem;
-namespace io = boost::iostreams;
+namespace fs = std::filesystem;
+namespace ios = boost::iostreams;
 
 // Create a uniquely-named tempfile in the specified directory.
 // The tempfile name ends in `suffix`.
@@ -37,7 +37,7 @@ namespace io = boost::iostreams;
 // The file name is stored in `path`.
 // The open file descriptor is stored in `stream`.
 // An exception is thrown on error.
-io::file_descriptor_sink::handle_type
+ios::file_descriptor_sink::handle_type
 maketemp(
     const fs::path& tempdir,
     const std::string& suffix,
@@ -90,8 +90,8 @@ Output_File::open()
         tempdir = fs::temp_directory_path();
     else
         tempdir = path_.parent_path();
-    io::file_descriptor_sink::handle_type fd = maketemp(tempdir, ".tmp", tempfile_path_, system_);
-    tempfile_ostream_.open(io::file_descriptor_sink(fd, io::close_handle));
+    ios::file_descriptor_sink::handle_type fd = maketemp(tempdir, ".tmp", tempfile_path_, system_);
+    tempfile_ostream_.open(ios::file_descriptor_sink(fd, ios::close_handle));
 }
 
 const Filesystem::path&

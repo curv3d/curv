@@ -9,10 +9,10 @@
 #include <glm/vec2.hpp>
 
 namespace curv {
-struct Output_File;
 struct Shape_Program;
 
 namespace io {
+struct Output_File;
 
 // Image export parameters
 struct Image_Export : public Render_Opts

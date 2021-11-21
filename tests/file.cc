@@ -1,14 +1,14 @@
 #include <gtest/gtest.h>
 #undef FAIL
-#include <libcurv/output_file.h>
+#include <libcurv/io/output_file.h>
 #include <sstream>
 #include <fstream>
 #include <cstdio>
 #include "sys.h"
 
 using namespace std;
-using namespace curv;
-namespace fs = Filesystem;
+using namespace curv::io;
+namespace fs = std::filesystem;
 
 void writefile(const fs::path& path, const std::string& data)
 {

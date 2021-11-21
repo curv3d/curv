@@ -7,7 +7,7 @@
 
 #include "config.h"
 #include <libcurv/context.h>
-#include <libcurv/output_file.h>
+#include <libcurv/io/output_file.h>
 #include <libcurv/program.h>
 #include <libcurv/symbol.h>
 #include <libcurv/value.h>
@@ -89,7 +89,7 @@ struct Param : public curv::Context
 
 struct Exporter
 {
-    void (*call)(curv::Value, curv::Program&, const Export_Params&, curv::Output_File&);
+    void (*call)(curv::Value, curv::Program&, const Export_Params&, curv::io::Output_File&);
     const char* synopsis;
     void (*describe_options)(std::ostream&);
 };
@@ -98,45 +98,45 @@ extern std::map<std::string, Exporter> exporters;
 extern void export_curv(curv::Value value,
     curv::Program&,
     const Export_Params& params,
-    curv::Output_File&);
+    curv::io::Output_File&);
 
 extern void export_stl(curv::Value,
     curv::Program&,
     const Export_Params& params,
-    curv::Output_File&);
+    curv::io::Output_File&);
 
 extern void export_obj(curv::Value,
     curv::Program&,
     const Export_Params& params,
-    curv::Output_File&);
+    curv::io::Output_File&);
 
 extern void export_x3d(curv::Value,
     curv::Program&,
     const Export_Params& params,
-    curv::Output_File&);
+    curv::io::Output_File&);
 
 extern void export_gltf(curv::Value,
     curv::Program&,
     const Export_Params& params,
-    curv::Output_File&);
+    curv::io::Output_File&);
 
 extern void export_json(curv::Value value,
     curv::Program&,
     const Export_Params& params,
-    curv::Output_File&);
+    curv::io::Output_File&);
 
 extern void export_gpu(curv::Value,
-    curv::Program&, const Export_Params&, curv::Output_File&);
+    curv::Program&, const Export_Params&, curv::io::Output_File&);
 
 extern void export_cpp(curv::Value value,
     curv::Program&,
     const Export_Params& params,
-    curv::Output_File&);
+    curv::io::Output_File&);
 
 extern void export_png(curv::Value value,
     curv::Program&,
     const Export_Params& params,
-    curv::Output_File&);
+    curv::io::Output_File&);
 
 void describe_mesh_opts(std::ostream&);
 void describe_colour_mesh_opts(std::ostream&);

@@ -8,7 +8,7 @@
 #include <libcurv/viewer/viewer.h>
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
-#include <libcurv/output_file.h>
+#include <libcurv/io/output_file.h>
 
 #include <libcurv/viewer/texture.h>
 

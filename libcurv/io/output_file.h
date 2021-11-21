@@ -2,8 +2,8 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#ifndef LIBCURV_OUTPUT_FILE_H
-#define LIBCURV_OUTPUT_FILE_H
+#ifndef LIBCURV_IO_OUTPUT_FILE_H
+#define LIBCURV_IO_OUTPUT_FILE_H
 
 #include <memory>
 #include <ostream>
@@ -11,9 +11,9 @@
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
 
-namespace curv {
+namespace curv { struct System; }
 
-struct System;
+namespace curv::io {
 
 // Output_File is used to mediate between a client, who is calling a
 // file export function (the 'exporter'), and the exporter.

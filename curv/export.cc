@@ -161,7 +161,7 @@ Export_Params::Export_Params(
 void export_curv(Value value,
     Program&,
     const Export_Params& params,
-    Output_File& ofile)
+    io::Output_File& ofile)
 {
     for (auto& i : params.map_) {
         Param p(params, i);
@@ -186,7 +186,7 @@ bool parse_render_param(
 void export_cpp(Value value,
     Program& prog,
     const Export_Params& params,
-    Output_File& ofile)
+    io::Output_File& ofile)
 {
     for (auto& i : params.map_) {
         Param p{params, i};
@@ -204,7 +204,7 @@ void export_cpp(Value value,
 void export_json(Value value,
     Program& prog,
     const Export_Params& params,
-    Output_File& ofile)
+    io::Output_File& ofile)
 {
     for (auto& i : params.map_) {
         Param p{params, i};
@@ -216,7 +216,7 @@ void export_json(Value value,
 }
 
 void export_gpu(Value value,
-    Program& prog, const Export_Params& params, Output_File& ofile)
+    Program& prog, const Export_Params& params, io::Output_File& ofile)
 {
     Render_Opts opts;
     for (auto& i : params.map_) {
@@ -234,7 +234,7 @@ void export_gpu(Value value,
 }
 
 void export_jgpu(Value value,
-    Program& prog, const Export_Params& params, Output_File& ofile)
+    Program& prog, const Export_Params& params, io::Output_File& ofile)
 {
     Render_Opts opts;
     for (auto& i : params.map_) {
@@ -256,7 +256,7 @@ void export_all_png(
     const Shape_Program& shape,
     io::Image_Export& ix,
     double animate,
-    Output_File& ofile)
+    io::Output_File& ofile)
 {
     if (animate <= 0.0) {
         // export single image
@@ -282,7 +282,7 @@ void export_all_png(
         char num[12];
         snprintf(num, sizeof(num), "%0*d", digs, i);
         auto opath = stringify(prefix, num, suffix);
-        Output_File oofile{shape.system()};
+        io::Output_File oofile{shape.system()};
         oofile.set_path(opath->c_str());
         io::export_png(shape, ix, oofile);
         oofile.commit();
@@ -307,7 +307,7 @@ void describe_png_opts(std::ostream& out)
 void export_png(Value value,
     Program& prog,
     const Export_Params& params,
-    Output_File& ofile)
+    io::Output_File& ofile)
 {
     io::Image_Export ix;
 

@@ -24,7 +24,6 @@ extern "C" {
 #include <libcurv/exception.h>
 #include <libcurv/gpu_program.h>
 #include <libcurv/import.h>
-#include <libcurv/output_file.h>
 #include <libcurv/progdir.h>
 #include <libcurv/program.h>
 #include <libcurv/source.h>
@@ -32,6 +31,7 @@ extern "C" {
 
 #include <libcurv/io/builtin.h>
 #include <libcurv/io/import.h>
+#include <libcurv/io/output_file.h>
 #include <libcurv/io/tempfile.h>
 #include <libcurv/viewer/viewer.h>
 
@@ -356,7 +356,7 @@ main(int argc, char** argv)
         auto value = prog.eval();
 
         if (exporter != exporters.end()) {
-            curv::Output_File ofile{sys};
+            curv::io::Output_File ofile{sys};
             if (opath.empty())
                 ofile.set_ostream(&std::cout);
             else

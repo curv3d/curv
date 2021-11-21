@@ -28,7 +28,7 @@ void export_mesh(Mesh_Format, curv::Value value,
 void export_stl(curv::Value value,
     curv::Program& prog,
     const Export_Params& params,
-    curv::Output_File& ofile)
+    Output_File& ofile)
 {
     ofile.open();
     export_mesh(Mesh_Format::stl, value, prog, params, ofile.ostream());
@@ -37,7 +37,7 @@ void export_stl(curv::Value value,
 void export_obj(curv::Value value,
     curv::Program& prog,
     const Export_Params& params,
-    curv::Output_File& ofile)
+    Output_File& ofile)
 {
     ofile.open();
     export_mesh(Mesh_Format::obj, value, prog, params, ofile.ostream());
@@ -46,7 +46,7 @@ void export_obj(curv::Value value,
 void export_x3d(curv::Value value,
     curv::Program& prog,
     const Export_Params& params,
-    curv::Output_File& ofile)
+    Output_File& ofile)
 {
     ofile.open();
     export_mesh(Mesh_Format::x3d, value, prog, params, ofile.ostream());
@@ -55,7 +55,7 @@ void export_x3d(curv::Value value,
 void export_gltf(curv::Value value,
     curv::Program& prog,
     const Export_Params& params,
-    curv::Output_File& ofile)
+    Output_File& ofile)
 {
     ofile.open();
     export_mesh(Mesh_Format::gltf, value, prog, params, ofile.ostream());
