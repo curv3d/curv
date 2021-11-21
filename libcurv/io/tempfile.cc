@@ -6,7 +6,6 @@
 #include <libcurv/exception.h>
 #include <libcurv/context.h>
 #include <algorithm>
-#include <boost/filesystem.hpp>
 #include <iostream>
 #include <vector>
 
@@ -21,7 +20,7 @@ extern "C" {
 
 namespace curv { namespace io {
 
-namespace fs = Filesystem;
+namespace fs = std::filesystem;
 
 std::vector<fs::path> tempfiles;
 unsigned tempfile_id = 0;
