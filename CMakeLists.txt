@@ -62,7 +62,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(EIGEN REQUIRED eigen3>=3.2.92)
 
 # libfive library
-IF (NOT DEFINED LEAN_BUILD)
+IF (NOT LEAN_BUILD)
     file(GLOB_RECURSE LibfiveSrc "extern/libfive/libfive/src/*.cpp")
     add_library(libfive ${LibfiveSrc})
     target_include_directories(libfive
@@ -243,7 +243,7 @@ if (NOT DEFINED MSYS)
     add_library(dummy cmake/dummy.cc)
     add_library(Blosc::blosc ALIAS dummy)
     add_library(TBB::tbb ALIAS dummy)
-    if (NOT DEFINED LEAN_BUILD)
+    if (NOT LEAN_BUILD)
         add_subdirectory(extern/openvdb/openvdb/openvdb EXCLUDE_FROM_ALL)
         set_property(TARGET openvdb_static PROPERTY CXX_STANDARD 14)
     endif()
