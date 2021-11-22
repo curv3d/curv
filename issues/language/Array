@@ -11,5 +11,7 @@ dmap2 [D1,D2] F [A1,A2]
 
 a ~op~ b
     Special syntax for invoking dmap2.
-    Zero or more consecutive ~ characters may occur on either or both sides
-    an infix binary operator.
+    Zero or more consecutive ~ characters may occur on each side of
+    an infix binary operator: the number of ~ characters is the depth.
+
+    a ~`foo`~~ b => dmap [1,2] foo [a,b]

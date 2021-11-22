@@ -74,13 +74,11 @@ The Generator Protocol works by creating an empty collection variable C,
 then calling `C!add E` if an expression generator evaluates to E,
 and calling `C!append C1` if `... C1` is executed.
 
-get C X
+apply C X
     Apply a collection of functions to an argument, and return
     a collection of results. Eg,
-        get [f, g] x => [f x, g x]
-        get {a:f, b:g} x => {a:f x, b:g x}
-    Collections are index values. `get` is a generic operation on indices.
-    See [[Index]].
+        apply [f, g] x => [f x, g x]
+        apply {a:f, b:g} x => {a:f x, b:g x}
 
 Not sure about these:
 
