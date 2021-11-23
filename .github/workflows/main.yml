@@ -66,7 +66,6 @@ jobs:
         cp /mingw64/bin/libHalf*.dll ./release
         cp /mingw64/bin/tbb.dll ./release
         cp /mingw64/bin/libopenvdb.dll ./release
-        cp /mingw64/bin/libboost_filesystem-mt.dll ./release
     - uses: actions/upload-artifact@v2
       with:
         name: curv-win-${{ github.sha }}
