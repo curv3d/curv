@@ -1,8 +1,38 @@
 Improvements to Mesh Export
 ===========================
-Libfive integration:
-* waiting for: acceptance of pull request to fix mac build
-* Bug report in libfive: Scale dependent rendering of a cube.
+Current status:
+* #smooth meshing is Neilson's DMC via OpenVDB (fast)
+* #tmc is also Neilson's DMC, via rogrosso. slow but very light implementation.
+* #sharp is Dual Contouring via libfive. fast & high quality.
+* #iso and #hybrid are also libfive, but slow and not worthwhile.
+
+Better Smooth Meshing
+---------------------
+#smooth and #sharp are the two fast algorithms. Both have artifacts where
+vertices are placed more than one voxel away from the surface. Since the
+distance function is available for querying, this seems fixable.
+
+Artifact-free #sharp meshing is seemingly an unsolved research problem.
+
+However, it should be possible to create a better #smooth algorithm where:
+* Each vertex is placed on the isosurface.
+* The only artifacts are caused by inability to resolve features smaller
+  than a voxel. All artifacts are < voxel size. Edges are normally bevelled,
+  but the bevels are < voxel size.
+* Since gradient information is unreliable, we don't use it.
+  The output quality is independent of gradients. Only the isosurface matters.
+* High quality defect free mesh.
+* These (limited) quality guarantees are higher priority than speed.
+
+How does it work?
+* Requires a "dual" algorithm to place vertices on the isosurface.
+* If only one vertex is placed per cell, then bevels will span two voxels.
+  (This would still be better than the DMC bevels.)
+  Need multiple vertices per cell to limit bevels to sub-voxel size.
+
+Based on what algorithm?
+* Neilson-DMC?
+* Maybe dual contouring without the hermite data? It is a simple algorithm.
 
 Eliminating artifacts from #sharp meshing
 -----------------------------------------
