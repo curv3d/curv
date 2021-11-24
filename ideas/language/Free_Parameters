@@ -40,6 +40,9 @@ Examples
 This will fix some bugs that currently exist, involving reactive values
 in bbox which prevent parametric images from being viewed.
 
+`camera` is the current camera position, accessible in a shape's distance
+or colour function. It's a unified 2D/3D camera: [[ui/viewer/Camera]].
+
 `rectify` is a free parameter that controls whether we use expensive algorithms
 to provide an exact distance field. Used for #sharp mesh export. Default false.
 

@@ -17,16 +17,31 @@ Programmable Camera Position
 
 3D Camera Design
 ----------------
-Changing the field of view, independent of the other parameters,
-results in dolly zoom.
-
 centre -- a point the camera is looking at
 radius -- define a sphere around the part of the scene that we are looking at
 eyedir -- unit vector from the camera location to the centre
 fov -- field of view, an angle, 0° to 180°. 0° gives orthographic view.
 up -- unit vector, orthogonal to eyedir
 
-Eyedir and radius can be combined into a single non-unit vector.
+In Curv 0.5 (and some popular 3D cameras), eyedir and radius are combined
+into a single non-unit vector, called eye3d in Curv.
+
+Benefits of keeping radius and eyedir separate:
+* We can use a single Camera data structure for both 2D and 3D.
+  The 2D viewer ignores eyedir, fov, and Z coordinates.
+* More intuitive relation between camera parameters and camera controls.
+  Zoom changes radius without modifying the other 4 parameters.
+  Rotate changes eyedir/up without changing radius.
+
+Some cameras have a camera position (eyepoint) instead of a centre point.
+But with the Curv design, changing the FOV without changing other parameters
+produces a dolly zoom effect that holds the contents of the focal sphere
+visible while changing the perspective lines. This is what I want to see
+when interactively tweaking the FOV.
+
+This design unifies a perspective camera and an orthographic camera.
+This is made possible by the centre point/radius design.
+Interactively dial the FOV down to 0 and you have an orthographic view.
 
 2D Camera Design
 ----------------
