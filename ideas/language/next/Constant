@@ -1,4 +1,4 @@
-Constant expressions are part of the language *semantics* in Curv Next.
+Constant expressions are part of the language *semantics* in Curv-Next.
 * Literals such as `42` and `#foo` are constant.
 * An immutable local variable is constant if its definiens is constant.
 * A lambda expression is constant if all of its nonlocal variables are
@@ -15,6 +15,8 @@ Why are constant expressions semantically important?
   (Unconditioned Identity proposal.)
 * When an anonymous function is printed, the function body is printed,
   and also the values of non-constant nonlocals. (Full Metal Equality.)
+* In Visual Curv, graphical value expressions can be displayed and edited
+  graphically in source code if they are constant.
 
 Semantic syntax colouring gives us a way to see constants in the code.
 Constants have a different colour than dynamic expressions.

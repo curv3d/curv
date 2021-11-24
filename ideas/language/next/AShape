@@ -95,15 +95,21 @@ and 'everything'? It could work for implementing any single-sorted Theory
 that doesn't conflict with Algebra and Function.
 
 Maybe
-    make <single-sorted-theory> {parameters} {algebra definitions}
+    make_parametric <single-sorted-theory> {fields} {algebra definitions}
 returns a prototypical value which is:
  * An Algebra implementing the specified Theory.
  * A Function that maps a parameter record to an instance of the Algebra.
- * If all of the parameters have default values, then the prototypical value
+ * If all of the fields have default values, then the prototypical value
    is also an instance of the Algebra.
 To define `everything`, which has no parameters, we use `{}` as the parameter.
 Parameters can have picker types, which is only relevant for Shapes,
 and in future other graphical value types.
+
+In make_parametric,
+* <single-sorted-theory> is an expression.
+* {fields} could be an expression -- it denotes a record schema.
+* {algebra definitions} is a module expression. This follows from the
+  Algebra constructor syntax 'algebra <theory-expr> <module-expr>'.
 
 How would I define the shape constructor `sphere d`?
 
@@ -121,8 +127,18 @@ sphere =
         call : sphere_e,
     };
 
-sphere = make Shape {d = 2} {
-    distance [x,y,z] self = mag[x,y,z] - self.d/2;
+sphere = make_parametric Shape {d = 2} {
+    distance self [x,y,z] = mag[x,y,z] - self.d/2;
     bounds self = let r=self.d/2 in [[-r,-r,-r],[r,r,r]];
     is_3d self = true;
 };
+
+This is OOP flavoured ADA. A sphere is a record with a 'd' field.
+The {fields} argument of make_parametric defines instance variables.
+The generic code for obtaining a shape's distance is:
+    Shape.distance s [x,y,z]
+It is proposed that 'sphere' is its own Algebra (so that sphere.call is
+a parameterized sphere constructor). So the {fields} argument must be disjoint
+from the algebra fields, and neither has a 'call' or 'T' field, which are added.
+So 'sphere.T' is the Type of all spheres (shortened to just 'sphere').
+

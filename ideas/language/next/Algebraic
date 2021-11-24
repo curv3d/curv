@@ -237,6 +237,10 @@ We do need some syntax relating to theories:
        There's no way for the module to reference members 'inherited' from the
        theory, so there are no OOP implementation inheritance semantics (good).
        The syntax seems parsimonious: no new 'implement' keyword.
+     * 'algebra <theory> <module>' -- Like above, except we don't require
+       Theory values to implement the Function theory. Sometimes I'm too
+       quick to overload various types to use function call syntax as a
+       convenient way to invoke some operation.
 
  2. Add the methods in an algebra to the overloaded virtual operations of a
     theory that the algebra implements. This is an extended form of #1 that

@@ -13,10 +13,11 @@ if a good and compelling design emerges.
 The benefit of #2 is in ADA when an Algebra exports a getter function and
 you want to upgrade that to be an index while retaining bkwd compat. Well,
 maybe we support this case by allowing *some* index values to be functions,
-without requiring that all are. Eg, under ADA, Function and Index are disjoint
-theories, but an algebra can implement both. So when an index/getter
-is used as a function (eg, passed as argument to `compose`) then it loses
-its index nature.
+without requiring that all are.
+* Under ADA, Function and Index are disjoint theories, but an algebra can
+  implement both. So when an index/getter is used as a function (eg, passed
+  as argument to `compose`) then it loses its index nature.
+* Maybe `get index` returns a value that is both a function and an index.
 
 1. They are disjoint
 --------------------
