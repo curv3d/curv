@@ -105,11 +105,14 @@ which defaults to 100,000.
 
 The ``vcount`` is a measure of the cost of generating a mesh.
 It's roughly the number of voxels, so it's proportional to memory consumption,
-CPU usage, and number of triangles generated. Depending on how powerful
-your machine is (and on how long you want to wait when generating a mesh
-when vsize is not specified), you might want the default value of ``vcount``
-to be higher or lower. So you can override the default value of 100,000
-in your Curv configuration file.
+CPU usage, and number of triangles generated.
+
+While ``vsize`` is meant to be model-specific (it relates to the model's
+minimum feature size), ``vcount`` is meant to be a global default.
+Depending on how powerful your machine is (and on how long you want to wait
+when generating a mesh when vsize is not specified), you might want the value
+of ``vcount`` to be higher or lower. You can override the default value of
+100,000 in your Curv configuration file.
 
 Speeding up Mesh Export
 -----------------------
