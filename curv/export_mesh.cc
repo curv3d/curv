@@ -116,10 +116,8 @@ void export_mesh(Mesh_Format format, curv::Value value,
             if (opts.vsize_ <= 0.0) {
                 throw curv::Exception(p, "'vsize' must be positive");
             }
-            opts.vcount_ = 0;
         } else if (p.name_ == "vcount") {
             opts.vcount_ = p.to_int(1, INT_MAX);
-            opts.vsize_ = 0.0;
         } else if (p.name_ == "eps") {
             opts.eps_ = p.to_double();
         } else if (p.name_ == "adaptive") {
