@@ -36,6 +36,7 @@ struct Mesh_Export
     Mesh_Gen mgen_ = Mesh_Gen::smooth;
     bool jit_ = false;
     double vsize_ = 0.0;
+    int vcount_ = 100'000;
     // eps: epsilon value for computing normal vectors using the method of
     // partial differences. The default 0 means the system chooses an epsilon.
     double eps_ = 0.0;

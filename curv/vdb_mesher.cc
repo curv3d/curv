@@ -76,7 +76,7 @@ void vdb_mesher(
     curv::io::Mesh_Format format,
     std::ostream& out)
 {
-    Voxel_Config vox(shape.bbox_, opts.vsize_, cx);
+    Voxel_Config vox(shape.bbox_, opts.vsize_, opts.vcount_, cx);
     openvdb::initialize();
 
     // Create a FloatGrid and populate it with a signed distance field.

@@ -26,6 +26,7 @@ struct Voxel_Config
     // Configure the voxel grid based on command line arguments.
     Voxel_Config(curv::BBox shape_bbox,
                  double vsize_opt,
+                 int vcount_opt,
                  const curv::Context& shape_cx)
     {
         glm::dvec3 shape_size = shape_bbox.max - shape_bbox.min;
@@ -37,8 +38,7 @@ struct Voxel_Config
         if (vsize_opt > 0.0) {
             cellsize = vsize_opt;
         } else {
-            cellsize = cbrt(volume / 100'000);
-            if (cellsize < 0.1) cellsize = 0.1;
+            cellsize = cbrt(volume / vcount_opt);
         }
 
         // This is the range of voxel coordinates.

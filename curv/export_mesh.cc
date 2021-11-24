@@ -3,6 +3,7 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <iostream>
+#include <climits>
 #include <cmath>
 #include <cstdlib>
 #include <chrono>
@@ -67,6 +68,7 @@ void describe_mesh_opts(std::ostream& out)
     "-O mgen=#smooth|#sharp : Mesh generator algorithm (default #smooth).\n"
     "-O jit : Fast evaluation using JIT compiler (uses C++ compiler).\n"
     "-O vsize=<voxel size>\n"
+    "-O vcount=<approximate voxel count>\n"
     "-O eps=<small number> : epsilon to compute normal by partial differences\n"
     "-O adaptive=<0...1> : Deprecated. Use meshlab to simplify mesh.\n"
     ;
@@ -114,6 +116,10 @@ void export_mesh(Mesh_Format format, curv::Value value,
             if (opts.vsize_ <= 0.0) {
                 throw curv::Exception(p, "'vsize' must be positive");
             }
+            opts.vcount_ = 0;
+        } else if (p.name_ == "vcount") {
+            opts.vcount_ = p.to_int(1, INT_MAX);
+            opts.vsize_ = 0.0;
         } else if (p.name_ == "eps") {
             opts.eps_ = p.to_double();
         } else if (p.name_ == "adaptive") {

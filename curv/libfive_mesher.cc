@@ -147,7 +147,7 @@ void libfive_mesher(
     Mesh_Format format,
     std::ostream& out)
 {
-    Voxel_Config vox(shape.bbox_, opts.vsize_, cx);
+    Voxel_Config vox(shape.bbox_, opts.vsize_, opts.vcount_, cx);
     if (opts.eps_ == 0.0) opts.eps_ = vox.cellsize/10;
     libfive::Tree tree(std::unique_ptr<libfive::OracleClause>
         (new CurvOracleClause(shape, opts.eps_)));

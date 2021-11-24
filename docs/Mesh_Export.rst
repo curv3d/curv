@@ -97,6 +97,20 @@ You set the ``vsize`` parameter using ``-O vsize=N``. For example::
 
    curv -o foo.obj -O vsize=.1 foo.curv
 
+The ``vcount`` Parameter
+------------------------
+If ``vsize`` is not specified, then a voxel size will be chosen for you
+using the ``vcount`` parameter (approximate voxel count),
+which defaults to 100,000.
+
+The ``vcount`` is a measure of the cost of generating a mesh.
+It's roughly the number of voxels, so it's proportional to memory consumption,
+CPU usage, and number of triangles generated. Depending on how powerful
+your machine is (and on how long you want to wait when generating a mesh
+when vsize is not specified), you might want the default value of ``vcount``
+to be higher or lower. So you can override the default value of 100,000
+in your Curv configuration file.
+
 Speeding up Mesh Export
 -----------------------
 Use ``-O jit`` to make mesh export run 30 times faster.

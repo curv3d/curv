@@ -61,7 +61,7 @@ void tmc_mesher(
     curv::io::Mesh_Format format,
     std::ostream& out)
 {
-    Voxel_Config vox(shape.bbox_, opts.vsize_, cx);
+    Voxel_Config vox(shape.bbox_, opts.vsize_, opts.vcount_, cx);
     Voxel_Timer vtimer(vox);
     dmc::UniformGrid grid;
     const curv::BBox& b = shape.bbox_;
