@@ -7,9 +7,7 @@
     |#define TAA 1
     |#define FDUR 0.04
     |const vec3 background_colour = vec3(1,1,1);
-    |#ifdef GLSLVIEWER
     |uniform mat3 u_view2d;
-    |#endif
     |float dist(vec4 r0)
     |{
     |  /* constants */
@@ -93,9 +91,7 @@
     |    const vec2 jitter = vec2(0.0);
     |#endif
     |    vec2 xy = fragCoord + jitter;
-    |#ifdef GLSLVIEWER
     |    xy = (u_view2d * vec3(xy,1)).xy;
-    |#endif
     |#if TAA>1
     |  for (int t=0; t<TAA; ++t) {
     |    float time = iTime + float(t)/float(TAA)*float(FDUR);
