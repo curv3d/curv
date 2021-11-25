@@ -40,6 +40,11 @@ Vec2 and Vec3
     See ``perp`` for an alternative.
   * The scalar projection (or scalar component) of vector a in the direction of unit vector b
     is ``dot[a,b]``.
+  * ``dot[a,a]`` is the square of the magnitude of vector ``a``.
+    It is cheaper to compute than ``mag a`` because you don't perform
+    a ``sqrt`` operation. Some graphics code uses squared distance values
+    instead of distance values to avoid taking square roots, for performance
+    reasons.
   
 ``phase v``
   The phase angle of a 2D vector, in the range ``tau/2`` to ``-tau/2``.
