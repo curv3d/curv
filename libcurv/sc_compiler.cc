@@ -891,40 +891,20 @@ void While_Op::sc_exec(SC_Frame& fm) const
 }
 void For_Op::sc_exec(SC_Frame& fm) const
 {
-  #define RANGE_EXPRESSIONS 1
     auto range = cast<const Range_Expr>(list_);
     if (range == nullptr)
         throw Exception(At_SC_Phrase(list_->syntax_, fm),
             "not a range");
-  #if RANGE_EXPRESSIONS
-    // range arguments are general expressions
     auto first = sc_eval_expr(fm, *range->arg1_, SC_Type::Num());
     auto last = sc_eval_expr(fm, *range->arg2_, SC_Type::Num());
     auto step = range->arg3_ != nullptr
         ? sc_eval_expr(fm, *range->arg3_, SC_Type::Num())
         : sc_eval_const(fm, Value{1.0}, *syntax_);
-  #else
-    // range arguments are constants
-    double first = sc_constify(*range->arg1_, fm)
-        .to_num(At_SC_Phrase(range->arg1_->syntax_, fm));
-    double last = sc_constify(*range->arg2_, fm)
-        .to_num(At_SC_Phrase(range->arg2_->syntax_, fm));
-    double step = range->arg3_ != nullptr
-        ? sc_constify(*range->arg3_, fm)
-          .to_num(At_SC_Phrase(range->arg3_->syntax_, fm))
-        : 1.0;
-  #endif
     auto i = fm.sc_.newvalue(SC_Type::Num());
     fm.sc_.opcaches_.emplace_back(Op_Cache{});
-  #if RANGE_EXPRESSIONS
     fm.sc_.out() << "  for (float " << i << "=" << first << ";"
              << i << (range->half_open_ ? "<" : "<=") << last << ";"
              << i << "+=" << step << ") {\n";
-  #else
-    fm.sc_.out() << "  for (float " << i << "=" << dfmt(first, dfmt::EXPR) << ";"
-             << i << (range->half_open_ ? "<" : "<=") << dfmt(last, dfmt::EXPR) << ";"
-             << i << "+=" << dfmt(step, dfmt::EXPR) << ") {\n";
-  #endif
     pattern_->sc_exec(i, At_SC_Phrase(list_->syntax_, fm), fm);
     if (cond_) {
         auto cond = sc_eval_expr(fm, *cond_, SC_Type::Bool());
