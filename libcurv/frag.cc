@@ -38,9 +38,7 @@ void export_frag_2d(
             << opts.bg_.x << ","
             << opts.bg_.y << ","
             << opts.bg_.z << ");\n"
-        "#ifdef GLSLVIEWER\n"
-        "uniform mat3 u_view2d;\n"
-        "#endif\n";
+        "uniform mat3 u_view2d;\n";
 
     glsl_function_export(shape, out);
 
@@ -79,9 +77,7 @@ void export_frag_2d(
         "    const vec2 jitter = vec2(0.0);\n"
         "#endif\n"
         "    vec2 xy = fragCoord + jitter;\n"
-        "#ifdef GLSLVIEWER\n"
         "    xy = (u_view2d * vec3(xy,1)).xy;\n"
-        "#endif\n"
         "#if TAA>1\n"
         "  for (int t=0; t<TAA; ++t) {\n"
         "    float time = iTime + float(t)/float(TAA)*float(FDUR);\n"
@@ -137,11 +133,9 @@ void export_frag_3d(
             << opts.bg_.z << ");\n"
         "const int ray_max_iter = " << opts.ray_max_iter_ << ";\n"
         "const float ray_max_depth = " << dfmt(opts.ray_max_depth_, dfmt::EXPR) << ";\n"
-        "#ifdef GLSLVIEWER\n"
         "uniform vec3 u_eye3d;\n"
         "uniform vec3 u_centre3d;\n"
-        "uniform vec3 u_up3d;\n"
-        "#endif\n";
+        "uniform vec3 u_up3d;\n";
 
     glsl_function_export(shape, out);
 
@@ -462,15 +456,9 @@ void export_frag_3d(
        "    p.x *= iResolution.x/iResolution.y;\n"
        "\n"
        // convert from the OpenGL coordinate system to the Curv coord system.
-       "#ifdef GLSLVIEWER\n"
        "    vec3 eye = vec3(u_eye3d.x, -u_eye3d.z, u_eye3d.y)*r + origin;\n"
        "    vec3 centre = vec3(u_centre3d.x, -u_centre3d.z, u_centre3d.y)*r + origin;\n"
        "    vec3 up = vec3(u_up3d.x, -u_up3d.z, u_up3d.y);\n"
-       "#else\n"
-       "    vec3 eye = vec3(2.6, -4.5, 3.0);\n"
-       "    vec3 centre = vec3(0.0, 0.0, 0.0);\n"
-       "    vec3 up = vec3(-0.25, 0.433, 0.866);\n"
-       "#endif\n"
        "    mat3 camera = look_at(eye, centre, up);\n"
        "    vec3 dir = ray_direction(camera, p, 2.5);\n"
        "\n"
