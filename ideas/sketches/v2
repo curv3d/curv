@@ -1,5 +1,5 @@
 let
-hash2x2 xy = frac([262144, 32768] * sin(dot(xy, [41, 289])));
+hash2x2 xy = frac([262144, 32768] * sin(dot[xy, [41, 289]]));
 
 // Points cannot be closer than sqrt(EPSILON)
 EPSILON = .00001;
@@ -18,7 +18,7 @@ voronoi x =
                 local g = [i,j];
                 local o = hash2x2(n + g);
                 local r = g + o - f;
-                local d = dot(r,r);
+                local d = dot[r,r];
                 if (d < md) (
                     md := d;
                     mr := r;
@@ -31,14 +31,14 @@ voronoi x =
                 local g = [i,j];
                 local o = hash2x2( n + g );
                 local r = g + o - f;
-                if (dot(mr-r,mr-r)>EPSILON) // skip the same cell
-                    md := smooth_min(md, dot(0.5*(mr+r), normalize(r-mr)),.2);
+                if (dot[mr-r,mr-r]>EPSILON) // skip the same cell
+                    md := smooth_min[md, dot[0.5*(mr+r), normalize(r-mr)],.2];
             );
     in md;
 
 in
 make_shape {
-    dist(x,y,z,t) = voronoi(x,y);
+    dist[x,y,z,t] = voronoi[x,y];
     is_2d = true;
 } >> offset (.1)
 /*
