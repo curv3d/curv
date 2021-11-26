@@ -1,7 +1,8 @@
 White-space sensitive parsing
 =============================
 The parser gets extremely confused if you omit commas and semicolons.
-The error messages are not helpful.
+The error messages are not helpful, because they don't tell you that
+a separate character is missing.
 The primary situation where this causes problems is that a comma or semicolon
 is missing from the end of a line. This is hard to see, and the user is
 looking at the indentation to understand the program structure.
@@ -19,3 +20,98 @@ Curv's parser needs to work this way to produce results as good as mainstream
 languages. Most modern languages treat newline as lexically significant, even
 if they don't use Python's syntax. I think that all of the languages with
 Haskell style function calls have whitespace sensitive parsing.
+
+How It Works
+------------
+The parser issues warnings or errors for missing , or ; in a <listing>.
+Error mode should be the default.
+
+Warning mode is nice to have since copying/pasting a valid Curv program
+can mess up the indentation but leave the program parseable due to the
+redundant information provided by commas/semicolons.
+
+A `curvfmt` tool that corrects bad indentation is also nice to have.
+A smart editor that automatically maintains correct syntax (automatically
+indenting and/or inserting separators) would also be nice to have.
+
+Another option is that the use of ambiguous indentation silently disables
+messages about missing , or ; separators.
+
+Each line in a listing that begins an item must have the same indentation.
+A continuation line for an item has greater indentation (offside rule),
+or it is a mixfix continuation keyword (else, in) at the base indentation,
+or it is an end token )]} at the base indentation.
+
+If there are two or more items in a listing, then all but the ultimate items
+must have ,/; at the end of their lines, or an error is reported.
+
+These layout styles are supported:
+    (
+        foo,
+        bar,
+        baz
+    )
+and
+    (
+    foo,
+    bar,
+    baz
+    )
+and
+    [ foo,
+      bar,
+      baz ]
+and
+    circle
+      >> colour red
+
+These are not supported:
+    [ foo
+    , bar
+    , baz ]
+and
+    circle
+    >> colour red
+
+What to do about these unsupported layouts?
+ * Generate an error?
+ * If an item line begins with an infix operator, then:
+   * If the operator is '-' or '+', and is not followed by white space,
+     then this is the first line of a new item,
+   * otherwise, the operator must be followed by white space, and this
+     line is a continuation of the current item.
+ * The `curvfmt` program and the automatic layout algorithm in the smart
+   Curv editor do not generate unsupported layouts.
+
+Indentation at the start of a line has zero or more tabs, followed by spaces.
+Tabs and spaces are not comparable:
+* Tabs may only occur at the beginning of a line.
+  A Tab may not be preceded by a space or by a printable character.
+* If previous indent contains spaces, then current indent cannot increase
+  the number of tabs.
+* If current indent decreases the number of tabs, relative to previous,
+  then there can be no spaces.
+
+If indentation violates these rules, then report an error, or disable
+checks for missing separators.
+
+Implementation
+--------------
+An indentation level is represented by [# of tabs, # of spaces].
+The scanner tracks indentation levels.
+A state machine between the scanner and the parser enforces the rules.
+The scanner and the parser both communicate with the state machine.
+ * The scanner generates indent tokens? Note that we need indentation
+   for tokens immediately following a ([{ character. An indent token
+   contains indent level plus In, OUT, SAME flag (relative to prev. line).
+ * The scanner attaches identation levels to tokens.
+ * Indentation data is stored in the state machine, not in tokens.
+
+The parser is always in the middle of parsing a <Listing>.
+There is a top level Listing and there are Listings inside
+of () [] {} pairs. The indent state machine will keep track of
+the current Listing.
+
+Concerning indent tokens. What about get_token() and push_token()?
+What if the parser gets a token, the state machine notices an indentation
+problem, then the parser pushes that same token.
