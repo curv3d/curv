@@ -38,7 +38,9 @@ Features:
 
 Getting Started
 ===============
-* To install the software, see `<BUILD.md>`_.
+* To build and install the software (Windows, MacOS, Linux), see `<BUILD.md>`_.
+* On Linux, you can use a prebuilt appimage -- click on the latest release
+  in the Curv github page and scroll to the bottom.
 * The documentation is here: `<docs/README.rst>`_.
 * To contribute, see `<CONTRIBUTING.md>`_.
 
@@ -60,7 +62,14 @@ to create an account).
 
 Hardware and OS Requirements
 ============================
-Linux, MacOS (intel & apple silicon) and Windows (native) are supported.
+Linux, MacOS (intel & apple silicon) and Windows (native & WSL) are supported.
+
+In order to export meshes (STL files, etc) using the fast ``-Ojit`` method,
+you need to have a C++ compiler installed (GCC or Clang), and you need
+the ``glm`` C++ math library installed. These things will already be installed
+if you have built Curv from scratch using the build instructions. Otherwise,
+if you are using a prebuilt binary, you may want to install these things.
+Either way, see `<BUILD.md>`_.
 
 Curv uses OpenGL 3.3.
 The recommended configuration is a GPU made by Intel, AMD or Nvidia,
@@ -78,19 +87,13 @@ using a known working GPU driver (see below).
 * On Windows, you can use `MSYS2 <https://www.msys2.org/>`_ to build and run a
   native executable; see `<WINDOWS.md>`_. Alternatively, you can use
   `Windows Subystem for Linux (WSL) <https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux>`_
-  for building and running non-natively. However, this alternative is much
-  slower than MSYS2 since WSL has no GPU rendering support so far, which forces
-  us to fall back to software rendering. See `issue #88`_ for details.
+  for building and running a Linux executable.
 * Raspberry Pi isn't supported yet.
 
-  * Raspberry Pi 4 support is planned. I believe that Curv could be ported
-    without a great effort. Curv uses X11 and GLX to create an OpenGL context.
-    Curv requests an OpenGL 3.3 context, which isn't supported, but OpenGL ES
-    3.1 is supported. It might just be a matter of changing the context type,
-    and possibly other small changes. The Raspberry Pi 4 hardware supports
-    all of the features that I plan to use in future releases of Curv.
-  * Raspberry Pi 3 won't be supported. At best, it supports OpenGL ES 2.0,
-    which is not good enough: APIs currently used by Curv are missing.
+  * Raspberry Pi 4 support is planned once the migration from OpenGL to WebGPU
+    is done. Then Curv will be using Vulkan on Raspberry PI 4.
+  * Raspberry Pi 3 and earlier won't be supported, as the GPU is not powerful
+    enough.
 
 * On Linux, you have 3 choices:
 
