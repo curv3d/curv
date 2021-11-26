@@ -23,27 +23,27 @@ Haskell style function calls have whitespace sensitive parsing.
 
 How It Works
 ------------
-The parser issues warnings or errors for missing , or ; in a <listing>.
-Error mode should be the default.
+If indentation and white space follow some basic layout rules,
+then the parser can issue warnings or errors for missing , or ;
+in a <listing>. If the white space doesn't follow these rules,
+then the parser can issue warnings or errors about ambiguous whitespace.
 
+Error mode should be the default.
 Warning mode is nice to have since copying/pasting a valid Curv program
 can mess up the indentation but leave the program parseable due to the
 redundant information provided by commas/semicolons.
 
-A `curvfmt` tool that corrects bad indentation is also nice to have.
-A smart editor that automatically maintains correct syntax (automatically
-indenting and/or inserting separators) would also be nice to have.
-
-Another option is that the use of ambiguous indentation silently disables
-messages about missing , or ; separators.
+A `curvfmt` tool that corrects bad layout is nice to have.
+A smart editor that automatically maintains these syntax rules (automatically
+indenting, adding spaces, inserting separators) would be nice to have.
 
 Each line in a listing that begins an item must have the same indentation.
 A continuation line for an item has greater indentation (offside rule),
 or it is a mixfix continuation keyword (else, in) at the base indentation,
 or it is an end token )]} at the base indentation.
 
-If there are two or more items in a listing, then all but the ultimate items
-must have ,/; at the end of their lines, or an error is reported.
+If there are two or more item lines in a listing, then all but the ultimate
+items must have ,/; at the end of their lines, or an error is reported.
 
 These layout styles are supported:
     (
