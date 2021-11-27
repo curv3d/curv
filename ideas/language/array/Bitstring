@@ -58,23 +58,60 @@ The following depend on bigint support, see [[Numbers]]:
       or, int_to_bstring <count> <int>
 
 Alternative names using the Type/Algebra proposal:
-    BStr -- a type, == Array 1 Bool
-    BStr "1011"
-    BStr.hex "D2"
-    BStr.to_float32 <bstring>
-    BStr.from_float32 <num>
-    BStr.to_nat <bstring>
-    BStr.to_int <bstring>
-    BStr.from_nat <count> <nat>
-    BStr.from_int <count> <int>
+    BVec -- a type, == Array 1 Bool
+    BVec n -- a type, == Array [n] Bool -- GLSL bvec2 == BVec 2
+    BVec.b "1011"
+    BVec.x "D2"
+    BVec.to_float32 <bvec>
+    BVec.from_float32 <num>
+    BVec.to_nat <bvec>
+    BVec.to_int <bvec>
+    BVec.from_nat <count> <nat>
+    BVec.from_int <count> <int>
+    BVec.shl, BVec.shr, BVec.ashr
+    BVec.sum, BVec.product
 
 bit b"1011" == [1,0,1,1]
 bool [1,0,1,1] == b"1011"
 
-bit (BStr "1011") == [1,0,1,1]
-Bool [1,0,1,1] == BStr "1011"
+bit (BVec.b"1011") == [1,0,1,1]
+Bool [1,0,1,1] == BVec.b"1011"
 
 Note that 'bit' could be elevated to a type (the set {0,1}).
+
+Bitvector Theory
+----------------
+Rosette (part of Racket) supports bitvectors
+  https://docs.racket-lang.org/rosette-guide/sec_bitvectors.html
+It's based on bitvector theory:
+  http://smtlib.cs.uiowa.edu/logics-all.shtml#QF_BV
+Most C operations on int/unsigned are included.
+    #b1101
+    #xD2
+    concat[bv1,bv2]
+    bv.[i..j]
+    not, and, or, bvnand, bvnor, bvxor, bvxnor
+    bvneg -- 2's complement unary minus
+    bvadd -- addition modulo 2^m
+    bvmul -- multiplication modulo 2^m
+    bvudiv -- unsigned division, truncating towards 0
+    bvurem -- unsigned remainder from truncating division
+    bvsub -- 2's complement subtraction modulo 2^m
+    bvsdiv -- 2's complement signed division
+    bvsrem -- 2's complement signed remainder (sign follows divident)
+    bvsmod -- 2's complement signed remainder (sign follows divisor)
+    bvshl -- shift left
+    bvlshr -- logical shift right
+    bvashr -- arithmetic shift right
+    zero_extend n bv
+    sign_extend n bv
+    rotate_left n bv
+    rotate_right n bv
+    bv1 == bv2
+    bvult,busle,busgt,busge -- unsigned < <= > >=
+    bvslt,bvsle,bvsgt,bvsge -- signed < <= > >=
+
+Only one multiply operator is needed (not signed and unsigned).
 
 Bstring Literals
 ----------------
