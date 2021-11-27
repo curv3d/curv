@@ -318,7 +318,8 @@ void Viewer::render()
 
     if (!error_) ImGui::Render();
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    if (config_.stoch_ >= 1.0)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (!error_) {
         shader_.use();
@@ -396,6 +397,8 @@ void Viewer::onKeyPress(int key, int mods)
     else if (key == GLFW_KEY_B) {
         reset_view(backside);
     }
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Viewer::onScroll(float _yoffset)
@@ -416,6 +419,8 @@ void Viewer::onScroll(float _yoffset)
         // zoom view3d
         u_eye3d_ = u_centre3d_ + (u_eye3d_ - u_centre3d_)*z;
     }
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Viewer::onMouseDrag(float _x, float _y, int _button)
@@ -456,6 +461,8 @@ void Viewer::onMouseDrag(float _x, float _y, int _button)
         u_centre3d_ += hoff;
         u_eye3d_ += hoff;
     }
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Viewer::onExit()
@@ -590,6 +597,7 @@ void Viewer::initGL()
         [](GLFWwindow* win, int w, int h) {
             Viewer* self = (Viewer*) glfwGetWindowUserPointer(win);
             self->setWindowSize(w,h);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         });
 
     glfwSetKeyCallback(window_,
@@ -603,6 +611,7 @@ void Viewer::initGL()
                 if (!io.WantCaptureKeyboard && action == GLFW_PRESS)
                     self->onKeyPress(key, mods);
             }
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         });
 
     glfwSetCharCallback(window_, ImGui_ImplGlfw_CharCallback);
@@ -617,6 +626,7 @@ void Viewer::initGL()
                 self->mouse_.drag.x = self->mouse_.x;
                 self->mouse_.drag.y = self->mouse_.y;
             }
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         });
 
     glfwSetScrollCallback(window_,
@@ -626,6 +636,7 @@ void Viewer::initGL()
             ImGui_ImplGlfw_ScrollCallback(win, xoffset, yoffset);
             if (!io.WantCaptureMouse)
                 self->onScroll(-yoffset * self->fPixelDensity_);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         });
 
     // callback when the mouse cursor moves
@@ -645,6 +656,7 @@ void Viewer::initGL()
             if (self->fPixelDensity_ != self->getPixelDensity()) {
                 self->setWindowSize(self->viewport_.x, self->viewport_.y);
             }
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         });
 }
 
