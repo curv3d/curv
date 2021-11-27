@@ -66,6 +66,10 @@ Render_Opts::update_from_record(
     if (!fdur_val.is_missing()) {
         fdur_ = fdur_val.to_num(At_Field("fdur", cx));
     }
+    auto stoch_val = r.find_field(make_symbol("stoch"), cx);
+    if (!stoch_val.is_missing()) {
+        stoch_ = stoch_val.to_num(At_Field("stoch", cx));
+    }
     auto bg_val = r.find_field(make_symbol("bg"), cx);
     if (!bg_val.is_missing()) {
         bg_ = value_to_vec3(bg_val, At_Field("bg", cx));
@@ -98,6 +102,8 @@ Render_Opts::describe_opts(std::ostream& out, const char* prefix)
   << prefix <<
   "-O fdur=<frame duration, in seconds> : Used with -Otaa and -Oanimate\n"
   << prefix <<
+  "-O stoch=<chance a pixel will draw>\n"
+  << prefix <<
   "-O bg=<background colour>\n"
   << prefix <<
   "-O ray_max_iter=<maximum # of ray-march iterations> (default "
@@ -123,6 +129,10 @@ Render_Opts::set_field(const std::string& name, Value val, const Context& cx)
     }
     if (name == "fdur") {
         fdur_ = val.to_num(cx);
+        return true;
+    }
+    if (name == "stoch") {
+        stoch_ = val.to_num(cx);
         return true;
     }
     if (name == "bg") {
