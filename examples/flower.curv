@@ -1,0 +1,38 @@
+// Credit: Lee Fallat 2021
+let
+petals d = let
+  r = d / 2;
+  in
+  make_shape {
+    dist[x,y,z,t] = let
+      a = phase[x,y]; in
+      (mag[x,y] - r) + ((cos (a*(90/5))));
+    
+    bbox = [[-r,-r,0],[r,r,0]];
+    is_2d = true;
+  };
+  
+undulate shape = make_shape {
+    dist [x,y,z,t] = let
+      a = phase[x,y]; in
+      shape.dist[x,y,z - ((abs (cos a) + abs (sin a))*2),t];
+     is_3d = true
+  };
+  
+in
+petals 6
+ >> extrude (1/8)
+ >> lipschitz 4 
+ >> undulate
+ >> colour (webRGB [155,221,255])
+ >> into union [
+      cylinder { d: 0.25, h: 20 }
+       >> colour (webRGB [90, 171, 97])
+       >> move [2,0,-10]
+       >> twist 0.15
+       >> move [-2,0,2],
+      sphere 1
+       >> colour white
+       >> stretch [2.5, 2.5, 0.5]
+       >> move [0,0,3.0]
+    ]
