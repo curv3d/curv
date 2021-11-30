@@ -38,7 +38,12 @@ Features:
 
 Getting Started
 ===============
-* To build and install the software (Windows, MacOS, Linux), see `<BUILD.md>`_.
+* There are two Curv web interfaces, both in the early prototype
+  stage as of Nov 2021 (limited functionality):
+  * https://curv.leefallat.com
+  * https://codecad.xyz then click on Curv at bottom of page.
+* For the full experience, build and install the software
+  (Windows, MacOS, Linux), see `<BUILD.md>`_.
 * On Linux, you can use a prebuilt appimage -- click on the latest release
   in the Curv github page and scroll to the bottom.
 * The documentation is here: `<docs/README.rst>`_.
@@ -46,11 +51,12 @@ Getting Started
 
 Community
 =========
-There is a high-volume Discord channel operated by Lee (@lf94),
-currently showing off Lee's CAD projects (in Curv) and discussing
-development of the next version of Curv.
-Here's an invite: `<https://discord.gg/ZSPXaMNWfW>`_.
-You'll need to create a Discord userid to participate.
+There is a high volume chat room.
+* On matrix: https://app.element.io/#/room/!BbbouYwtinZcRySkDA:matrix.org
+* And linked via 2-way bridge to the Curv Discord channel maintained
+  by https://codecad.xyz (visit their site to find an invite).
+* This earlier Discord channel has a ton of interesting discussion history
+  but is now inactive: `<https://discord.gg/ZSPXaMNWfW>`_.
 
 There is a Github Discussions page:
 `<https://github.com/curv3d/curv/discussions>`_.
