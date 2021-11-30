@@ -1,0 +1,139 @@
+Modules are code, Records are data
+==================================
+In this proposal, Module and Record are disjoint types.
+
+A module is a set of recursive definitions.
+A record is a mapping from names (symbols) to values.
+
+An anonymous module literal is {{defns}}, with {{ }} as the empty module.
+Directory syntax also creates a module.
+A record literal is {field-generator}, with {} as the empty record.
+The `f x: x + 1` field syntax is going away.
+
+Modules can be defined recursively (mutual recursion between modules).
+Records are finite trees, they cannot be recursively defined.
+
+A module can be branded. Individual members of a module can be branded.
+Directory modules are always branded, with the root brand being a `file`
+expression.
+
+A module can carry a docstring.
+Module members can have doc strings (whether or not they are branded).
+In directory syntax, a `README` file contains the docstring.
+
+A module value *should* contain axioms that formally describe the semantics
+of its members. Initially, docstrings can describe the semantics informally.
+The role of `test` definitions in a module should be further explored.
+Brands and theories are ways of formally indicating module semantics.
+
+A branded module prints as a brand.
+An unbranded module prints as a module literal (reproducing the original
+source code, and showing dependencies between members). Thus the original
+code that generated the module is preserved in the value.
+A record prints as a record literal, with name/value pairs.
+
+Modules and records both support dot notation:
+A.x selects member/field x of module/record A.
+
+Module members are not assignable using `:=`.
+Records are updatable data structures that support Index values:
+R.[#x] is a locative.
+Record fields are individually and independently updatable.
+
+Modules have two magic member names (call and T):
+ * If a module has a `call` member that is a function,
+   then it can be called as a function and matches `is Func`.
+ * If a module has a `T` member that is a type,
+   then it can be used as a type and matches `is Type`.
+
+Two branded modules are equal if they have the same brand.
+Two unbranded modules are equal if the module literal has the same source code
+location, and the values of nonlocal variable references are equal.
+Two records are equal if they are the same mapping from keys to elements.
+
+With the Object proposal, a module can contain object bindings.
+
+You can explicitly convert a Module to a Record (with loss of metadata).
+ * And possible failure if the module contains object bindings.
+You can explicitly convert a Record to a Module (an isomorphism).
+
+Modules belong to the software engineering dialect.
+Records belong to the creative coding dialect.
+
+Issues
+------
+* Can I use `indices M` or `M.[#foo]` without converting to a record?
+  * Yes, but assignment of M.[#foo] panics, same as assignment of `M.foo`.
+    It's good that a.foo and a.[#foo] are equivalent in all contexts.
+  * A bad alternative is: M is converted to a record, with loss of metadata.
+    Which violates the axiom that record fields are independently updatable
+    (no spooky action...).
+* Is `... M` legal? Yes.
+* Is `include R` legal? Sure why not. Records and modules are interchangeable
+  everywhere it makes sense.
+* Metaprogramming for modules.
+* What about the planned idiom for selective module import,
+    include M >> get{#foo,#bar}
+  I guess this works (no definition metadata is preserved, appropriately).
+  It can't work for importing object bindings.
+* If a module includes another module with metadata on its members (docstrings
+  or brands), is any of that metadata preserved in the outer module?
+
+Critique and Rationale
+----------------------
+I didn't want to do this, because it introduces two subtly incompatible ways
+of expressing the same thing, it forces you to make a choice between similar
+but not identical concepts. Should I write {a:1} or {{a=1}}?
+
+But consider:
+ * We already had two record syntaxes in Curv 0.5, and it was always unclear
+   whether you should write make_shape{dist:...} or make_shape{dist=...}.
+ * The choice between records and modules should be clearer in Curv.next,
+   in the idioms and APIs that take record/module arguments.
+ * The creative coding dialect is simplified, because records are simpler.
+ * The software engineering dialect gets more powerful module features
+   that are important for writing abstract, easy to use modules.
+
+I considered defining Module as a subtype of Record, so {a:1} == {{a=1}}.
+The goal was to preserve the same kind of simplicity and purity I have with
+List values, where tuples, arrays and strings are not disjoint kinds of values,
+they are all just lists. But that got messy and complicated. Maybe more
+complicated than disjoint types.
+ * A module containing pure data, with no code values, doc strings, or objects,
+   is equal to a structurally equivalent record containing the same name=>data
+   mapping.
+ * What about {call:sin} == {{call=sin}}? These are not equal unless
+   records have magic member names.
+ * Pure-data modules therefore print the same as records. But how, using
+   field notation? And if you make certain changes to a module, then it
+   switches to print using definition notation?
+ * If I add a docstring to a member of a pure-data module, then does equality
+   compare docstrings, or does the module change phase and use code equality?
+ * Modules use code equality for branded members.
+ * Pure-data modules must support assignment. What happens if other features
+   are used in the module?
+ * If you reassign a module's members, what happens to the module's axioms
+   (however they are being represented)?
+ * In a non-pure-data module, maybe field assignment will:
+    1. panic.
+    2. discard all module metadata and convert the value to a record prior to
+       doing the assignment. Modifying one field has the side effect of
+       modifying other fields (by killing their metadata).
+   Why is this tricky? Consider an ordinary looking module member `g=f`,
+   where `f` is a branded member of the same module. Rebranding the module
+   will change the value of `g`, even though `g` itself is not directly branded.
+   So this dependency of `g` on `f` is part of the module's identity.
+   What if I reassign `g`?
+    3. Maybe `g` is converted to a pure-data field of the module, losing its
+       dependency relation to `f`, and prints as a field?
+ * So now I'm getting this idea of hybrid record-module chimeras, where some
+   bindings are members and some bindings are fields.
+
+Implementation
+--------------
+How is this implemented? It seems that a module is represented by a thunk
+that contains code and an environment (like a closure).
+* Lazy evaluation, like directory modules?
+* Modules can be defined recursively?
+* This environment duplicates data in all the function closures.
+  Maybe there should just be one shared environment.
