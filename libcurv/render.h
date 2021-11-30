@@ -26,8 +26,6 @@ struct Render_Opts
     int taa_ = 1;
     // frame duration for animation, needed for TAA.
     double fdur_ = 0.04; // 25 FPS
-    // randomly decide if a pixel is computed.
-    double stoch_ = 1; // 100% chance all pixels are drawn
     // background colour, defaults to white
     glm::dvec3 bg_ = glm::dvec3(1.0,1.0,1.0);
     // max # of iterations in the ray-marcher
