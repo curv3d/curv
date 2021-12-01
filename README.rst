@@ -40,8 +40,10 @@ Getting Started
 ===============
 * There are two Curv web interfaces, both in the early prototype
   stage as of Nov 2021 (limited functionality):
+  
   * https://curv.leefallat.com
   * https://codecad.xyz then click on Curv at bottom of page.
+
 * For the full experience, build and install the software
   (Windows, MacOS, Linux), see `<BUILD.md>`_.
 * On Linux, you can use a prebuilt appimage -- click on the latest release
@@ -52,6 +54,7 @@ Getting Started
 Community
 =========
 There is a high volume chat room.
+
 * On matrix: https://app.element.io/#/room/!BbbouYwtinZcRySkDA:matrix.org
 * And linked via 2-way bridge to the Curv Discord channel maintained
   by https://codecad.xyz (visit their site to find an invite).
