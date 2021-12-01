@@ -41,7 +41,7 @@ Getting Started
 * There are two Curv web interfaces, both in the early prototype
   stage as of Nov 2021 (limited functionality):
   
-  * https://curv.leefallat.com
+  * https://curv.leefallat.ca/
   * https://cadhub.xyz then click on Curv at bottom of page.
 
 * For the full experience, build and install the software
