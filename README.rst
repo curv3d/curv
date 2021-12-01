@@ -42,7 +42,7 @@ Getting Started
   stage as of Nov 2021 (limited functionality):
   
   * https://curv.leefallat.ca/
-  * https://cadhub.xyz then click on Curv at bottom of page.
+  * https://cadhub.xyz then click on Curv.
 
 * For the full experience, build and install the software
   (Windows, MacOS, Linux), see `<BUILD.md>`_.
@@ -57,7 +57,7 @@ There is a high volume chat room.
 
 * On matrix: https://app.element.io/#/room/!BbbouYwtinZcRySkDA:matrix.org
 * And linked via 2-way bridge to the Curv Discord channel maintained
-  by https://cadhub.xyz (visit their site to find an invite).
+  by https://cadhub.xyz (the link is at the bottom of the CadHub home page).
 * This earlier Discord channel has a ton of interesting discussion history
   but is now inactive: `<https://discord.gg/ZSPXaMNWfW>`_.
 
