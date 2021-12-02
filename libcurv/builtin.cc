@@ -1501,6 +1501,18 @@ struct Builtin_Time : public Builtin
     }
 };
 
+struct Builtin_Resolution : public Builtin
+{
+    virtual Shared<Meaning> to_meaning(const Identifier& id) const
+    {
+        return make<Constant>(share(id), Value{make<Uniform_Variable>(
+            make_symbol("resolution"),
+            std::string("u_resolution"),
+            SC_Type::List(SC_Type::Num(), 2),
+            share(id))});
+    }
+};
+
 const Namespace&
 builtin_namespace()
 {
@@ -1514,6 +1526,7 @@ builtin_namespace()
     {make_symbol("false"), make<Builtin_Value>(Value(false))},
     {make_symbol("true"), make<Builtin_Value>(Value(true))},
     {make_symbol("time"), make<Builtin_Time>()},
+    {make_symbol("resolution"), make<Builtin_Resolution>()},
 
     FUNCTION("is_bool", Is_Bool_Function),
     FUNCTION("is_char", Is_Char_Function),
