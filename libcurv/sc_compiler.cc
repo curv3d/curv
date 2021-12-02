@@ -655,7 +655,7 @@ SC_Value sc_eval_index_expr(SC_Value array, Operation& index, SC_Frame& fm)
     return result;
 }
 
-// compile array[i,j] expression
+// compile array.[i,j] expression
 SC_Value sc_eval_index2_expr(
     SC_Value array, Operation& op_ix1, Operation& op_ix2, SC_Frame& fm,
     const Context& acx)
@@ -684,11 +684,26 @@ SC_Value sc_eval_index2_expr(
                 << "[int(" << ix2 << ")];\n";
             return result;
         }
+        break;
+    case 0:
+        if (array.type.is_mat()) {
+            // index a matrix, which uses backwards m[col][row] convention
+            SC_Value result = fm.sc_.newvalue(SC_Type::Num());
+            fm.sc_.out() << "  " << result.type << " " << result << " = "
+                << array
+                << "[int(" << ix2 << ")]"
+                << "[int(" << ix1 << ")]"
+                << ";\n";
+            return result;
+        }
+        break;
     }
-    throw Exception(acx, "2 indexes (a[i,j]) not supported for this array");
+    throw Exception(acx, stringify(
+        "2 indexes (a.[i,j]) not supported for this array (type ",
+        array.type,")"));
 }
 
-// compile array[i,j,k] expression
+// compile array.[i,j,k] expression
 SC_Value sc_eval_index3_expr(
     SC_Value array, Operation& op_ix1, Operation& op_ix2, Operation& op_ix3,
     SC_Frame& fm, const Context& acx)
@@ -707,7 +722,7 @@ SC_Value sc_eval_index3_expr(
                  << "+" << "int(" << ix2 << ")][int(" << ix3 << ")];\n";
         return result;
     }
-    throw Exception(acx, "3 indexes (a[i,j,k]) not supported for this array");
+    throw Exception(acx, "3 indexes (a.[i,j,k]) not supported for this array");
 }
 
 SC_Value Call_Expr::sc_eval(SC_Frame& fm) const
