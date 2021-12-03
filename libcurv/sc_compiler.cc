@@ -687,12 +687,12 @@ SC_Value sc_eval_index2_expr(
         break;
     case 0:
         if (array.type.is_mat()) {
-            // index a matrix, which uses backwards m[col][row] convention
+            // index a matrix
             SC_Value result = fm.sc_.newvalue(SC_Type::Num());
             fm.sc_.out() << "  " << result.type << " " << result << " = "
                 << array
-                << "[int(" << ix2 << ")]"
                 << "[int(" << ix1 << ")]"
+                << "[int(" << ix2 << ")]"
                 << ";\n";
             return result;
         }
