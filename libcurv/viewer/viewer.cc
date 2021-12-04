@@ -18,6 +18,7 @@
 #include <libcurv/die.h>
 #include <libcurv/exception.h>
 #include <libcurv/string.h>
+#include <libcurv/symbol.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
@@ -265,12 +266,9 @@ bool Viewer::draw_frame()
                     std::ostringstream nameStream;
                     
                     const char *name = i->first.c_str();
-                    if( strstr( name, " " ) != NULL ) {
-                        nameStream << "'" << name << "'";
-                        }
-                    else {
-                        nameStream << name;
-                        }
+
+                    nameStream << curv::make_symbol( name );
+
                     name = nameStream.str().c_str();
                         
                     switch (i->second.pconfig_.type_) {
@@ -326,7 +324,7 @@ bool Viewer::draw_frame()
                                 "    " <<
                                 name <<
                                 " :: colour_picker" <<
-                                " = sRGB.HSV[" <<
+                                " = sRGB[" <<
                                 i.value().pstate_.vec3_[0] <<
                                 "," <<
                                 i.value().pstate_.vec3_[1] <<
