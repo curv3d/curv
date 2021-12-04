@@ -275,7 +275,8 @@ bool Viewer::draw_frame()
                         
                     switch (i->second.pconfig_.type_) {
                         case Picker::Type::slider:
-                            clipboardStream <<  
+                            clipboardStream <<
+                                "    " <<
                                 name <<
                                 " :: slider[" <<
                                 i->second.pconfig_.slider_.low_ <<
@@ -287,6 +288,7 @@ bool Viewer::draw_frame()
                             break;
                         case Picker::Type::int_slider:
                             clipboardStream <<
+                                "    " <<
                                 name <<
                                 " :: int_slider[" <<
                                 i->second.pconfig_.int_slider_.low_ <<
@@ -298,6 +300,7 @@ bool Viewer::draw_frame()
                             break;
                         case Picker::Type::scale_picker:
                             clipboardStream <<
+                                "    " <<
                                 name <<
                                 " :: scale_picker" <<
                                 " = " <<
@@ -306,6 +309,7 @@ bool Viewer::draw_frame()
                             break;
                         case Picker::Type::checkbox:
                             clipboardStream <<
+                                "    " <<
                                 name <<
                                 " :: checkbox" <<
                                 " = ";
@@ -319,6 +323,7 @@ bool Viewer::draw_frame()
                             break;
                         case Picker::Type::colour_picker:
                             clipboardStream <<
+                                "    " <<
                                 name <<
                                 " :: colour_picker" <<
                                 " = sRGB.HSV[" <<
