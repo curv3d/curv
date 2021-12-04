@@ -18,6 +18,7 @@
 #include <libcurv/die.h>
 #include <libcurv/exception.h>
 #include <libcurv/string.h>
+#include <libcurv/symbol.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
@@ -255,6 +256,88 @@ bool Viewer::draw_frame()
                     i.value().pstate_ = i->second.default_state_;
                 }
             }
+            ImGui::SameLine();
+            if (ImGui::Button("Copy")) {
+                std::ostringstream clipboardStream;
+                for (auto i = shape_.param_.begin();
+                     i != shape_.param_.end();
+                     ++i)
+                {
+                    std::ostringstream nameStream;
+                    
+                    const char *name = i->first.c_str();
+
+                    nameStream << curv::make_symbol( name );
+
+                    name = nameStream.str().c_str();
+                        
+                    switch (i->second.pconfig_.type_) {
+                        case Picker::Type::slider:
+                            clipboardStream <<
+                                "    " <<
+                                name <<
+                                " :: slider[" <<
+                                i->second.pconfig_.slider_.low_ <<
+                                "," <<
+                                i->second.pconfig_.slider_.high_ <<
+                                "] = " <<
+                                i.value().pstate_.num_ <<
+                                ";\n";
+                            break;
+                        case Picker::Type::int_slider:
+                            clipboardStream <<
+                                "    " <<
+                                name <<
+                                " :: int_slider[" <<
+                                i->second.pconfig_.int_slider_.low_ <<
+                                "," <<
+                                i->second.pconfig_.int_slider_.high_ <<
+                                "] = " <<
+                                i.value().pstate_.int_ <<
+                                ";\n";
+                            break;
+                        case Picker::Type::scale_picker:
+                            clipboardStream <<
+                                "    " <<
+                                name <<
+                                " :: scale_picker" <<
+                                " = " <<
+                                i.value().pstate_.num_ <<
+                                ";\n";
+                            break;
+                        case Picker::Type::checkbox:
+                            clipboardStream <<
+                                "    " <<
+                                name <<
+                                " :: checkbox" <<
+                                " = ";
+                            if( i.value().pstate_.bool_ ) {
+                                clipboardStream << "true";
+                                }
+                            else {
+                                clipboardStream << "false";
+                                }
+                            clipboardStream << ";\n";
+                            break;
+                        case Picker::Type::colour_picker:
+                            clipboardStream <<
+                                "    " <<
+                                name <<
+                                " :: colour_picker" <<
+                                " = sRGB[" <<
+                                i.value().pstate_.vec3_[0] <<
+                                "," <<
+                                i.value().pstate_.vec3_[1] <<
+                                "," <<
+                                i.value().pstate_.vec3_[2] <<
+                                "];\n";
+                        default:
+                            break;
+                    }
+                }
+                
+                ImGui::SetClipboardText( clipboardStream.str().c_str() );
+            }   
             ImGui::SameLine();
         }
         //ImGui::Checkbox("Power Saver", &config_.lazy_); // TODO: fix
