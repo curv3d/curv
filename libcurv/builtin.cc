@@ -829,7 +829,8 @@ struct Mag_Function : public Tuple_Function
     {
         auto arg = fm[0];
         if (!arg.type.is_num_vec())
-            throw Exception(At_SC_Tuple_Arg(0, fm), "mag: argument is not a vector");
+            throw Exception(At_SC_Tuple_Arg(0, fm), stringify(
+                "mag: argument is not a vector (type ", arg.type, ")"));
         auto result = fm.sc_.newvalue(SC_Type::Num());
         fm.sc_.out() << "  float "<<result<<" = length("<<arg<<");\n";
         return result;
