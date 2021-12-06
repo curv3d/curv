@@ -702,7 +702,8 @@ struct Dot_Function : public Tuple_Function
         {
             return sc_binop(fm, a.type, b, "*", a);
         }
-        throw Exception(At_SC_Frame(fm), "dot: invalid arguments");
+        throw Exception(At_SC_Frame(fm), stringify(
+            "dot: invalid argument type [",a.type,",",b.type,"]"));
     }
 };
 Value Dot_Function::dot(Value a, Value b, Fail fl, const At_Arg& cx) const
@@ -854,7 +855,8 @@ struct Count_Function : public Tuple_Function
     {
         auto arg = fm[0];
         if (!arg.type.is_list())
-            throw Exception(At_SC_Tuple_Arg(0, fm), "count: argument is not a list");
+            throw Exception(At_SC_Tuple_Arg(0, fm), stringify(
+                "count: argument is not a list (type ",arg.type,")"));
         auto result = fm.sc_.newvalue(SC_Type::Num());
         fm.sc_.out() << "  float "<<result<<" = "<<arg.type.count()<<";\n";
         return result;
