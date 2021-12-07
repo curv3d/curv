@@ -32,6 +32,8 @@ struct Render_Opts
     int ray_max_iter_ = 200;
     // max ray-marching distance
     double ray_max_depth_ = 400.0;
+    // shading intensity, from 0 to 1
+    double contrast_ = 0.5;
     // shader implementation
     Shader shader_ = Shader::standard;
     // sf1 shader function, configured as: shader={sf1:<function>}

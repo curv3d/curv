@@ -133,6 +133,7 @@ void export_frag_3d(
             << opts.bg_.z << ");\n"
         "const int ray_max_iter = " << opts.ray_max_iter_ << ";\n"
         "const float ray_max_depth = " << dfmt(opts.ray_max_depth_, dfmt::EXPR) << ";\n"
+        "const float contrast = " << dfmt(opts.contrast_, dfmt::EXPR) << ";\n"
         "uniform vec3 u_eye3d;\n"
         "uniform vec3 u_centre3d;\n"
         "uniform vec3 u_up3d;\n";
@@ -276,7 +277,7 @@ void export_frag_3d(
        "        vec3 iqcol = col*lin;\n"
        "\n"
        "        //col = mix( col, vec3(0.8,0.9,1.0), 1.0-exp( -0.0002*t*t*t ) );\n"
-       "        col = mix(col,iqcol, 0.5);\n" // adjust contrast
+       "        col = mix(col, iqcol, contrast);\n" // adjust contrast
        "    }\n"
        "\n"
        "    return vec3( clamp(col,0.0,1.0) );\n"
