@@ -7,6 +7,7 @@
 
 #include <libcurv/function.h>
 #include <glm/vec3.hpp>
+#include <limits>
 #include <vector>
 
 namespace curv {
@@ -31,7 +32,7 @@ struct Render_Opts
     // max # of iterations in the ray-marcher
     int ray_max_iter_ = 200;
     // max ray-marching distance
-    double ray_max_depth_ = 400.0;
+    double ray_max_depth_ = std::numeric_limits<double>::infinity();
     // shading intensity, from 0 to 1
     double contrast_ = 0.5;
     // shader implementation
