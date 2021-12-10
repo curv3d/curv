@@ -8,6 +8,7 @@
     |#define FDUR 0.04
     |const vec3 background_colour = vec3(1,1,1);
     |const int ray_max_iter = 200;
+    |const float ray_max_depth = 2000.0;
     |const float contrast = 0.5;
     |uniform vec3 u_eye3d;
     |uniform vec3 u_centre3d;
@@ -108,6 +109,7 @@
     |vec4 castRay( in vec3 ro, in vec3 rd, float time )
     |{
     |    float tmin = 0.0;
+    |    float tmax = ray_max_depth;
     |   
     |    float t = tmin;
     |    vec3 c = vec3(-1.0,-1.0,-1.0);
@@ -120,6 +122,7 @@
     |            break;
     |        }
     |        t += d;
+    |        if (t > tmax) break;
     |    }
     |    return vec4( t, c );
     |}
