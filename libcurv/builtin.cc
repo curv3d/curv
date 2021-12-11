@@ -1119,14 +1119,14 @@ struct File_Metafunction : public Metafunction
 };
 
 /// The meaning of a call to `print`, such as `print "foo"`.
-struct Print_Action : public Operation
+struct Print_Action : public Just_Action
 {
     Shared<Operation> arg_;
     Print_Action(
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(move(syntax)),
+        Just_Action(move(syntax)),
         arg_(move(arg))
     {}
     virtual void exec(Frame& fm, Executor&) const override
@@ -1153,14 +1153,14 @@ struct Print_Metafunction : public Metafunction
     }
 };
 
-struct Warning_Action : public Operation
+struct Warning_Action : public Just_Action
 {
     Shared<Operation> arg_;
     Warning_Action(
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(move(syntax)),
+        Just_Action(move(syntax)),
         arg_(move(arg))
     {}
     virtual void exec(Frame& fm, Executor&) const override
@@ -1198,14 +1198,14 @@ struct Error_Function : public Function
     }
 };
 /// The meaning of a call to `error`, such as `error("foo")`.
-struct Error_Operation : public Operation
+struct Error_Operation : public Just_Action
 {
     Shared<Operation> arg_;
     Error_Operation(
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(move(syntax)),
+        Just_Action(move(syntax)),
         arg_(move(arg))
     {}
     [[noreturn]] void run(Frame& fm) const
@@ -1247,14 +1247,14 @@ struct Error_Metafunction : public Metafunction
 
 // exec(expr) -- a debug action that evaluates expr, then discards the result.
 // It is used to call functions or source files for their side effects.
-struct Exec_Action : public Operation
+struct Exec_Action : public Just_Action
 {
     Shared<Operation> arg_;
     Exec_Action(
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(move(syntax)),
+        Just_Action(move(syntax)),
         arg_(move(arg))
     {}
     virtual void exec(Frame& fm, Executor&) const override
@@ -1278,14 +1278,14 @@ struct Exec_Metafunction : public Metafunction
     }
 };
 
-struct Assert_Action : public Operation
+struct Assert_Action : public Just_Action
 {
     Shared<Operation> arg_;
     Assert_Action(
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(move(syntax)),
+        Just_Action(move(syntax)),
         arg_(move(arg))
     {}
     virtual void exec(Frame& fm, Executor&) const override
@@ -1314,7 +1314,7 @@ struct Assert_Metafunction : public Metafunction
     }
 };
 
-struct Assert_Error_Action : public Operation
+struct Assert_Error_Action : public Just_Action
 {
     Shared<Operation> expected_message_;
     Shared<const String> actual_message_;
@@ -1326,7 +1326,7 @@ struct Assert_Error_Action : public Operation
         Shared<const String> actual_message,
         Shared<Operation> expr)
     :
-        Operation(move(syntax)),
+        Just_Action(move(syntax)),
         expected_message_(move(expected_message)),
         actual_message_(move(actual_message)),
         expr_(move(expr))
