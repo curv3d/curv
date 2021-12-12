@@ -111,6 +111,12 @@ struct Viewer
     } Mouse;
     Mouse mouse_;
 
+    // for tracking headless frame buffer
+    bool headless_fb_created;
+    GLuint headless_color_tex;
+    GLuint headless_fb;
+    GLuint headless_depth_rb;
+        
     // INTERNAL FUNCTIONS
     void initGL();
     void setup();

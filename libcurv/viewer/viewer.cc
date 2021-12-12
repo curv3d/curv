@@ -745,6 +745,64 @@ void Viewer::initGL()
                 self->setWindowSize(self->viewport_.x, self->viewport_.y);
             }
         });
+
+
+    
+    // handle headless case here, create FBO and point OpenGL at it
+    // for future drawing commands
+    // the above GLFW code has already executed, but that's okay
+    // because we don't want to break other code that expects GUI functionalitye
+    // etc.
+    // we just want to make sure that we DRAW into the FBO
+    headless_fb_created = false;
+    
+    if( headless_ ) {
+
+        // this sample code copied pretty much exactly from here:
+        // https://www.khronos.org
+        //        /opengl/wiki/Framebuffer_Object_Extension_Examples
+        
+        // RGBA8 2D texture, 24 bit depth texture, size of window
+        
+        glGenTextures(1, &headless_color_tex);
+        glBindTexture(GL_TEXTURE_2D, headless_color_tex);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        //NULL means reserve texture memory, but texels are undefined
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
+                     window_size_.x, window_size_.y,
+                     0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+        //-------------------------
+        glGenFramebuffers(1, &headless_fb);
+        glBindFramebuffer(GL_FRAMEBUFFER, headless_fb);
+        //Attach 2D texture to this FBO
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D, headless_color_tex, 0);
+        //-------------------------
+        glGenRenderbuffers(1, &headless_depth_rb);
+        glBindRenderbuffer(GL_RENDERBUFFER, headless_depth_rb);
+        glRenderbufferStorage(GL_RENDERBUFFER,
+                              GL_DEPTH_COMPONENT24,
+                              window_size_.x, window_size_.y);
+        //-------------------------
+        //Attach depth buffer to FBO
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+                                  GL_DEPTH_ATTACHMENT,
+                                  GL_RENDERBUFFER, headless_depth_rb);
+        //-------------------------
+        //Does the GPU support current FBO configuration?
+        if( glCheckFramebufferStatus(GL_FRAMEBUFFER)
+            != GL_FRAMEBUFFER_COMPLETE ) {
+            std::cerr <<
+                "ABORT: Can't create/attach frame buffer in headless mode\n";
+            exit(-1);
+        }
+        //-------------------------
+        //and now you can render to GL_TEXTURE_2D
+        headless_fb_created = true;
+    }
 }
 
 void Viewer::onMouseMove(double x, double y)
@@ -837,6 +895,16 @@ void Viewer::swap_buffers()
 
 void Viewer::closeGL()
 {
+    if( headless_fb_created ) {
+        //Delete resources
+        glDeleteTextures(1, &headless_color_tex);
+        glDeleteRenderbuffers(1, &headless_depth_rb);
+        //Bind 0, which means render to back buffer, as a result, fb is unbound
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDeleteFramebuffers(1, &headless_fb);
+    }
+    
+    
     //glfwSetWindowShouldClose(window_, GL_TRUE);
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
