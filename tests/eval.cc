@@ -113,14 +113,30 @@ evaltest(const char* expr, const char* expected, Expectation expectation)
         // the test failed
         switch (expectation) {
         case x_success:
+          {
+            auto out = sconsole.str();
+            if (!out.empty()) {
+                std::cerr
+                    << "------ console output from failed test\n"
+                    << out
+                    << "------\n";
+            }
             return testing::AssertionFailure()
                 << "in expr '" << expr << "'\n"
                 << "expected value: '" << expected << "'\n"
                 << "  actual error: '" << result.failall_ << "'\n";
+          }
         case x_failmsg:
             if (strcmp(expected, result.failmsg_) == 0) {
                 return testing::AssertionSuccess();
             } else {
+                auto out = sconsole.str();
+                if (!out.empty()) {
+                    std::cerr
+                        << "------ console output from failed test\n"
+                        << out
+                        << "------\n";
+                }
                 return testing::AssertionFailure()
                     << "in expr '" << expr << "'\n"
                     << "expected error: '" << expected << "'\n"

@@ -21,6 +21,7 @@
 #include <libcurv/sc_context.h>
 #include <libcurv/source.h>
 #include <libcurv/system.h>
+#include <libcurv/type.h>
 
 #include <boost/math/constants/constants.hpp>
 
@@ -1528,6 +1529,7 @@ builtin_namespace()
     {make_symbol("inf"), make<Builtin_Value>(INFINITY)},
     {make_symbol("false"), make<Builtin_Value>(Value(false))},
     {make_symbol("true"), make<Builtin_Value>(Value(true))},
+    {make_symbol("Num"), make<Builtin_Value>(Value(make<Num_Type>()))},
     {make_symbol("time"), make<Builtin_Time>()},
     {make_symbol("resolution"), make<Builtin_Resolution>()},
 

@@ -810,5 +810,11 @@ let f = match [
     #"a" -> #char
 ] in assert([f 0, f (-1), f #a, f #"a"] == [#nat, #int, #sym, #char]);
 
+// types
+assert(string Num=="Num");
+assert(Num==Num);
+assert(Num!=0);
+assert(string Num=="Num" && Num==Num && Num!=0);
+
 // script return value:
 in null
