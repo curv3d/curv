@@ -3,6 +3,7 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/type.h>
+#include <libcurv/list.h>
 #include <vector>
 
 namespace curv {
@@ -31,21 +32,41 @@ const char* glsl_plex_type_name[] = {
     "mat4",
 };
 
+const char Type::name[] = "type";
+
+bool Error_Type::contains(Value val) const
+{
+    return false;
+}
 void Error_Type::print_repr(std::ostream& out) const
 {
     out << "Error";
 };
 
+bool Bool_Type::contains(Value val) const
+{
+    return val.is_bool();
+}
 void Bool_Type::print_repr(std::ostream& out) const
 {
     out << "Bool";
 };
 
+bool Num_Type::contains(Value val) const
+{
+    return val.is_num();
+}
 void Num_Type::print_repr(std::ostream& out) const
 {
     out << "Num";
 };
 
+bool List_Type::contains(Value val) const
+{
+    Generic_List list(val);
+    if (!list.is_list()) return false;
+    return list.has_elem_type(*elem_type_);
+}
 void List_Type::print_repr(std::ostream& out) const
 {
     out << "List " << count_ << " (";

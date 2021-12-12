@@ -3,7 +3,7 @@ ifeq ($(shell uname -s|sed 's/MINGW.*/Windows/'),Windows)
 	# Overwrite this behavior to choose Msys Makefiles
 	cmake_args := -G"MSYS Makefiles"
 else
-	cmake_arsgs := ""
+	cmake_args := ""
 endif
 
 release:

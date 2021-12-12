@@ -1,0 +1,46 @@
+Problem: In Curv 0.5, the fixed value ray_max_depth=400 is too small for
+models that new users are creating in Q4 2021. It's a problem for CadHub.
+ray_max_depth is actually model dependent.
+
+If I just set ray_max_depth to infinity, it works fine for all of the examples,
+on my Ryzen laptop. The ray terminates when ray_max_iter (200) runs out.
+However,
+ * Lee's skull takes a big performance hit due to high cost of the DF.
+ * Bug #157 causes a weird rendering issue.
+
+I need a new generic algorithm for terminating ray tracing that "just works"
+in common cases, and is scale-independent.
+
+Idea:
+* Intersect the ray with the bbox. Early exit if no intersection.
+  Otherwise, cast ray from bbox entry point to exit point.
+* This works great for finite shapes whose bbox is entirely inside viewing
+  volume. Will speed up render for that case.
+* This has the side effect that a too-small bbox will truncate the shape
+  and not display anything outside the shape.
+* If bbox is infinite in the ray direction and eyepoint is inside bbox,
+  then it's the same as ray_max_depth=inf.
+* Get rid of ray_max_depth, relying on model-dependent bbox instead.
+  The user modifies bbox to control this algorithm. ray_max_iter still used.
+
+Problem with the idea:
+Models that use the bbox to control the camera break, because parts of the
+shape outside the bbox aren't rendered.
+ * icon.curv breaks
+ * show_axes and show_dist are broken
+I could solve this by adding a camera API, the ability to set camera parameters
+in the render field?
+* The camera metadata is lost if any shape operations are performed on the
+  output of show_axes and show_dist. Not a huge loss.
+
+Implementation
+--------------
+// optimized GLSL from Intel and NVidia ray tracers
+bool slabs(vec3 p0, vec3 p1, vec3 rayOrigin, vec3 invRaydir) {
+    vec3 t0 = (p0 - rayOrigin) * invRaydir;
+    vec3 t1 = (p1 - rayOrigin) * invRaydir;
+    vec3 tmin = min(t0,t1), tmax = max(t0,t1);
+    return max_component(tmin) <= min_component(tmax);
+}
+
+https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection

@@ -80,6 +80,10 @@ Render_Opts::update_from_record(
         ray_max_depth_ = ray_max_depth_val.to_num(
             At_Field("ray_max_depth", cx));
     }
+    auto contrast_val = r.find_field(make_symbol("contrast"), cx);
+    if (!contrast_val.is_missing()) {
+        contrast_ = contrast_val.to_num(At_Field("contrast", cx));
+    }
     auto shader_val = r.find_field(make_symbol("shader"), cx);
     if (!shader_val.is_missing()) {
         set_shader(shader_val, At_Field("shader", cx));
@@ -91,22 +95,20 @@ Render_Opts::describe_opts(std::ostream& out, const char* prefix)
 {
   Render_Opts opts;
   out
-  << prefix <<
-  "-O aa=<supersampling factor for antialiasing> (1 means disabled)\n"
-  << prefix <<
-  "-O taa=<supersampling factor for temporal antialiasing> (1 means disabled)\n"
-  << prefix <<
-  "-O fdur=<frame duration, in seconds> : Used with -Otaa and -Oanimate\n"
-  << prefix <<
-  "-O bg=<background colour>\n"
-  << prefix <<
-  "-O ray_max_iter=<maximum # of ray-march iterations> (default "
-    << opts.ray_max_iter_ << ")\n"
-  << prefix <<
-  "-O ray_max_depth=<maximum ray-marching depth> (default "
-    << opts.ray_max_depth_ << ")\n"
-  << prefix <<
-  "-O shader=#standard|#pew|{sf1:<function>}\n"
+  << prefix << "-O aa=<supersampling factor for antialiasing>"
+      << " (1 means disabled)\n"
+  << prefix << "-O taa=<supersampling factor for temporal antialiasing>"
+      << " (1 means disabled)\n"
+  << prefix << "-O fdur=<frame duration, in seconds>"
+      << " : Used with -Otaa and -Oanimate\n"
+  << prefix << "-O bg=<background colour>\n"
+  << prefix << "-O ray_max_iter=<maximum # of ray-march iterations> (default "
+      << opts.ray_max_iter_ << ")\n"
+  << prefix << "-O ray_max_depth=<maximum ray-marching depth> (default "
+      << opts.ray_max_depth_ << ")\n"
+  << prefix << "-O contrast=<shading intensity, 0 to 1> -- default "
+      << opts.contrast_ << "\n"
+  << prefix << "-O shader=#standard|#pew|{sf1:<function>}\n"
   ;
 }
 
@@ -135,6 +137,10 @@ Render_Opts::set_field(const std::string& name, Value val, const Context& cx)
     }
     if (name == "ray_max_depth") {
         ray_max_depth_ = val.to_num(cx);
+        return true;
+    }
+    if (name == "contrast") {
+        contrast_ = val.to_num(cx);
         return true;
     }
     if (name == "shader") {

@@ -33,14 +33,14 @@ run_cpp_test(const Context& cx, Source_State& ss, Shared<const Function> func)
             "assertion failed in C++; see ",cpp.path_));
     }
 }
-struct SC_Test_Action : public Operation
+struct SC_Test_Action : public Just_Action
 {
     Shared<Operation> arg_;
     SC_Test_Action(
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(move(syntax)),
+        Just_Action(move(syntax)),
         arg_(move(arg))
     {}
     virtual void exec(Frame& f, Executor&) const override

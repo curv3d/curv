@@ -1,0 +1,212 @@
+Shape Compiler Rejuvenation
+===========================
+This is the overview of the next generation shape compiler, which fixes
+some otherwise intractable bugs and limitations, and enables a new world
+of generalized SDFs and general purpose GPU compute.
+
+The Shape Compiler comprises:
+* The partial evaluator used by `parametric` to reduce the body of a parametric
+  expression to a shape value that can be compiled to a GPU program.
+  This partial evaluator is at present part of the general evaluator.
+* The SubCurv compiler in sc_compiler.cc, which compiles a Closure value to
+  GLSL (or C++) code. It has a poor architecture which inhibits maintenance
+  and the addition of new features. Some of the problems are caused by working
+  around limitations of GLSL 3.3 -- these problems go away with WebGPU.
+
+Goals
+-----
+Fix the limitation where adding a parameter to a parametric shape causes a
+compile error (due to some unsupported case).
+* Fix the partial evaluator to support the full Curv language, and maintain
+  that state going forwards.
+* Consider a hybrid design where interactively tweaking a picker value may
+  cause some of the computation to happen in the CPU and some in the GPU.
+  The CPU evaluates subexpressions that cannot be evaluated on the GPU.
+  In some cases we must generate new GLSL.
+  Avoid architectural choices that make this harder to implement in the future.
+
+Generate less bulky GLSL that is faster and less resource intensive for the
+GPU driver to compile.
+* Don't always inline expand function calls. If a function can be monomorphised
+  into legal SubCurv IR, then output the monomorphised GLSL function definition
+  and call that function.
+* Don't output a separate variable definition for each operation in an
+  expression tree. After optimizing (common subexpression elimination,
+  constant folding, etc), emit IR expression nodes that are only referenced
+  once as GLSL subexpressions.
+
+Fix the limitation where a shape operator cannot take a function returning
+a shape as an argument.
+
+Support curried functions.
+
+Preserve types in shader code translated to SubCurv:
+* Support all WGSL fixed-size plain types, including fixed-size arrays with
+  arbitrary element types, and structs. GLSL etc shaders using these types
+  can be directly transliterated to Curv, preserving types.
+* Support tuples (inhomogenous lists), to describe function arg lists.
+* SubCurv variables, function parameters and function results have optional
+  type declarations. These types are used for type inference and are preserved
+  in the GLSL output. Needed in part because there is no longer a unique
+  mapping from Curv values to WGSL types.
+  * Implement the [[Types]] proposal, adding Type values to Curv.
+* [Not MVP] Support all remaining WGSL types.
+
+Support a larger set of Curv values as SubCurv values.
+* Functions are first class in SubCurv. We support function arguments,
+  curried functions, more.
+* Shapes are first class values. See if the Curv 0.5 representation works
+  (for MVP), since we have function values. Post MVP, ADA shape representation
+  is more efficient, since the state isn't duplicated between two closures.
+* [Not MVP] Support Symbols. For a given output, there is a global mapping
+  from symbols to u32.
+* [Not MVP] All remaining Curv value types.
+
+Make the subcurv compiler simpler, easier to maintain and extend.
+* Migrate to WebGPU so that I don't need complex code to work around
+  the limitations of GLSL 3.3 (eg, no nested arrays).
+* The compiler now transforms a Curv module M to a GLSL module.
+  We still use a global "compile the world" model, there's no separate
+  compilation of modules or a linker.
+  The name of each member of M is preserved in the output module.
+  Additional auxiliary GLSL definitions are also generated, with generated
+  names.
+  * Multiple monomorphic versions of an auxiliary function.
+  * GLSL struct types.
+* New multipass algorithm:
+  * Compile a module to statically typed IR code.
+  * Optimize the IR. CSE, constant folding, partial evaluation.
+    In future, identify subexpressions that can't be evaluated on the GPU
+    but produce an SC typed result.
+  * Emit GLSL or C++.
+* New statically typed IR representation. You can test if an IR expression
+  is constant, and if so, reference the value.
+
+Prerequisites
+-------------
+* WebGPU Viewer
+* Types
+
+And maybe:
+* Enough ADA to support a handful of primitive theories (Shape & Function),
+  allowing us to model shapes and functions as first class SubCurv values.
+* Branded ADA shape constructors.
+
+Function Values
+---------------
+A SubCurv function value has a type defined by:
+* The function identity. Each primitive function has a unique identity,
+  and a user defined function identity is the source code location
+  of the lambda expression.
+* Plus the types of the nonconstant values in the environment of a closure.
+The run-time data representation of a function value is: the data for
+the non-constant values in the environment.
+
+From an ADA perspective, all these unique function types implement the
+Function theory.
+
+For example, `sin` and `cos` have distinct types and a 0 bit representation.
+
+What is the printed representation of a SubCurv function type?
+
+Curried Functions
+-----------------
+Support `f x y` where `f` is a constant curried function.
+* `f x` is a closure, which means it is a data structure containing `x`
+  and a unique data type derived from `f` and `x`.
+* To call a closure, eg `(f x) y`, we build an IR tree for `f x` (which is
+  just the value of `x`), then we build an IR tree that passes the
+  previous `x` along with `y` as arguments to the GLSL function `f`.
+
+Shape Function Arguments
+------------------------
+Why doesn't it work right now? A call to a shape function argument F
+from inside a distance function looks like this:
+    F x .dist
+The problem is that 'F x' cannot be evaluated into a compile time constant
+(the argument x is dynamic, is derived from dist's argument), and it also
+cannot be compiled into GLSL code because shape values can't be represented
+in the current SubCurv type system.
+
+So how do I fix this? I need to represent shape values in SubCurv.
+* A shape is a structure of SubCurv data (eg, 'd :: Num' for a cube, etc).
+  A shape also has a data type that can be statically mapped to the shape's
+  distance function (eg, there is a cube data type).
+* For a composite CSG tree like 'cube D >> move P', the data is <D,P>.
+  The data type corresponds to the brand for this shape (minus data params).
+
+Each shape function argument will likely have a distinct inferred SubCurv
+result type. As long as the function does have a monomorphic type then we
+can use it. The shape constructor will be specialized for each distinct
+shape function argument type.
+* `If` expressions can cause the type to become non-monomorphic (more than
+  one datatype in the value set). However, using ADA we could build a
+  conditional shape type like Cond_Shape[cond,shape1,shape2].
+  And that's a kludge but maybe it points at a more general solution.
+
+It's more obvious how to make this work if we use branded ADA shape
+constructors. The brands will provide meaningful type names that we can
+use in error messages if there is a type error.
+
+SubCurv IR Data Structure
+-------------------------
+I should unify Operation trees and SubCurv IR to avoid code duplication
+for the evaluator and the partial evaluator.
+
+Partial evaluator:
+* There is partial evaluation over Operation trees, used by `parametric`
+  to reduce the body expression to a (symbolic) Shape value.
+* There is partial evaluation of SubCurv IR, needed to reduce the bulk
+  and increase the efficiency of generated GLSL code.
+
+Evaluator:
+* The IR optimizer will make late decisions to evaluate constant expressions.
+  Eg, after inlining a call to a function with only one reference.
+
+Milestone: Replace the dual use of SC_Value and Operation with IR nodes
+(which will be Operation nodes with extra features).
+
+Goals for IR data structure:
+* Static phrase types: test if an IR op is an expression or action.
+* Static expression types.
+* Can test if an IR expression is constant, and if so, reference the value.
+* Constant folding optimization. If F and X are const, evaluate F X.
+* Partial evaluation optimizations. 0+a=>a, if(a)b else b=>b, ...
+* Common subexpression elimination when compiling a function.
+* IR nodes can be printed as Curv source code, for debugging etc.
+
+Migrate from SC_Value to IR expressions
+---------------------------------------
+Migrate the code incrementally. Change representation with no new features.
+  old: SC_Value Operation::sc_eval(SC_Frame&) const
+  new: Shared<Operation> ir_eval
+During the initial implementation phase, there is a two way conversion between
+SC_Value and IR_Expr, so that the new compiler can be coded incrementally:
+ * For a primitive that has been converted to use IR_Expr,
+   'Operation::sc_eval(SC_Frame&) -> SC_Value' calls ir_eval then ir_emit,
+   then constructs an SC_Value.
+ * For a primitive that still uses SC_Value, ir_eval calls sc_eval and
+   constructs an IR_SC_Value object.
+
+IR Expression Types
+-------------------
+* In principle, any Curv value can be given an IR expression type.
+  Existence proof: we can use a unit type containing only one value, and with
+  a zero bit representation on the GPU.
+* Some Curv types are monomorphic, meaning they are GPU representable.
+  Usually they correspond to a GLSL expression type, but unit types are
+  also trivially representable.
+* Other Curv types are polymorphic. The type's value set contains multiple
+  values that can't share the same GPU representation.
+* Do IR expressions always have a monomorphic type?
+* Do reactive expressions always have a monomorphic type?
+
+IR Module
+---------
+The output of the new SC compiler is an IR module.
+This contains GLSL-level definitions: named functions, constants, types.
+  A function contains an IR tree. No GLSL is generated yet.
+It contains public members with known GLSL names.
+It contains private members with generated names.
+
+Requires: IR nodes that can emit GLSL.

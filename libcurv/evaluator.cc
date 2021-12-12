@@ -275,11 +275,15 @@ If_Else_Op::tail_eval(std::unique_ptr<Frame>& fm) const
 void
 If_Else_Op::exec(Frame& fm, Executor& ex) const
 {
-    bool a = arg1_->eval(fm).to_bool(At_Phrase(*arg1_->syntax_, fm));
-    if (a)
-        arg2_->exec(fm, ex);
-    else
-        arg3_->exec(fm, ex);
+    if (is_expr_) {
+        ex.push_value(eval(fm), At_Phrase(*syntax_,fm));
+    } else {
+        bool a = arg1_->eval(fm).to_bool(At_Phrase(*arg1_->syntax_, fm));
+        if (a)
+            arg2_->exec(fm, ex);
+        else
+            arg3_->exec(fm, ex);
+    }
 }
 
 Value

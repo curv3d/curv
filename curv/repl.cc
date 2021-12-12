@@ -68,14 +68,14 @@ bool was_interrupted = false;
 #endif
 
 /// The meaning of a call to `help`, such as `help "foo"`.
-struct Help_Action : public Operation
+struct Help_Action : public Just_Action
 {
     Shared<Meaning> arg_;
     Help_Action(
         Shared<const Phrase> syntax,
         Shared<Meaning> arg)
     :
-        Operation(move(syntax)),
+        Just_Action(move(syntax)),
         arg_(move(arg))
     {}
     virtual void exec(Frame& fm, Executor&) const override

@@ -1,0 +1,107 @@
+Type Values
+===========
+Goals for introducing Curv type values in the Shape Compiler project:
+* Define `int` variables in GLSL. Support a larger set of GLSL types,
+  declare types in SubCurv and preserve them in GLSL output.
+* Print types in SC error messages as Curv type expressions.
+* New type/module based coding style. Replace char/is_char with Char, etc.
+* [Later] Construct large arrays using a compact unboxed representation.
+
+Types that replace the Curv 0.5 type predicates:
+  Bool Char Func List Num Primitive_Func Record String Symbol
+  BBox2 BBox3 Shape Vec2 Vec3
+
+Types matching the existing SubCurv 0.5 types.
+
+Type Operations:
+is T -- predicate function. eg `is_num x` replaced by `is Num x`.
+pat :: T
+    A pattern that fails unless argument has type T.
+    For backwards compatibility, we support but deprecate `pat :: predicate`.
+      Don't deprecate until `All predicate` is available.
+    [Later] Do we optimize the argument representation if it matches, without
+        changing the value? This is an implementation/performance question.
+        Maybe `pat <: T` does this?
+as T x -- fail if `is T x` is false. Returns `x` otherwise, which [Later]
+    may also be optimized (collections with unboxed elements).
+
+Algebras
+--------
+A record containing a type field T behaves like a type.
+
+New coding pattern where an Algebra is a module encapsulating a type,
+its constructors and operations. Eg, char,is_char => Char.
+    Char.T is the character type, Char.call is the old `char` function.
+    Newline prints as `Char 10`.
+    `is Char x` is the predicate replacing `is_char x`.
+    `as Char x` replaces `require is_char x` and `x :: is_char`.
+
+Picker values are types, not predicates.
+    slider[lo,hi] = { T: Num, picker: #slider[lo,hi] }
+
+Core Type Constructors
+----------------------
+Any -- set of all values
+Type -- set of all type values
+Func
+Primitive_Func
+Index
+Num -- numbers
+Char -- characters
+Bool
+
+Symbol
+LATER:
+    Variant
+    Enum [#foo, #bar T, #baz T1 T2]
+    Bool = Enum [#false, #true]
+
+Array R T -- an R-dimensional rectangular array, elements of type T
+Array [count1,count2,...] T -- fixed size multi-dimensional rectangular array
+Tuple [T1,T2,T3,...] -- fixed size list with per-element types
+List = Array 1
+    `List Any` is an arbitrary list.
+String = List Char
+
+Record {name1: type1, ...}
+    The argument to 'Record' is a record whose elements are types,
+    specifying the minimum set of fields that must be present.
+    'Record{}' describes an arbitrary record.
+Struct {name1: type1, ...}
+    A Struct is a record with a fixed set of fields, and an efficient
+    representation.
+
+Algebras (that contain constructors):
+    Char, Bool -- vectorized constructor
+    String, Symbol
+
+LATER:
+    All predicate
+        Set of all values for which `predicate` is true.
+        An upgrade path for converting predicate patterns to type patterns.
+        Needed when `pat :: predicate` is deprecated.
+    Can you control the representation of an All type?
+     * Implicitly: `All` extracts a domain type from its function argument?
+       `Domain F`. Primitive scalar ops won't have a simple domain because they
+       are vectorized.
+     * Explicitly: `All T predicate`
+    Equality? Meaningful equality requires full metal function equality.
+
+Type Equality
+-------------
+Two types with the same value set and representation should compare equal.
+And will therefore print the same. Thus,
+    List == Array 1
+    String == List Char == Array 1 Char
+    Tuple[Num,Num] == Array[2]Num
+    Array 0 T == T
+
+An exception to the equality rule is `All predicate`. Later.
+
+In what contexts does type equality matter?
+It's used by the SC compiler, with SC types.
+
+Subtypes
+--------
+I want to introduce Int as a subtype of Num.
+so you can define Int variables in SubCurv and they have type `int` in GLSL.

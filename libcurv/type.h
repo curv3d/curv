@@ -45,28 +45,34 @@ struct Type : public Ref_Value
     static Shared<const Type> Num;
 
     static bool equal(const Type&, const Type&);
+    virtual bool contains(Value) const = 0;
     unsigned rank() const;
 
     Shared<const Type> plex_array_base() const;
     unsigned plex_array_rank() const;
     unsigned plex_array_dim(unsigned) const;
+
+    static const char name[];
 };
 
 struct Error_Type : public Type
 {
     Error_Type() : Type(sty_error_type, Plex_Type::missing) {}
+    virtual bool contains(Value) const;
     virtual void print_repr(std::ostream&) const override;
 };
 
 struct Bool_Type : public Type
 {
     Bool_Type() : Type(sty_bool_type, Plex_Type::Bool) {}
+    virtual bool contains(Value) const;
     virtual void print_repr(std::ostream&) const override;
 };
 
 struct Num_Type : public Type
 {
     Num_Type() : Type(sty_num_type, Plex_Type::Num) {}
+    virtual bool contains(Value) const;
     virtual void print_repr(std::ostream&) const override;
 };
 
@@ -81,6 +87,7 @@ struct List_Type : public Type
         elem_type_(et)
     {}
     static Plex_Type make_plex_type(unsigned, Shared<const Type>);
+    virtual bool contains(Value) const;
     virtual void print_repr(std::ostream&) const override;
 };
 
