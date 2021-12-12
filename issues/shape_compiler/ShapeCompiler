@@ -151,7 +151,7 @@ use in error messages if there is a type error.
 SubCurv IR Data Structure
 -------------------------
 I should unify Operation trees and SubCurv IR to avoid code duplication
-between the evaluator and partial evaluator.
+for the evaluator and the partial evaluator.
 
 Partial evaluator:
 * There is partial evaluation over Operation trees, used by `parametric`
@@ -162,3 +162,51 @@ Partial evaluator:
 Evaluator:
 * The IR optimizer will make late decisions to evaluate constant expressions.
   Eg, after inlining a call to a function with only one reference.
+
+Milestone: Replace the dual use of SC_Value and Operation with IR nodes
+(which will be Operation nodes with extra features).
+
+Goals for IR data structure:
+* Static phrase types: test if an IR op is an expression or action.
+* Static expression types.
+* Can test if an IR expression is constant, and if so, reference the value.
+* Constant folding optimization. If F and X are const, evaluate F X.
+* Partial evaluation optimizations. 0+a=>a, if(a)b else b=>b, ...
+* Common subexpression elimination when compiling a function.
+* IR nodes can be printed as Curv source code, for debugging etc.
+
+Migrate from SC_Value to IR expressions
+---------------------------------------
+Migrate the code incrementally. Change representation with no new features.
+  old: SC_Value Operation::sc_eval(SC_Frame&) const
+  new: Shared<Operation> ir_eval
+During the initial implementation phase, there is a two way conversion between
+SC_Value and IR_Expr, so that the new compiler can be coded incrementally:
+ * For a primitive that has been converted to use IR_Expr,
+   'Operation::sc_eval(SC_Frame&) -> SC_Value' calls ir_eval then ir_emit,
+   then constructs an SC_Value.
+ * For a primitive that still uses SC_Value, ir_eval calls sc_eval and
+   constructs an IR_SC_Value object.
+
+IR Expression Types
+-------------------
+* In principle, any Curv value can be given an IR expression type.
+  Existence proof: we can use a unit type containing only one value, and with
+  a zero bit representation on the GPU.
+* Some Curv types are monomorphic, meaning they are GPU representable.
+  Usually they correspond to a GLSL expression type, but unit types are
+  also trivially representable.
+* Other Curv types are polymorphic. The type's value set contains multiple
+  values that can't share the same GPU representation.
+* Do IR expressions always have a monomorphic type?
+* Do reactive expressions always have a monomorphic type?
+
+IR Module
+---------
+The output of the new SC compiler is an IR module.
+This contains GLSL-level definitions: named functions, constants, types.
+  A function contains an IR tree. No GLSL is generated yet.
+It contains public members with known GLSL names.
+It contains private members with generated names.
+
+Requires: IR nodes that can emit GLSL.

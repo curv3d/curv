@@ -1,0 +1,14 @@
+Done:
+* IR nodes have static phrase type
+Next:
+* Type values.
+  * New type/module style core API replacing predicates and constructor
+    functions with algebras. Eg, is_char/char => Char.
+    * fix `is` to report error on first argument.
+  * All Curv 0.5 SC types now have Curv type expressions.
+    Print Curv type exprs in SC error messages.
+  * Shape library predicates and constructors are updated.
+* Replace SC_Value with IR nodes.
+  * Migrate incrementally to new representation.
+    Initially, SC_Value and Operation are interconvertible.
+    SC_Frame now contains operations.
