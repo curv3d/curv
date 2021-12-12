@@ -1,0 +1,166 @@
+{
+  workplane = {
+    pos: [0,0],     // Current position of the "pen"
+    pts: [[0,0]],   // List of points to draw the polygon / straight lines
+    stk: [nothing], // Stack of additional shapes to union such as arc and spline
+    nrm: [0,0]      // The normal of the previous edge
+  };
+
+  line point_relative plane =
+    let p = plane.pos + point_relative in
+    { ...plane, pos: p, pts: concat [plane.pts, [p]] };
+  line_to point_absolute plane =
+    let p = point_absolute in
+    { ...plane, pos: p, pts: concat [plane.pts, [p]] };
+  v_line y_relative plane =
+    let p = [plane.pos.[X], plane.pos.[Y] + y_relative] in
+    { ...plane, pos: p, pts: concat [plane.pts, [p]], nrm: [0, sign y_relative] };
+  v_line_to y_absolute plane =
+    let p = [plane.pos.[X], y_absolute] in
+    { ...plane, pos: p, pts: concat [plane.pts, [p]], nrm: [0, sign y_absolute] };
+  h_line x_relative plane =
+    let p = [plane.pos.[X] + x_relative, plane.pos.[Y]] in
+    { ...plane, pos: p, pts: concat [plane.pts, [p]], nrm: [sign x_relative, 0] };
+  h_line_to x_absolute plane =
+    let p = [x_absolute, plane.pos.[Y]] in
+    { ...plane, pos: p, pts: concat [plane.pts, [p]], nrm: [sign x_absolute, 0]};
+  polar_line { distance, angle } plane =
+    let
+      nrm = cis angle;
+      p = plane.pos + (nrm * distance) in
+    { ...plane, pos: p, pts: concat [plane.pts, [p]], nrm: nrm };
+  polar_line_to { distance, angle } plane =
+    let
+      nrm = cis angle;
+      p = nrm * distance in
+    { ...plane, pos: p, pts: concat [plane.pts, [p]], nrm: nrm };
+  move_rel point_relative plane =
+    let p = plane.pos + point_relative in
+    { ...plane, pos: p, pts: plane.pts };
+  move_abs point_absolute plane =
+    let p = plane.pos + point_absolute in
+    { ...plane, pos: p, pts: plane.pts };
+
+  //
+  // The math is too computationally heavy for a single threePointArc circle.
+  // threePointArc [point_middle, point_end_relative] plane
+  //
+
+  sagitta_arc [sag, point_end_absolute] plane =
+  let
+    p = point_end_absolute;
+    pn = (plane.pos - p);
+    chord = mag(pn);
+    nrm = pn / chord;
+    pm = (plane.pos + p) / 2;
+    l = chord / 2;
+    r = (sag^2 + l^2) / (2*sag);
+    v = -[-pn.[Y], pn.[X]];
+    vn = v / (mag v);
+    o = pm + ((r - sag)*-vn);
+    shape = circle (r*2)
+      >> move [...o, 0]
+      >> into difference [
+        half_plane { d: (r - sag), normal: vn } >> move [...o, 0]
+      ];
+    item = shape;
+  in 
+    {
+      ...plane,
+      pos: p,
+      pts: concat [plane.pts, [p]],
+      stk: concat [plane.stk, [item]],
+      nrm: nrm
+    };
+
+  radius_arc[r, point_end_absolute] plane =
+  let
+    chord = mag(plane.pos - point_end_absolute);
+    l = chord / 2;
+    sag = r - sqrt(r^2 - l^2);
+  in
+    sagitta_arc [sag, point_end_absolute] plane;
+
+  tangent_arc_point point_end_absolute plane =
+  let
+    p = point_end_absolute;
+    Pa = plane.pos;
+    Pb = point_end_absolute;
+    PaPb = Pb - Pa;
+    nrm = PaPb / (mag PaPb);
+    T = plane.nrm;
+    s = dot[T, nrm];
+    d = mag (PaPb / cos(asin(s)));
+    r = d/2;
+    n = sign ((mag T) * (mag nrm) * s);
+    c = Pa - ((if (n >= 0) [-T.[Y], T.[X]] else T) * r);
+    vn = [-nrm.[Y], nrm.[X]];
+    l = (mag PaPb) / 2;
+    nrm_next = (Pb - c) / (mag (Pb - c));
+    sag = r - sqrt(r^2 - l^2);
+    shape = circle d
+      >> move [...c, 0]
+      >> into difference [
+        half_plane { d: r - sag, normal: vn } >> move [...c, 0]
+      ];
+  in
+    {
+      ...plane,
+      pos: p,
+      pts: concat [plane.pts, [p]],
+      stk: concat [plane.stk, [shape]],
+      nrm: -[-nrm_next.[Y], nrm_next.[X]]
+    };
+
+  bezier4 points step = let
+    steps = 1.0 / step;
+    steps_l = [for (i in 0..steps) i * step];
+  in
+  [for (t in steps_l)
+    (       ((1 - t) ^ 3)           * points.[0])
+    +  (3 * ((1 - t) ^ 2) * (t ^ 1) * points.[1])
+    +  (3 * ((1 - t) ^ 1) * (t ^ 2) * points.[2])
+    +  (                    (t ^ 3) * points.[3])
+  ];
+
+  spline list_of_triples plane =
+  let
+    l = list_of_triples;
+    pts = concat [for(i in 0..<count list_of_triples)
+    let
+       p_prev = if (i == 0) plane.pos else l.[i-1].[2];
+    in
+       bezier4 [p_prev, l.[i].[0],l.[i].[1],l.[i].[2]] 0.05 /* todo: calc steps */
+    ];
+    lfst = pts.[count pts - 1];
+    lsnd = pts.[count pts - 2];
+    lln = lsnd - lfst;
+    nrm = lln / (mag lln);
+  in
+    {
+      ...plane,
+      pos: l.[count l - 1].[2],
+      pts: concat [plane.pts, pts],
+      nrm: -[nrm.[X], nrm.[Y]]
+    };
+
+  polyline list_of_tuples plane =
+  let
+    p = list_of_tuples.[count list_of_tuples - 1];
+    p2 = list_of_tuples.[count list_of_tuples - 2];
+    nrm = (p-p2) / (mag (p-p2));
+  in
+  {
+    ...plane,
+    pos: p,
+    pts: concat [plane.pts, list_of_tuples],
+    nrm: nrm
+  };
+  
+  close plane = union [
+    polygon (plane.pts),
+    ...[for (s in plane.stk)
+      s
+    ]
+  ];
+}

@@ -22,7 +22,7 @@ The `build` function will return an initial state to work from. This state is:
 [union, nothing, [[0, 0, 0]], [0, 0, 0]]
 ```
 
-## '><' function (alternatively 'with')
+## with
 
 Arguments: f :: is_func, state
 Returns: state with a new combiner_function
@@ -30,9 +30,9 @@ Returns: state with a new combiner_function
 This function can be read as "(use) combiner", and is used to specify which
 combining operation will be used on the following shapes.
 
-Example: `'><' ((smooth 0.5).union)
+Example: `with ((smooth 0.5).union)
 
-## '*' function (alternatively 'put')
+## put
 
 Arguments: s :: is_shape, p :: is_vec3, state
 Returns: state with a new shape
@@ -41,7 +41,7 @@ This can be read as "combine". This invokes the `combiner_function` against the
 previous and current shape passed into `'*'`. The position is calculated based
 on the parent and the  current position passed to `'*'`.
 
-Example: `'*' (sphere 10) [20, 0, 0]`
+Example: `put (sphere 10) [20, 0, 0]`
 
 ## '{' and '}' functions (alternatively 'child')
 
