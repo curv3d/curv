@@ -1,14 +1,12 @@
 #!/bin/sh
 if [ $# -ne 2 ]; then
-    echo "Usage: $0 curv-source-file vsize"
-    exit 1
+  echo "Usage: $0 curv-source-file vsize"
+  exit 1
 fi
 
 FILE=$1
 VSIZE=$2
 OUTDIR=${3:-"density"}
-
-FDUR=0.01
 
 MARGIN=2
 DIMENSIONS=$(curv -x "size(file \"$FILE\") + 2*$MARGIN*$VSIZE")
@@ -18,36 +16,38 @@ DEPTH=$(echo "$DIMENSIONS"  | jq '.[2]')
 XSIZE=$(curv -x "ceil($WIDTH  / $VSIZE)")
 YSIZE=$(curv -x "ceil($HEIGHT / $VSIZE)")
 ZSIZE=$(curv -x "ceil($DEPTH  / $VSIZE)")
-echo "shape size=$DIMENSIONS grid=[$XSIZE,$YSIZE,$ZSIZE]"
+SLICES=$(curv -x "ceil($ZSIZE / $VSIZE)")
+
+echo "shape size=$DIMENSIONS grid=[$XSIZE,$YSIZE,$ZSIZE] slices=$SLICES"
 
 BASENAME="slice"
 DIRNAME=$(dirname "$FILE")
-OUTPUT="$BASENAME"'-*';
 
 VSIZE_METERS=$(curv -x "$VSIZE / 1000")
 SLICE_AXIS=Y
 
 cd "$DIRNAME"
 
+for s in $(seq 0 $((SLICES - 1))); do
+OUTPUT="$BASENAME"'-'"$s";
+
+echo "slice $s";
+
 curv                         \
 -o "$OUTPUT.png"             \
 -O taa=6                     \
 -O aa=6                      \
--O animate="$FDUR*$ZSIZE"    \
--O fdur=$FDUR                \
 -O xsize=$XSIZE              \
 -O ysize=$YSIZE              \
 -x "
 (
-  {vsize,shape} ->
+  {vsize,shape,slice_idx} ->
   let
-    fdur = $FDUR;
     zmin = shape.bbox.[MIN,Z] - $MARGIN*vsize;
   in make_shape {
     dist: [x,y,_,t] ->
       let
-        frameno = floor(t / fdur);
-        z = zmin + vsize*frameno;
+        z = zmin + vsize*slice_idx;
       in shape.dist[x,y,z,0];
     colour: p -> white;
     is_2d: true;
@@ -55,7 +55,8 @@ curv                         \
     render: {bg: black};
   }
 )
-{ shape=file \"$(basename $FILE)\", vsize=$VSIZE }";
+{ shape=file \"$(basename $FILE)\", vsize=$VSIZE, slice_idx=$s }";
+done
 
 n=$(ls | grep '^slice-0*\.png$' | sed -e 's/^slice-//' -e 's/\.png$//' | wc -c)
 n=$(expr $n - 1)
