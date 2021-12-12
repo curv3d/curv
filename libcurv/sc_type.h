@@ -16,7 +16,7 @@ struct SC_Type
 {
     static constexpr unsigned MAX_MAT_COUNT = 4; // max first dim of a matrix
 
-private:
+public:
     Shared<const Type> type_;   // never null
     SC_Type(Shared<const Type> t) : type_(t) {}
 public:

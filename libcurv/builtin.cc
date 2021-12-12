@@ -100,6 +100,15 @@ struct Monoid_Func final : public Function
 // Builtin Functions //
 //-------------------//
 
+struct Is_Function : public Curried_Function
+{
+    Is_Function(const char* nm) : Curried_Function(2,nm,call) {}
+    static Value call(const Function& fn, Fail, Frame& args)
+    {
+        auto type = args[0].to<Type>(At_Arg(fn, args));
+        return type->contains(args[1]);
+    }
+};
 struct Is_Bool_Function : public Function
 {
     using Function::Function;
@@ -145,7 +154,7 @@ struct Is_List_Function : public Function
     using Function::Function;
     Value call(Value arg, Fail, Frame& fm) const override
     {
-        Generic_List glist(arg, Fail::soft, At_Frame(fm));
+        Generic_List glist(arg);
         return {glist.is_list()};
     }
 };
@@ -1533,6 +1542,7 @@ builtin_namespace()
     {make_symbol("time"), make<Builtin_Time>()},
     {make_symbol("resolution"), make<Builtin_Resolution>()},
 
+    FUNCTION("is", Is_Function),
     FUNCTION("is_bool", Is_Bool_Function),
     FUNCTION("is_char", Is_Char_Function),
     FUNCTION("is_symbol", Is_Symbol_Function),
