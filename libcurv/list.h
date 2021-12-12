@@ -18,6 +18,7 @@ struct At_Syntax;
 struct Context;
 struct List_Base;
 struct Reactive_Value;
+struct Type;
 
 /// List of boxed values.
 ///
@@ -99,15 +100,18 @@ private:
     }
 
 public:
+    // If Value argument is not a list, then assert is_list() false.
+    Generic_List(Value);
     // If Value argument is not a list, then:
     // * Throw an exception on Fail::hard.
     // * Assert is_list() to be false on Fail::soft.
-    Generic_List(Value, Fail, const Context& cx);
+    Generic_List(Value, Fail, const Context&);
 
     // Test after construction, before invoking any list operations.
     bool is_list() const noexcept { return list_ != nullptr; }
 
     // List operations assume is_list().
+    bool has_elem_type(const Type&) const;
     size_t size() const noexcept;
     void assert_size(size_t sz, const Context& cx) const;
     Value val_at(size_t i, const At_Syntax&) const;

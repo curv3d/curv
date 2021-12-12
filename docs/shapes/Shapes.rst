@@ -39,7 +39,7 @@ in `<Colour_Atlas.rst>`_.)
 
 Signed Distance Fields
 ----------------------
-Shapes are represented internally as Signed Distance Fields (SDFs), see `<Theory.rst>`_.
+Shapes are represented internally as Signed Distance Fields (SDFs), see `Theory`_.
 This is not a unique representation: a given shape can be represented by many different SDFs.
 In most cases, the user just wants to let the implementation choose an SDF that is fast
 to compute and fast to render.
@@ -81,3 +81,5 @@ Some of the shape combinators produce exact bounding boxes if their input is exa
 You need to worry about whether a bounding box is approximate or exact
 if you use a shape combinator that uses the bounding box of its input
 to determine the shape of its output.
+
+.. _`Theory`: ../Theory.rst

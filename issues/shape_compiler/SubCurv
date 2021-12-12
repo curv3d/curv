@@ -1,0 +1,101 @@
+SubCurv
+=======
+
+WGSL Plain Types
+----------------
+WGSL scalar types:
+    Bool          -> bool
+    Array[32]Bool -> u32
+    Int           -> i32
+    Nat           -> u32
+    Num           -> f32
+    Symbol        -> u32
+
+vecN<T> N in 2..4, T in [bool,u32,i32,f32]
+    Array[N]Bool
+    Array[N,32]Bool
+    Array[N]Int
+    Array[N]Nat
+    Array[N]Num
+
+matNxM<f32>
+    Array[M,N]Num
+
+array<T,N>
+    Array[N]T
+
+array<T>     -- runtime-sized array
+    Array 1 T
+
+struct Foo {
+  a: Ta;
+  b: Tb;
+}
+    Struct {a: Ta, b: Tb}
+
+Tuple[T1,T2,...] ->
+    Sometimes, the IR for a Tuple is just a sequence of IR Values that
+    haven't be collected into a data structure. If the tuple is being passed
+    as an argument to a function call, then it need not be collapsed into
+    a GLSL plex value. When that happens, a struct type is generated.
+
+We may need to generate WGSL align, size, stride attributes. These can be
+represented as type combinators (a Curv type value has a size and alignment).
+
+If we leave out runtime-sized arrays, consider only fixed-size plain types,
+then these can be used in every context: variable types, function parameter
+types, function result types.
+
+Array Type Abbreviations?
+-------------------------
+Array 1 Bool => BVec
+Array[32]Bool => BVec 32
+
+Arr[32]Bool
+Array[32]Bool
+
+Dynamically Indexing an Array
+-----------------------------
+SPIR-V has dynamic indexing into vectors, but not dynamic indexing into
+matrices, unless the matrix is referenced by a pointer. This distinction
+is about whether the matrix is stored in registers or in memory.
+  An explanation is:
+  'Plex' types are meant to be values that can be stored in GPU registers.
+  There is usually no 'dynamic array indexing' for registers.
+
+WGSL has the same restriction (which is not present in GLSL), and this
+in turn affects SubCurv. In WGSL, a 'let' bound matrix can't be dynamically
+indexed, but a 'var' bound matrix can. A 'let' variable is not just immutable,
+but also corresponds to a SPIR-V SSA variable, with their restrictions.
+WGSL also won't allow dynamic indexing of an array returned by a function.
+
+As long as I am using GLSL, I don't think I will encounter this problem.
+WGSL has an open bug about changing this:
+    https://github.com/gpuweb/gpuweb/issues/1782
+
+If I generate WGSL, I'll need logic to work around this limitation.
+
+New Compiler
+------------
+Create a new SubCurv compiler:
+* A Curv module is compiled into a GLSL module. The original members of the
+  module have their names preserved into the GLSL output module. Additional
+  definitions may be generated (types, functions) with generated names.
+* Curv Operations are compiled into statically typed IR, which is optimized,
+  then finally converted to GLSL/C++. You can test if an IR node is a constant
+  and access the constant value.
+  * SSA with block parameters? Egg library?
+* Supports all the WGSL fixed-size plain types (plex types).
+* The compiler pays attention to `:: type` annotations in variable definitions
+  and formal parameter declarations, and type-annotated expressions.
+    There is no longer an isomorphism between values and SubCurv types.
+    Eg, 42 belongs to types Num, Int and Nat (defaulting to Num if no other
+    type is asserted).
+* Supports curried functions.
+* Function calls are not (in all cases) inline expanded.
+  * If all non-locals (in a closure) are constant,
+    and if all parameters have plex types,
+    then a monomorphic copy of the function is generated as a function
+    definition. Like Julia monomorphisation.
+
+Prerequisites for this work: WebGPU port (GLSL 3.2 is too limiting).

@@ -14,6 +14,7 @@
 #include <chrono>
 #include <thread>
 
+#include <libcurv/colour.h>
 #include <libcurv/context.h>
 #include <libcurv/die.h>
 #include <libcurv/exception.h>
@@ -54,18 +55,29 @@ Viewer::set_shape_no_hud(const Shape_Program& shape, const Render_Opts& opts)
 void
 Viewer::set_shape(Viewed_Shape shape)
 {
-    // preserve picker state
-    if (!shape_.param_.empty()) {
-        for (auto pnew = shape.param_.begin();
-             pnew != shape.param_.end();
-             ++pnew)
+    // update picker state of new Viewed_Shape
+    for (auto pnew = shape.param_.begin();
+         pnew != shape.param_.end();
+         ++pnew)
+    {
+        // normalize colour picker: convert linearRGB to sRGB
+        if (pnew->second.pconfig_.type_ == Picker::Type::colour_picker) {
+            glm::vec3 c;
+            c.x = pnew->second.pstate_.vec3_[0];
+            c.y = pnew->second.pstate_.vec3_[1];
+            c.z = pnew->second.pstate_.vec3_[2];
+            c = linearRGB_to_sRGB(c);
+            float* fp = pnew.value().pstate_.vec3_;
+            fp[0] = c.x;
+            fp[1] = c.y;
+            fp[2] = c.z;
+        }
+        // preserve old picker state
+        auto pold = shape_.param_.find(pnew->first);
+        if (pold != shape_.param_.end()
+            && pnew->second.pconfig_.type_ == pold->second.pconfig_.type_)
         {
-            auto pold = shape_.param_.find(pnew->first);
-            if (pold != shape_.param_.end()
-                && pnew->second.pconfig_.type_ == pold->second.pconfig_.type_)
-            {
-                pnew.value().pstate_ = pold->second.pstate_;
-            }
+            pnew.value().pstate_ = pold->second.pstate_;
         }
     }
 
@@ -263,14 +275,7 @@ bool Viewer::draw_frame()
                      i != shape_.param_.end();
                      ++i)
                 {
-                    std::ostringstream nameStream;
-                    
-                    const char *name = i->first.c_str();
-
-                    nameStream << curv::make_symbol( name );
-
-                    name = nameStream.str().c_str();
-                        
+                    auto name = curv::make_symbol(i->first);
                     switch (i->second.pconfig_.type_) {
                         case Picker::Type::slider:
                             clipboardStream <<
@@ -437,8 +442,19 @@ void Viewer::render()
                 shader_.setUniform(name.c_str(), int(p.second.pstate_.bool_));
                 break;
             case Picker::Type::colour_picker:
-                shader_.setUniform(name.c_str(), p.second.pstate_.vec3_, 3);
+              {
+                glm::vec3 c;
+                c.x = p.second.pstate_.vec3_[0];
+                c.y = p.second.pstate_.vec3_[1];
+                c.z = p.second.pstate_.vec3_[2];
+                c = sRGB_to_linearRGB(c);
+                float a[3];
+                a[0] = c.x;
+                a[1] = c.y;
+                a[2] = c.z;
+                shader_.setUniform(name.c_str(), a, 3);
                 break;
+              }
             default:
                 die("picker with bad sctype");
             }

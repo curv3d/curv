@@ -4,13 +4,13 @@
 
 #include <libcurv/frag.h>
 
-#include <libcurv/glsl.h>
-#include <libcurv/shape.h>
-
 #include <libcurv/context.h>
 #include <libcurv/die.h>
 #include <libcurv/format.h>
 #include <libcurv/function.h>
+#include <libcurv/glsl.h>
+#include <libcurv/shape.h>
+#include <cmath>
 
 namespace curv {
 
@@ -131,8 +131,11 @@ void export_frag_3d(
             << opts.bg_.x << ","
             << opts.bg_.y << ","
             << opts.bg_.z << ");\n"
-        "const int ray_max_iter = " << opts.ray_max_iter_ << ";\n"
-        "const float ray_max_depth = " << dfmt(opts.ray_max_depth_, dfmt::EXPR) << ";\n"
+        "const int ray_max_iter = " << opts.ray_max_iter_ << ";\n";
+    if (!std::isinf(opts.ray_max_depth_)) out <<
+        "const float ray_max_depth = " << dfmt(opts.ray_max_depth_, dfmt::EXPR) << ";\n";
+    out <<
+        "const float contrast = " << dfmt(opts.contrast_, dfmt::EXPR) << ";\n"
         "uniform vec3 u_eye3d;\n"
         "uniform vec3 u_centre3d;\n"
         "uniform vec3 u_up3d;\n";
@@ -169,8 +172,10 @@ void export_frag_3d(
        "//    (-1,-1,-1) means no object was hit.\n"
        "vec4 castRay( in vec3 ro, in vec3 rd, float time )\n"
        "{\n"
-       "    float tmin = 0.0;\n" // was 1.0
-       "    float tmax = ray_max_depth;\n"
+       "    float tmin = 0.0;\n"; // was 1.0
+    if (!std::isinf(opts.ray_max_depth_)) out <<
+       "    float tmax = ray_max_depth;\n";
+    out <<
        "   \n"
        // TODO: implement bounding volume. If I remove the 'if(t>tmax)break'
        // check, then `tetrahedron` breaks. The hard coded tmax=200 fails for
@@ -192,8 +197,10 @@ void export_frag_3d(
        "            c = colour(p);\n"
        "            break;\n"
        "        }\n"
-       "        t += d;\n"
-       "        if (t > tmax) break;\n"
+       "        t += d;\n";
+    if (!std::isinf(opts.ray_max_depth_)) out <<
+       "        if (t > tmax) break;\n";
+    out <<
        "    }\n"
        "    return vec4( t, c );\n"
        "}\n"
@@ -276,7 +283,7 @@ void export_frag_3d(
        "        vec3 iqcol = col*lin;\n"
        "\n"
        "        //col = mix( col, vec3(0.8,0.9,1.0), 1.0-exp( -0.0002*t*t*t ) );\n"
-       "        col = mix(col,iqcol, 0.5);\n" // adjust contrast
+       "        col = mix(col, iqcol, contrast);\n" // adjust contrast
        "    }\n"
        "\n"
        "    return vec3( clamp(col,0.0,1.0) );\n"

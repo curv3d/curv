@@ -113,7 +113,7 @@ struct SC_Value_Expr : public Operation
     SC_Value val_;
     SC_Value_Expr(Shared<const Phrase> syntax, SC_Value val)
     :
-        Operation(syntax),
+        Operation(syntax, true),
         val_(val)
     {
     }

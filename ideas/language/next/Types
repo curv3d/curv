@@ -152,14 +152,6 @@ require type expr
 as T x -- fail if `is T x` is false. Returns `x` otherwise, which may also
     be optimized.
 
-SubCurv Types
--------------
-The following types map directly onto WGSL Plain Types in SubCurv:
-    bool -> Bool
-    u32 -> Array [32] Bool
-    i32 -> Int
-    f32 -> Num
-
 Algebras
 ========
 A mini version of this feature from ADA is needed for:

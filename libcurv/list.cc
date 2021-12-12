@@ -7,10 +7,11 @@
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/reactive.h>
+#include <libcurv/type.h>
 
 namespace curv {
 
-Generic_List::Generic_List(Value val, Fail fl, const Context& cx)
+Generic_List::Generic_List(Value val)
 {
     if (val.is_ref()) {
         list_ = share(val.to_ref_unsafe());
@@ -25,10 +26,25 @@ Generic_List::Generic_List(Value val, Fail fl, const Context& cx)
           }
         }
     }
-    if (fl == Fail::hard)
+    list_ = nullptr;
+}
+Generic_List::Generic_List(Value val, Fail fl, const Context& cx)
+: Generic_List(val)
+{
+    if (list_ == nullptr && fl == Fail::hard)
         throw Exception(cx, stringify(val, " is not a list"));
-    else
-        list_ = nullptr;
+}
+
+bool Generic_List::has_elem_type(const Type& type) const
+{
+    if (is_abstract_list()) {
+        const auto& list = get_abstract_list();
+        size_t n = list.size();
+        for (size_t i = 0; i < n; ++i)
+            if (!type.contains(list.val_at(i))) return false;
+        return true;
+    } else
+        return Type::equal(*get_reactive_value().sctype_.type_, type);
 }
 
 size_t Generic_List::size() const noexcept

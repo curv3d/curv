@@ -1,0 +1,81 @@
+Implement the new Camera API.
+The current API was a hack to work around the fact that glslViewer didn't
+have access to the shape's bounding box. It is not a good public API.
+
+There is a single Camera record shared by the 2D and 3D viewers.
+    struct Camera {
+        vec3 centre;
+        float radius;
+        float fov;
+        vec3 eyedir;
+        vec3 up;
+    }
+The 2D viewer ignores eyedir, fov and Z coordinates.
+
+Now we initialize the camera based on the shape's bbox.
+* centre is centre of the bbox.
+* radius is radius of the bounding circle/sphere of the bbox.
+* fov is left to default.
+* eyedir is left to default (only used for 3D).
+* up is left to default.
+
+UI:
+* Viewer displays camera position in the HUD.
+* Can copy the camera position from HUD to clipboard.
+* -Ocamera=
+* render.camera in a Shape specifies initial camera position, and cannot
+  be parameterized by symbolic values.
+* `camera` is a readonly reactive record variable. Can be used for billboards.
+
+Plan:
+ 1. for Lee:
+    * do 3D viewer
+    * then do 2D viewer changes
+ 2. for CadHub:
+    * -Ocamera=
+ 3. arcball rotation.
+ 4. other UI stuff
+
+Why do this now?
+* Lee: More disruptive to change the camera API later. Current camera API was
+  not meant for public use.
+* Kurt: asked for -Ocamera=.
+
+Impl
+----
+current 3D camera in viewer.h:
+    glm::vec3 u_centre3d_ {};
+    glm::vec3 u_eye3d_ {};
+    glm::vec3 u_up3d_ {};
+The eye3d is a point. It's a combination of centre, eyedir, radius, fov.
+
+new uniforms:
+    glm::vec3 u_cam_centre_ {};
+    glm::vec3 u_cam_eyedir_ {};
+    float     u_cam_radius_ {};
+    float     u_cam_fov_    {};
+    glm::vec3 u_cam_updir_  {};
+
+I need new math for the new camera design.
+https://jsantell.com/3d-projection
+
+Given a shape `sh`, compute the initial 3D camera:
+    centre = (sh.bbox.min + sh.bbox.max)/2
+    eyedir = -[.433, .5, .75]
+    radius = mag(sh.bbox.max - sh.bbox.min)/2
+    fov = 30*deg
+    updir = -[-.25, .866, -.433]
+
+Initial 2D camera:
+    ...
+    eyedir = [0,0,-1]
+    updir = [0,1,0]
+
+Given a camera, bbox and viewport size, compute raytracing parameters.
+Do this on CPU or on GPU? CPU is faster.
+
+How do I construct the eye point for use by the 3d fragment shader?
+
+(It is passed to look_at() and render(). look_at creates a mat3 camera matrix.
+ray_direction(camera,pos,lens) returns a ray direction (varies by pixel pos.)
+render() casts a ray from eye point and returns a colour.

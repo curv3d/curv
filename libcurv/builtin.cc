@@ -21,6 +21,7 @@
 #include <libcurv/sc_context.h>
 #include <libcurv/source.h>
 #include <libcurv/system.h>
+#include <libcurv/type.h>
 
 #include <boost/math/constants/constants.hpp>
 
@@ -99,6 +100,15 @@ struct Monoid_Func final : public Function
 // Builtin Functions //
 //-------------------//
 
+struct Is_Function : public Curried_Function
+{
+    Is_Function(const char* nm) : Curried_Function(2,nm,call) {}
+    static Value call(const Function& fn, Fail, Frame& args)
+    {
+        auto type = args[0].to<Type>(At_Arg(fn, args));
+        return type->contains(args[1]);
+    }
+};
 struct Is_Bool_Function : public Function
 {
     using Function::Function;
@@ -144,7 +154,7 @@ struct Is_List_Function : public Function
     using Function::Function;
     Value call(Value arg, Fail, Frame& fm) const override
     {
-        Generic_List glist(arg, Fail::soft, At_Frame(fm));
+        Generic_List glist(arg);
         return {glist.is_list()};
     }
 };
@@ -702,7 +712,8 @@ struct Dot_Function : public Tuple_Function
         {
             return sc_binop(fm, a.type, b, "*", a);
         }
-        throw Exception(At_SC_Frame(fm), "dot: invalid arguments");
+        throw Exception(At_SC_Frame(fm), stringify(
+            "dot: invalid argument type [",a.type,",",b.type,"]"));
     }
 };
 Value Dot_Function::dot(Value a, Value b, Fail fl, const At_Arg& cx) const
@@ -829,7 +840,8 @@ struct Mag_Function : public Tuple_Function
     {
         auto arg = fm[0];
         if (!arg.type.is_num_vec())
-            throw Exception(At_SC_Tuple_Arg(0, fm), "mag: argument is not a vector");
+            throw Exception(At_SC_Tuple_Arg(0, fm), stringify(
+                "mag: argument is not a vector (type ", arg.type, ")"));
         auto result = fm.sc_.newvalue(SC_Type::Num());
         fm.sc_.out() << "  float "<<result<<" = length("<<arg<<");\n";
         return result;
@@ -853,7 +865,8 @@ struct Count_Function : public Tuple_Function
     {
         auto arg = fm[0];
         if (!arg.type.is_list())
-            throw Exception(At_SC_Tuple_Arg(0, fm), "count: argument is not a list");
+            throw Exception(At_SC_Tuple_Arg(0, fm), stringify(
+                "count: argument is not a list (type ",arg.type,")"));
         auto result = fm.sc_.newvalue(SC_Type::Num());
         fm.sc_.out() << "  float "<<result<<" = "<<arg.type.count()<<";\n";
         return result;
@@ -1116,14 +1129,14 @@ struct File_Metafunction : public Metafunction
 };
 
 /// The meaning of a call to `print`, such as `print "foo"`.
-struct Print_Action : public Operation
+struct Print_Action : public Just_Action
 {
     Shared<Operation> arg_;
     Print_Action(
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(move(syntax)),
+        Just_Action(move(syntax)),
         arg_(move(arg))
     {}
     virtual void exec(Frame& fm, Executor&) const override
@@ -1150,14 +1163,14 @@ struct Print_Metafunction : public Metafunction
     }
 };
 
-struct Warning_Action : public Operation
+struct Warning_Action : public Just_Action
 {
     Shared<Operation> arg_;
     Warning_Action(
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(move(syntax)),
+        Just_Action(move(syntax)),
         arg_(move(arg))
     {}
     virtual void exec(Frame& fm, Executor&) const override
@@ -1195,14 +1208,14 @@ struct Error_Function : public Function
     }
 };
 /// The meaning of a call to `error`, such as `error("foo")`.
-struct Error_Operation : public Operation
+struct Error_Operation : public Just_Action
 {
     Shared<Operation> arg_;
     Error_Operation(
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(move(syntax)),
+        Just_Action(move(syntax)),
         arg_(move(arg))
     {}
     [[noreturn]] void run(Frame& fm) const
@@ -1244,14 +1257,14 @@ struct Error_Metafunction : public Metafunction
 
 // exec(expr) -- a debug action that evaluates expr, then discards the result.
 // It is used to call functions or source files for their side effects.
-struct Exec_Action : public Operation
+struct Exec_Action : public Just_Action
 {
     Shared<Operation> arg_;
     Exec_Action(
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(move(syntax)),
+        Just_Action(move(syntax)),
         arg_(move(arg))
     {}
     virtual void exec(Frame& fm, Executor&) const override
@@ -1275,14 +1288,14 @@ struct Exec_Metafunction : public Metafunction
     }
 };
 
-struct Assert_Action : public Operation
+struct Assert_Action : public Just_Action
 {
     Shared<Operation> arg_;
     Assert_Action(
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(move(syntax)),
+        Just_Action(move(syntax)),
         arg_(move(arg))
     {}
     virtual void exec(Frame& fm, Executor&) const override
@@ -1311,7 +1324,7 @@ struct Assert_Metafunction : public Metafunction
     }
 };
 
-struct Assert_Error_Action : public Operation
+struct Assert_Error_Action : public Just_Action
 {
     Shared<Operation> expected_message_;
     Shared<const String> actual_message_;
@@ -1323,7 +1336,7 @@ struct Assert_Error_Action : public Operation
         Shared<const String> actual_message,
         Shared<Operation> expr)
     :
-        Operation(move(syntax)),
+        Just_Action(move(syntax)),
         expected_message_(move(expected_message)),
         actual_message_(move(actual_message)),
         expr_(move(expr))
@@ -1525,9 +1538,11 @@ builtin_namespace()
     {make_symbol("inf"), make<Builtin_Value>(INFINITY)},
     {make_symbol("false"), make<Builtin_Value>(Value(false))},
     {make_symbol("true"), make<Builtin_Value>(Value(true))},
+    {make_symbol("Num"), make<Builtin_Value>(Value(make<Num_Type>()))},
     {make_symbol("time"), make<Builtin_Time>()},
     {make_symbol("resolution"), make<Builtin_Resolution>()},
 
+    FUNCTION("is", Is_Function),
     FUNCTION("is_bool", Is_Bool_Function),
     FUNCTION("is_char", Is_Char_Function),
     FUNCTION("is_symbol", Is_Symbol_Function),

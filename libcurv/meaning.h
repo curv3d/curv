@@ -106,11 +106,18 @@ struct Metafunction : public Meaning
 ///     For example, `assert(x>0)`.
 struct Operation : public Meaning
 {
-    using Meaning::Meaning;
+    Operation(Shared<const Phrase> syntax, bool is_expr)
+    :
+        Meaning(std::move(syntax)),
+        is_expr_(is_expr)
+    {}
 
     // pure_ is true if the Operation can be proven to be a referentially
     // transparent expression whose value does not depend on mutable variables.
     bool pure_ = false;
+    // is_expr_ is true if the Operation is an expression and if eval() can be
+    // called. Otherwise, the Operation is a statement but not an expression.
+    bool is_expr_;
 
     // These functions are called during semantic analysis.
     virtual Shared<Operation> to_operation(Source_State&);
@@ -172,25 +179,43 @@ operator<<(std::ostream& out, const Operation& op)
     return out;
 }
 
-/// `Just_Expression` is an implementation class, inherited by Operation classes
-/// whose instances are always expressions. It provides a sensible default
-/// for the exec virtual function.
-///
-/// An expression is an Operation that can be evaluated to produce a single 
-/// value. The work is done by the `eval` method, which must be defined.
-/// All expressions are also value generators that produce a single value,
-/// so the `exec` function calls `eval`.
-///
-/// This is not an interface class, and not all expression objects are derived
-/// from Just_Expression. Functions should not take Just_Expressions as values
-/// or return Just_Expressions as results: use Operation instead.
+// `Just_Expression` is an implementation class, inherited by Operation
+// classes whose instances are always expressions. It provides a default
+// for `is_expr_` and the `exec` virtual function.
+//
+// An expression is an Operation that can be evaluated to produce a single 
+// value. The work is done by the `eval` method, which must be defined.
+// All expressions are also value generators that produce a single value,
+// so the `exec` function calls `eval`.
+//
+// This is not an interface class, and not all expression objects are derived
+// from Just_Expression. Functions should not take Just_Expressions as values
+// or return Just_Expressions as results: use Operation instead.
 struct Just_Expression : public Operation
 {
-    using Operation::Operation;
+    Just_Expression(Shared<const Phrase> syntax)
+    :
+        Operation(std::move(syntax), true)
+    {}
 
     // These functions are called during evaluation.
     virtual Value eval(Frame&) const override = 0;
     virtual void exec(Frame&, Executor&) const override;
+};
+
+// `Just_Action` is an implementation class, inherited by Operation
+// classes whose instances are always actions. It provides a default
+// for `is_expr_` and the `eval` virtual function.
+struct Just_Action : public Operation
+{
+    Just_Action(Shared<const Phrase> syntax)
+    :
+        Operation(std::move(syntax), false)
+    {}
+
+    // These functions are called during evaluation.
+    //virtual Value eval(Frame&) const override;
+    virtual void exec(Frame&, Executor&) const override = 0;
 };
 
 /// A Constant is an Expression whose value is known at compile time.
@@ -214,9 +239,9 @@ struct Constant : public Just_Expression
     virtual void print(std::ostream&) const override;
 };
 
-struct Null_Action : public Operation
+struct Null_Action : public Just_Action
 {
-    using Operation::Operation;
+    using Just_Action::Just_Action;
     virtual void exec(Frame&, Executor&) const override;
     virtual void sc_exec(SC_Frame&) const override;
 };
@@ -339,7 +364,7 @@ struct Prefix_Expr_Base : public Just_Expression
     virtual bool hash_eq(const Operation&) const noexcept override;
 };
 
-struct Spread_Op : public Operation
+struct Spread_Op : public Just_Action
 {
     Shared<Operation> arg_;
 
@@ -347,7 +372,7 @@ struct Spread_Op : public Operation
         Shared<const Phrase> syntax,
         Shared<Operation> arg)
     :
-        Operation(syntax),
+        Just_Action(syntax),
         arg_(std::move(arg))
     {}
 
@@ -577,7 +602,7 @@ struct Scoped_Module_Expr : public Module_Expr
 
 // An internal action for initializing the slots of a data definition
 // in the evaluation frame. Part of the actions_ list in a Scope_Executable.
-struct Data_Setter : public Operation
+struct Data_Setter : public Just_Action
 {
     slot_t module_slot_; // copied from enclosing Scope_Executable
     Shared<Pattern> pattern_;
@@ -589,7 +614,7 @@ struct Data_Setter : public Operation
         Shared<Pattern> pattern,
         Shared<Operation> definiens)
     :
-        Operation(std::move(syntax)),
+        Just_Action(std::move(syntax)),
         module_slot_(module_slot),
         pattern_(std::move(pattern)),
         definiens_(std::move(definiens))
@@ -603,7 +628,7 @@ struct Data_Setter : public Operation
 // a single non-recursive closure, or a group of mutually recursive closures.
 // The closures share a single `nonlocals` object.
 // Part of the actions_ list in a Scope_Executable for a Recursive_Scope.
-struct Function_Setter_Base : public Operation
+struct Function_Setter_Base : public Just_Action
 {
     // a copy of module_slot_ from the enclosing Scope_Executable.
     slot_t module_slot_;
@@ -616,7 +641,7 @@ struct Function_Setter_Base : public Operation
         slot_t module_slot,
         Shared<Enum_Module_Expr> nonlocals)
     :
-        Operation(std::move(syntax)),
+        Just_Action(std::move(syntax)),
         module_slot_(module_slot),
         nonlocals_(std::move(nonlocals))
     {}
@@ -633,11 +658,11 @@ struct Function_Setter_Base : public Operation
 };
 using Function_Setter = Tail_Array<Function_Setter_Base>;
 
-struct Include_Setter_Base : public Operation
+struct Include_Setter_Base : public Just_Action
 {
     slot_t module_slot_ = (slot_t)(-1);
 
-    using Operation::Operation;
+    using Just_Action::Just_Action;
 
     virtual void exec(Frame&, Executor&) const override;
 
@@ -651,10 +676,10 @@ struct Include_Setter_Base : public Operation
 };
 using Include_Setter = Tail_Array<Include_Setter_Base>;
 
-struct Compound_Op_Base : public Operation
+struct Compound_Op_Base : public Just_Action
 {
     Compound_Op_Base(Shared<const Phrase> syntax)
-    : Operation(std::move(syntax)) {}
+    : Just_Action(std::move(syntax)) {}
 
     virtual void exec(Frame&, Executor&) const override;
     virtual void sc_exec(SC_Frame&) const override;
@@ -694,7 +719,7 @@ struct Block_Op : public Operation
         Scope_Executable b,
         Shared<const Operation> body)
     :
-        Operation(std::move(syntax)),
+        Operation(std::move(syntax), body->is_expr_),
         statements_(std::move(b)),
         body_(std::move(body))
     {}
@@ -706,7 +731,7 @@ struct Block_Op : public Operation
     virtual void sc_exec(SC_Frame&) const override;
 };
 
-struct For_Op : public Operation
+struct For_Op : public Just_Action
 {
     Shared<const Pattern> pattern_;
     Shared<const Operation> list_;
@@ -720,7 +745,7 @@ struct For_Op : public Operation
         Shared<const Operation> cond,
         Shared<const Operation> body)
     :
-        Operation(std::move(syntax)),
+        Just_Action(std::move(syntax)),
         pattern_(std::move(pattern)),
         list_(std::move(list)),
         cond_(std::move(cond)),
@@ -731,7 +756,7 @@ struct For_Op : public Operation
     virtual void sc_exec(SC_Frame&) const override;
 };
 
-struct While_Op : public Operation
+struct While_Op : public Just_Action
 {
     Shared<const Operation> cond_;
     Shared<const Operation> body_;
@@ -741,7 +766,7 @@ struct While_Op : public Operation
         Shared<const Operation> cond,
         Shared<const Operation> body)
     :
-        Operation(std::move(syntax)),
+        Just_Action(std::move(syntax)),
         cond_(std::move(cond)),
         body_(std::move(body))
     {}
@@ -750,7 +775,7 @@ struct While_Op : public Operation
     virtual void sc_exec(SC_Frame&) const override;
 };
 
-struct If_Op : public Operation
+struct If_Op : public Just_Action
 {
     Shared<Operation> arg1_;
     Shared<Operation> arg2_;
@@ -760,7 +785,7 @@ struct If_Op : public Operation
         Shared<Operation> arg1,
         Shared<Operation> arg2)
     :
-        Operation(syntax),
+        Just_Action(syntax),
         arg1_(std::move(arg1)),
         arg2_(std::move(arg2))
     {}
@@ -782,7 +807,7 @@ struct If_Else_Op : public Operation
         Shared<Operation> arg2,
         Shared<Operation> arg3)
     :
-        Operation(syntax),
+        Operation(syntax, arg2->is_expr_ && arg3->is_expr_),
         arg1_(std::move(arg1)),
         arg2_(std::move(arg2)),
         arg3_(std::move(arg3))
@@ -912,7 +937,7 @@ struct Dot_Expr : public Just_Expression
     virtual Value eval(Frame&) const override;
 };
 
-struct Assoc : public Operation
+struct Assoc : public Just_Expression
 {
     Symbol_Expr name_;
     Shared<const Operation> definiens_;
@@ -922,7 +947,7 @@ struct Assoc : public Operation
         Symbol_Expr name,
         Shared<const Operation> definiens)
     :
-        Operation(std::move(syntax)),
+        Just_Expression(std::move(syntax)),
         name_(std::move(name)),
         definiens_(std::move(definiens))
     {}
@@ -1015,7 +1040,7 @@ struct List_Locative : public Locative
 };
 
 // 'locative := expression'
-struct Assignment_Action : public Operation
+struct Assignment_Action : public Just_Action
 {
     Unique<const Locative> locative_;
     Shared<const Operation> expr_;
@@ -1025,7 +1050,7 @@ struct Assignment_Action : public Operation
         Unique<const Locative> locative,
         Shared<const Operation> expr)
     :
-        Operation(std::move(syntax)),
+        Just_Action(std::move(syntax)),
         locative_(std::move(locative)),
         expr_(std::move(expr))
     {}
@@ -1035,7 +1060,7 @@ struct Assignment_Action : public Operation
 };
 
 // 'locative ! function' means 'locative := function locative'
-struct Mutate_Action : public Operation
+struct Mutate_Action : public Just_Action
 {
     struct XForm {
         // A call_phrase of the form `loc!f1!f2!...!fn`.
@@ -1050,7 +1075,7 @@ struct Mutate_Action : public Operation
         Unique<const Locative> loc,
         std::vector<XForm> tx)
     :
-        Operation(std::move(syn)),
+        Just_Action(std::move(syn)),
         locative_(std::move(loc)),
         transformers_(std::move(tx))
     {}

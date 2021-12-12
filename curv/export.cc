@@ -264,13 +264,13 @@ void export_all_png(
         return;
     }
 
-    const char* ipath = ofile.path_.string().c_str();
-    const char* p = strchr(ipath, '*');
+    auto ipath = ofile.path_.string();
+    const char* p = strchr(ipath.c_str(), '*');
     if (p == nullptr) {
         throw Exception(At_System(shape.system()),
           "'-O animate=' requires pathname in '-o pathname' to contain a '*'");
     }
-    Range<const char*> prefix(ipath, p);
+    Range<const char*> prefix(ipath.c_str(), p);
     Range<const char*> suffix(p+1, strlen(p+1));
 
     unsigned count = unsigned(animate / ix.fdur_ + 0.5);

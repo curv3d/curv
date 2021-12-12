@@ -29,7 +29,7 @@ struct SC_Data_Ref : public Operation
 {
     SC_Value val_;
     SC_Data_Ref(Shared<const Phrase> src, SC_Value v)
-    : Operation(move(src)), val_(v)
+    : Operation(move(src), true), val_(v)
     {}
     SC_Value sc_eval(SC_Frame&) const override { return val_; }
     void exec(Frame&, Executor&) const override { }
