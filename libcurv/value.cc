@@ -186,6 +186,8 @@ Ternary Value::equal(Value v, const Context& cx) const
         default:
             return Ternary::True;
         }
+    case Ref_Value::ty_type:
+        return Type::equal((Type&)r1, (Type&)*r2);
     default:
         // Outside of the data types, two values are equal if they have
         // the same type.
