@@ -56,7 +56,7 @@ Shared<const Type> value_to_type(Value v, Fail fl, const Context& cx)
     }
 }
 
-bool Error_Type::contains(Value val) const
+bool Error_Type::contains(Value val, const Context&) const
 {
     return false;
 }
@@ -65,7 +65,7 @@ void Error_Type::print_repr(std::ostream& out) const
     out << "Error";
 };
 
-bool Bool_Type::contains(Value val) const
+bool Bool_Type::contains(Value val, const Context&) const
 {
     return is_bool(val);
 }
@@ -74,7 +74,7 @@ void Bool_Type::print_repr(std::ostream& out) const
     out << "Bool";
 };
 
-bool Num_Type::contains(Value val) const
+bool Num_Type::contains(Value val, const Context&) const
 {
     return is_num(val);
 }
@@ -83,11 +83,11 @@ void Num_Type::print_repr(std::ostream& out) const
     out << "Num";
 };
 
-bool List_Type::contains(Value val) const
+bool List_Type::contains(Value val, const Context& cx) const
 {
     Generic_List list(val);
     if (!list.is_list()) return false;
-    return list.has_elem_type(*elem_type_);
+    return list.has_elem_type(*elem_type_, cx);
 }
 void List_Type::print_repr(std::ostream& out) const
 {
@@ -122,7 +122,7 @@ Plex_Type List_Type::make_plex_type(unsigned count, Shared<const Type> etype)
     return Plex_Type::missing;
 }
 
-bool Char_Type::contains(Value val) const
+bool Char_Type::contains(Value val, const Context&) const
 {
     return val.is_char();
 }
@@ -131,7 +131,7 @@ void Char_Type::print_repr(std::ostream& out) const
     out << "Char";
 };
 
-bool Any_Type::contains(Value val) const
+bool Any_Type::contains(Value val, const Context&) const
 {
     return true;
 }
@@ -140,17 +140,17 @@ void Any_Type::print_repr(std::ostream& out) const
     out << "Any";
 };
 
-#if 0
-bool Type_Type::contains(Value val) const
+bool Type_Type::contains(Value val, const Context& cx) const
 {
-    return maybe_type(val) != nullptr; // TODO need cx
+    return value_to_type(val, Fail::soft, cx) != nullptr;
 }
 void Type_Type::print_repr(std::ostream& out) const
 {
     out << "Type";
 };
 
-bool Func_Type::contains(Value val) const
+#if 0
+bool Func_Type::contains(Value val, const Context&) const
 {
     return maybe_function(val) != nullptr; // TODO need cx
 }
@@ -159,7 +159,7 @@ void Func_Type::print_repr(std::ostream& out) const
     out << "Func";
 };
 
-bool Primitive_Func_Type::contains(Value val) const
+bool Primitive_Func_Type::contains(Value val, const Context&) const
 {
     return val.is_char();
 }
@@ -168,7 +168,7 @@ void Primitive_Func_Type::print_repr(std::ostream& out) const
     out << "Primitive_Func";
 };
 
-bool Index_Type::contains(Value val) const
+bool Index_Type::contains(Value val, const Context&) const
 {
     return val.is_char();
 }
@@ -177,7 +177,7 @@ void Index_Type::print_repr(std::ostream& out) const
     out << "Index";
 };
 
-bool Symbol_Type::contains(Value val) const
+bool Symbol_Type::contains(Value val, const Context&) const
 {
     return val.is_char();
 }

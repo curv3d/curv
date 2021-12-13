@@ -111,7 +111,7 @@ public:
     bool is_list() const noexcept { return list_ != nullptr; }
 
     // List operations assume is_list().
-    bool has_elem_type(const Type&) const;
+    bool has_elem_type(const Type&, const Context&) const;
     size_t size() const noexcept;
     void assert_size(size_t sz, const Context& cx) const;
     Value val_at(size_t i, const At_Syntax&) const;

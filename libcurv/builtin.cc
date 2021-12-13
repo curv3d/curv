@@ -105,8 +105,9 @@ struct As_Function : public Curried_Function
     As_Function(const char* nm) : Curried_Function(2,nm) {}
     virtual Value ccall(const Function& self, Fail fl, Frame& args)
     const override {
-        auto type = value_to_type(args[0], Fail::hard, At_Arg(*this, args));
-        if (type->contains(args[1]))
+        At_Arg cx(*this, args);
+        auto type = value_to_type(args[0], Fail::hard, cx);
+        if (type->contains(args[1], cx))
             return args[1];
         if (fl == Fail::soft)
             return missing;
@@ -123,8 +124,9 @@ struct Is_Function : public Curried_Function
     Is_Function(const char* nm) : Curried_Function(2,nm) {}
     virtual Value ccall(const Function& self, Fail, Frame& args)
     const override {
-        auto type = value_to_type(args[0], Fail::hard, At_Arg(*this, args));
-        return type->contains(args[1]);
+        At_Arg cx(*this, args);
+        auto type = value_to_type(args[0], Fail::hard, cx);
+        return type->contains(args[1], cx);
     }
     virtual bool validate_arg(unsigned i, Value a, Fail fl, const Context& cx)
     const override {
@@ -1564,6 +1566,7 @@ builtin_namespace()
     {make_symbol("Bool"), make<Builtin_Value>(Value(make<Bool_Type>()))},
     {make_symbol("Char"), make<Builtin_Value>(Value(make<Char_Type>()))},
     {make_symbol("Num"), make<Builtin_Value>(Value(make<Num_Type>()))},
+    {make_symbol("Type"), make<Builtin_Value>(Value(make<Type_Type>()))},
     {make_symbol("time"), make<Builtin_Time>()},
     {make_symbol("resolution"), make<Builtin_Resolution>()},
 
