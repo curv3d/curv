@@ -1,0 +1,16 @@
+SVX is a voxel file format for representing 3D printable objects.
+It is much more efficient than triangle meshes for representing "lattice" like
+shapes with lots of fine internal structure.
+If your shape requires 100,000,000 triangles to represent, then you probably
+can't 3D print it, because personal computers do not have the memory and
+processing power to process such a large mesh. But in this kind of situation,
+an SVX could be processed without difficulty.
+
+The SVX format was created by Shapeways. It supports two common coordinate
+systems. The Z-is-up coordinate system used by Curv and OpenSCAD is intended
+for 3D printing. The Y-is-up coordinate system is common in computer graphics.
+
+`svx.sh` outputs a Z-is-up SVX file.
+`svy.sh` outputs a Y-is-up SVX file.
+
+Shapeways.com accepts SVX files, but only in the Y-is-up format.
