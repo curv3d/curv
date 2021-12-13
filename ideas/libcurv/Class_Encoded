@@ -1,0 +1,51 @@
+Reproducing the Curv language in C++ encoded as Classes
+(as an API for implementing new Curv primitives using C++)
+* types as classes
+* functions as classes
+
+These classes have a regular API, allowing generic programming (templates
+with class arguments).
+
+Plus we have C++ APIs to convert these classes to Curv values.
+Somehow the same code is useable as an efficient C++ API and also can be
+automatically converted to Curv runtime values, without implementing the
+same code twice.
+
+Types as Classes
+----------------
+These classes correspond to Curv types (like Num Bool Char List<T> etc).
+They validate a Value and convert it to unboxed form (failing hard or soft),
+print values as Curv expressions, etc.
+
+`CNum` is a class whose data is a double.
+    class CNum { double n_; }
+It prints as a Curv expression, and you can use `out << CNum{dbl}` to print an
+unboxed double as a Curv value. So there's a constructor
+    CNum(double n) : n_(n) {}
+There's an API for converting a Value to a Num (failing hard or soft),
+useable in Function::call() or Function::try_tail_call(). How about:
+    CNum(Value, const Context&) -- fail hard
+    bool CNum::from_value(Value) -- fail soft, uniform API
+This requires a default constructor
+    CNum()
+Also,
+    Value CNum::to_value() const
+
+Most of these classes will encapsulate Shared<T> pointers.
+Their names will conflict with existing class names.
+Naming convention?
+    CNum, CString, etc -- no conflicts with libcurv
+
+Symbol_Ref is an existing example.
+(except Symbol_Ref prints as print_string not as print_repr)
+
+will need a Value class -- CAny? or just Value?
+
+Automation to construct a type class from a Ref_Value class.
+
+Unboxed Partial_Application
+---------------------------
+The Curried_Function/Partial_Application structure validates intermediate
+arguments twice. Could this be fixed? User defines an auxiliary class that
+checks and stores intermediate unboxed arguments. The details could be
+automated by a template that takes type class arguments.
