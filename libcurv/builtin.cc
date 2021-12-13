@@ -1560,6 +1560,7 @@ builtin_namespace()
     {make_symbol("inf"), make<Builtin_Value>(INFINITY)},
     {make_symbol("false"), make<Builtin_Value>(Value(false))},
     {make_symbol("true"), make<Builtin_Value>(Value(true))},
+    {make_symbol("Any"), make<Builtin_Value>(Value(make<Any_Type>()))},
     {make_symbol("Bool"), make<Builtin_Value>(Value(make<Bool_Type>()))},
     {make_symbol("Char"), make<Builtin_Value>(Value(make<Char_Type>()))},
     {make_symbol("Num"), make<Builtin_Value>(Value(make<Num_Type>()))},

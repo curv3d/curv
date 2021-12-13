@@ -819,6 +819,8 @@ assert((#bad >> match[as,id]) == #bad && (#bad >> match[as Num,id]) == #bad);
 assert(string Bool=="Bool" && is Bool true && as Bool false == false);
 assert(Bool == Bool && Bool != Num);
 assert(is Char #"a" && !is Char "a");
+assert(Any!=Num && is Any #foo && as Any [] == []);
+assert(is Num time && is Bool (time==time));
 
 // script return value:
 in null

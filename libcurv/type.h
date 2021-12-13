@@ -107,5 +107,49 @@ struct Char_Type : public Type
     virtual void print_repr(std::ostream&) const override;
 };
 
+struct Any_Type : public Type
+{
+    Any_Type() : Type(sty_any_type, Plex_Type::missing) {}
+    virtual bool contains(Value) const;
+    virtual void print_repr(std::ostream&) const override;
+};
+
+#if 0
+struct Type_Type : public Type
+{
+    Type_Type() : Type(sty_type_type, Plex_Type::missing) {}
+    virtual bool contains(Value) const;
+    virtual void print_repr(std::ostream&) const override;
+};
+
+struct Func_Type : public Type
+{
+    Func_Type() : Type(sty_func_type, Plex_Type::missing) {}
+    virtual bool contains(Value) const;
+    virtual void print_repr(std::ostream&) const override;
+};
+
+struct Primitive_Func_Type : public Type
+{
+    Primitive_Func_Type() : Type(sty_primitive_func_type, Plex_Type::missing) {}
+    virtual bool contains(Value) const;
+    virtual void print_repr(std::ostream&) const override;
+};
+
+struct Index_Type : public Type
+{
+    Index_Type() : Type(sty_index_type, Plex_Type::missing) {}
+    virtual bool contains(Value) const;
+    virtual void print_repr(std::ostream&) const override;
+};
+
+struct Symbol_Type : public Type
+{
+    Symbol_Type() : Type(sty_symbol_type, Plex_Type::missing) {}
+    virtual bool contains(Value) const;
+    virtual void print_repr(std::ostream&) const override;
+};
+#endif
+
 } // namespace curv
 #endif // header guard
