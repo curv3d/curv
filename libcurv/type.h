@@ -121,7 +121,6 @@ struct Type_Type : public Type
     virtual void print_repr(std::ostream&) const override;
 };
 
-#if 0
 struct Func_Type : public Type
 {
     Func_Type() : Type(sty_func_type, Plex_Type::missing) {}
@@ -136,16 +135,17 @@ struct Primitive_Func_Type : public Type
     virtual void print_repr(std::ostream&) const override;
 };
 
-struct Index_Type : public Type
+struct Symbol_Type : public Type
 {
-    Index_Type() : Type(sty_index_type, Plex_Type::missing) {}
+    Symbol_Type() : Type(sty_symbol_type, Plex_Type::missing) {}
     virtual bool contains(Value, const Context&) const;
     virtual void print_repr(std::ostream&) const override;
 };
 
-struct Symbol_Type : public Type
+#if 0
+struct Index_Type : public Type
 {
-    Symbol_Type() : Type(sty_symbol_type, Plex_Type::missing) {}
+    Index_Type() : Type(sty_index_type, Plex_Type::missing) {}
     virtual bool contains(Value, const Context&) const;
     virtual void print_repr(std::ostream&) const override;
 };

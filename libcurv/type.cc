@@ -6,8 +6,9 @@
 
 #include <libcurv/bool.h>
 #include <libcurv/exception.h>
-#include <libcurv/num.h>
+#include <libcurv/function.h>
 #include <libcurv/list.h>
+#include <libcurv/num.h>
 #include <libcurv/record.h>
 #include <libcurv/symbol.h>
 #include <vector>
@@ -149,10 +150,9 @@ void Type_Type::print_repr(std::ostream& out) const
     out << "Type";
 };
 
-#if 0
-bool Func_Type::contains(Value val, const Context&) const
+bool Func_Type::contains(Value val, const Context& cx) const
 {
-    return maybe_function(val) != nullptr; // TODO need cx
+    return maybe_function(val, cx) != nullptr;
 }
 void Func_Type::print_repr(std::ostream& out) const
 {
@@ -161,13 +161,23 @@ void Func_Type::print_repr(std::ostream& out) const
 
 bool Primitive_Func_Type::contains(Value val, const Context&) const
 {
-    return val.is_char();
+    return val.maybe<Function>() != nullptr;
 }
 void Primitive_Func_Type::print_repr(std::ostream& out) const
 {
     out << "Primitive_Func";
 };
 
+bool Symbol_Type::contains(Value val, const Context&) const
+{
+    return is_symbol(val);
+}
+void Symbol_Type::print_repr(std::ostream& out) const
+{
+    out << "Symbol";
+};
+
+#if 0
 bool Index_Type::contains(Value val, const Context&) const
 {
     return val.is_char();
@@ -175,15 +185,6 @@ bool Index_Type::contains(Value val, const Context&) const
 void Index_Type::print_repr(std::ostream& out) const
 {
     out << "Index";
-};
-
-bool Symbol_Type::contains(Value val, const Context&) const
-{
-    return val.is_char();
-}
-void Symbol_Type::print_repr(std::ostream& out) const
-{
-    out << "Symbol";
 };
 #endif
 
