@@ -3,7 +3,11 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/type.h>
+
+#include <libcurv/exception.h>
 #include <libcurv/list.h>
+#include <libcurv/record.h>
+#include <libcurv/symbol.h>
 #include <vector>
 
 namespace curv {
@@ -33,6 +37,22 @@ const char* glsl_plex_type_name[] = {
 };
 
 const char Type::name[] = "type";
+
+Shared<const Type> value_to_type(Value v, Fail fl, const Context& cx)
+{
+    static Symbol_Ref Tkey = make_symbol("T");
+    for (;;) {
+        if (auto type = v.maybe<const Type>())
+            return type;
+        if (auto rec = v.maybe<const Record>()) {
+            if (rec->hasfield(Tkey)) {
+                v = rec->getfield(Tkey, cx);
+                continue;
+            }
+        }
+        FAIL(fl, nullptr, cx, stringify(v," is not a type"));
+    }
+}
 
 bool Error_Type::contains(Value val) const
 {

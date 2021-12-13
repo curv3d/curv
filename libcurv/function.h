@@ -73,14 +73,16 @@ struct Function : public Ref_Value
     static const char name[];
 };
 
-// Returns nullptr if argument is not a function.
+// Convert a value to a function,
+// returning nullptr if the argument is not a function.
 // If the Value is a record with a `call` field, then we convert the value
 // of the `call` field to a function by recursively calling `maybe_function`.
 // May throw an exception if fetching the `call` field fails (currently
 // only happens for directory records).
 Shared<const Function> maybe_function(Value, const Context&);
 
-// If Value is not a Function, fail.
+// Convert a value to a function,
+// failing if the argument is not a function.
 Shared<const Function> value_to_function(Value, Fail, const Context&);
 
 inline Shared<const Function> value_to_function(Value val, const Context& cx)

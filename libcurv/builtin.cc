@@ -105,7 +105,7 @@ struct As_Function : public Curried_Function
     As_Function(const char* nm) : Curried_Function(2,nm) {}
     virtual Value ccall(const Function& self, Fail fl, Frame& args)
     const override {
-        auto type = args[0].to<Type>(At_Arg(*this, args));
+        auto type = value_to_type(args[0], Fail::hard, At_Arg(*this, args));
         if (type->contains(args[1]))
             return args[1];
         if (fl == Fail::soft)
@@ -115,7 +115,7 @@ struct As_Function : public Curried_Function
     }
     virtual bool validate_arg(unsigned i, Value a, Fail fl, const Context& cx)
     const override {
-        return a.to<Type>(fl, cx) != nullptr;
+        return value_to_type(a, fl, cx) != nullptr;
     }
 };
 struct Is_Function : public Curried_Function
@@ -123,12 +123,12 @@ struct Is_Function : public Curried_Function
     Is_Function(const char* nm) : Curried_Function(2,nm) {}
     virtual Value ccall(const Function& self, Fail, Frame& args)
     const override {
-        auto type = args[0].to<Type>(At_Arg(*this, args));
+        auto type = value_to_type(args[0], Fail::hard, At_Arg(*this, args));
         return type->contains(args[1]);
     }
     virtual bool validate_arg(unsigned i, Value a, Fail fl, const Context& cx)
     const override {
-        return a.to<Type>(fl, cx) != nullptr;
+        return value_to_type(a, fl, cx) != nullptr;
     }
 };
 struct Is_Bool_Function : public Function

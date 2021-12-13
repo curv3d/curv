@@ -55,6 +55,8 @@ struct Type : public Ref_Value
     static const char name[];
 };
 
+Shared<const Type> value_to_type(Value, Fail, const Context&);
+
 inline std::ostream&
 operator<<(std::ostream& out, const Type& type)
 {
