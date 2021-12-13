@@ -102,11 +102,15 @@ struct Monoid_Func final : public Function
 
 struct Is_Function : public Curried_Function
 {
-    Is_Function(const char* nm) : Curried_Function(2,nm,call) {}
-    static Value call(const Function& fn, Fail, Frame& args)
+    Is_Function(const char* nm) : Curried_Function(2,nm) {}
+    virtual Value tuple_call(Fail, Frame& args) const override
     {
-        auto type = args[0].to<Type>(At_Arg(fn, args));
+        auto type = args[0].to<Type>(At_Arg(*this, args));
         return type->contains(args[1]);
+    }
+    virtual bool validate_arg(unsigned i, Value a, Fail fl, const Context& cx)
+    const override {
+        return a.to<Type>(fl, cx) != nullptr;
     }
 };
 struct Is_Bool_Function : public Function
@@ -1065,11 +1069,11 @@ struct TPath_Function : public Function
 };
 struct Amend_Function : public Curried_Function
 {
-    static Value call(const Function& fn, Fail, Frame& args)
+    Amend_Function(const char* nm) : Curried_Function(3,nm) {}
+    virtual Value tuple_call(Fail, Frame& args) const
     {
-        return tree_amend(args[2], args[0], args[1], At_Arg(fn, args));
+        return tree_amend(args[2], args[0], args[1], At_Arg(*this, args));
     }
-    Amend_Function(const char* nm) : Curried_Function(3,nm,call) {}
 };
 
 // The filename argument to "file", if it is a relative filename,
