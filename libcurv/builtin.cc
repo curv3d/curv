@@ -100,11 +100,29 @@ struct Monoid_Func final : public Function
 // Builtin Functions //
 //-------------------//
 
+struct As_Function : public Curried_Function
+{
+    As_Function(const char* nm) : Curried_Function(2,nm) {}
+    virtual Value ccall(const Function& self, Fail fl, Frame& args)
+    const override {
+        auto type = args[0].to<Type>(At_Arg(*this, args));
+        if (type->contains(args[1]))
+            return args[1];
+        if (fl == Fail::soft)
+            return missing;
+        throw Exception(At_Arg(self, args),
+            stringify(args[1]," is not a ",*type));
+    }
+    virtual bool validate_arg(unsigned i, Value a, Fail fl, const Context& cx)
+    const override {
+        return a.to<Type>(fl, cx) != nullptr;
+    }
+};
 struct Is_Function : public Curried_Function
 {
     Is_Function(const char* nm) : Curried_Function(2,nm) {}
-    virtual Value tuple_call(Fail, Frame& args) const override
-    {
+    virtual Value ccall(const Function& self, Fail, Frame& args)
+    const override {
         auto type = args[0].to<Type>(At_Arg(*this, args));
         return type->contains(args[1]);
     }
@@ -1070,7 +1088,7 @@ struct TPath_Function : public Function
 struct Amend_Function : public Curried_Function
 {
     Amend_Function(const char* nm) : Curried_Function(3,nm) {}
-    virtual Value tuple_call(Fail, Frame& args) const
+    virtual Value ccall(const Function& self, Fail, Frame& args) const
     {
         return tree_amend(args[2], args[0], args[1], At_Arg(*this, args));
     }
@@ -1546,6 +1564,7 @@ builtin_namespace()
     {make_symbol("time"), make<Builtin_Time>()},
     {make_symbol("resolution"), make<Builtin_Resolution>()},
 
+    FUNCTION("as", As_Function),
     FUNCTION("is", Is_Function),
     FUNCTION("is_bool", Is_Bool_Function),
     FUNCTION("is_char", Is_Char_Function),

@@ -812,6 +812,9 @@ let f = match [
 
 // types
 assert(string Num=="Num" && Num==Num && Num!=0 && is Num 42);
+assert((#bad >> match[is,id]) == #bad);
+assert(as Num 42 == 42);
+assert((#bad >> match[as,id]) == #bad && (#bad >> match[as Num,id]) == #bad);
 
 // script return value:
 in null

@@ -144,7 +144,7 @@ struct Curried_Function : public Function
     virtual Value call(Value, Fail, Frame&) const override;
 
     // call the function, with arguments stored in the frame.
-    virtual Value tuple_call(Fail, Frame& args) const = 0;
+    virtual Value ccall(const Function&, Fail, Frame& args) const = 0;
     virtual bool validate_arg(unsigned, Value, Fail, const Context&) const;
 };
 

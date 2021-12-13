@@ -82,27 +82,6 @@ const
 }
 
 Value
-Partial_Application_Base::call(Value arg, Fail fl, Frame& fm) const
-{
-    if (argpos_ == nargs() - 1) {
-        for (unsigned i = 0; i < argpos_; ++i)
-            fm[i] = array_[i];
-        fm[argpos_] = arg;
-        return cfunc_->tuple_call(fl, fm);
-    } else {
-        Shared<Partial_Application> pa = Partial_Application::make(
-            argpos_+1, nargs(), name_, cfunc_);
-        for (unsigned i = 0; i < argpos_; ++i)
-            pa->array_[i] = array_[i];
-        if (!cfunc_->validate_arg(argpos_, arg, fl, At_Arg(*this, fm)))
-            return missing;
-        pa->array_[argpos_] = arg;
-        pa->argpos_ = argpos_+1;
-        return {pa};
-    }
-}
-
-Value
 Curried_Function::call(Value arg, Fail fl, Frame& fm) const
 {
     if (!validate_arg(0, arg, fl, At_Arg(*this, fm)))
@@ -116,6 +95,27 @@ bool
 Curried_Function::validate_arg(unsigned, Value, Fail, const Context&) const
 {
     return true;
+}
+
+Value
+Partial_Application_Base::call(Value arg, Fail fl, Frame& fm) const
+{
+    if (argpos_ == nargs() - 1) {
+        for (unsigned i = 0; i < argpos_; ++i)
+            fm[i] = array_[i];
+        fm[argpos_] = arg;
+        return cfunc_->ccall(*this, fl, fm);
+    } else {
+        Shared<Partial_Application> pa = Partial_Application::make(
+            argpos_+1, nargs(), name_, cfunc_);
+        for (unsigned i = 0; i < argpos_; ++i)
+            pa->array_[i] = array_[i];
+        if (!cfunc_->validate_arg(argpos_, arg, fl, At_Arg(*this, fm)))
+            return missing;
+        pa->array_[argpos_] = arg;
+        pa->argpos_ = argpos_+1;
+        return {pa};
+    }
 }
 
 Value

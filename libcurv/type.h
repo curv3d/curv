@@ -55,6 +55,13 @@ struct Type : public Ref_Value
     static const char name[];
 };
 
+inline std::ostream&
+operator<<(std::ostream& out, const Type& type)
+{
+    type.print_repr(out);
+    return out;
+}
+
 struct Error_Type : public Type
 {
     Error_Type() : Type(sty_error_type, Plex_Type::missing) {}
