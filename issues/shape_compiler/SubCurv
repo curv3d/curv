@@ -25,7 +25,7 @@ array<T,N>
     Array[N]T
 
 array<T>     -- runtime-sized array
-    Array 1 T
+    List T
 
 struct Foo {
   a: Ta;
@@ -48,8 +48,12 @@ types, function result types.
 
 Array Type Abbreviations?
 -------------------------
-Array 1 Bool => BVec
-Array[32]Bool => BVec 32
+is_vec2 and is_vec3 from the shape library become?
+    Vec2 => Array[2]Num
+    Vec3 => Array[3]Num
+
+BVec => List Bool
+BVec 32 => Array[32]Bool
 
 Arr[32]Bool
 Array[32]Bool

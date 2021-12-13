@@ -4,7 +4,18 @@ Next:
 * Type values.
   * New type/module style core API replacing predicates and constructor
     functions with algebras. Eg, is_char/char => Char.
-    * fix `is` to report error on first argument.
+    * Type Operations:
+      * pat :: T
+      * equality and printed repr
+    * primitive types: Any Type Func Primitive_Func Index Symbol
+    * primitive type constructors: List Array Type String Record Struct
+    * primitive algebras: Char Bool String Symbol
+    * deprecations
+      * a mechanism for deprecating standard bindings
+    * type patterns
+    * help strings
+    * update documentation
+    * update std.curv and examples
   * All Curv 0.5 SC types now have Curv type expressions.
     Print Curv type exprs in SC error messages.
   * Shape library predicates and constructors are updated.

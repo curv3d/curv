@@ -41,6 +41,11 @@ Picker values are types, not predicates.
 
 Core Type Constructors
 ----------------------
+Type expressions appear in error messages such as
+    <value> is not a <type>
+or maybe
+    <value> is not of type <type>
+
 Any -- set of all values
 Type -- set of all type values
 Func
@@ -56,12 +61,13 @@ LATER:
     Enum [#foo, #bar T, #baz T1 T2]
     Bool = Enum [#false, #true]
 
-Array R T -- an R-dimensional rectangular array, elements of type T
+List T -- List Any is an arbitrary list
 Array [count1,count2,...] T -- fixed size multi-dimensional rectangular array
 Tuple [T1,T2,T3,...] -- fixed size list with per-element types
-List = Array 1
-    `List Any` is an arbitrary list.
 String = List Char
+LATER:
+    Array R T -- an R-dimensional rectangular array, elements of type T
+    Tree T = T | List (Tree T)
 
 Record {name1: type1, ...}
     The argument to 'Record' is a record whose elements are types,
@@ -74,6 +80,9 @@ Struct {name1: type1, ...}
 Algebras (that contain constructors):
     Char, Bool -- vectorized constructor
     String, Symbol
+-- Bonus feature: branded modules.
+    Char, Bool etc are branded modules that print as `Char` and `Bool`
+    and have doc strings. (Consistent with Num, a branded type.)
 
 LATER:
     All predicate
@@ -91,12 +100,17 @@ Type Equality
 -------------
 Two types with the same value set and representation should compare equal.
 And will therefore print the same. Thus,
-    List == Array 1
-    String == List Char == Array 1 Char
+    String.T == List Char
+    BVec.T == List Bool
     Tuple[Num,Num] == Array[2]Num
     Array 0 T == T
+    Array 1 T == List T
+    Array[]T == T
+    Array[0]T == Tuple[]
+    Array[M](Array[N]T) == Array[M,N]T
 
-An exception to the equality rule is `All predicate`. Later.
+An exception to the equality rule is `All predicate`. Later, when functions
+have Natural Equality.
 
 In what contexts does type equality matter?
 It's used by the SC compiler, with SC types.
