@@ -100,5 +100,12 @@ struct List_Type : public Type
     virtual void print_repr(std::ostream&) const override;
 };
 
+struct Char_Type : public Type
+{
+    Char_Type() : Type(sty_char_type, Plex_Type::missing) {}
+    virtual bool contains(Value) const;
+    virtual void print_repr(std::ostream&) const override;
+};
+
 } // namespace curv
 #endif // header guard

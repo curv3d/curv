@@ -60,6 +60,7 @@ struct Ref_Value : public Shared_Base
             sty_bool_type,
             sty_num_type,
             sty_list_type,
+            sty_char_type,
         ty_index,
             sty_this,
             sty_tpath,

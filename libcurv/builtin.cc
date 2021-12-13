@@ -1561,6 +1561,7 @@ builtin_namespace()
     {make_symbol("false"), make<Builtin_Value>(Value(false))},
     {make_symbol("true"), make<Builtin_Value>(Value(true))},
     {make_symbol("Bool"), make<Builtin_Value>(Value(make<Bool_Type>()))},
+    {make_symbol("Char"), make<Builtin_Value>(Value(make<Char_Type>()))},
     {make_symbol("Num"), make<Builtin_Value>(Value(make<Num_Type>()))},
     {make_symbol("time"), make<Builtin_Time>()},
     {make_symbol("resolution"), make<Builtin_Resolution>()},

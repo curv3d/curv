@@ -120,6 +120,15 @@ Plex_Type List_Type::make_plex_type(unsigned count, Shared<const Type> etype)
     return Plex_Type::missing;
 }
 
+bool Char_Type::contains(Value val) const
+{
+    return val.is_char();
+}
+void Char_Type::print_repr(std::ostream& out) const
+{
+    out << "Char";
+};
+
 bool Type::equal(const Type& t1, const Type& t2)
 {
     if (t1.subtype_ != t2.subtype_) return false;
