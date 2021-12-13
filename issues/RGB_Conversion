@@ -1,16 +1,19 @@
 Ensure that there is correct conversion between sRGB and linearRGB, everywhere.
 
- 1. colour_picker: convert between sRGB in the uniform variable,
-    and linear RGB in the Curv parameter.
-
+TODO (after WebGPU port):
+ 1. Modify libcurv/colour.cc to use correct conversion formula.
  2. Use mathematically correct conversion from linRGB to sRGB in shader prog.
     Right now, GLSL conversion code in export_frag_2d, export_frag_3d. Fix that.
     Or, fragment shader outputs linear RGB, OpenGL converts to sRGB in hardware.
     https://stackoverflow.com/questions/56204242/do-i-need-output-gamma-correction-in-a-fragment-shader
     glEnable(GL_FRAMEBUFFER_SRGB);
     https://www.khronos.org/opengl/wiki/Framebuffer#Colorspace
-
+    Wait: Do this after WebGPU port.
  3. Curv `sRGB` func uses mathematically correct conversion to linRGB.
+
+DONE:
+ 1. colour_picker: convert between sRGB in the uniform variable,
+    and linear RGB in the Curv parameter.
 
 sRGB <-> linRGB conversion code
 -------------------------------
