@@ -836,6 +836,7 @@ assert(Array[1,2]Num == Array[1](Array[2]Num));
 assert(is (Array[3]Num) [1,2,3]);
 assert(is (Array[4,4]Num) (idmatrix 4));
 assert(is (List Num) [] && is (List Char) "foo");
+assert(String 42 == "42" && is String "foo");
 
 // script return value:
 in null
