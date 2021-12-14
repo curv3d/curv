@@ -26,19 +26,19 @@ public:
         if (n == 1)
             return {Type::Bool};
         assert(n >= 2 && n <= 4);
-        return {make<List_Type>(n, Type::Bool)};
+        return {make<Array_Type>(n, Type::Bool)};
     }
     static inline SC_Type Bool32(unsigned n=1) {
         if (n == 1)
             return {Type::Bool32};
         assert(n >= 2 && n <= 4);
-        return {make<List_Type>(n, Type::Bool32)};
+        return {make<Array_Type>(n, Type::Bool32)};
     }
     static inline SC_Type Num(unsigned n = 1) {
         if (n == 1)
             return {Type::Num};
         assert(n >= 2 && n <= 4);
-        return {make<List_Type>(n, Type::Num)};
+        return {make<Array_Type>(n, Type::Num)};
     }
     static inline SC_Type Vec(SC_Type base, unsigned n) {
       #if !defined(NDEBUG)
@@ -48,11 +48,11 @@ public:
                plex == Plex_Type::Num ||
                plex == Plex_Type::Bool32);
         assert(n >= 1 && n <= 4);
-        return {make<List_Type>(n, base.type_)};
+        return {make<Array_Type>(n, base.type_)};
     }
     static inline SC_Type Mat(int n) {
         assert(n >= 2 && n <= 4);
-        return {make<List_Type>(n, make<List_Type>(n, Type::Num))};
+        return {make<Array_Type>(n, make<Array_Type>(n, Type::Num))};
     }
     static SC_Type List(SC_Type etype, unsigned n);
 
@@ -150,7 +150,7 @@ public:
         return type_->plex_type_ != Plex_Type::missing;
     }
     inline bool is_list() const {
-        return type_->subtype_ == Ref_Value::sty_list_type;
+        return type_->subtype_ == Ref_Value::sty_array_type;
     }
     inline bool is_scalar_or_vec() const {
         auto plex = type_->plex_type_;
@@ -169,8 +169,8 @@ public:
     }
     // First dimension, if type is a list, or 1 if type is a scalar.
     inline unsigned count() const {
-        return type_->subtype_ == Ref_Value::sty_list_type
-            ? ((List_Type*)(&*type_))->count_
+        return type_->subtype_ == Ref_Value::sty_array_type
+            ? ((Array_Type*)(&*type_))->count_
             : 1;
     }
     // If this is an array, strip one dimension off of the type.

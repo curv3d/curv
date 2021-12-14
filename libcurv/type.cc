@@ -18,7 +18,7 @@ namespace curv {
 
 Shared<const Type> Type::Error = make<Error_Type>();
 Shared<const Type> Type::Bool = make<Bool_Type>();
-Shared<const Type> Type::Bool32 = make<List_Type>(32, Type::Bool);
+Shared<const Type> Type::Bool32 = make<Array_Type>(32, Type::Bool);
 Shared<const Type> Type::Num = make<Num_Type>();
 
 const char* glsl_plex_type_name[] = {
@@ -107,20 +107,21 @@ void Tuple_Type::print_repr(std::ostream& out) const
     out << "]";
 }
 
-bool List_Type::contains(Value val, const At_Syntax& cx) const
+bool Array_Type::contains(Value val, const At_Syntax& cx) const
 {
     Generic_List list(val);
     if (!list.is_list()) return false;
+    if (list.size() != count_) return false;
     return list.has_elem_type(*elem_type_, cx);
 }
-void List_Type::print_repr(std::ostream& out) const
+void Array_Type::print_repr(std::ostream& out) const
 {
-    out << "List " << count_ << " (";
+    out << "Array[" << count_ << "](";
     elem_type_->print_repr(out);
     out << ")";
 };
 
-Plex_Type List_Type::make_plex_type(unsigned count, Shared<const Type> etype)
+Plex_Type Array_Type::make_plex_type(unsigned count, Shared<const Type> etype)
 {
     if (etype->plex_type_ == Plex_Type::Bool) {
         if (count >= 2 && count <= 4)
@@ -194,9 +195,9 @@ void Symbol_Type::print_repr(std::ostream& out) const
 bool Type::equal(const Type& t1, const Type& t2)
 {
     if (t1.subtype_ != t2.subtype_) return false;
-    if (t1.subtype_ == Ref_Value::sty_list_type) {
-        auto l1 = (const List_Type*)(&t1);
-        auto l2 = (const List_Type*)(&t2);
+    if (t1.subtype_ == Ref_Value::sty_array_type) {
+        auto l1 = (const Array_Type*)(&t1);
+        auto l2 = (const Array_Type*)(&t2);
         return l1->count_ == l2->count_
             && equal(*l1->elem_type_, *l2->elem_type_);
     }
@@ -218,9 +219,9 @@ unsigned Type::rank() const
 {
     auto t = this;
     unsigned rank = 0;
-    while (t->subtype_ == Ref_Value::sty_list_type)
+    while (t->subtype_ == Ref_Value::sty_array_type)
     {
-        t = &*((const List_Type*)(t))->elem_type_;
+        t = &*((const Array_Type*)(t))->elem_type_;
         ++rank;
     }
     return rank;
@@ -229,10 +230,10 @@ unsigned Type::rank() const
 Shared<const Type> Type::plex_array_base() const
 {
     auto t = this;
-    while (t->subtype_ == Ref_Value::sty_list_type
+    while (t->subtype_ == Ref_Value::sty_array_type
            && t->plex_type_ == Plex_Type::missing)
     {
-        t = &*((const List_Type*)(t))->elem_type_;
+        t = &*((const Array_Type*)(t))->elem_type_;
     }
     return share(*t);
 }
@@ -241,10 +242,10 @@ unsigned Type::plex_array_rank() const
 {
     auto t = this;
     unsigned rank = 0;
-    while (t->subtype_ == Ref_Value::sty_list_type
+    while (t->subtype_ == Ref_Value::sty_array_type
            && t->plex_type_ == Plex_Type::missing)
     {
-        t = &*((const List_Type*)(t))->elem_type_;
+        t = &*((const Array_Type*)(t))->elem_type_;
         ++rank;
     }
     return rank;
@@ -256,10 +257,10 @@ unsigned Type::plex_array_dim(unsigned i) const
     // refactoring the code that uses SC_Type.
     std::vector<unsigned> dims;
     auto t = this;
-    while (t->subtype_ == Ref_Value::sty_list_type
+    while (t->subtype_ == Ref_Value::sty_array_type
            && t->plex_type_ == Plex_Type::missing)
     {
-        auto li = (const List_Type*)(t);
+        auto li = (const Array_Type*)(t);
         dims.push_back(li->count_);
         t = &*li->elem_type_;
     }

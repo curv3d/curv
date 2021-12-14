@@ -135,13 +135,13 @@ struct Tuple_Type : public Type
     virtual void print_repr(std::ostream&) const override;
 };
 
-struct List_Type : public Type
+struct Array_Type : public Type
 {
     unsigned count_;
     Shared<const Type> elem_type_;
-    List_Type(unsigned c, Shared<const Type> et)
+    Array_Type(unsigned c, Shared<const Type> et)
     :
-        Type(sty_list_type, make_plex_type(c, et)),
+        Type(sty_array_type, make_plex_type(c, et)),
         count_(c),
         elem_type_(et)
     {}

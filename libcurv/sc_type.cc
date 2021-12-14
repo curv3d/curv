@@ -46,14 +46,14 @@ sc_type_of(Value v)
 SC_Type
 SC_Type::elem_type() const
 {
-    auto t = cast<const List_Type>(type_);
+    auto t = cast<const Array_Type>(type_);
     return {t ? t->elem_type_ : Type::Error};
 }
 
 SC_Type
 SC_Type::List(SC_Type etype, unsigned n)
 {
-    return {make<List_Type>(n, etype.type_)};
+    return {make<Array_Type>(n, etype.type_)};
 }
 
 SC_Type sc_unified_list_type(SC_Type a, SC_Type b, unsigned n)
