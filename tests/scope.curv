@@ -16,10 +16,10 @@ in assert(f 3 == 6);
 
 let
     lib = {
-        reduce(first,f) rest =
+        reduce [first,f] rest =
             if (rest==[]) first
-            else reduce(f(first,rest[0]), f) << rest[1..<count(rest)];
-        sum = reduce(0, (x,y)->x+y);
+            else reduce[f[first,rest.[0]], f] << rest.[1..<count(rest)];
+        sum = reduce[0, [x,y]->x+y];
     };
 in assert(lib.sum(1..3)==6);
 

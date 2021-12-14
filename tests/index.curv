@@ -13,7 +13,7 @@ assert( amend (tslice[1,this]) 99 [0,1,2] == [0,99,2] );
 assert( [1,2,3].[0] == 1 );
 assert( amend 0 17 [1,2,3] == [17,2,3] );
 
-assert( {a:1,b:2}@#a == 1 );
+assert( {a:1,b:2}.[#a] == 1 );
 assert( amend #a 17 {a:1,b:2} == {a:17,b:2} );
 
 local a =
