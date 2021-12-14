@@ -54,7 +54,7 @@ public:
         assert(n >= 2 && n <= 4);
         return {make<Array_Type>(n, make<Array_Type>(n, Type::Num))};
     }
-    static SC_Type List(SC_Type etype, unsigned n);
+    static SC_Type Array(SC_Type etype, unsigned n);
 
 public:
     inline bool is_error() const {
@@ -149,7 +149,7 @@ public:
     inline bool is_plex() const {
         return type_->plex_type_ != Plex_Type::missing;
     }
-    inline bool is_list() const {
+    inline bool is_array() const {
         return type_->subtype_ == Ref_Value::sty_array_type;
     }
     inline bool is_scalar_or_vec() const {
@@ -167,7 +167,7 @@ public:
     inline unsigned rank() const {
         return type_->rank();
     }
-    // First dimension, if type is a list, or 1 if type is a scalar.
+    // First dimension, if type is an array, or 1 if type is a scalar.
     inline unsigned count() const {
         return type_->subtype_ == Ref_Value::sty_array_type
             ? ((Array_Type*)(&*type_))->count_

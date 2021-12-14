@@ -35,7 +35,7 @@ sc_type_of(Value v)
         auto n = ls->size();
         if (n > 0) {
             auto t = sc_type_of(ls->front());
-            if (t) return SC_Type::List(t, n);
+            if (t) return SC_Type::Array(t, n);
         }
     }
     else if (auto re = v.maybe<Reactive_Value>())
@@ -51,7 +51,7 @@ SC_Type::elem_type() const
 }
 
 SC_Type
-SC_Type::List(SC_Type etype, unsigned n)
+SC_Type::Array(SC_Type etype, unsigned n)
 {
     return {make<Array_Type>(n, etype.type_)};
 }
@@ -59,19 +59,19 @@ SC_Type::List(SC_Type etype, unsigned n)
 SC_Type sc_unified_list_type(SC_Type a, SC_Type b, unsigned n)
 {
     SC_Type etype = sc_unify_tensor_types(a, b);
-    if (etype) return SC_Type::List(etype, n); else return {};
+    if (etype) return SC_Type::Array(etype, n); else return {};
 }
 
 SC_Type sc_unify_tensor_types(SC_Type a, SC_Type b)
 {
     if (a == b) { return a; }
-    if (a.is_list() && b.is_list()) {
+    if (a.is_array() && b.is_array()) {
         if (a.count() != b.count()) return {};
         return sc_unified_list_type(a.elem_type(), b.elem_type(), a.count());
     }
-    else if (a.is_list())
+    else if (a.is_array())
         return sc_unified_list_type(a.elem_type(), b, a.count());
-    else if (b.is_list())
+    else if (b.is_array())
         return sc_unified_list_type(a, b.elem_type(), b.count());
     return {};
 }

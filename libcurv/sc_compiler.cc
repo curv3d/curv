@@ -370,11 +370,11 @@ bool sc_try_elementwise(SC_Frame& fm, SC_Value& a, SC_Type rtype)
 bool sc_try_extend(SC_Frame& fm, SC_Value& a, SC_Type rtype)
 {
     if (a.type == rtype) return true;
-    if (a.type.is_list() && rtype.is_list()) {
+    if (a.type.is_array() && rtype.is_array()) {
         if (a.type.count() != rtype.count()) return false;
         return sc_try_elementwise(fm, a, rtype);
     }
-    if (rtype.is_list())
+    if (rtype.is_array())
         return sc_try_broadcast(fm, a, rtype);
     return false;
 }
@@ -382,16 +382,16 @@ bool sc_try_extend(SC_Frame& fm, SC_Value& a, SC_Type rtype)
 bool sc_try_unify(SC_Frame& fm, SC_Value& a, SC_Value& b)
 {
     if (a.type == b.type) return true;
-    if (a.type.is_list() && b.type.is_list()) {
+    if (a.type.is_array() && b.type.is_array()) {
         if (a.type.count() != b.type.count()) return false;
         if (a.type.rank() < b.type.rank())
             return sc_try_elementwise(fm, a, b.type);
         if (a.type.rank() > b.type.rank())
             return sc_try_elementwise(fm, b, a.type);
     }
-    else if (a.type.is_list())
+    else if (a.type.is_array())
         return sc_try_broadcast(fm, b, a.type);
-    else if (b.type.is_list())
+    else if (b.type.is_array())
         return sc_try_broadcast(fm, a, b.type);
     return false;
 }
@@ -729,7 +729,7 @@ SC_Value Call_Expr::sc_eval(SC_Frame& fm) const
 {
     SC_Value scval;
     if (sc_try_eval(*func_, fm, scval)) {
-        if (!scval.type.is_list())
+        if (!scval.type.is_array())
             throw Exception(At_SC_Phrase(func_->syntax_, fm),
                 stringify("type ", scval.type, ": not an array or function"));
         auto list = cast_list_expr(*arg_);
@@ -760,7 +760,7 @@ SC_Value Call_Expr::sc_eval(SC_Frame& fm) const
 SC_Value Index_Expr::sc_eval(SC_Frame& fm) const
 {
     SC_Value scval = sc_eval_op(fm, *arg1_);
-    if (!scval.type.is_list())
+    if (!scval.type.is_array())
         throw Exception(At_SC_Phrase(arg1_->syntax_, fm),
             stringify("type ", scval.type, ": not an array"));
     return sc_eval_index_expr(scval, *arg2_, fm);
@@ -768,7 +768,7 @@ SC_Value Index_Expr::sc_eval(SC_Frame& fm) const
 SC_Value Slice_Expr::sc_eval(SC_Frame& fm) const
 {
     SC_Value scval = sc_eval_op(fm, *arg1_);
-    if (!scval.type.is_list())
+    if (!scval.type.is_array())
         throw Exception(At_SC_Phrase(arg1_->syntax_, fm),
             stringify("type ", scval.type, ": not an array"));
     auto list = cast_list_expr(*arg2_);
@@ -828,7 +828,7 @@ SC_Value List_Expr_Base::sc_eval(SC_Frame& fm) const
                         " got types ",elem[0].type," and ",etype));
             }
         }
-        SC_Type atype = SC_Type::List(elem[0].type, this->size());
+        SC_Type atype = SC_Type::Array(elem[0].type, this->size());
         SC_Value result = fm.sc_.newvalue(atype);
         fm.sc_.out() << "  " << atype << " " << result << " = " << atype << "(";
         bool first = true;

@@ -159,7 +159,7 @@ Value tree_fetch(Value tree, Value index, const At_Syntax& gcx)
     else if (auto ri = index.maybe<Reactive_Value>()) {
         if (ri->sctype_.is_num()) {
             auto type = sc_type_of(tree);
-            if (type.is_list()) {
+            if (type.is_array()) {
                 return {make<Reactive_Expression>(
                     type.elem_type(),
                     make<Index_Expr>(
@@ -168,7 +168,7 @@ Value tree_fetch(Value tree, Value index, const At_Syntax& gcx)
                         ri->expr()),
                     gcx)};
             }
-        } else if (ri->sctype_.is_list()) {
+        } else if (ri->sctype_.is_array()) {
             // TODO
             // The only thing I need is the result type of tree@index
             // and then it's the same code as above. Wait til SubCurv supports
@@ -222,7 +222,7 @@ Value tree_fetch_slice(Value tree, Value index, Value index2,
     else if (auto ri = index.maybe<Reactive_Value>()) {
         if (ri->sctype_.is_num()) {
             auto type = sc_type_of(tree);
-            if (type.is_list()) {
+            if (type.is_array()) {
                 auto r = make<Reactive_Expression>(
                     type.elem_type(),
                     make<Index_Expr>(
@@ -232,7 +232,7 @@ Value tree_fetch_slice(Value tree, Value index, Value index2,
                     gcx);
                 return tree_fetch(Value{r}, slice, endslice, gcx);
             }
-        } else if (ri->sctype_.is_list()) {
+        } else if (ri->sctype_.is_array()) {
             // TODO
             // The only thing I need is the result type of value@index
             // and then it's the same code as above. Wait til SubCurv supports

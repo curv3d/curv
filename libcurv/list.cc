@@ -21,7 +21,7 @@ Generic_List::Generic_List(Value val)
         case Ref_Value::ty_reactive:
           {
             auto* rx = (Reactive_Value*)(&*list_);
-            if (rx->sctype_.is_list())
+            if (rx->sctype_.is_array())
                 return;
           }
         }

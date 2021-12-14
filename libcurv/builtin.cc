@@ -689,7 +689,7 @@ struct Select_Function : public Tuple_Function
             // 'cond' is a boolean vector.
             if (consequent.type.count() == 1) {
                 // Consequent & alternate are scalars. Convert them to vectors.
-                auto T = SC_Type::List(consequent.type, cond.type.count());
+                auto T = SC_Type::Array(consequent.type, cond.type.count());
                 sc_try_extend(fm, consequent, T);
                 sc_try_extend(fm, alternate, T);
             }
@@ -941,7 +941,7 @@ struct Count_Function : public Tuple_Function
         if (auto list = args[0].maybe<const Abstract_List>())
             return {double(list->size())};
         if (auto re = args[0].maybe<const Reactive_Value>()) {
-            if (re->sctype_.is_list())
+            if (re->sctype_.is_array())
                 return {double(re->sctype_.count())};
         }
         FAIL(fl, missing, At_Arg(*this, args), "not a list or string");
@@ -949,7 +949,7 @@ struct Count_Function : public Tuple_Function
     SC_Value sc_tuple_call(SC_Frame& fm) const override
     {
         auto arg = fm[0];
-        if (!arg.type.is_list())
+        if (!arg.type.is_array())
             throw Exception(At_SC_Tuple_Arg(0, fm), stringify(
                 "count: argument is not a list (type ",arg.type,")"));
         auto result = fm.sc_.newvalue(SC_Type::Num());
@@ -1606,7 +1606,7 @@ struct Builtin_Resolution : public Builtin
         return make<Constant>(share(id), Value{make<Uniform_Variable>(
             make_symbol("resolution"),
             std::string("u_resolution"),
-            SC_Type::List(SC_Type::Num(), 2),
+            SC_Type::Array(SC_Type::Num(), 2),
             share(id))});
     }
 };
