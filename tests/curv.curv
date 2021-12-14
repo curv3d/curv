@@ -824,6 +824,11 @@ assert(is Num time && is Bool (time==time));
 assert(is Type Num && is Type {T:Type});
 assert(is Symbol true && is Symbol #foo);
 assert(is Func sin && is Func {call: x->x+1});
+let f = x::Num->x+1 in (
+    assert(f 2 == 3);
+    assert_error["argument #1 of f: argument #true does not match Num",
+        f true];
+);
 
 // script return value:
 in null

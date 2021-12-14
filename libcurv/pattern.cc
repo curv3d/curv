@@ -161,38 +161,22 @@ struct Predicate_Pattern : public Pattern
 
     bool match(Value arg, Frame& fm) const
     {
-        static Symbol_Ref callkey = make_symbol("call");
+        // TODO: arg and func contexts distinguished
         Value val = predicate_expr_->eval(fm);
-        Value funv = val;
-        for (;;) {
-            if (!funv.is_ref())
-                throw Exception(At_Phrase(*predicate_phrase_, fm),
-                    stringify(funv,": not a function"));
-            Ref_Value& funp( funv.to_ref_unsafe() );
-            switch (funp.type_) {
-            case Ref_Value::ty_function:
-              {
-                Function* fun = (Function*)&funp;
-                std::unique_ptr<Frame> f2 {
-                    Frame::make(fun->nslots_, fm.sstate_, &fm,
-                        fm.func_, call_phrase())
-                };
-                auto result = fun->call(arg, Fail::hard, *f2);
-                return result.to_bool(At_Phrase(*call_phrase(), fm));
-              }
-            case Ref_Value::ty_record:
-              {
-                Record* s = (Record*)&funp;
-                if (s->hasfield(callkey)) {
-                    funv = s->getfield(callkey, At_Phrase(*call_phrase(), fm));
-                    continue;
-                }
-                break;
-              }
-            }
-            throw Exception(At_Phrase(*predicate_phrase_, fm),
-                stringify(val,": not a function"));
+        At_Frame cx(fm);
+        if (auto type = value_to_type(val, Fail::soft, cx)) {
+            return type->contains(arg, cx);
         }
+        if (auto fun = maybe_function(val, cx)) {
+            std::unique_ptr<Frame> f2 {
+                Frame::make(fun->nslots_, fm.sstate_, &fm,
+                    fm.func_, call_phrase())
+            };
+            auto result = fun->call(arg, Fail::hard, *f2);
+            return result.to_bool(At_Phrase(*call_phrase(), fm));
+        }
+        throw Exception(At_Phrase(*predicate_phrase_, fm),
+            stringify(val,": not a type or function"));
     }
 
     virtual void analyse(Environ& env) override
