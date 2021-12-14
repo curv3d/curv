@@ -43,8 +43,10 @@ bool Generic_List::has_elem_type(const Type& type, const At_Syntax& cx) const
         for (size_t i = 0; i < n; ++i)
             if (!type.contains(list.val_at(i), cx)) return false;
         return true;
-    } else
-        return Type::equal(*get_reactive_value().sctype_.type_, type);
+    } else {
+        return Type::equal(*get_reactive_value().sctype_.elem_type().type_,
+            type);
+    }
 }
 
 size_t Generic_List::size() const noexcept

@@ -833,9 +833,10 @@ let T0=Tuple[]; T1=Tuple[Num]; T2=Tuple[Symbol,Num]; in (
 );
 assert(Array[]Num == Num && Array[0]Num == Tuple[]);
 assert(Array[1,2]Num == Array[1](Array[2]Num));
-assert(is (Array[3]Num) [1,2,3]);
+assert(is (Array[3]Num) [1,2,3] && is (Array[2]Num) ([time,time]*time));
 assert(is (Array[4,4]Num) (idmatrix 4));
-assert(is (List Num) [] && is (List Char) "foo");
+assert(is (List Num) [] && is (List Char) "foo"
+    && is (List Num) ([time,time]*time));
 assert(String 42 == "42" && is String "foo");
 
 // script return value:
