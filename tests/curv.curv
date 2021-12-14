@@ -831,6 +831,10 @@ let T0=Tuple[]; T1=Tuple[Num]; T2=Tuple[Symbol,Num]; in (
     assert(string T0 == "Tuple[]" && string T2 == "Tuple[Symbol,Num]");
     assert(is T0 [] && is T1 [42] && is T2 [#foo,17]);
 );
+assert(Array[]Num == Num && Array[0]Num == Tuple[]);
+assert(Array[1,2]Num == Array[1](Array[2]Num));
+assert(is (Array[3]Num) [1,2,3]);
+assert(is (Array[4,4]Num) (idmatrix 4));
 
 // script return value:
 in null

@@ -147,6 +147,53 @@ struct Tuple_Func : public Function
         return {make<Tuple_Type>(std::move(types))};
     }
 };
+struct Array_Func : public Curried_Function
+{
+    static Shared<const Type> make_array_type(
+        unsigned i,
+        const std::vector<int>& axes,
+        Shared<const Type> etype)
+    {
+        if (i == axes.size()) return etype;
+        /* otherwise i < axes.size() */
+        if (axes[i] == 0)
+            return make<Tuple_Type>(std::vector<Shared<const Type>>{});
+        etype = make_array_type(i+1, axes, etype);
+        return make<Array_Type>(axes[i], etype);
+    }
+    Array_Func(const char* nm) : Curried_Function(2,nm) {}
+    virtual Value ccall(const Function& self, Fail fl, Frame& args) const
+    {
+        At_Arg cx(*this, args);
+        TRY_DEF(xlist, args[0].to<const List>(fl, cx));
+        TRY_DEF(etype, value_to_type(args[1], fl, cx));
+        std::vector<int> axes;
+        for (auto e : *xlist) {
+            if (!e.is_num()) {
+                FAIL(fl, false, cx, stringify(e," is not a number"));
+            }
+            int i;
+            if (!num_to_int(e.to_num_unsafe(), i, 0, INT_MAX, fl, cx))
+                return false;
+            axes.push_back(i);
+        }
+        return {make_array_type(0, axes, etype)};
+    }
+    virtual bool validate_arg(unsigned i, Value a, Fail fl, const Context& cx)
+    const override {
+        auto xlist = a.to<const List>(fl, cx);
+        if (xlist == nullptr) return false;
+        for (auto e : *xlist) {
+            if (!e.is_num()) {
+                FAIL(fl, false, cx, stringify(e," is not a number"));
+            }
+            int i;
+            if (!num_to_int(e.to_num_unsafe(), i, 0, INT_MAX, fl, cx))
+                return false;
+        }
+        return true;
+    }
+};
 struct Is_Bool_Function : public Function
 {
     using Function::Function;
@@ -1589,6 +1636,7 @@ builtin_namespace()
     FUNCTION("as", As_Function),
     FUNCTION("is", Is_Function),
     FUNCTION("Tuple", Tuple_Func),
+    FUNCTION("Array", Array_Func),
     FUNCTION("is_bool", Is_Bool_Function),
     FUNCTION("is_char", Is_Char_Function),
     FUNCTION("is_symbol", Is_Symbol_Function),

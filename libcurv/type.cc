@@ -116,9 +116,19 @@ bool Array_Type::contains(Value val, const At_Syntax& cx) const
 }
 void Array_Type::print_repr(std::ostream& out) const
 {
-    out << "Array[" << count_ << "](";
-    elem_type_->print_repr(out);
-    out << ")";
+    out << "Array[" << count_;
+    auto ety = elem_type_;
+    for (;;) {
+        if (auto aty = cast<const Array_Type>(ety)) {
+            out << "," << aty->count_;
+            ety = aty->elem_type_;
+        } else {
+            out << "](";
+            ety->print_repr(out);
+            out << ")";
+            break;
+        }
+    }
 };
 
 Plex_Type Array_Type::make_plex_type(unsigned count, Shared<const Type> etype)
