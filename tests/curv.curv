@@ -824,8 +824,6 @@ assert(is Num time && is Bool (time==time));
 assert(is Type Num && is Type {T:Type});
 assert(is Symbol true && is Symbol #foo);
 assert(is Func sin && is Func {call: x->x+1});
-assert(is Primitive_Func sin && is Primitive_Func (x->x+1)
-       && not(is Primitive_Func {call: sin}));
 
 // script return value:
 in null

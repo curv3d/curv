@@ -128,13 +128,6 @@ struct Func_Type : public Type
     virtual void print_repr(std::ostream&) const override;
 };
 
-struct Primitive_Func_Type : public Type
-{
-    Primitive_Func_Type() : Type(sty_primitive_func_type, Plex_Type::missing) {}
-    virtual bool contains(Value, const Context&) const;
-    virtual void print_repr(std::ostream&) const override;
-};
-
 struct Symbol_Type : public Type
 {
     Symbol_Type() : Type(sty_symbol_type, Plex_Type::missing) {}

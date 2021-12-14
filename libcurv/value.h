@@ -64,7 +64,6 @@ struct Ref_Value : public Shared_Base
             sty_any_type,
             sty_type_type,
             sty_func_type,
-            sty_primitive_func_type,
             sty_index_type,
             sty_symbol_type,
         ty_index,

@@ -1567,8 +1567,6 @@ builtin_namespace()
     {make_symbol("Char"), make<Builtin_Value>(Value(make<Char_Type>()))},
     {make_symbol("Func"), make<Builtin_Value>(Value(make<Func_Type>()))},
     {make_symbol("Num"), make<Builtin_Value>(Value(make<Num_Type>()))},
-    {make_symbol("Primitive_Func"),
-        make<Builtin_Value>(Value(make<Primitive_Func_Type>()))},
     {make_symbol("Symbol"), make<Builtin_Value>(Value(make<Symbol_Type>()))},
     {make_symbol("Type"), make<Builtin_Value>(Value(make<Type_Type>()))},
     {make_symbol("time"), make<Builtin_Time>()},

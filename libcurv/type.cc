@@ -159,15 +159,6 @@ void Func_Type::print_repr(std::ostream& out) const
     out << "Func";
 };
 
-bool Primitive_Func_Type::contains(Value val, const Context&) const
-{
-    return val.maybe<Function>() != nullptr;
-}
-void Primitive_Func_Type::print_repr(std::ostream& out) const
-{
-    out << "Primitive_Func";
-};
-
 bool Symbol_Type::contains(Value val, const Context&) const
 {
     return is_symbol(val);
