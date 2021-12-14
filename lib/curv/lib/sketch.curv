@@ -46,7 +46,10 @@
   // threePointArc [point_middle, point_end_relative] plane
   //
 
-  sagitta_arc [sag, point_end_absolute] plane =
+  sagitta_arc [sag, point_end_relative] plane =
+    sagitta_arc_to [sag, point_end_relative + plane.pos] plane;
+
+  sagitta_arc_to [sag, point_end_absolute] plane =
   let
     p = point_end_absolute;
     pn = (plane.pos - p);
@@ -55,7 +58,7 @@
     pm = (plane.pos + p) / 2;
     l = chord / 2;
     r = (sag^2 + l^2) / (2*sag);
-    v = -[-pn.[Y], pn.[X]];
+    v = [-pn.[Y], pn.[X]];
     vn = v / (mag v);
     o = pm + ((r - sag)*-vn);
     shape = circle (r*2)
@@ -73,7 +76,10 @@
       nrm: nrm
     };
 
-  radius_arc[r, point_end_absolute] plane =
+  radius_arc [r, point_end_relative] plane =
+    radius_arc_to [r, point_end_relative + plane.pos] plane;
+
+  radius_arc_to [r, point_end_absolute] plane =
   let
     chord = mag(plane.pos - point_end_absolute);
     l = chord / 2;
@@ -81,7 +87,10 @@
   in
     sagitta_arc [sag, point_end_absolute] plane;
 
-  tangent_arc_point point_end_absolute plane =
+  tangent_arc_point point_end_relative plane =
+    tangent_arc_point_to (point_end_relative + plane.pos) plane;
+
+  tangent_arc_point_to point_end_absolute plane =
   let
     p = point_end_absolute;
     Pa = plane.pos;
@@ -93,8 +102,9 @@
     d = mag (PaPb / cos(asin(s)));
     r = d/2;
     n = sign ((mag T) * (mag nrm) * s);
-    c = Pa - ((if (n >= 0) [-T.[Y], T.[X]] else T) * r);
-    vn = [-nrm.[Y], nrm.[X]];
+    cn = if (n >= 0) [-T.[Y], T.[X]] else T;
+    c = Pa + (cn * n *r);
+    vn = -[-nrm.[Y], nrm.[X]];
     l = (mag PaPb) / 2;
     nrm_next = (Pb - c) / (mag (Pb - c));
     sag = r - sqrt(r^2 - l^2);
@@ -123,7 +133,10 @@
     +  (                    (t ^ 3) * points.[3])
   ];
 
-  spline list_of_triples plane =
+  spline list_of_triples_relative plane =
+    spline_to (map (t -> map (p -> p + plane.pos) t) list_of_triples_relative) plane;
+
+  spline_to list_of_triples plane =
   let
     l = list_of_triples;
     pts = concat [for(i in 0..<count list_of_triples)
