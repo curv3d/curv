@@ -826,6 +826,11 @@ let f = x::Num->x+1 in (
     assert_error["argument #1 of f: argument #true does not match Num",
         f true];
 );
+let T0=Tuple[]; T1=Tuple[Num]; T2=Tuple[Symbol,Num]; in (
+    assert(T0 == T0 && T1 != T2);
+    assert(string T0 == "Tuple[]" && string T2 == "Tuple[Symbol,Num]");
+    assert(is T0 [] && is T1 [42] && is T2 [#foo,17]);
+);
 
 // script return value:
 in null

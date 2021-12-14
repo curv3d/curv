@@ -35,7 +35,7 @@ Generic_List::Generic_List(Value val, Fail fl, const Context& cx)
         throw Exception(cx, stringify(val, " is not a list"));
 }
 
-bool Generic_List::has_elem_type(const Type& type, const Context& cx) const
+bool Generic_List::has_elem_type(const Type& type, const At_Syntax& cx) const
 {
     if (is_abstract_list()) {
         const auto& list = get_abstract_list();

@@ -133,6 +133,20 @@ struct Is_Function : public Curried_Function
         return value_to_type(a, fl, cx) != nullptr;
     }
 };
+struct Tuple_Func : public Function
+{
+    using Function::Function;
+    Value call(Value arg, Fail fl, Frame& fm) const override
+    {
+        std::vector<Shared<const Type>> types;
+        TRY_DEF(list, arg.to<const List>(fl, At_Arg(*this, fm)));
+        for (auto e : *list) {
+            TRY_DEF(type, e.to<const Type>(fl, At_Arg(*this, fm)));
+            types.push_back(type);
+        }
+        return {make<Tuple_Type>(std::move(types))};
+    }
+};
 struct Is_Bool_Function : public Function
 {
     using Function::Function;
@@ -1574,6 +1588,7 @@ builtin_namespace()
 
     FUNCTION("as", As_Function),
     FUNCTION("is", Is_Function),
+    FUNCTION("Tuple", Tuple_Func),
     FUNCTION("is_bool", Is_Bool_Function),
     FUNCTION("is_char", Is_Char_Function),
     FUNCTION("is_symbol", Is_Symbol_Function),

@@ -5,6 +5,7 @@
 #include <libcurv/type.h>
 
 #include <libcurv/bool.h>
+#include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
 #include <libcurv/list.h>
@@ -57,7 +58,7 @@ Shared<const Type> value_to_type(Value v, Fail fl, const Context& cx)
     }
 }
 
-bool Error_Type::contains(Value val, const Context&) const
+bool Error_Type::contains(Value val, const At_Syntax&) const
 {
     return false;
 }
@@ -66,7 +67,7 @@ void Error_Type::print_repr(std::ostream& out) const
     out << "Error";
 };
 
-bool Bool_Type::contains(Value val, const Context&) const
+bool Bool_Type::contains(Value val, const At_Syntax&) const
 {
     return is_bool(val);
 }
@@ -75,7 +76,7 @@ void Bool_Type::print_repr(std::ostream& out) const
     out << "Bool";
 };
 
-bool Num_Type::contains(Value val, const Context&) const
+bool Num_Type::contains(Value val, const At_Syntax&) const
 {
     return is_num(val);
 }
@@ -84,7 +85,29 @@ void Num_Type::print_repr(std::ostream& out) const
     out << "Num";
 };
 
-bool List_Type::contains(Value val, const Context& cx) const
+bool Tuple_Type::contains(Value val, const At_Syntax& cx) const
+{
+    Generic_List list(val);
+    if (!list.is_list()) return false;
+    if (list.size() != elements_.size()) return false;
+    for (unsigned i = 0; i < elements_.size(); ++i) {
+        if (!elements_[i]->contains(list.val_at(i,cx), cx)) return false;
+    }
+    return true;
+}
+void Tuple_Type::print_repr(std::ostream& out) const
+{
+    out << "Tuple[";
+    bool at_start = true;
+    for (auto e : elements_) {
+        if (!at_start) out << ",";
+        e->print_repr(out);
+        at_start = false;
+    }
+    out << "]";
+}
+
+bool List_Type::contains(Value val, const At_Syntax& cx) const
 {
     Generic_List list(val);
     if (!list.is_list()) return false;
@@ -123,7 +146,7 @@ Plex_Type List_Type::make_plex_type(unsigned count, Shared<const Type> etype)
     return Plex_Type::missing;
 }
 
-bool Char_Type::contains(Value val, const Context&) const
+bool Char_Type::contains(Value val, const At_Syntax&) const
 {
     return val.is_char();
 }
@@ -132,7 +155,7 @@ void Char_Type::print_repr(std::ostream& out) const
     out << "Char";
 };
 
-bool Any_Type::contains(Value val, const Context&) const
+bool Any_Type::contains(Value val, const At_Syntax&) const
 {
     return true;
 }
@@ -141,7 +164,7 @@ void Any_Type::print_repr(std::ostream& out) const
     out << "Any";
 };
 
-bool Type_Type::contains(Value val, const Context& cx) const
+bool Type_Type::contains(Value val, const At_Syntax& cx) const
 {
     return value_to_type(val, Fail::soft, cx) != nullptr;
 }
@@ -150,7 +173,7 @@ void Type_Type::print_repr(std::ostream& out) const
     out << "Type";
 };
 
-bool Func_Type::contains(Value val, const Context& cx) const
+bool Func_Type::contains(Value val, const At_Syntax& cx) const
 {
     return maybe_function(val, cx) != nullptr;
 }
@@ -159,7 +182,7 @@ void Func_Type::print_repr(std::ostream& out) const
     out << "Func";
 };
 
-bool Symbol_Type::contains(Value val, const Context&) const
+bool Symbol_Type::contains(Value val, const At_Syntax&) const
 {
     return is_symbol(val);
 }
@@ -167,17 +190,6 @@ void Symbol_Type::print_repr(std::ostream& out) const
 {
     out << "Symbol";
 };
-
-#if 0
-bool Index_Type::contains(Value val, const Context&) const
-{
-    return val.is_char();
-}
-void Index_Type::print_repr(std::ostream& out) const
-{
-    out << "Index";
-};
-#endif
 
 bool Type::equal(const Type& t1, const Type& t2)
 {
@@ -187,6 +199,17 @@ bool Type::equal(const Type& t1, const Type& t2)
         auto l2 = (const List_Type*)(&t2);
         return l1->count_ == l2->count_
             && equal(*l1->elem_type_, *l2->elem_type_);
+    }
+    if (t1.subtype_ == Ref_Value::sty_tuple_type) {
+        auto tt1 = (const Tuple_Type*)(&t1);
+        auto tt2 = (const Tuple_Type*)(&t2);
+        if (tt1->elements_.size() != tt2->elements_.size())
+            return false;
+        for (unsigned i = 0; i < tt1->elements_.size(); ++i) {
+            if (!Type::equal(*tt1->elements_[i], *tt2->elements_[i]))
+                return false;
+        }
+        return true;
     }
     return true;
 }
