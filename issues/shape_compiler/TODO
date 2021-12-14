@@ -4,12 +4,9 @@ Next:
 * Type values.
   * New type/module style core API replacing predicates and constructor
     functions with algebras. Eg, is_char/char => Char.
-    * Type Operations:
-      * pat :: T
-      * equality and printed repr
-    * primitive types: Any Type Func Primitive_Func Index Symbol
-    * primitive type constructors: List Array Type String Record Struct
-    * primitive algebras: Char Bool String Symbol
+    * Tuple[Num,Num] => Array[2]Num
+    * primitive type constructors: Record Struct
+    * primitive algebras: Char Bool Symbol
     * deprecations
       * a mechanism for deprecating standard bindings
     * type patterns
@@ -23,3 +20,7 @@ Next:
   * Migrate incrementally to new representation.
     Initially, SC_Value and Operation are interconvertible.
     SC_Frame now contains operations.
+Deferred:
+* Types:
+  * replacement for is_primitive_func (and consider types as well)
+  * primitive types: Index

@@ -96,6 +96,20 @@ LATER:
      * Explicitly: `All T predicate`
     Equality? Meaningful equality requires full metal function equality.
 
+Primitive_Func and Primitive_Type
+---------------------------------
+Do I still need the is_func/is_primitive_func distinction?
+(Do I need to add Primitive_Type?)
+The original goal was to partition Curv values into 7 primitive types
+(that you could fully enumerate), similar to early Schemes.
+I think I at least wanted a disjunction between functions and records.
+
+In the new design, functions and records are disjoint (because only modules
+can behave like a function).
+
+I'm going to leave out Primitive_Func, and keep is_primitive_func,
+until the design stabilizes.
+
 Type Equality
 -------------
 Two types with the same value set and representation should compare equal.

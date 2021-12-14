@@ -79,6 +79,12 @@ WGSL has an open bug about changing this:
 
 If I generate WGSL, I'll need logic to work around this limitation.
 
+Support a larger subset of Curv
+-------------------------------
+add support for:
+* [...vec2, num] => vec3
+* concat[vec2,vec1] => vec3
+
 New Compiler
 ------------
 Create a new SubCurv compiler:
