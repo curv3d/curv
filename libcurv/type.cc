@@ -131,6 +131,19 @@ void Array_Type::print_repr(std::ostream& out) const
     }
 };
 
+bool List_Type::contains(Value val, const At_Syntax& cx) const
+{
+    Generic_List list(val);
+    if (!list.is_list()) return false;
+    return list.has_elem_type(*elem_type_, cx);
+}
+void List_Type::print_repr(std::ostream& out) const
+{
+    out << "List (";
+    elem_type_->print_repr(out);
+    out << ")";
+};
+
 Plex_Type Array_Type::make_plex_type(unsigned count, Shared<const Type> etype)
 {
     if (etype->plex_type_ == Plex_Type::Bool) {

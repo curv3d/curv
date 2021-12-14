@@ -150,5 +150,17 @@ struct Array_Type : public Type
     virtual void print_repr(std::ostream&) const override;
 };
 
+struct List_Type : public Type
+{
+    Shared<const Type> elem_type_;
+    List_Type(Shared<const Type> et)
+    :
+        Type(sty_list_type, Plex_Type::missing),
+        elem_type_(et)
+    {}
+    virtual bool contains(Value, const At_Syntax&) const;
+    virtual void print_repr(std::ostream&) const override;
+};
+
 } // namespace curv
 #endif // header guard

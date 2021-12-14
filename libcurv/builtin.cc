@@ -147,6 +147,15 @@ struct Tuple_Func : public Function
         return {make<Tuple_Type>(std::move(types))};
     }
 };
+struct List_Func : public Function
+{
+    using Function::Function;
+    Value call(Value arg, Fail fl, Frame& fm) const override
+    {
+        TRY_DEF(type, arg.to<const Type>(fl, At_Arg(*this, fm)));
+        return {make<List_Type>(type)};
+    }
+};
 struct Array_Func : public Curried_Function
 {
     static Shared<const Type> make_array_type(
@@ -1636,6 +1645,7 @@ builtin_namespace()
     FUNCTION("as", As_Function),
     FUNCTION("is", Is_Function),
     FUNCTION("Tuple", Tuple_Func),
+    FUNCTION("List", List_Func),
     FUNCTION("Array", Array_Func),
     FUNCTION("is_bool", Is_Bool_Function),
     FUNCTION("is_char", Is_Char_Function),
