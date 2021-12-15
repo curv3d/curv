@@ -175,5 +175,17 @@ struct Struct_Type : public Type
     virtual void print_repr(std::ostream&) const override;
 };
 
+struct Record_Type : public Type
+{
+    Symbol_Map<Shared<const Type>> fields_;
+    Record_Type(Symbol_Map<Shared<const Type>> fields)
+    :
+        Type(sty_struct_type, Plex_Type::missing),
+        fields_(std::move(fields))
+    {}
+    virtual bool contains(Value, const At_Syntax&) const;
+    virtual void print_repr(std::ostream&) const override;
+};
+
 } // namespace curv
 #endif // header guard

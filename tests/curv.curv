@@ -843,6 +843,12 @@ let S0=Struct{}; S1=Struct{a:Num}; S2=Struct{a:Num,b:Symbol} in (
     assert(S0==S0 && S0 != S1 && S1 != S0 && S1 != S2 && S2 != S1);
     assert(is S0 {} && !(is S0 {a:1}) && is S1 {a:1} && !(is S1 {}));
 );
+let R=Record{b:Bool,d:Num}; R0=Record{};
+    r0={}; r={a:1,b:true,c:3,d:4,e:#foo};
+in (
+    assert(is R0 r0 && is R0 r && is R r);
+    assert(R0==R0 && R==R && R!=R0 && R0!=R);
+);
 
 // script return value:
 in null
