@@ -1,0 +1,48 @@
+parametric
+  w :: slider[1,100] = 30;
+  l :: slider[1,100] = 30;
+  h :: slider[1,100] = 30;
+  t :: slider[0.2,10] = 1.7;
+
+  p1 :: slider[1,10] = 1.7;
+  p2 :: slider[1,10] = 1.7;
+
+  tt :: slider[1,100] = 5.0;
+  ttt :: slider[1,30/2] = 5.0;
+in
+let
+  d_box = [w/2,l,h];
+  outer = difference [box d_box, box (d_box-[-t, t, t])];
+
+  with_side_cuts = difference [
+    outer,
+    polygon [[0,0], [0,h], [p1,h/2]] >> extrude (l+t)
+    >> rotate { angle: 90*deg, axis: Y_axis }
+    >> rotate { angle: 90*deg, axis: X_axis }
+    >> rotate { angle: 90*deg, axis: Z_axis }
+    >> move [w/4+0.2, 0, h/-2]
+  ]
+  >> move [w/4, 0, 0]
+  >> repeat_mirror_x;
+
+  with_top_cuts = difference [
+    with_side_cuts,
+    polygon [[0,0], [0,tt], [p2,tt/2]] >> extrude (ttt)
+    >> rotate { angle: 90*deg, axis: Y_axis }
+    >> rotate { angle: 90*deg, axis: Z_axis }
+    >> move [tt/2, l/-2+ttt/2-0.2, (h/2)+0.2]
+  ];
+
+  result = difference [
+    with_top_cuts,
+    half_space { d: 0, normal: [0,0,1] },
+  ] >> into difference [ 
+    half_space { d: 0, normal: [0,-1,0] }
+  ]
+  >> rotate (90*deg)
+  >> repeat_mirror_x
+  >> rotate { angle: 90*deg, axis: Y_axis }
+  >> repeat_mirror_x
+  >> rotate { angle: -90*deg, axis: Y_axis };
+in
+result
