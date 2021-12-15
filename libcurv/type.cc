@@ -144,6 +144,31 @@ void List_Type::print_repr(std::ostream& out) const
     out << ")";
 };
 
+bool Struct_Type::contains(Value val, const At_Syntax& cx) const
+{
+    auto rec = val.maybe<const Record>();
+    if (rec == nullptr) return false;
+    auto p = rec->iter();
+    for (auto fld : fields_) {
+        if (p->empty()) return false;
+        if (p->key() != fld.first) return false;
+        if (!fld.second->contains(p->value(cx), cx)) return false;
+        p->next();
+    }
+    return p->empty();
+}
+void Struct_Type::print_repr(std::ostream& out) const
+{
+    out << "Struct {";
+    bool at_start = true;
+    for (auto fld : fields_) {
+        if (!at_start) out << ", ";
+        out << fld.first << ": " << *fld.second;
+        at_start = false;
+    }
+    out << "}";
+};
+
 Plex_Type Array_Type::make_plex_type(unsigned count, Shared<const Type> etype)
 {
     if (etype->plex_type_ == Plex_Type::Bool) {
@@ -234,6 +259,24 @@ bool Type::equal(const Type& t1, const Type& t2)
                 return false;
         }
         return true;
+    }
+    if (t1.subtype_ == Ref_Value::sty_list_type) {
+        auto l1 = (const List_Type*)(&t1);
+        auto l2 = (const List_Type*)(&t2);
+        return equal(*l1->elem_type_, *l2->elem_type_);
+    }
+    if (t1.subtype_ == Ref_Value::sty_struct_type) {
+        auto st1 = (const Struct_Type*)(&t1);
+        auto st2 = (const Struct_Type*)(&t2);
+        if (st1->fields_.size() != st2->fields_.size()) return false;
+        auto fp2 = st2->fields_.begin();
+        for (auto f1 : st1->fields_) {
+            if (fp2 == st2->fields_.end()) return false;
+            if (f1.first != fp2->first) return false;
+            if (!equal(*f1.second, *fp2->second)) return false;
+            ++fp2;
+        }
+        return fp2 == st2->fields_.end();
     }
     return true;
 }

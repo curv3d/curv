@@ -837,7 +837,12 @@ assert(is (Array[3]Num) [1,2,3] && is (Array[2]Num) ([time,time]*time));
 assert(is (Array[4,4]Num) (idmatrix 4));
 assert(is (List Num) [] && is (List Char) "foo"
     && is (List Num) ([time,time]*time));
+assert(List Num == List Num && List Num != List Char);
 assert(String 42 == "42" && is String "foo");
+let S0=Struct{}; S1=Struct{a:Num}; S2=Struct{a:Num,b:Symbol} in (
+    assert(S0==S0 && S0 != S1 && S1 != S0 && S1 != S2 && S2 != S1);
+    assert(is S0 {} && !(is S0 {a:1}) && is S1 {a:1} && !(is S1 {}));
+);
 
 // script return value:
 in null

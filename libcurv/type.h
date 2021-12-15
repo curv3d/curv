@@ -5,6 +5,7 @@
 #ifndef LIBCURV_TYPE_H
 #define LIBCURV_TYPE_H
 
+#include <libcurv/symbol.h>
 #include <libcurv/value.h>
 #include <vector>
 
@@ -157,6 +158,18 @@ struct List_Type : public Type
     :
         Type(sty_list_type, Plex_Type::missing),
         elem_type_(et)
+    {}
+    virtual bool contains(Value, const At_Syntax&) const;
+    virtual void print_repr(std::ostream&) const override;
+};
+
+struct Struct_Type : public Type
+{
+    Symbol_Map<Shared<const Type>> fields_;
+    Struct_Type(Symbol_Map<Shared<const Type>> fields)
+    :
+        Type(sty_struct_type, Plex_Type::missing),
+        fields_(std::move(fields))
     {}
     virtual bool contains(Value, const At_Syntax&) const;
     virtual void print_repr(std::ostream&) const override;

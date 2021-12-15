@@ -203,6 +203,21 @@ struct Array_Func : public Curried_Function
         return true;
     }
 };
+struct Struct_Func : public Function
+{
+    using Function::Function;
+    Value call(Value arg, Fail fl, Frame& fm) const override
+    {
+        Symbol_Map<Shared<const Type>> fields;
+        At_Arg cx(*this, fm);
+        TRY_DEF(rec, arg.to<const Record>(fl, cx));
+        for (auto pf = rec->iter(); !pf->empty(); pf->next()) {
+            TRY_DEF(type, pf->value(cx).to<const Type>(fl, cx));
+            fields[pf->key()] = type;
+        }
+        return {make<Struct_Type>(std::move(fields))};
+    }
+};
 struct Is_Bool_Function : public Function
 {
     using Function::Function;
@@ -1647,6 +1662,7 @@ builtin_namespace()
     FUNCTION("Tuple", Tuple_Func),
     FUNCTION("List", List_Func),
     FUNCTION("Array", Array_Func),
+    FUNCTION("Struct", Struct_Func),
     FUNCTION("is_bool", Is_Bool_Function),
     FUNCTION("is_char", Is_Char_Function),
     FUNCTION("is_symbol", Is_Symbol_Function),

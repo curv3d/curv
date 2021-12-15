@@ -67,6 +67,7 @@ struct Ref_Value : public Shared_Base
             sty_tuple_type,
             sty_array_type,
             sty_list_type,
+            sty_struct_type,
         ty_index,
             sty_this,
             sty_tpath,
