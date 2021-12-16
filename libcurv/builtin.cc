@@ -144,6 +144,18 @@ struct Tuple_Func : public Function
             TRY_DEF(type, e.to<const Type>(fl, At_Arg(*this, fm)));
             types.push_back(type);
         }
+        if (types.size() > 0) {
+            // Tuple[T]=>Array[1]T, Tuple[T,T]=>Array[2]T, ...
+            bool uniform = true;
+            for (unsigned i = 1; i < types.size(); ++i) {
+                if (!Type::equal(*types[0], *types[i])) {
+                    uniform = false;
+                    break;
+                }
+            }
+            if (uniform)
+                return {make<Array_Type>(types.size(), types[0])};
+        }
         return {make<Tuple_Type>(std::move(types))};
     }
 };
