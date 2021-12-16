@@ -100,9 +100,9 @@ struct Monoid_Func final : public Function
 // Builtin Functions //
 //-------------------//
 
-struct As_Function : public Curried_Function
+struct F_as : public Curried_Function
 {
-    As_Function(const char* nm) : Curried_Function(2,nm) {}
+    F_as(const char* nm) : Curried_Function(2,nm) {}
     virtual Value ccall(const Function& self, Fail fl, Frame& args)
     const override {
         At_Arg cx(*this, args);
@@ -119,9 +119,9 @@ struct As_Function : public Curried_Function
         return value_to_type(a, fl, cx) != nullptr;
     }
 };
-struct Is_Function : public Curried_Function
+struct F_is : public Curried_Function
 {
-    Is_Function(const char* nm) : Curried_Function(2,nm) {}
+    F_is(const char* nm) : Curried_Function(2,nm) {}
     virtual Value ccall(const Function& self, Fail, Frame& args)
     const override {
         At_Arg cx(*this, args);
@@ -133,7 +133,7 @@ struct Is_Function : public Curried_Function
         return value_to_type(a, fl, cx) != nullptr;
     }
 };
-struct Tuple_Func : public Function
+struct F_Tuple : public Function
 {
     using Function::Function;
     Value call(Value arg, Fail fl, Frame& fm) const override
@@ -159,7 +159,7 @@ struct Tuple_Func : public Function
         return {make<Tuple_Type>(std::move(types))};
     }
 };
-struct List_Func : public Function
+struct F_List : public Function
 {
     using Function::Function;
     Value call(Value arg, Fail fl, Frame& fm) const override
@@ -168,7 +168,7 @@ struct List_Func : public Function
         return {make<List_Type>(type)};
     }
 };
-struct Array_Func : public Curried_Function
+struct F_Array : public Curried_Function
 {
     static Shared<const Type> make_array_type(
         unsigned i,
@@ -182,7 +182,7 @@ struct Array_Func : public Curried_Function
         etype = make_array_type(i+1, axes, etype);
         return make<Array_Type>(axes[i], etype);
     }
-    Array_Func(const char* nm) : Curried_Function(2,nm) {}
+    F_Array(const char* nm) : Curried_Function(2,nm) {}
     virtual Value ccall(const Function& self, Fail fl, Frame& args) const
     {
         At_Arg cx(*this, args);
@@ -215,7 +215,7 @@ struct Array_Func : public Curried_Function
         return true;
     }
 };
-struct Struct_Func : public Function
+struct F_Struct : public Function
 {
     using Function::Function;
     Value call(Value arg, Fail fl, Frame& fm) const override
@@ -230,7 +230,7 @@ struct Struct_Func : public Function
         return {make<Struct_Type>(std::move(fields))};
     }
 };
-struct Record_Func : public Function
+struct F_Record : public Function
 {
     using Function::Function;
     Value call(Value arg, Fail fl, Frame& fm) const override
@@ -245,7 +245,7 @@ struct Record_Func : public Function
         return {make<Record_Type>(std::move(fields))};
     }
 };
-struct Is_Bool_Function : public Function
+struct F_is_bool : public Function
 {
     using Function::Function;
     Value call(Value arg, Fail, Frame&) const override
@@ -253,7 +253,7 @@ struct Is_Bool_Function : public Function
         return {is_bool(arg)};
     }
 };
-struct Is_Char_Function : public Function
+struct F_is_char : public Function
 {
     using Function::Function;
     Value call(Value arg, Fail, Frame&) const override
@@ -261,7 +261,7 @@ struct Is_Char_Function : public Function
         return {arg.is_char()};
     }
 };
-struct Is_Symbol_Function : public Function
+struct F_is_symbol : public Function
 {
     using Function::Function;
     Value call(Value arg, Fail, Frame&) const override
@@ -269,7 +269,7 @@ struct Is_Symbol_Function : public Function
         return {is_symbol(arg)};
     }
 };
-struct Is_Num_Function : public Function
+struct F_is_num : public Function
 {
     using Function::Function;
     Value call(Value arg, Fail, Frame&) const override
@@ -277,7 +277,7 @@ struct Is_Num_Function : public Function
         return {is_num(arg)};
     }
 };
-struct Is_String_Function : public Function
+struct F_is_string : public Function
 {
     using Function::Function;
     Value call(Value arg, Fail, Frame&) const override
@@ -285,7 +285,7 @@ struct Is_String_Function : public Function
         return {is_string(arg)};
     }
 };
-struct Is_List_Function : public Function
+struct F_is_list : public Function
 {
     using Function::Function;
     Value call(Value arg, Fail, Frame& fm) const override
@@ -294,7 +294,7 @@ struct Is_List_Function : public Function
         return {glist.is_list()};
     }
 };
-struct Is_Record_Function : public Function
+struct F_is_record : public Function
 {
     using Function::Function;
     Value call(Value arg, Fail, Frame&) const override
@@ -302,7 +302,7 @@ struct Is_Record_Function : public Function
         return {arg.maybe<Record>() != nullptr};
     }
 };
-struct Is_Primitive_Func_Function : public Function
+struct F_is_primitive_func : public Function
 {
     using Function::Function;
     Value call(Value arg, Fail, Frame&) const override
@@ -310,7 +310,7 @@ struct Is_Primitive_Func_Function : public Function
         return {arg.maybe<Function>() != nullptr};
     }
 };
-struct Is_Func_Function : public Function
+struct F_is_func : public Function
 {
     using Function::Function;
     Value call(Value arg, Fail, Frame& fm) const override
@@ -331,7 +331,7 @@ struct Bit_Prim : public Unary_Bool_To_Num_Prim
         return result;
     }
 };
-using Bit_Function = Unary_Array_Func<Bit_Prim>;
+using F_bit = Unary_Array_Func<Bit_Prim>;
 
 #define UNARY_NUMERIC_FUNCTION(Func_Name,curv_name,c_name,glsl_name) \
 struct Func_Name##Prim : public Unary_Num_SCVec_Prim \
@@ -343,33 +343,33 @@ struct Func_Name##Prim : public Unary_Num_SCVec_Prim \
 }; \
 using Func_Name = Unary_Array_Func<Func_Name##Prim>; \
 
-UNARY_NUMERIC_FUNCTION(Sqrt_Function, sqrt, sqrt, sqrt)
-UNARY_NUMERIC_FUNCTION(Log_Function, log, log, log)
-UNARY_NUMERIC_FUNCTION(Abs_Function, abs, abs, abs)
-UNARY_NUMERIC_FUNCTION(Floor_Function, floor, floor, floor)
-UNARY_NUMERIC_FUNCTION(Ceil_Function, ceil, ceil, ceil)
-UNARY_NUMERIC_FUNCTION(Trunc_Function, trunc, trunc, trunc)
-UNARY_NUMERIC_FUNCTION(Round_Function, round, rint, roundEven)
+UNARY_NUMERIC_FUNCTION(F_sqrt, sqrt, sqrt, sqrt)
+UNARY_NUMERIC_FUNCTION(F_log, log, log, log)
+UNARY_NUMERIC_FUNCTION(F_abs, abs, abs, abs)
+UNARY_NUMERIC_FUNCTION(F_floor, floor, floor, floor)
+UNARY_NUMERIC_FUNCTION(F_ceil, ceil, ceil, ceil)
+UNARY_NUMERIC_FUNCTION(F_trunc, trunc, trunc, trunc)
+UNARY_NUMERIC_FUNCTION(F_round, round, rint, roundEven)
 
 inline double frac(double n) { return n - floor(n); }
-UNARY_NUMERIC_FUNCTION(Frac_Function, frac, frac, fract)
+UNARY_NUMERIC_FUNCTION(F_frac, frac, frac, fract)
 
 inline double sign(double n) { return copysign(double(n!=0),n); }
-UNARY_NUMERIC_FUNCTION(Sign_Function, sign, sign, sign)
+UNARY_NUMERIC_FUNCTION(F_sign, sign, sign, sign)
 
-UNARY_NUMERIC_FUNCTION(Sin_Function, sin, sin, sin)
-UNARY_NUMERIC_FUNCTION(Cos_Function, cos, cos, cos)
-UNARY_NUMERIC_FUNCTION(Tan_Function, tan, tan, tan)
-UNARY_NUMERIC_FUNCTION(Acos_Function, acos, acos, acos)
-UNARY_NUMERIC_FUNCTION(Asin_Function, asin, asin, asin)
-UNARY_NUMERIC_FUNCTION(Atan_Function, atan, atan, atan)
+UNARY_NUMERIC_FUNCTION(F_sin, sin, sin, sin)
+UNARY_NUMERIC_FUNCTION(F_cos, cos, cos, cos)
+UNARY_NUMERIC_FUNCTION(F_tan, tan, tan, tan)
+UNARY_NUMERIC_FUNCTION(F_acos, acos, acos, acos)
+UNARY_NUMERIC_FUNCTION(F_asin, asin, asin, asin)
+UNARY_NUMERIC_FUNCTION(F_atan, atan, atan, atan)
 
-UNARY_NUMERIC_FUNCTION(Sinh_Function, sinh, sinh, sinh)
-UNARY_NUMERIC_FUNCTION(Cosh_Function, cosh, cosh, cosh)
-UNARY_NUMERIC_FUNCTION(Tanh_Function, tanh, tanh, tanh)
-UNARY_NUMERIC_FUNCTION(Acosh_Function, acosh, acosh, acosh)
-UNARY_NUMERIC_FUNCTION(Asinh_Function, asinh, asinh, asinh)
-UNARY_NUMERIC_FUNCTION(Atanh_Function, atanh, atanh, atanh)
+UNARY_NUMERIC_FUNCTION(F_sinh, sinh, sinh, sinh)
+UNARY_NUMERIC_FUNCTION(F_cosh, cosh, cosh, cosh)
+UNARY_NUMERIC_FUNCTION(F_tanh, tanh, tanh, tanh)
+UNARY_NUMERIC_FUNCTION(F_acosh, acosh, acosh, acosh)
+UNARY_NUMERIC_FUNCTION(F_asinh, asinh, asinh, asinh)
+UNARY_NUMERIC_FUNCTION(F_atanh, atanh, atanh, atanh)
 
 struct Phase_Prim : public Unary_Vec2_To_Num_Prim
 {
@@ -382,7 +382,7 @@ struct Phase_Prim : public Unary_Vec2_To_Num_Prim
         return result;
     }
 };
-using Phase_Function = Unary_Array_Func<Phase_Prim>;
+using F_phase = Unary_Array_Func<Phase_Prim>;
 
 struct Max_Prim : public Binary_Num_SCVec_Prim
 {
@@ -393,7 +393,7 @@ struct Max_Prim : public Binary_Num_SCVec_Prim
     static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y)
         { return sc_bincall(fm, x.type, "max", x, y); }
 };
-using Max_Function = Monoid_Func<Max_Prim>;
+using F_max = Monoid_Func<Max_Prim>;
 
 struct Min_Prim : public Binary_Num_SCVec_Prim
 {
@@ -404,11 +404,11 @@ struct Min_Prim : public Binary_Num_SCVec_Prim
     static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y)
         { return sc_bincall(fm, x.type, "min", x, y); }
 };
-using Min_Function = Monoid_Func<Min_Prim>;
+using F_min = Monoid_Func<Min_Prim>;
 
-using Sum_Function = Monoid_Func<Add_Prim>;
+using F_sum = Monoid_Func<Add_Prim>;
 
-using Not_Function = Unary_Array_Func<Not_Prim>;
+using F_not = Unary_Array_Func<Not_Prim>;
 
 #define BOOL_OP(CppName,Name,Zero,LogOp,BitOp)\
 struct CppName##_Prim : public Binary_Bool_Prim\
@@ -441,10 +441,10 @@ struct CppName##_Prim : public Binary_Bool_Prim\
         return result;\
     }\
 };\
-using CppName##_Function = Monoid_Func<CppName##_Prim>;\
+using F_##CppName = Monoid_Func<CppName##_Prim>;\
 
-BOOL_OP(And,"and",true,&&,&)
-BOOL_OP(Or,"or",false,||,|)
+BOOL_OP(and,"and",true,&&,&)
+BOOL_OP(or,"or",false,||,|)
 
 struct Xor_Prim : public Binary_Bool_Prim
 {
@@ -465,7 +465,7 @@ struct Xor_Prim : public Binary_Bool_Prim
         return result;
     }
 };
-using Xor_Function = Monoid_Func<Xor_Prim>;
+using F_xor = Monoid_Func<Xor_Prim>;
 
 struct Lshift_Prim : public Shift_Prim
 {
@@ -490,7 +490,7 @@ struct Lshift_Prim : public Shift_Prim
         return result;
     }
 };
-using Lshift_Function = Binary_Array_Func<Lshift_Prim>;
+using F_lshift = Binary_Array_Func<Lshift_Prim>;
 
 struct Rshift_Prim : public Shift_Prim
 {
@@ -515,7 +515,7 @@ struct Rshift_Prim : public Shift_Prim
         return result;
     }
 };
-using Rshift_Function = Binary_Array_Func<Rshift_Prim>;
+using F_rshift = Binary_Array_Func<Rshift_Prim>;
 
 struct Bool32_Sum_Prim : public Binary_Bool32_Prim
 {
@@ -537,7 +537,7 @@ struct Bool32_Sum_Prim : public Binary_Bool32_Prim
         return result;
     }
 };
-using Bool32_Sum_Function = Monoid_Func<Bool32_Sum_Prim>;
+using F_bool32_sum = Monoid_Func<Bool32_Sum_Prim>;
 
 struct Bool32_Product_Prim : public Binary_Bool32_Prim
 {
@@ -559,9 +559,9 @@ struct Bool32_Product_Prim : public Binary_Bool32_Prim
         return result;
     }
 };
-using Bool32_Product_Function = Monoid_Func<Bool32_Product_Prim>;
+using F_bool32_product = Monoid_Func<Bool32_Product_Prim>;
 
-struct Bool32_To_Nat_Function : public Function
+struct F_bool32_to_nat : public Function
 {
     using Function::Function;
     struct Prim : public Unary_Bool32_To_Num_Prim
@@ -587,7 +587,7 @@ struct Bool32_To_Nat_Function : public Function
     }
 };
 
-struct Nat_To_Bool32_Function : public Function
+struct F_nat_to_bool32 : public Function
 {
     using Function::Function;
     struct Prim : public Unary_Num_To_Bool32_Prim
@@ -643,7 +643,7 @@ struct Bool32_To_Float_Prim : public Unary_Bool32_To_Num_Prim
         return result;
     }
 };
-using Bool32_To_Float_Function = Unary_Array_Func<Bool32_To_Float_Prim>;
+using F_bool32_to_float = Unary_Array_Func<Bool32_To_Float_Prim>;
 
 struct Float_To_Bool32_Prim : public Unary_Num_To_Bool32_Prim
 {
@@ -660,7 +660,7 @@ struct Float_To_Bool32_Prim : public Unary_Num_To_Bool32_Prim
         return result;
     }
 };
-using Float_To_Bool32_Function = Unary_Array_Func<Float_To_Bool32_Prim>;
+using F_float_to_bool32 = Unary_Array_Func<Float_To_Bool32_Prim>;
 
 Value
 select(Value a, Value b, Value c, Fail fl, const Context& cx)
@@ -709,9 +709,9 @@ select(Value a, Value b, Value c, Fail fl, const Context& cx)
 // in tail recursion optimization.
 //
 // Similar to: numpy.where, R `ifelse`
-struct Select_Function : public Tuple_Function
+struct F_select : public Tuple_Function
 {
-    Select_Function(const char* nm) : Tuple_Function(3,nm) {}
+    F_select(const char* nm) : Tuple_Function(3,nm) {}
     Value tuple_call(Fail fl, Frame& args) const override
     {
         return select(args[0], args[1], args[2], fl, At_Arg(*this, args));
@@ -819,9 +819,9 @@ SC_Value Not_Equal_Expr::sc_eval(SC_Frame& fm) const
 //      [for (row in a) dot(row,b)]  // matrix*...
 //    else
 //      sum(a*b)                     // vector*...
-struct Dot_Function : public Tuple_Function
+struct F_dot : public Tuple_Function
 {
-    Dot_Function(const char* nm) : Tuple_Function(2,nm) {}
+    F_dot(const char* nm) : Tuple_Function(2,nm) {}
     Value dot(Value a, Value b, Fail, const At_Arg& cx) const;
     Value tuple_call(Fail fl, Frame& args) const override
     {
@@ -852,7 +852,7 @@ struct Dot_Function : public Tuple_Function
             "dot: invalid argument type [",a.type,",",b.type,"]"));
     }
 };
-Value Dot_Function::dot(Value a, Value b, Fail fl, const At_Arg& cx) const
+Value F_dot::dot(Value a, Value b, Fail fl, const At_Arg& cx) const
 {
     auto av = a.maybe<List>();
     auto bv = b.maybe<List>();
@@ -879,7 +879,7 @@ Value Dot_Function::dot(Value a, Value b, Fail fl, const At_Arg& cx) const
     }
     // Handle the case where a or b is a reactive list,
     // and return a reactive result.
-    //   This is copied and modified from Dot_Function::sc_tuple_call.
+    //   This is copied and modified from F_dot::sc_tuple_call.
     //   The code ought to be identical in both cases.
     //   The reactive result should contain SubCurv IR code,
     //   which is simultaneously code that can be evaluated by the interpreter.
@@ -911,9 +911,9 @@ Value Dot_Function::dot(Value a, Value b, Fail fl, const At_Arg& cx) const
         cx)};
 }
 
-struct Mag_Function : public Tuple_Function
+struct F_mag : public Tuple_Function
 {
-    Mag_Function(const char* nm) : Tuple_Function(1,nm) {}
+    F_mag(const char* nm) : Tuple_Function(1,nm) {}
     Value tuple_call(Fail fl, Frame& args) const override
     {
         // Use hypot() or BLAS DNRM2 or Eigen stableNorm/blueNorm?
@@ -984,9 +984,9 @@ struct Mag_Function : public Tuple_Function
     }
 };
 
-struct Count_Function : public Tuple_Function
+struct F_count : public Tuple_Function
 {
-    Count_Function(const char* nm) : Tuple_Function(1,nm) {}
+    F_count(const char* nm) : Tuple_Function(1,nm) {}
     Value tuple_call(Fail fl, Frame& args) const override
     {
         if (auto list = args[0].maybe<const Abstract_List>())
@@ -1008,9 +1008,9 @@ struct Count_Function : public Tuple_Function
         return result;
     }
 };
-struct Fields_Function : public Tuple_Function
+struct F_fields : public Tuple_Function
 {
-    Fields_Function(const char* nm) : Tuple_Function(1,nm) {}
+    F_fields(const char* nm) : Tuple_Function(1,nm) {}
     static Value fields(Value arg, Fail fl, const Context& cx)
     {
         if (auto record = arg.maybe<const Record>())
@@ -1066,7 +1066,7 @@ Value to_char(Value arg, Fail fl, const Context& cx)
             stringify(arg, " is not an integer, or a list or tree of integers"));
     }
 }
-struct Char_Function : public Function
+struct F_char : public Function
 {
     using Function::Function;
     virtual Value call(Value arg, Fail fl, Frame& fm) const override
@@ -1095,7 +1095,7 @@ Value ucode(Value arg, Fail fl, const Context& cx)
     FAIL(fl, missing, cx,
         stringify(arg, " is not a character or list of characters"));
 }
-struct Ucode_Function : public Function
+struct F_ucode : public Function
 {
     using Function::Function;
     virtual Value call(Value arg, Fail fl, Frame& fm) const override
@@ -1103,7 +1103,7 @@ struct Ucode_Function : public Function
         return ucode(arg, fl, At_Arg(*this, fm));
     }
 };
-struct Symbol_Function : public Function
+struct F_symbol : public Function
 {
     using Function::Function;
     virtual Value call(Value arg, Fail fl, Frame& fm) const override
@@ -1120,7 +1120,7 @@ struct Symbol_Function : public Function
         return symbol.to_value();
     }
 };
-struct String_Function : public Function
+struct F_string : public Function
 {
     using Function::Function;
     virtual Value call(Value arg, Fail fl, Frame& fm) const override
@@ -1130,9 +1130,9 @@ struct String_Function : public Function
         return sb.get_value();
     }
 };
-struct Repr_Function : public Tuple_Function
+struct F_repr : public Tuple_Function
 {
-    Repr_Function(const char* nm) : Tuple_Function(1,nm) {}
+    F_repr(const char* nm) : Tuple_Function(1,nm) {}
     Value tuple_call(Fail, Frame& args) const override
     {
         String_Builder sb;
@@ -1141,7 +1141,7 @@ struct Repr_Function : public Tuple_Function
     }
 };
 
-struct Match_Function : public Function
+struct F_match : public Function
 {
     using Function::Function;
     virtual Value call(Value arg, Fail fl, Frame& fm) const override
@@ -1160,7 +1160,7 @@ struct Match_Function : public Function
     }
 };
 
-struct Compose_Function : public Function
+struct F_compose : public Function
 {
     using Function::Function;
     virtual Value call(Value arg, Fail fl, Frame& fm) const override
@@ -1179,7 +1179,7 @@ struct Compose_Function : public Function
     }
 };
 
-struct TSlice_Function : public Function
+struct F_tslice : public Function
 {
     using Function::Function;
     virtual Value call(Value arg, Fail fl, Frame& fm) const override
@@ -1189,7 +1189,7 @@ struct TSlice_Function : public Function
         return make_tslice(list->begin(), list->end());
     }
 };
-struct TPath_Function : public Function
+struct F_tpath : public Function
 {
     using Function::Function;
     virtual Value call(Value arg, Fail fl, Frame& fm) const override
@@ -1199,9 +1199,9 @@ struct TPath_Function : public Function
         return make_tpath(list->begin(), list->end());
     }
 };
-struct Amend_Function : public Curried_Function
+struct F_amend : public Curried_Function
 {
-    Amend_Function(const char* nm) : Curried_Function(3,nm) {}
+    F_amend(const char* nm) : Curried_Function(3,nm) {}
     virtual Value ccall(const Function& self, Fail, Frame& args) const
     {
         return tree_amend(args[2], args[0], args[1], At_Arg(*this, args));
@@ -1684,78 +1684,78 @@ builtin_namespace()
     {make_symbol("time"), make<Builtin_Time>()},
     {make_symbol("resolution"), make<Builtin_Resolution>()},
 
-    FUNCTION("as", As_Function),
-    FUNCTION("is", Is_Function),
-    FUNCTION("Tuple", Tuple_Func),
-    FUNCTION("List", List_Func),
-    FUNCTION("Array", Array_Func),
-    FUNCTION("Struct", Struct_Func),
-    FUNCTION("Record", Record_Func),
-    FUNCTION("is_bool", Is_Bool_Function),
-    FUNCTION("is_char", Is_Char_Function),
-    FUNCTION("is_symbol", Is_Symbol_Function),
-    FUNCTION("is_num", Is_Num_Function),
-    FUNCTION("is_string", Is_String_Function),
-    FUNCTION("is_list", Is_List_Function),
-    FUNCTION("is_record", Is_Record_Function),
-    FUNCTION("is_primitive_func", Is_Primitive_Func_Function),
-    FUNCTION("is_func", Is_Func_Function),
-    FUNCTION("bit", Bit_Function),
-    FUNCTION("sqrt", Sqrt_Function),
-    FUNCTION("log", Log_Function),
-    FUNCTION("abs", Abs_Function),
-    FUNCTION("floor", Floor_Function),
-    FUNCTION("ceil", Ceil_Function),
-    FUNCTION("trunc", Trunc_Function),
-    FUNCTION("round", Round_Function),
-    FUNCTION("frac", Frac_Function),
-    FUNCTION("sign", Sign_Function),
-    FUNCTION("sin", Sin_Function),
-    FUNCTION("cos", Cos_Function),
-    FUNCTION("tan", Tan_Function),
-    FUNCTION("asin", Asin_Function),
-    FUNCTION("acos", Acos_Function),
-    FUNCTION("atan", Atan_Function),
-    FUNCTION("phase", Phase_Function),
-    FUNCTION("sinh", Sinh_Function),
-    FUNCTION("cosh", Cosh_Function),
-    FUNCTION("tanh", Tanh_Function),
-    FUNCTION("asinh", Asinh_Function),
-    FUNCTION("acosh", Acosh_Function),
-    FUNCTION("atanh", Atanh_Function),
-    FUNCTION("max", Max_Function),
-    FUNCTION("min", Min_Function),
-    FUNCTION("sum", Sum_Function),
-    FUNCTION("not", Not_Function),
-    FUNCTION("and", And_Function),
-    FUNCTION("or", Or_Function),
-    FUNCTION("xor", Xor_Function),
-    FUNCTION("lshift", Lshift_Function),
-    FUNCTION("rshift", Rshift_Function),
-    FUNCTION("bool32_sum", Bool32_Sum_Function),
-    FUNCTION("bool32_product", Bool32_Product_Function),
-    FUNCTION("bool32_to_nat", Bool32_To_Nat_Function),
-    FUNCTION("nat_to_bool32", Nat_To_Bool32_Function),
-    FUNCTION("bool32_to_float", Bool32_To_Float_Function),
-    FUNCTION("float_to_bool32", Float_To_Bool32_Function),
-    FUNCTION("select", Select_Function),
-    FUNCTION("dot", Dot_Function),
-    FUNCTION("mag", Mag_Function),
-    FUNCTION("count", Count_Function),
-    FUNCTION("fields", Fields_Function),
-    FUNCTION("char", Char_Function),
-    FUNCTION("ucode", Ucode_Function),
-    FUNCTION("symbol", Symbol_Function),
-    FUNCTION("string", String_Function),
-    FUNCTION("repr", Repr_Function),
-    FUNCTION("match", Match_Function),
-    FUNCTION("compose", Compose_Function),
+    FUNCTION("as", F_as),
+    FUNCTION("is", F_is),
+    FUNCTION("Tuple", F_Tuple),
+    FUNCTION("List", F_List),
+    FUNCTION("Array", F_Array),
+    FUNCTION("Struct", F_Struct),
+    FUNCTION("Record", F_Record),
+    FUNCTION("is_bool", F_is_bool),
+    FUNCTION("is_char", F_is_char),
+    FUNCTION("is_symbol", F_is_symbol),
+    FUNCTION("is_num", F_is_num),
+    FUNCTION("is_string", F_is_string),
+    FUNCTION("is_list", F_is_list),
+    FUNCTION("is_record", F_is_record),
+    FUNCTION("is_primitive_func", F_is_primitive_func),
+    FUNCTION("is_func", F_is_func),
+    FUNCTION("bit", F_bit),
+    FUNCTION("sqrt", F_sqrt),
+    FUNCTION("log", F_log),
+    FUNCTION("abs", F_abs),
+    FUNCTION("floor", F_floor),
+    FUNCTION("ceil", F_ceil),
+    FUNCTION("trunc", F_trunc),
+    FUNCTION("round", F_round),
+    FUNCTION("frac", F_frac),
+    FUNCTION("sign", F_sign),
+    FUNCTION("sin", F_sin),
+    FUNCTION("cos", F_cos),
+    FUNCTION("tan", F_tan),
+    FUNCTION("asin", F_asin),
+    FUNCTION("acos", F_acos),
+    FUNCTION("atan", F_atan),
+    FUNCTION("phase", F_phase),
+    FUNCTION("sinh", F_sinh),
+    FUNCTION("cosh", F_cosh),
+    FUNCTION("tanh", F_tanh),
+    FUNCTION("asinh", F_asinh),
+    FUNCTION("acosh", F_acosh),
+    FUNCTION("atanh", F_atanh),
+    FUNCTION("max", F_max),
+    FUNCTION("min", F_min),
+    FUNCTION("sum", F_sum),
+    FUNCTION("not", F_not),
+    FUNCTION("and", F_and),
+    FUNCTION("or", F_or),
+    FUNCTION("xor", F_xor),
+    FUNCTION("lshift", F_lshift),
+    FUNCTION("rshift", F_rshift),
+    FUNCTION("bool32_sum", F_bool32_sum),
+    FUNCTION("bool32_product", F_bool32_product),
+    FUNCTION("bool32_to_nat", F_bool32_to_nat),
+    FUNCTION("nat_to_bool32", F_nat_to_bool32),
+    FUNCTION("bool32_to_float", F_bool32_to_float),
+    FUNCTION("float_to_bool32", F_float_to_bool32),
+    FUNCTION("select", F_select),
+    FUNCTION("dot", F_dot),
+    FUNCTION("mag", F_mag),
+    FUNCTION("count", F_count),
+    FUNCTION("fields", F_fields),
+    FUNCTION("char", F_char),
+    FUNCTION("ucode", F_ucode),
+    FUNCTION("symbol", F_symbol),
+    FUNCTION("string", F_string),
+    FUNCTION("repr", F_repr),
+    FUNCTION("match", F_match),
+    FUNCTION("compose", F_compose),
 
     // top secret index API (aka lenses)
     {make_symbol("this"), make<Builtin_Value>(Value{make<This>()})},
-    FUNCTION("tslice", TSlice_Function),
-    FUNCTION("tpath", TPath_Function),
-    FUNCTION("amend", Amend_Function),
+    FUNCTION("tslice", F_tslice),
+    FUNCTION("tpath", F_tpath),
+    FUNCTION("amend", F_amend),
 
     {make_symbol("file"), make<Builtin_Meaning<File_Metafunction>>()},
     {make_symbol("print"), make<Builtin_Meaning<Print_Metafunction>>()},
