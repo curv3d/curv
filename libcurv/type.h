@@ -5,9 +5,7 @@
 #ifndef LIBCURV_TYPE_H
 #define LIBCURV_TYPE_H
 
-#include <libcurv/symbol.h>
 #include <libcurv/value.h>
-#include <vector>
 
 namespace curv {
 struct At_Syntax;
@@ -42,10 +40,10 @@ struct Type : public Ref_Value
 {
     Plex_Type plex_type_;
     Type(int st, Plex_Type pt) : Ref_Value(ty_type, st), plex_type_(pt) {}
-    static Shared<const Type> Error;
-    static Shared<const Type> Bool;
-    static Shared<const Type> Bool32;
-    static Shared<const Type> Num;
+    static Shared<const Type> Error();
+    static Shared<const Type> Bool();
+    static Shared<const Type> Bool32();
+    static Shared<const Type> Num();
 
     static bool equal(const Type&, const Type&);
     virtual bool contains(Value, const At_Syntax&) const = 0;
@@ -66,126 +64,6 @@ operator<<(std::ostream& out, const Type& type)
     type.print_repr(out);
     return out;
 }
-
-// the empty set, containing no values
-struct Error_Type : public Type
-{
-    Error_Type() : Type(sty_error_type, Plex_Type::missing) {}
-    virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
-};
-
-// Any : the set of all values
-struct Any_Type : public Type
-{
-    Any_Type() : Type(sty_any_type, Plex_Type::missing) {}
-    virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
-};
-
-struct Type_Type : public Type
-{
-    Type_Type() : Type(sty_type_type, Plex_Type::missing) {}
-    virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
-};
-
-struct Bool_Type : public Type
-{
-    Bool_Type() : Type(sty_bool_type, Plex_Type::Bool) {}
-    virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
-};
-
-struct Num_Type : public Type
-{
-    Num_Type() : Type(sty_num_type, Plex_Type::Num) {}
-    virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
-};
-
-struct Char_Type : public Type
-{
-    Char_Type() : Type(sty_char_type, Plex_Type::missing) {}
-    virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
-};
-
-struct Func_Type : public Type
-{
-    Func_Type() : Type(sty_func_type, Plex_Type::missing) {}
-    virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
-};
-
-struct Symbol_Type : public Type
-{
-    Symbol_Type() : Type(sty_symbol_type, Plex_Type::missing) {}
-    virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
-};
-
-struct Tuple_Type : public Type
-{
-    std::vector<Shared<const Type>> elements_;
-    Tuple_Type(std::vector<Shared<const Type>> e)
-      : Type(sty_tuple_type, Plex_Type::missing),
-        elements_(std::move(e))
-        {}
-    virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
-};
-
-struct Array_Type : public Type
-{
-    unsigned count_;
-    Shared<const Type> elem_type_;
-    Array_Type(unsigned c, Shared<const Type> et)
-    :
-        Type(sty_array_type, make_plex_type(c, et)),
-        count_(c),
-        elem_type_(et)
-    {}
-    static Plex_Type make_plex_type(unsigned, Shared<const Type>);
-    virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
-};
-
-struct List_Type : public Type
-{
-    Shared<const Type> elem_type_;
-    List_Type(Shared<const Type> et)
-    :
-        Type(sty_list_type, Plex_Type::missing),
-        elem_type_(et)
-    {}
-    virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
-};
-
-struct Struct_Type : public Type
-{
-    Symbol_Map<Shared<const Type>> fields_;
-    Struct_Type(Symbol_Map<Shared<const Type>> fields)
-    :
-        Type(sty_struct_type, Plex_Type::missing),
-        fields_(std::move(fields))
-    {}
-    virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
-};
-
-struct Record_Type : public Type
-{
-    Symbol_Map<Shared<const Type>> fields_;
-    Record_Type(Symbol_Map<Shared<const Type>> fields)
-    :
-        Type(sty_struct_type, Plex_Type::missing),
-        fields_(std::move(fields))
-    {}
-    virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
-};
 
 } // namespace curv
 #endif // header guard

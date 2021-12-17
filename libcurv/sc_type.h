@@ -20,40 +20,13 @@ public:
     Shared<const Type> type_;   // never null
     SC_Type(Shared<const Type> t) : type_(t) {}
 public:
-    SC_Type() : type_(Type::Error) {}
+    SC_Type() : type_(Type::Error()) {}
     static inline SC_Type Error() { return {}; }
-    static inline SC_Type Bool(unsigned n = 1) {
-        if (n == 1)
-            return {Type::Bool};
-        assert(n >= 2 && n <= 4);
-        return {make<Array_Type>(n, Type::Bool)};
-    }
-    static inline SC_Type Bool32(unsigned n=1) {
-        if (n == 1)
-            return {Type::Bool32};
-        assert(n >= 2 && n <= 4);
-        return {make<Array_Type>(n, Type::Bool32)};
-    }
-    static inline SC_Type Num(unsigned n = 1) {
-        if (n == 1)
-            return {Type::Num};
-        assert(n >= 2 && n <= 4);
-        return {make<Array_Type>(n, Type::Num)};
-    }
-    static inline SC_Type Vec(SC_Type base, unsigned n) {
-      #if !defined(NDEBUG)
-        auto plex = base.type_->plex_type_;
-      #endif
-        assert(plex == Plex_Type::Bool ||
-               plex == Plex_Type::Num ||
-               plex == Plex_Type::Bool32);
-        assert(n >= 1 && n <= 4);
-        return {make<Array_Type>(n, base.type_)};
-    }
-    static inline SC_Type Mat(int n) {
-        assert(n >= 2 && n <= 4);
-        return {make<Array_Type>(n, make<Array_Type>(n, Type::Num))};
-    }
+    static SC_Type Bool(unsigned n = 1);
+    static SC_Type Bool32(unsigned n=1);
+    static SC_Type Num(unsigned n = 1);
+    static SC_Type Vec(SC_Type base, unsigned n);
+    static SC_Type Mat(int n);
     static SC_Type Array(SC_Type etype, unsigned n);
 
 public:
@@ -167,12 +140,10 @@ public:
     inline unsigned rank() const {
         return type_->rank();
     }
+
     // First dimension, if type is an array, or 1 if type is a scalar.
-    inline unsigned count() const {
-        return type_->subtype_ == Ref_Value::sty_array_type
-            ? ((Array_Type*)(&*type_))->count_
-            : 1;
-    }
+    unsigned count() const;
+
     // If this is an array, strip one dimension off of the type.
     SC_Type elem_type() const;
 

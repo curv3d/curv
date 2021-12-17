@@ -2,7 +2,7 @@
 // Licensed under the Apache License, version 2.0
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
-#include <libcurv/type.h>
+#include <libcurv/types.h>
 
 #include <libcurv/bool.h>
 #include <libcurv/context.h>
@@ -16,10 +16,22 @@
 
 namespace curv {
 
-Shared<const Type> Type::Error = make<Error_Type>();
-Shared<const Type> Type::Bool = make<Bool_Type>();
-Shared<const Type> Type::Bool32 = make<Array_Type>(32, Type::Bool);
-Shared<const Type> Type::Num = make<Num_Type>();
+Shared<const Type> Type::Error() {
+    static const auto type = make<Error_Type>();
+    return type;
+}
+Shared<const Type> Type::Bool() {
+    static const auto type = make<Bool_Type>();
+    return type;
+}
+Shared<const Type> Type::Bool32() {
+    static const auto type = make<Array_Type>(32, Type::Bool());
+    return type;
+}
+Shared<const Type> Type::Num() {
+    static const auto type = make<Num_Type>();
+    return type;
+}
 
 const char* glsl_plex_type_name[] = {
     "Error",

@@ -21,7 +21,7 @@
 #include <libcurv/sc_context.h>
 #include <libcurv/source.h>
 #include <libcurv/system.h>
-#include <libcurv/type.h>
+#include <libcurv/types.h>
 
 #include <boost/math/constants/constants.hpp>
 
