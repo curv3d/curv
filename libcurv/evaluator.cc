@@ -7,7 +7,7 @@
 #include <libcurv/function.h>
 #include <libcurv/tree.h>
 #include <libcurv/list.h>
-#include <libcurv/meaning.h>
+#include <libcurv/meanings.h>
 #include <libcurv/module.h>
 #include <libcurv/parametric.h>
 #include <libcurv/prim.h>
@@ -46,23 +46,23 @@ Operation::tail_eval(std::unique_ptr<Frame>& fm) const
 }
 
 void
-Operation::Action_Executor::push_value(Value, const Context& cstmt)
+Action_Executor::push_value(Value, const Context& cstmt)
 {
     throw Exception(cstmt, "illegal statement type: expecting an action");
 }
 void
-Operation::Action_Executor::push_field(Symbol_Ref, Value, const Context& cstmt)
+Action_Executor::push_field(Symbol_Ref, Value, const Context& cstmt)
 {
     throw Exception(cstmt, "illegal statement type: expecting an action");
 }
 
 void
-Operation::List_Executor::push_value(Value val, const Context& cx)
+List_Executor::push_value(Value val, const Context& cx)
 {
     list_.push_back(val);
 }
 void
-Operation::List_Executor::push_field(
+List_Executor::push_field(
     Symbol_Ref name, Value elem, const Context& cstmt)
 {
     Shared<List> pair = List::make({name.to_value(),elem});
@@ -70,7 +70,7 @@ Operation::List_Executor::push_field(
 }
 
 void
-Operation::Record_Executor::push_value(Value val, const Context& cstmt)
+Record_Executor::push_value(Value val, const Context& cstmt)
 {
     auto pair = val.to<List>(cstmt);
     pair->assert_size(2, cstmt);
@@ -78,7 +78,7 @@ Operation::Record_Executor::push_value(Value val, const Context& cstmt)
     record_.fields_[name] = pair->at(1);
 }
 void
-Operation::Record_Executor::push_field(Symbol_Ref name, Value value, const Context& cx)
+Record_Executor::push_field(Symbol_Ref name, Value value, const Context& cx)
 {
     record_.fields_[name] = value;
 }
@@ -498,7 +498,7 @@ Scope_Executable::eval_module(Frame& fm) const
     Shared<Module> module =
         Module::make(module_dictionary_->size(), module_dictionary_);
     fm[module_slot_] = {module};
-    Operation::Action_Executor aex;
+    Action_Executor aex;
     for (auto action : actions_)
         action->exec(fm, aex);
     return module;
@@ -509,7 +509,7 @@ Scope_Executable::exec(Frame& fm) const
     if (module_slot_ != (slot_t)(-1)) {
         (void) eval_module(fm);
     } else {
-        Operation::Action_Executor aex;
+        Action_Executor aex;
         for (auto action : actions_) {
             action->exec(fm, aex);
         }

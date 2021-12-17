@@ -7,6 +7,7 @@
 #include <libcurv/context.h>
 #include <libcurv/die.h>
 #include <libcurv/exception.h>
+#include <libcurv/meanings.h>
 
 #include <climits>
 

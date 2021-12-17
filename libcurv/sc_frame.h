@@ -88,15 +88,7 @@ struct SC_Frame_Base
         const Context* cx,
         SC_Frame* parent,
         Shared<const Function> func,
-        Shared<const Phrase> src)
-    :
-        sc_(sc),
-        root_context_(cx),
-        parent_frame_(parent),
-        call_phrase_(std::move(src)),
-        func_(std::move(func)),
-        nonlocals_(nullptr)
-    {}
+        Shared<const Phrase> src);
 };
 
 } // namespace

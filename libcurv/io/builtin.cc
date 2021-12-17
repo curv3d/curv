@@ -10,6 +10,7 @@
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
+#include <libcurv/meanings.h>
 #include <libcurv/sc_compiler.h>
 #include <libcurv/record.h>
 

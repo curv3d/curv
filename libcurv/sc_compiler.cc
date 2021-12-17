@@ -13,7 +13,7 @@
 #include <libcurv/format.h>
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
-#include <libcurv/meaning.h>
+#include <libcurv/meanings.h>
 #include <libcurv/num.h>
 #include <libcurv/optimizer.h>
 #include <libcurv/picker.h>
@@ -24,6 +24,21 @@
 #include <libcurv/system.h>
 
 namespace curv {
+
+SC_Frame_Base::SC_Frame_Base(
+    SC_Compiler& sc,
+    const Context* cx,
+    SC_Frame* parent,
+    Shared<const Function> func,
+    Shared<const Phrase> src)
+:
+    sc_(sc),
+    root_context_(cx),
+    parent_frame_(parent),
+    call_phrase_(std::move(src)),
+    func_(std::move(func)),
+    nonlocals_(nullptr)
+{}
 
 struct SC_Data_Ref : public Operation
 {

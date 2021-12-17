@@ -17,7 +17,7 @@
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
 #include <libcurv/list.h>
-#include <libcurv/meaning.h>
+#include <libcurv/meanings.h>
 #include <libcurv/num.h>
 #include <libcurv/reactive.h>
 #include <libcurv/sc_compiler.h>

@@ -6,7 +6,6 @@
 #define LIBCURV_REACTIVE_H
 
 #include <libcurv/sc_type.h>
-#include <libcurv/function.h> // prereq of meaning.h
 #include <libcurv/meaning.h>
 
 namespace curv {

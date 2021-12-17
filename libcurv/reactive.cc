@@ -4,6 +4,7 @@
 
 #include <libcurv/reactive.h>
 #include <libcurv/exception.h>
+#include <libcurv/meanings.h>
 #include <boost/core/demangle.hpp>
 
 namespace curv {

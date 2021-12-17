@@ -6,6 +6,7 @@
 
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
+#include <libcurv/meanings.h>
 #include <libcurv/reactive.h>
 #include <libcurv/type.h>
 

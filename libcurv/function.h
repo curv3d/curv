@@ -8,6 +8,7 @@
 #include <libcurv/fail.h>
 #include <libcurv/list.h>
 #include <libcurv/meaning.h>
+#include <libcurv/pattern.h>
 #include <libcurv/sc_frame.h>
 #include <libcurv/value.h>
 

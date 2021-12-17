@@ -7,6 +7,7 @@
 #include <libcurv/exception.h>
 #include <libcurv/function.h>
 #include <libcurv/list.h>
+#include <libcurv/meanings.h>
 #include <libcurv/num.h>
 #include <libcurv/reactive.h>
 #include <libcurv/symbol.h>

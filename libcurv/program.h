@@ -7,7 +7,7 @@
 
 #include <libcurv/analyser.h>
 #include <libcurv/frame.h>
-#include <libcurv/meaning.h>
+#include <libcurv/meanings.h>
 #include <libcurv/module.h>
 #include <libcurv/scanner.h>
 #include <libcurv/source.h>

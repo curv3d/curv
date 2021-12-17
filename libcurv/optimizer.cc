@@ -3,7 +3,7 @@
 // See accompanying file LICENSE or https://www.apache.org/licenses/LICENSE-2.0
 
 #include <libcurv/function.h>
-#include <libcurv/meaning.h>
+#include <libcurv/meanings.h>
 #include <boost/functional/hash.hpp>
 
 namespace curv

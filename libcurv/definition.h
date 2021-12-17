@@ -6,6 +6,7 @@
 #define LIBCURV_DEFINITION_H
 
 #include <libcurv/analyser.h>
+#include <libcurv/meanings.h>
 
 namespace curv {
 
