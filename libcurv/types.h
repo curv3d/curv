@@ -7,10 +7,34 @@
 
 #include <libcurv/type.h>
 #include <libcurv/symbol.h>
+#include <libcurv/context.h>
 #include <vector>
 
 namespace curv {
-struct At_Syntax;
+
+// This implements the concept "concrete value class" for types.
+struct CType
+{
+    Shared<const Type> data_;
+    CType() : data_(nullptr) {}
+    CType(Shared<const Type> data) : data_(std::move(data)) {}
+    CType(Value v, const At_Syntax& cx) : data_(v.to<const Type>(cx)) {}
+    static CType from_value(Value v, const At_Syntax&)
+      { return {v.maybe<const Type>()}; }
+    static CType from_value(Value v, Fail fl, const At_Syntax&cx)
+      { return {v.to<const Type>(fl,cx)}; }
+    Value to_value() const { return Value{data_}; }
+    bool operator==(const CType& t) const
+      { return Type::equal(*data_, *t.data_); }
+    void print_repr(std::ostream& o) { data_->print_repr(o); }
+    void print_string(std::ostream& o) { data_->print_string(o); }
+    explicit operator bool() const noexcept { return data_ != nullptr; }
+
+    bool contains(Value v, const At_Syntax& cx) const
+      { return data_->contains(v, cx); }
+};
+inline std::ostream& operator<<(std::ostream& o, CType t)
+  { t.print_repr(o); return o; }
 
 // the empty set, containing no values
 struct Error_Type : public Type
@@ -112,8 +136,8 @@ struct List_Type : public Type
 
 struct Struct_Type : public Type
 {
-    Symbol_Map<Shared<const Type>> fields_;
-    Struct_Type(Symbol_Map<Shared<const Type>> fields)
+    Symbol_Map<CType> fields_;
+    Struct_Type(Symbol_Map<CType> fields)
     :
         Type(sty_struct_type, Plex_Type::missing),
         fields_(std::move(fields))
@@ -124,8 +148,8 @@ struct Struct_Type : public Type
 
 struct Record_Type : public Type
 {
-    Symbol_Map<Shared<const Type>> fields_;
-    Record_Type(Symbol_Map<Shared<const Type>> fields)
+    Symbol_Map<CType> fields_;
+    Record_Type(Symbol_Map<CType> fields)
     :
         Type(sty_struct_type, Plex_Type::missing),
         fields_(std::move(fields))

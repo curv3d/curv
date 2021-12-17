@@ -164,7 +164,7 @@ bool Struct_Type::contains(Value val, const At_Syntax& cx) const
     for (auto fld : fields_) {
         if (p->empty()) return false;
         if (p->key() != fld.first) return false;
-        if (!fld.second->contains(p->value(cx), cx)) return false;
+        if (!fld.second.contains(p->value(cx), cx)) return false;
         p->next();
     }
     return p->empty();
@@ -175,7 +175,7 @@ void Struct_Type::print_repr(std::ostream& out) const
     bool at_start = true;
     for (auto fld : fields_) {
         if (!at_start) out << ", ";
-        out << fld.first << ": " << *fld.second;
+        out << fld.first << ": " << fld.second;
         at_start = false;
     }
     out << "}";
@@ -191,7 +191,7 @@ bool Record_Type::contains(Value val, const At_Syntax& cx) const
         while (p->key() < fld.first)
             p->next();
         if (p->key() != fld.first) return false;
-        if (!fld.second->contains(p->value(cx), cx)) return false;
+        if (!fld.second.contains(p->value(cx), cx)) return false;
         p->next();
     }
     return true;
@@ -202,7 +202,7 @@ void Record_Type::print_repr(std::ostream& out) const
     bool at_start = true;
     for (auto fld : fields_) {
         if (!at_start) out << ", ";
-        out << fld.first << ": " << *fld.second;
+        out << fld.first << ": " << fld.second;
         at_start = false;
     }
     out << "}";
@@ -307,28 +307,12 @@ bool Type::equal(const Type& t1, const Type& t2)
     if (t1.subtype_ == Ref_Value::sty_struct_type) {
         auto st1 = (const Struct_Type*)(&t1);
         auto st2 = (const Struct_Type*)(&t2);
-        if (st1->fields_.size() != st2->fields_.size()) return false;
-        auto fp2 = st2->fields_.begin();
-        for (auto f1 : st1->fields_) {
-            if (fp2 == st2->fields_.end()) return false;
-            if (f1.first != fp2->first) return false;
-            if (!equal(*f1.second, *fp2->second)) return false;
-            ++fp2;
-        }
-        return fp2 == st2->fields_.end();
+        return st1->fields_ == st2->fields_;
     }
     if (t1.subtype_ == Ref_Value::sty_record_type) {
-        auto st1 = (const Record_Type*)(&t1);
-        auto st2 = (const Record_Type*)(&t2);
-        if (st1->fields_.size() != st2->fields_.size()) return false;
-        auto fp2 = st2->fields_.begin();
-        for (auto f1 : st1->fields_) {
-            if (fp2 == st2->fields_.end()) return false;
-            if (f1.first != fp2->first) return false;
-            if (!equal(*f1.second, *fp2->second)) return false;
-            ++fp2;
-        }
-        return fp2 == st2->fields_.end();
+        auto rt1 = (const Record_Type*)(&t1);
+        auto rt2 = (const Record_Type*)(&t2);
+        return rt1->fields_ == rt2->fields_;
     }
     return true;
 }

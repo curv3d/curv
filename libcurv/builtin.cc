@@ -220,11 +220,11 @@ struct F_Struct : public Function
     using Function::Function;
     Value call(Value arg, Fail fl, Frame& fm) const override
     {
-        Symbol_Map<Shared<const Type>> fields;
+        Symbol_Map<CType> fields;
         At_Arg cx(*this, fm);
         TRY_DEF(rec, arg.to<const Record>(fl, cx));
         for (auto pf = rec->iter(); !pf->empty(); pf->next()) {
-            TRY_DEF(type, pf->value(cx).to<const Type>(fl, cx));
+            TRY_DEF(type, CType::from_value(pf->value(cx), fl, cx));
             fields[pf->key()] = type;
         }
         return {make<Struct_Type>(std::move(fields))};
@@ -235,11 +235,11 @@ struct F_Record : public Function
     using Function::Function;
     Value call(Value arg, Fail fl, Frame& fm) const override
     {
-        Symbol_Map<Shared<const Type>> fields;
+        Symbol_Map<CType> fields;
         At_Arg cx(*this, fm);
         TRY_DEF(rec, arg.to<const Record>(fl, cx));
         for (auto pf = rec->iter(); !pf->empty(); pf->next()) {
-            TRY_DEF(type, pf->value(cx).to<const Type>(fl, cx));
+            TRY_DEF(type, CType::from_value(pf->value(cx), fl, cx));
             fields[pf->key()] = type;
         }
         return {make<Record_Type>(std::move(fields))};
