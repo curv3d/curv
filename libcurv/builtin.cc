@@ -195,7 +195,7 @@ struct F_Array : public Curried_Function
             }
             int i;
             if (!num_to_int(e.to_num_unsafe(), i, 0, INT_MAX, fl, cx))
-                return false;
+                return missing;
             axes.push_back(i);
         }
         return {make_array_type(0, axes, etype)};
