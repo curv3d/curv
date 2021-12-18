@@ -8,12 +8,13 @@
 #include <libcurv/type.h>
 #include <libcurv/symbol.h>
 #include <libcurv/context.h>
+#include <libcurv/conval.h>
 #include <vector>
 
 namespace curv {
 
-// This implements the concept "concrete value class" for types.
-struct CType
+// A concrete value class for Curv type values.
+struct CType : public Concrete_Value
 {
     Shared<const Type> data_;
     CType() : data_(nullptr) {}
@@ -28,13 +29,13 @@ struct CType
       { return Type::equal(*data_, *t.data_); }
     void print_repr(std::ostream& o) { data_->print_repr(o); }
     void print_string(std::ostream& o) { data_->print_string(o); }
+    friend std::ostream& operator<<(std::ostream& o, CType t)
+      { t.print_repr(o); return o; }
     explicit operator bool() const noexcept { return data_ != nullptr; }
 
     bool contains(Value v, const At_Syntax& cx) const
       { return data_->contains(v, cx); }
 };
-inline std::ostream& operator<<(std::ostream& o, CType t)
-  { t.print_repr(o); return o; }
 
 // the empty set, containing no values
 struct Error_Type : public Type

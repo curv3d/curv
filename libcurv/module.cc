@@ -67,7 +67,7 @@ Value*
 Module_Base::ref_field(Symbol_Ref name, bool need_value, const Context& cx)
 {
     auto b = dictionary_->find(name);
-    // WARNING: array_[i] can be a Closure, which is not a proper value.
+    // WARNING: array_[i] can be a Lambda, which is not a proper value.
     if (b != dictionary_->end())
         return &array_[b->second];
     throw Exception(cx, stringify(Value{share(*this)},
