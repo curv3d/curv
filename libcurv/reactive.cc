@@ -39,13 +39,14 @@ Reactive_Expression::Reactive_Expression(
     }
 }
 
-void Reactive_Value::print_repr(std::ostream& out) const
+void Reactive_Value::print_repr(std::ostream& out, Prec) const
 {
     out << "<reactive:" << sctype_ << ">";
 }
 
-void Reactive_Expression::print_repr(std::ostream& out) const
+void Reactive_Expression::print_repr(std::ostream& out, Prec) const
 {
+    // TODO: use expr_->print_repr(out, rprec)
     out << *expr_;
 }
 

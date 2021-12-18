@@ -126,7 +126,7 @@ std::ostream& operator<<(std::ostream& out, Symbol_Ref a)
 }
 
 void
-Symbol_Base::print_repr(std::ostream& out) const
+Symbol_Base::print_repr(std::ostream& out, Prec) const
 {
     out << "#";
     print_idstr(data_, out);

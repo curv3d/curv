@@ -63,7 +63,7 @@ struct Uniform_Variable : public Reactive_Value
     Shared<const Phrase> namephrase_;
     Uniform_Variable(Symbol_Ref name, std::string id, SC_Type,
         Shared<const Phrase> namephrase);
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
     virtual Shared<Operation> expr() const override;
 };
 

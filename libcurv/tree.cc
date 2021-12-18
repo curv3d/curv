@@ -23,21 +23,25 @@ template<class T> void print_tpath_elems(Value val, std::ostream& out)
     } else
         out << val;
 }
-void This::print_repr(std::ostream& out) const
+void This::print_repr(std::ostream& out, Prec) const
 {
     out << "this";
 }
-void TPath::print_repr(std::ostream& out) const
+void TPath::print_repr(std::ostream& out, Prec rprec) const
 {
+    open_paren(out, rprec, Prec::postfix);
     out << "tpath[" << index1_ << ",";
     print_tpath_elems<TPath>(index2_, out);
     out << "]";
+    close_paren(out, rprec, Prec::postfix);
 }
-void TSlice::print_repr(std::ostream& out) const
+void TSlice::print_repr(std::ostream& out, Prec rprec) const
 {
+    open_paren(out, rprec, Prec::postfix);
     out << "tslice[" << index1_ << ",";
     print_tpath_elems<TSlice>(index2_, out);
     out << "]";
+    close_paren(out, rprec, Prec::postfix);
 }
 
 template<class T> struct TPath_Builder

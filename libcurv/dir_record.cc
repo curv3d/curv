@@ -76,7 +76,7 @@ Dir_Record::Dir_Record(Filesystem::path dir, Symbol_Map<File> fields)
 {
 }
 
-void Dir_Record::print_repr(std::ostream& out) const
+void Dir_Record::print_repr(std::ostream& out, Prec) const
 {
     out << "{";
     bool first = true;

@@ -78,7 +78,7 @@ Value::at(Symbol_Ref field, const Context& cx) const
 }
 
 void
-Value::print_repr(std::ostream& out)
+Value::print_repr(std::ostream& out, Prec rprec)
 const
 {
     if (is_missing()) {
@@ -89,12 +89,18 @@ const
         char c = to_char_unsafe();
         if (c >= ' ' && c <= '~')
             out << "#\"" << c << "\"";
-        else
+        else {
+            open_paren(out, rprec, Prec::postfix);
             out << "char " << unsigned(c);
+            close_paren(out, rprec, Prec::postfix);
+        }
     } else if (is_num()) {
+        double d = to_num_unsafe();
+        if (std::signbit(d)) open_paren(out, rprec, Prec::power);
         out << dfmt(to_num_unsafe());
+        if (std::signbit(d)) close_paren(out, rprec, Prec::power);
     } else if (is_ref()) {
-        to_ref_unsafe().print_repr(out);
+        to_ref_unsafe().print_repr(out, rprec);
     } else {
         out << "???";
     }
@@ -123,7 +129,7 @@ void
 Ref_Value::print_string(std::ostream& out)
 const
 {
-    print_repr(out);
+    print_repr(out, Prec::item);
 }
 
 Ternary Value::equal(Value v, const Context& cx) const

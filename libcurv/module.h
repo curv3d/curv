@@ -94,7 +94,7 @@ struct Module_Base : public Record
     iterator begin() const { return iterator(*this, true); }
     iterator end() const { return iterator(*this, false); }
 
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 
     virtual Value find_field(Symbol_Ref, const Context&) const override;
     virtual bool hasfield(Symbol_Ref) const override;

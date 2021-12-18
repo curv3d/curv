@@ -91,7 +91,7 @@ using String = String_Mixin<String_Base>;
 struct String_Base : public Abstract_List
 {
     String_Base() : Abstract_List(sty_string) {}
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
     static const char name[];
     virtual Value val_at(size_t i) const override
     {

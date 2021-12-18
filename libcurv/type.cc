@@ -74,7 +74,7 @@ bool Error_Type::contains(Value val, const At_Syntax&) const
 {
     return false;
 }
-void Error_Type::print_repr(std::ostream& out) const
+void Error_Type::print_repr(std::ostream& out, Prec) const
 {
     out << "Error";
 };
@@ -83,7 +83,7 @@ bool Bool_Type::contains(Value val, const At_Syntax&) const
 {
     return is_bool(val);
 }
-void Bool_Type::print_repr(std::ostream& out) const
+void Bool_Type::print_repr(std::ostream& out, Prec) const
 {
     out << "Bool";
 };
@@ -92,7 +92,7 @@ bool Num_Type::contains(Value val, const At_Syntax&) const
 {
     return is_num(val);
 }
-void Num_Type::print_repr(std::ostream& out) const
+void Num_Type::print_repr(std::ostream& out, Prec) const
 {
     out << "Num";
 };
@@ -107,13 +107,13 @@ bool Tuple_Type::contains(Value val, const At_Syntax& cx) const
     }
     return true;
 }
-void Tuple_Type::print_repr(std::ostream& out) const
+void Tuple_Type::print_repr(std::ostream& out, Prec) const
 {
     out << "Tuple[";
     bool at_start = true;
     for (auto e : elements_) {
         if (!at_start) out << ",";
-        e->print_repr(out);
+        e->print_repr(out, Prec::item);
         at_start = false;
     }
     out << "]";
@@ -126,8 +126,9 @@ bool Array_Type::contains(Value val, const At_Syntax& cx) const
     if (list.size() != count_) return false;
     return list.has_elem_type(*elem_type_, cx);
 }
-void Array_Type::print_repr(std::ostream& out) const
+void Array_Type::print_repr(std::ostream& out, Prec rprec) const
 {
+    open_paren(out, rprec, Prec::postfix);
     out << "Array[" << count_;
     auto ety = elem_type_;
     for (;;) {
@@ -135,12 +136,12 @@ void Array_Type::print_repr(std::ostream& out) const
             out << "," << aty->count_;
             ety = aty->elem_type_;
         } else {
-            out << "](";
-            ety->print_repr(out);
-            out << ")";
+            out << "]";
+            ety->print_repr(out, Prec::primary);
             break;
         }
     }
+    close_paren(out, rprec, Prec::postfix);
 };
 
 bool List_Type::contains(Value val, const At_Syntax& cx) const
@@ -149,11 +150,12 @@ bool List_Type::contains(Value val, const At_Syntax& cx) const
     if (!list.is_list()) return false;
     return list.has_elem_type(*elem_type_, cx);
 }
-void List_Type::print_repr(std::ostream& out) const
+void List_Type::print_repr(std::ostream& out, Prec rprec) const
 {
-    out << "List (";
-    elem_type_->print_repr(out);
-    out << ")";
+    open_paren(out, rprec, Prec::postfix);
+    out << "List ";
+    elem_type_->print_repr(out, Prec::primary);
+    close_paren(out, rprec, Prec::postfix);
 };
 
 bool Struct_Type::contains(Value val, const At_Syntax& cx) const
@@ -169,8 +171,9 @@ bool Struct_Type::contains(Value val, const At_Syntax& cx) const
     }
     return p->empty();
 }
-void Struct_Type::print_repr(std::ostream& out) const
+void Struct_Type::print_repr(std::ostream& out, Prec rprec) const
 {
+    open_paren(out, rprec, Prec::postfix);
     out << "Struct {";
     bool at_start = true;
     for (auto fld : fields_) {
@@ -179,6 +182,7 @@ void Struct_Type::print_repr(std::ostream& out) const
         at_start = false;
     }
     out << "}";
+    close_paren(out, rprec, Prec::postfix);
 };
 
 bool Record_Type::contains(Value val, const At_Syntax& cx) const
@@ -196,8 +200,9 @@ bool Record_Type::contains(Value val, const At_Syntax& cx) const
     }
     return true;
 }
-void Record_Type::print_repr(std::ostream& out) const
+void Record_Type::print_repr(std::ostream& out, Prec rprec) const
 {
+    open_paren(out, rprec, Prec::postfix);
     out << "Record {";
     bool at_start = true;
     for (auto fld : fields_) {
@@ -206,6 +211,7 @@ void Record_Type::print_repr(std::ostream& out) const
         at_start = false;
     }
     out << "}";
+    close_paren(out, rprec, Prec::postfix);
 };
 
 Plex_Type Array_Type::make_plex_type(unsigned count, Shared<const Type> etype)
@@ -238,7 +244,7 @@ bool Char_Type::contains(Value val, const At_Syntax&) const
 {
     return val.is_char();
 }
-void Char_Type::print_repr(std::ostream& out) const
+void Char_Type::print_repr(std::ostream& out, Prec) const
 {
     out << "Char";
 };
@@ -247,7 +253,7 @@ bool Any_Type::contains(Value val, const At_Syntax&) const
 {
     return true;
 }
-void Any_Type::print_repr(std::ostream& out) const
+void Any_Type::print_repr(std::ostream& out, Prec) const
 {
     out << "Any";
 };
@@ -256,7 +262,7 @@ bool Type_Type::contains(Value val, const At_Syntax& cx) const
 {
     return value_to_type(val, Fail::soft, cx) != nullptr;
 }
-void Type_Type::print_repr(std::ostream& out) const
+void Type_Type::print_repr(std::ostream& out, Prec) const
 {
     out << "Type";
 };
@@ -265,7 +271,7 @@ bool Func_Type::contains(Value val, const At_Syntax& cx) const
 {
     return maybe_function(val, cx) != nullptr;
 }
-void Func_Type::print_repr(std::ostream& out) const
+void Func_Type::print_repr(std::ostream& out, Prec) const
 {
     out << "Func";
 };
@@ -274,7 +280,7 @@ bool Symbol_Type::contains(Value val, const At_Syntax&) const
 {
     return is_symbol(val);
 }
-void Symbol_Type::print_repr(std::ostream& out) const
+void Symbol_Type::print_repr(std::ostream& out, Prec) const
 {
     out << "Symbol";
 };

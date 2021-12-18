@@ -154,7 +154,7 @@ List_Base::print_string(std::ostream& out) const
             }
             if (!first_after_left_bracket)
                 out << ',';
-            e.print_repr(out);
+            e.print_repr(out, Prec::item);
             first_after_left_bracket = false;
         }
     }
@@ -162,8 +162,9 @@ List_Base::print_string(std::ostream& out) const
         out << ']';
 }
 void
-List_Base::print_repr(std::ostream& out) const
+List_Base::print_repr(std::ostream& out, Prec rprec) const
 {
+    open_paren(out, rprec, Prec::sum);
     enum {begin, in_string, in_list} state = begin;
     bool first_after_left_bracket = false;
     for (size_t i = 0; i < size(); ++i) {
@@ -196,7 +197,7 @@ List_Base::print_repr(std::ostream& out) const
             if (!first_after_left_bracket)
                 out << ',';
             first_after_left_bracket = false;
-            e.print_repr(out);
+            e.print_repr(out, Prec::item);
         }
     }
     switch (state) {
@@ -204,6 +205,7 @@ List_Base::print_repr(std::ostream& out) const
     case in_string: out << '"'; break;
     case in_list: out << ']'; break;
     }
+    close_paren(out, rprec, Prec::sum);
 }
 
 Ternary List_Base::equal(const List_Base& list, const Context& cx) const

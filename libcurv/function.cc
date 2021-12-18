@@ -42,7 +42,7 @@ value_to_function(Value funv, Fail fl, const Context& cx)
 const char Function::name[] = "function";
 
 void
-Function::print_repr(std::ostream& out) const
+Function::print_repr(std::ostream& out, Prec) const
 {
     out << "<function";
     if (!name_.empty()) {
@@ -220,7 +220,7 @@ Closure::sc_call_expr(Operation& arg, Shared<const Phrase> cp, SC_Frame& fm) con
 }
 
 void
-Lambda::print_repr(std::ostream& out) const
+Lambda::print_repr(std::ostream& out, Prec) const
 {
     out << "<lambda>";
 }

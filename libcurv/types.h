@@ -27,10 +27,10 @@ struct CType : public Concrete_Value
     Value to_value() const { return Value{data_}; }
     bool operator==(const CType& t) const
       { return Type::equal(*data_, *t.data_); }
-    void print_repr(std::ostream& o) { data_->print_repr(o); }
+    void print_repr(std::ostream& o, Prec p) { data_->print_repr(o,p); }
     void print_string(std::ostream& o) { data_->print_string(o); }
     friend std::ostream& operator<<(std::ostream& o, CType t)
-      { t.print_repr(o); return o; }
+      { t.print_repr(o,Prec::item); return o; }
     explicit operator bool() const noexcept { return data_ != nullptr; }
 
     bool contains(Value v, const At_Syntax& cx) const
@@ -42,7 +42,7 @@ struct Error_Type : public Type
 {
     Error_Type() : Type(sty_error_type, Plex_Type::missing) {}
     virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 };
 
 // Any : the set of all values
@@ -50,7 +50,7 @@ struct Any_Type : public Type
 {
     Any_Type() : Type(sty_any_type, Plex_Type::missing) {}
     virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 };
 
 // Type: the set of all type values
@@ -58,7 +58,7 @@ struct Type_Type : public Type
 {
     Type_Type() : Type(sty_type_type, Plex_Type::missing) {}
     virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 };
 
 // Bool: the set containing #true and #false
@@ -66,35 +66,35 @@ struct Bool_Type : public Type
 {
     Bool_Type() : Type(sty_bool_type, Plex_Type::Bool) {}
     virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 };
 
 struct Num_Type : public Type
 {
     Num_Type() : Type(sty_num_type, Plex_Type::Num) {}
     virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 };
 
 struct Char_Type : public Type
 {
     Char_Type() : Type(sty_char_type, Plex_Type::missing) {}
     virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 };
 
 struct Func_Type : public Type
 {
     Func_Type() : Type(sty_func_type, Plex_Type::missing) {}
     virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 };
 
 struct Symbol_Type : public Type
 {
     Symbol_Type() : Type(sty_symbol_type, Plex_Type::missing) {}
     virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 };
 
 struct Tuple_Type : public Type
@@ -105,7 +105,7 @@ struct Tuple_Type : public Type
         elements_(std::move(e))
         {}
     virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 };
 
 struct Array_Type : public Type
@@ -120,7 +120,7 @@ struct Array_Type : public Type
     {}
     static Plex_Type make_plex_type(unsigned, Shared<const Type>);
     virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 };
 
 struct List_Type : public Type
@@ -132,7 +132,7 @@ struct List_Type : public Type
         elem_type_(et)
     {}
     virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 };
 
 struct Struct_Type : public Type
@@ -144,7 +144,7 @@ struct Struct_Type : public Type
         fields_(std::move(fields))
     {}
     virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 };
 
 struct Record_Type : public Type
@@ -156,7 +156,7 @@ struct Record_Type : public Type
         fields_(std::move(fields))
     {}
     virtual bool contains(Value, const At_Syntax&) const;
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 };
 
 } // namespace curv

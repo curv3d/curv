@@ -72,14 +72,13 @@ namespace curv {
 //     static CNum from_value(Value, Fail, const At_Syntax&) -- fail soft|hard
 //
 // Printing values:
-//     void print_repr(std::ostream&) const
+//     void print_repr(std::ostream&, Prec) const
 //     void print_string(std::ostream&) const
 //     friend std::ostream& operator<<(std::ostream&& o, CNum n)
 //       { n.print_string(o); return o; }
 // Following Curv semantics,
 //     `ostream << val` uses print_string.
 //     `ostream << repr(val)` uses print_repr.
-// TODO: Enhance print_repr to use operator precedence to minimize parens.
 // TODO: add `repr`.
 //
 // TODO: Hash

@@ -77,7 +77,7 @@ String_Builder::get_value()
 }
 
 void
-String_Base::print_repr(std::ostream& out) const
+String_Base::print_repr(std::ostream& out, Prec) const
 {
     write_curv_string(data_, 0, out);
 }

@@ -25,7 +25,7 @@ struct Symbol_Base : public Ref_Value
     bool empty() const noexcept { return size_ == 0; }
     // you must call make_symbol() to construct a Symbol.
     friend Symbol_Ref make_symbol(const char*, size_t);
-    virtual void print_repr(std::ostream&) const;
+    virtual void print_repr(std::ostream&, Prec) const;
     static const char name[];
 };
 
@@ -48,7 +48,7 @@ struct Symbol_Ref : private Shared<const Symbol>
 private:
     using Base = Shared<const Symbol>;
     inline Symbol_Ref(Base sym) : Base(sym) {}
-    friend void Symbol_Base::print_repr(std::ostream& out) const;
+    friend void Symbol_Base::print_repr(std::ostream& out, Prec) const;
 public:
     using Shared<const Symbol>::Shared;
 

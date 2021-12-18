@@ -13,7 +13,7 @@ namespace curv {
 struct This : public Ref_Value
 {
     This() : Ref_Value(Ref_Value::ty_index, Ref_Value::sty_this) {}
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 };
 struct TPath : public Ref_Value
 {
@@ -24,7 +24,7 @@ struct TPath : public Ref_Value
         index2_(i2)
     {}
     Value index1_, index2_;
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
     Ternary equal(const TPath& right, const Context& cx) const {
         return index1_.equal(right.index1_, cx)
              & index2_.equal(right.index2_, cx);
@@ -40,7 +40,7 @@ struct TSlice : public Ref_Value
         index2_(i2)
     {}
     Value index1_, index2_;
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
     Ternary equal(const TSlice& right, const Context& cx) const {
         return index1_.equal(right.index1_, cx)
              & index2_.equal(right.index2_, cx);

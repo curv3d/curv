@@ -77,7 +77,7 @@ std::pair<Symbol_Ref, Value> value_to_variant(Value, const Context& cx);
 inline std::ostream&
 operator<<(std::ostream& out, const Record& rec)
 {
-    rec.print_repr(out);
+    rec.print_repr(out, Prec::item);
     return out;
 }
 
@@ -96,7 +96,7 @@ struct DRecord : public Record
     {
     }
 
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
     virtual Value find_field(Symbol_Ref, const Context&) const override;
     virtual bool hasfield(Symbol_Ref) const override;
     virtual size_t size() const override { return fields_.size(); }

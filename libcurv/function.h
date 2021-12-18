@@ -69,7 +69,7 @@ struct Function : public Ref_Value
     virtual SC_Value sc_call_expr(Operation&, Shared<const Phrase>, SC_Frame&) const;
 
     /// Print a value like a Curv expression.
-    virtual void print_repr(std::ostream&) const;
+    virtual void print_repr(std::ostream&, Prec) const;
 
     static const char name[];
 };
@@ -201,7 +201,7 @@ struct Lambda : public Ref_Value
     {}
 
     /// Print a value like a Curv expression.
-    virtual void print_repr(std::ostream&) const;
+    virtual void print_repr(std::ostream&, Prec) const;
 };
 
 /// A user-defined function value,

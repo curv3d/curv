@@ -198,7 +198,7 @@ Uniform_Variable::Uniform_Variable(
 {
 }
 
-void Uniform_Variable::print_repr(std::ostream& out) const
+void Uniform_Variable::print_repr(std::ostream& out, Prec) const
 {
     if (identifier_ == "u_time") // TODO this is a kludge
         out << "time";

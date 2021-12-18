@@ -31,7 +31,7 @@ struct List_Base : public Abstract_List
 {
     List_Base() : Abstract_List(sty_list) {}
     virtual Value val_at(size_t i) const override { return array_[i]; }
-    virtual void print_repr(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
     virtual void print_string(std::ostream&) const override;
     Ternary equal(const List_Base&, const Context&) const;
     void assert_size(size_t sz, const Context& cx) const;
@@ -47,7 +47,7 @@ struct List_Base : public Abstract_List
 inline std::ostream&
 operator<<(std::ostream& out, const List_Base& list)
 {
-    list.print_repr(out);
+    list.print_repr(out, Prec::item);
     return out;
 }
 

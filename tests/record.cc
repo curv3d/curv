@@ -11,7 +11,7 @@ using namespace curv;
 static bool prints_as(Value val, const char* expect)
 {
     std::stringstream ss;
-    val.print_repr(ss);
+    val.print_repr(ss, Prec::item);
     if (ss.str() == expect)
         return true;
     else {

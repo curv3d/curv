@@ -836,6 +836,8 @@ assert(Array[]Num == Num && Array[0]Num == Tuple[]);
 assert(Array[1,2]Num == Array[1](Array[2]Num));
 assert(is (Array[3]Num) [1,2,3] && is (Array[2]Num) ([time,time]*time));
 assert(is (Array[4,4]Num) (idmatrix 4));
+assert(string(Array[1]Num) == "Array[1]Num");
+assert(string(Array[1](List Num)) == "Array[1](List Num)");
 assert(is (List Num) [] && is (List Char) "foo"
     && is (List Num) ([time,time]*time));
 assert(List Num == List Num && List Num != List Char);

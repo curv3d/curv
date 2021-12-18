@@ -61,7 +61,7 @@ Shared<const Type> value_to_type(Value, Fail, const Context&);
 inline std::ostream&
 operator<<(std::ostream& out, const Type& type)
 {
-    type.print_repr(out);
+    type.print_repr(out, Prec::listing);
     return out;
 }
 

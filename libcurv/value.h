@@ -17,6 +17,18 @@ union Value;
 struct Symbol_Ref;
 struct Context;
 
+// The second argument of `print_repr` is an operator precedence.
+// The goal is to minimize the number of parentheses used when printing
+// Curv values and expressions, by leveraging operator precedence.
+enum class Prec {
+    listing, ritem, item, pipeline, disjunction, conjunction,
+    relation, sum, product, power, postfix, primary
+};
+inline void open_paren(std::ostream& o, Prec required_prec, Prec actual_prec)
+  { if (required_prec > actual_prec) o << "("; }
+inline void close_paren(std::ostream& o, Prec required_prec, Prec actual_prec)
+  { if (required_prec > actual_prec) o << ")"; }
+
 /// Base class for the object referenced by a curv reference value.
 ///
 /// The memory layout for Ref_Value is:
@@ -81,7 +93,7 @@ struct Ref_Value : public Shared_Base
     {}
 
     /// Print a value like a Curv expression.
-    virtual void print_repr(std::ostream&) const = 0;
+    virtual void print_repr(std::ostream&, Prec) const = 0;
 
     /// Print a value like a string.
     virtual void print_string(std::ostream&) const;
@@ -416,7 +428,7 @@ public:
     }
 
     /// Print a value like a Curv expression.
-    void print_repr(std::ostream&) const;
+    void print_repr(std::ostream&, Prec) const;
 
     /// Print a value like a string.
     void print_string(std::ostream&) const;
@@ -459,7 +471,7 @@ extern const Value missing;
 inline std::ostream&
 operator<<(std::ostream& out, Value val)
 {
-    val.print_repr(out);
+    val.print_repr(out, Prec::item);
     return out;
 }
 
