@@ -64,6 +64,7 @@ struct Cat_Op : public Binary_Op
     }
     struct Prim {
         static const char* name() {return "++";};
+        static constexpr Prec prec = Prec::sum;
     };
 };
 using Cat_Expr = Binary_Op_Expr<Cat_Op>;
@@ -71,6 +72,7 @@ using Cat_Expr = Binary_Op_Expr<Cat_Op>;
 struct Add_Prim : public Binary_Num_SCMat_Prim
 {
     static const char* name() {return "+";};
+    static constexpr Prec prec = Prec::sum;
     static Value zero() { return {0.0}; }
     static Value call(double x, double y, const Context&) { return {x + y}; }
     static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y)
@@ -82,6 +84,7 @@ using Add_Expr = Binary_Op_Expr<Add_Op>;
 struct Multiply_Prim : public Binary_Num_SCMat_Prim
 {
     static const char* name() { return "*"; }
+    static constexpr Prec prec = Prec::product;
     static Value zero() { return {1.0}; }
     static Value call(double x, double y, const Context&) { return {x * y}; }
     static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y) {
@@ -97,6 +100,7 @@ using Multiply_Expr = Binary_Op_Expr<Multiply_Op>;
 struct Subtract_Prim : public Binary_Num_SCMat_Prim
 {
     static const char* name() {return "-";};
+    static constexpr Prec prec = Prec::sum;
     static Value call(double x, double y, const Context&) { return {x - y}; }
     static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y)
         { return sc_binop(fm, x.type, x, "-", y); }
@@ -107,6 +111,7 @@ using Subtract_Expr = Binary_Op_Expr<Subtract_Op>;
 struct Divide_Prim : public Binary_Num_SCMat_Prim
 {
     static const char* name() {return "/";};
+    static constexpr Prec prec = Prec::product;
     static Value call(double x, double y, const Context&) { return {x / y}; }
     static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y)
         { return sc_binop(fm, x.type, x, "/", y); }
@@ -117,6 +122,7 @@ using Divide_Expr = Binary_Op_Expr<Divide_Op>;
 struct Power_Prim : public Binary_Num_SCVec_Prim
 {
     static const char* name() {return "^";};
+    static constexpr Prec prec = Prec::power;
     static Value call(double x, double y, const Context&) { return {pow(x,y)}; }
     static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y)
         { return sc_bincall(fm, x.type, "pow", x, y); }
@@ -128,6 +134,7 @@ using Power_Expr = Binary_Op_Expr<Power_Op>;
 struct Class##_Prim : public Binary_Num_To_Bool_Prim \
 { \
     static const char* name() { return #LT; } \
+    static constexpr Prec prec = Prec::relation; \
     static Value call(double a, double b, const Context& cx) \
         { return {a LT b}; } \
     static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y) \

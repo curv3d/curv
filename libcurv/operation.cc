@@ -11,38 +11,56 @@
 namespace curv
 {
 
-void Operation::print(std::ostream& out) const
+void Operation::print_repr(std::ostream& out, Prec) const
 {
     out << "<" << boost::core::demangle(typeid(*this).name()) << ">";
 }
-void Constant::print(std::ostream& out) const
+void Constant::print_repr(std::ostream& out, Prec rprec) const
 {
-    out << value_;
+    value_.print_repr(out, rprec);
 }
-void Call_Expr::print(std::ostream& out) const
+void Call_Expr::print_repr(std::ostream& out, Prec rprec) const
 {
-    out << *func_ << " " << *arg_;
+    open_paren(out, rprec, Prec::postfix);
+    func_->print_repr(out, Prec::postfix);
+    out << " ";
+    arg_->print_repr(out, Prec::primary);
+    close_paren(out, rprec, Prec::postfix);
 }
-void Index_Expr::print(std::ostream& out) const
+void Index_Expr::print_repr(std::ostream& out, Prec rprec) const
 {
-    out << *arg1_ << "@" << *arg2_;
+    open_paren(out, rprec, Prec::postfix);
+    arg1_->print_repr(out, Prec::postfix);
+    out << "@";
+    arg2_->print_repr(out, Prec::primary);
+    close_paren(out, rprec, Prec::postfix);
 }
-void Slice_Expr::print(std::ostream& out) const
+void Slice_Expr::print_repr(std::ostream& out, Prec rprec) const
 {
-    out << *arg1_ << "." << *arg2_;
+    open_paren(out, rprec, Prec::postfix);
+    arg1_->print_repr(out, Prec::postfix);
+    out << ".";
+    arg2_->print_repr(out, Prec::primary);
+    close_paren(out, rprec, Prec::postfix);
 }
-void List_Expr_Base::print(std::ostream& out) const
+void List_Expr_Base::print_repr(std::ostream& out, Prec) const
 {
     out << "[";
     for (size_t i = 0; i < size(); ++i) {
         if (i != 0) out << ",";
-        out << *array_[i];
+        array_[i]->print_repr(out, Prec::item);
     }
     out << "]";
 }
-void If_Else_Op::print(std::ostream& out) const
+void If_Else_Op::print_repr(std::ostream& out, Prec rprec) const
 {
-    out << "(if (" << *arg1_ << ") " << *arg2_ << " else " << *arg3_ << ")";
+    // TODO: `if` print_repr: follows grammar, but wrong. grammar ambiguous.
+    open_paren(out, rprec, Prec::ritem);
+    out << "if (" << *arg1_ << ") ";
+    arg2_->print_repr(out, Prec::ritem);
+    out << " else ";
+    arg3_->print_repr(out, Prec::ritem);
+    close_paren(out, rprec, Prec::ritem);
 }
 
 } // namespace curv

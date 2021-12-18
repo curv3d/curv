@@ -181,8 +181,13 @@ Value AND_EXPR::eval(Frame& fm) const \
             to_expr(bv, *arg2_->syntax_)), \
         At_Phrase(*syntax_, fm))}; \
 } \
-void AND_EXPR::print(std::ostream& out) const \
-  { out<<"("<<*arg1_<<#AND<<*arg2_<<")"; }
+void AND_EXPR::print_repr(std::ostream& out, Prec rprec) const { \
+    open_paren(out, rprec, Prec::conjunction); \
+    arg1_->print_repr(out, Prec::conjunction); \
+    out << #AND; \
+    arg2_->print_repr(out, Prec::relation); \
+    close_paren(out, rprec, Prec::conjunction); \
+  }
 BOOL_EXPR_EVAL(And_Expr, &&, !, false)
 BOOL_EXPR_EVAL(Or_Expr, ||, , true)
 
@@ -294,8 +299,14 @@ Equal_Expr::eval(Frame& fm) const
     At_Phrase cx(*syntax_, fm);
     return eqval<Equal_Expr>(a.equal(b, cx), a, b, cx);
 }
-void Equal_Expr::print(std::ostream& out) const
-  { out<<"("<<*arg1_<<"=="<<*arg2_<<")"; }
+void Equal_Expr::print_repr(std::ostream& out, Prec rprec) const
+{
+    open_paren(out, rprec, Prec::relation);
+    arg1_->print_repr(out, Prec::sum);
+    out << "==";
+    arg2_->print_repr(out, Prec::sum);
+    close_paren(out, rprec, Prec::relation);
+}
 Value
 Not_Equal_Expr::eval(Frame& fm) const
 {
@@ -304,8 +315,14 @@ Not_Equal_Expr::eval(Frame& fm) const
     At_Phrase cx(*syntax_, fm);
     return eqval<Not_Equal_Expr>(!a.equal(b, cx), a, b, cx);
 }
-void Not_Equal_Expr::print(std::ostream& out) const
-  { out<<"("<<*arg1_<<"!="<<*arg2_<<")"; }
+void Not_Equal_Expr::print_repr(std::ostream& out, Prec rprec) const
+{
+    open_paren(out, rprec, Prec::relation);
+    arg1_->print_repr(out, Prec::sum);
+    out << "!=";
+    arg2_->print_repr(out, Prec::sum);
+    close_paren(out, rprec, Prec::relation);
+}
 
 Value Index_Expr::eval(Frame& fm) const
 {

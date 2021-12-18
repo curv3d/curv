@@ -97,7 +97,7 @@ struct Constant : public Just_Expression
     virtual SC_Value sc_eval(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
-    virtual void print(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 };
 
 struct Null_Action : public Just_Action
@@ -205,7 +205,7 @@ struct Call_Expr : public Just_Expression
     virtual SC_Value sc_eval(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
-    virtual void print(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 };
 
 struct Prefix_Expr_Base : public Just_Expression
@@ -274,42 +274,42 @@ struct Or_Expr : public Infix_Expr_Base
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
     virtual SC_Value sc_eval(SC_Frame&) const override;
-    virtual void print(std::ostream& out) const override;
+    virtual void print_repr(std::ostream& out, Prec) const override;
 };
 struct And_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
     virtual SC_Value sc_eval(SC_Frame&) const override;
-    virtual void print(std::ostream& out) const override;
+    virtual void print_repr(std::ostream& out, Prec) const override;
 };
 struct Equal_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
     virtual SC_Value sc_eval(SC_Frame&) const override;
-    virtual void print(std::ostream& out) const override;
+    virtual void print_repr(std::ostream& out, Prec) const override;
 };
 struct Not_Equal_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
     virtual SC_Value sc_eval(SC_Frame&) const override;
-    virtual void print(std::ostream& out) const override;
+    virtual void print_repr(std::ostream& out, Prec) const override;
 };
 struct Index_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
     virtual SC_Value sc_eval(SC_Frame&) const override;
-    virtual void print(std::ostream& out) const override;
+    virtual void print_repr(std::ostream& out, Prec) const override;
 };
 struct Slice_Expr : public Infix_Expr_Base
 {
     using Infix_Expr_Base::Infix_Expr_Base;
     virtual Value eval(Frame&) const override;
     virtual SC_Value sc_eval(SC_Frame&) const override;
-    virtual void print(std::ostream& out) const override;
+    virtual void print_repr(std::ostream& out, Prec) const override;
 };
 struct Range_Expr : public Just_Expression
 {
@@ -344,7 +344,7 @@ struct List_Expr_Base : public Just_Expression
     virtual SC_Value sc_eval(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
-    virtual void print(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
     TAIL_ARRAY_MEMBERS(Shared<Operation>)
 };
 using List_Expr = Tail_Array<List_Expr_Base>;
@@ -683,7 +683,7 @@ struct If_Else_Op : public Operation
     virtual void sc_exec(SC_Frame&) const override;
     virtual size_t hash() const noexcept override;
     virtual bool hash_eq(const Operation&) const noexcept override;
-    virtual void print(std::ostream&) const override;
+    virtual void print_repr(std::ostream&, Prec) const override;
 };
 
 struct Lambda_Expr : public Just_Expression

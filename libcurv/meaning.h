@@ -138,13 +138,13 @@ struct Operation : public Meaning
     virtual size_t hash() const noexcept;
     virtual bool hash_eq(const Operation&) const noexcept;
 
-    virtual void print(std::ostream&) const;
+    virtual void print_repr(std::ostream&, Prec) const;
 };
 
 inline std::ostream&
 operator<<(std::ostream& out, const Operation& op)
 {
-    op.print(out);
+    op.print_repr(out, Prec::listing);
     return out;
 }
 

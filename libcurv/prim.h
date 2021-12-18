@@ -49,8 +49,22 @@ struct Unary_Op_Expr : public Prefix_Expr_Base
       { return Op::call(Fail::hard, At_Phrase(*syntax_, fm), arg_->eval(fm)); }
     virtual SC_Value sc_eval(SC_Frame& fm) const override
       { return Op::sc_op(At_SC_Phrase(syntax_,fm), *arg_, fm); }
-    virtual void print(std::ostream& out) const override
-      { out<<Op::Prim::name()<<"("<<*arg_<<")"; }
+    static bool idchr(char c)
+        { return (c>='a'&&c<='z')||(c>='A'&&c<='Z')||c=='_'; }
+    virtual void print_repr(std::ostream& out, Prec rprec) const override {
+        const char* name = Op::Prim::name();
+        Prec prec, argprec;
+        if (idchr(name[0])) {
+            prec = Prec::postfix; argprec = Prec::primary;
+        } else {
+            prec = Prec::power; argprec = Prec::power;
+        }
+        open_paren(out, rprec, prec);
+        out << name;
+        if (prec == Prec::postfix) out << " ";
+        arg_->print_repr(out, argprec);
+        close_paren(out, rprec, prec);
+    }
 };
 
 template <class Op>
@@ -63,13 +77,26 @@ struct Binary_Op_Expr : public Infix_Expr_Base
     }
     virtual SC_Value sc_eval(SC_Frame& fm) const override
       { return Op::sc_call(fm, *arg1_, *arg2_, syntax_); }
-    static bool idchr(char c)
-        { return (c>='a'&&c<='z')||(c>='A'&&c<='Z')||c=='_'; }
-    virtual void print(std::ostream& out) const override {
-        if (idchr(Op::Prim::name()[0]))
-            out<<Op::Prim::name()<<"["<<*arg1_<<","<<*arg2_<<"]";
-        else
-            out<<"("<<*arg1_<<Op::Prim::name()<<*arg2_<<")";
+    virtual void print_repr(std::ostream& out, Prec rprec) const override {
+        open_paren(out, rprec, Op::Prim::prec);
+        if (Op::Prim::prec == Prec::postfix) {
+            out << Op::Prim::name() << "[";
+            arg1_->print_repr(out, Prec::item);
+            out << ",";
+            arg2_->print_repr(out, Prec::item);
+            out << "]";
+        } else if (Op::Prim::prec == Prec::power) {
+            // right associative
+            arg1_->print_repr(out, Prec::postfix);
+            out << " " << Op::Prim::name() << " ";
+            arg2_->print_repr(out, Prec::power);
+        } else {
+            // left associative
+            arg1_->print_repr(out, Op::Prim::prec);
+            out << " " << Op::Prim::name() << " ";
+            arg2_->print_repr(out, Prec(int(Op::Prim::prec)+1));
+        }
+        close_paren(out, rprec, Op::Prim::prec);
     }
 };
 
