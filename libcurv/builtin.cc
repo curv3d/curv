@@ -138,17 +138,17 @@ struct F_Tuple : public Function
     using Function::Function;
     Value call(Value arg, Fail fl, Frame& fm) const override
     {
-        std::vector<Shared<const Type>> types;
+        std::vector<CType> types;
         TRY_DEF(list, arg.to<const List>(fl, At_Arg(*this, fm)));
         for (auto e : *list) {
-            TRY_DEF(type, e.to<const Type>(fl, At_Arg(*this, fm)));
+            TRY_DEF(type, CType::from_value(e, fl, At_Arg(*this, fm)));
             types.push_back(type);
         }
         if (types.size() > 0) {
             // Tuple[T]=>Array[1]T, Tuple[T,T]=>Array[2]T, ...
             bool uniform = true;
             for (unsigned i = 1; i < types.size(); ++i) {
-                if (!Type::equal(*types[0], *types[i])) {
+                if (types[0] != types[i]) {
                     uniform = false;
                     break;
                 }
@@ -164,30 +164,30 @@ struct F_List : public Function
     using Function::Function;
     Value call(Value arg, Fail fl, Frame& fm) const override
     {
-        TRY_DEF(type, arg.to<const Type>(fl, At_Arg(*this, fm)));
+        TRY_DEF(type, CType::from_value(arg, fl, At_Arg(*this, fm)));
         return {make<List_Type>(type)};
     }
 };
 struct F_Array : public Curried_Function
 {
-    static Shared<const Type> make_array_type(
+    static CType make_array_type(
         unsigned i,
         const std::vector<int>& axes,
-        Shared<const Type> etype)
+        CType etype)
     {
         if (i == axes.size()) return etype;
         /* otherwise i < axes.size() */
         if (axes[i] == 0)
-            return make<Tuple_Type>(std::vector<Shared<const Type>>{});
+            return {make<Tuple_Type>(std::vector<CType>{})};
         etype = make_array_type(i+1, axes, etype);
-        return make<Array_Type>(axes[i], etype);
+        return {make<Array_Type>(axes[i], etype)};
     }
     F_Array(const char* nm) : Curried_Function(2,nm) {}
     virtual Value ccall(const Function& self, Fail fl, Frame& args) const
     {
         At_Arg cx(*this, args);
         TRY_DEF(xlist, args[0].to<const List>(fl, cx));
-        TRY_DEF(etype, value_to_type(args[1], fl, cx));
+        TRY_DEF(etype, CType::from_value(args[1], fl, cx));
         std::vector<int> axes;
         for (auto e : *xlist) {
             if (!e.is_num()) {
@@ -198,7 +198,7 @@ struct F_Array : public Curried_Function
                 return missing;
             axes.push_back(i);
         }
-        return {make_array_type(0, axes, etype)};
+        return make_array_type(0, axes, etype).to_value();
     }
     virtual bool validate_arg(unsigned i, Value a, Fail fl, const Context& cx)
     const override {

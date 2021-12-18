@@ -841,6 +841,7 @@ assert(string(Array[1](List Num)) == "Array[1](List Num)");
 assert(is (List Num) [] && is (List Char) "foo"
     && is (List Num) ([time,time]*time));
 assert(List Num == List Num && List Num != List Char);
+assert(List String == List (List Char));
 assert(String 42 == "42" && is String "foo");
 let S0=Struct{}; S1=Struct{a:Num}; S2=Struct{a:Num,b:Symbol} in (
     assert(S0==S0 && S0 != S1 && S1 != S0 && S1 != S2 && S2 != S1);

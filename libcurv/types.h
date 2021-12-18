@@ -20,15 +20,23 @@ struct CType : public Concrete_Value
     CType() : data_(nullptr) {}
     CType(Shared<const Type> data) : data_(std::move(data)) {}
     CType(Value v, const At_Syntax& cx) : data_(v.to<const Type>(cx)) {}
+    /*
     static CType from_value(Value v, const At_Syntax&)
       { return {v.maybe<const Type>()}; }
     static CType from_value(Value v, Fail fl, const At_Syntax&cx)
       { return {v.to<const Type>(fl,cx)}; }
+     */
+    static CType from_value(Value v, const At_Syntax& cx)
+      { return {value_to_type(v, Fail::soft, cx)}; }
+    static CType from_value(Value v, Fail fl, const At_Syntax& cx)
+      { return {value_to_type(v, fl, cx)}; }
     Value to_value() const { return Value{data_}; }
-    bool operator==(const CType& t) const
+    bool operator==(CType t) const
       { return Type::equal(*data_, *t.data_); }
-    void print_repr(std::ostream& o, Prec p) { data_->print_repr(o,p); }
-    void print_string(std::ostream& o) { data_->print_string(o); }
+    bool operator!=(CType t) const
+      { return !Type::equal(*data_, *t.data_); }
+    void print_repr(std::ostream& o, Prec p) const { data_->print_repr(o,p); }
+    void print_string(std::ostream& o) const { data_->print_string(o); }
     friend std::ostream& operator<<(std::ostream& o, CType t)
       { t.print_repr(o,Prec::item); return o; }
     explicit operator bool() const noexcept { return data_ != nullptr; }
@@ -99,8 +107,8 @@ struct Symbol_Type : public Type
 
 struct Tuple_Type : public Type
 {
-    std::vector<Shared<const Type>> elements_;
-    Tuple_Type(std::vector<Shared<const Type>> e)
+    std::vector<CType> elements_;
+    Tuple_Type(std::vector<CType> e)
       : Type(sty_tuple_type, Plex_Type::missing),
         elements_(std::move(e))
         {}
@@ -111,10 +119,10 @@ struct Tuple_Type : public Type
 struct Array_Type : public Type
 {
     unsigned count_;
-    Shared<const Type> elem_type_;
-    Array_Type(unsigned c, Shared<const Type> et)
+    CType elem_type_;
+    Array_Type(unsigned c, CType et)
     :
-        Type(sty_array_type, make_plex_type(c, et)),
+        Type(sty_array_type, make_plex_type(c, et.data_)),
         count_(c),
         elem_type_(et)
     {}
@@ -125,8 +133,8 @@ struct Array_Type : public Type
 
 struct List_Type : public Type
 {
-    Shared<const Type> elem_type_;
-    List_Type(Shared<const Type> et)
+    CType elem_type_;
+    List_Type(CType et)
     :
         Type(sty_list_type, Plex_Type::missing),
         elem_type_(et)

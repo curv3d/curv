@@ -47,7 +47,7 @@ SC_Type
 SC_Type::elem_type() const
 {
     auto t = cast<const Array_Type>(type_);
-    return {t ? t->elem_type_ : Type::Error()};
+    return {t ? t->elem_type_.data_ : Type::Error()};
 }
 
 unsigned SC_Type::count() const {
@@ -60,19 +60,19 @@ SC_Type SC_Type::Bool(unsigned n) {
     if (n == 1)
         return {Type::Bool()};
     assert(n >= 2 && n <= 4);
-    return {make<Array_Type>(n, Type::Bool())};
+    return {make<Array_Type>(n, CType{Type::Bool()})};
 }
 SC_Type SC_Type::Bool32(unsigned n) {
     if (n == 1)
         return {Type::Bool32()};
     assert(n >= 2 && n <= 4);
-    return {make<Array_Type>(n, Type::Bool32())};
+    return {make<Array_Type>(n, CType{Type::Bool32()})};
 }
 SC_Type SC_Type::Num(unsigned n) {
     if (n == 1)
         return {Type::Num()};
     assert(n >= 2 && n <= 4);
-    return {make<Array_Type>(n, Type::Num())};
+    return {make<Array_Type>(n, CType{Type::Num()})};
 }
 SC_Type SC_Type::Vec(SC_Type base, unsigned n) {
   #if !defined(NDEBUG)
@@ -82,17 +82,17 @@ SC_Type SC_Type::Vec(SC_Type base, unsigned n) {
            plex == Plex_Type::Num ||
            plex == Plex_Type::Bool32);
     assert(n >= 1 && n <= 4);
-    return {make<Array_Type>(n, base.type_)};
+    return {make<Array_Type>(n, CType{base.type_})};
 }
 SC_Type SC_Type::Mat(int n) {
     assert(n >= 2 && n <= 4);
-    return {make<Array_Type>(n, make<Array_Type>(n, Type::Num()))};
+    return {make<Array_Type>(n, CType{make<Array_Type>(n, CType{Type::Num()})})};
 }
 
 SC_Type
 SC_Type::Array(SC_Type etype, unsigned n)
 {
-    return {make<Array_Type>(n, etype.type_)};
+    return {make<Array_Type>(n, CType{etype.type_})};
 }
 
 SC_Type sc_unified_list_type(SC_Type a, SC_Type b, unsigned n)

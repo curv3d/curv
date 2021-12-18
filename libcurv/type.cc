@@ -103,20 +103,22 @@ bool Tuple_Type::contains(Value val, const At_Syntax& cx) const
     if (!list.is_list()) return false;
     if (list.size() != elements_.size()) return false;
     for (unsigned i = 0; i < elements_.size(); ++i) {
-        if (!elements_[i]->contains(list.val_at(i,cx), cx)) return false;
+        if (!elements_[i].contains(list.val_at(i,cx), cx)) return false;
     }
     return true;
 }
-void Tuple_Type::print_repr(std::ostream& out, Prec) const
+void Tuple_Type::print_repr(std::ostream& out, Prec rprec) const
 {
+    open_paren(out, rprec, Prec::postfix);
     out << "Tuple[";
     bool at_start = true;
     for (auto e : elements_) {
         if (!at_start) out << ",";
-        e->print_repr(out, Prec::item);
+        e.print_repr(out, Prec::item);
         at_start = false;
     }
     out << "]";
+    close_paren(out, rprec, Prec::postfix);
 }
 
 bool Array_Type::contains(Value val, const At_Syntax& cx) const
@@ -124,7 +126,7 @@ bool Array_Type::contains(Value val, const At_Syntax& cx) const
     Generic_List list(val);
     if (!list.is_list()) return false;
     if (list.size() != count_) return false;
-    return list.has_elem_type(*elem_type_, cx);
+    return list.has_elem_type(*elem_type_.data_, cx);
 }
 void Array_Type::print_repr(std::ostream& out, Prec rprec) const
 {
@@ -132,12 +134,12 @@ void Array_Type::print_repr(std::ostream& out, Prec rprec) const
     out << "Array[" << count_;
     auto ety = elem_type_;
     for (;;) {
-        if (auto aty = cast<const Array_Type>(ety)) {
+        if (auto aty = cast<const Array_Type>(ety.data_)) {
             out << "," << aty->count_;
             ety = aty->elem_type_;
         } else {
             out << "]";
-            ety->print_repr(out, Prec::primary);
+            ety.print_repr(out, Prec::primary);
             break;
         }
     }
@@ -148,13 +150,13 @@ bool List_Type::contains(Value val, const At_Syntax& cx) const
 {
     Generic_List list(val);
     if (!list.is_list()) return false;
-    return list.has_elem_type(*elem_type_, cx);
+    return list.has_elem_type(*elem_type_.data_, cx);
 }
 void List_Type::print_repr(std::ostream& out, Prec rprec) const
 {
     open_paren(out, rprec, Prec::postfix);
     out << "List ";
-    elem_type_->print_repr(out, Prec::primary);
+    elem_type_.print_repr(out, Prec::primary);
     close_paren(out, rprec, Prec::postfix);
 };
 
@@ -292,7 +294,7 @@ bool Type::equal(const Type& t1, const Type& t2)
         auto l1 = (const Array_Type*)(&t1);
         auto l2 = (const Array_Type*)(&t2);
         return l1->count_ == l2->count_
-            && equal(*l1->elem_type_, *l2->elem_type_);
+            && l1->elem_type_ == l2->elem_type_;
     }
     if (t1.subtype_ == Ref_Value::sty_tuple_type) {
         auto tt1 = (const Tuple_Type*)(&t1);
@@ -300,7 +302,7 @@ bool Type::equal(const Type& t1, const Type& t2)
         if (tt1->elements_.size() != tt2->elements_.size())
             return false;
         for (unsigned i = 0; i < tt1->elements_.size(); ++i) {
-            if (!Type::equal(*tt1->elements_[i], *tt2->elements_[i]))
+            if (tt1->elements_[i] != tt2->elements_[i])
                 return false;
         }
         return true;
@@ -308,7 +310,7 @@ bool Type::equal(const Type& t1, const Type& t2)
     if (t1.subtype_ == Ref_Value::sty_list_type) {
         auto l1 = (const List_Type*)(&t1);
         auto l2 = (const List_Type*)(&t2);
-        return equal(*l1->elem_type_, *l2->elem_type_);
+        return l1->elem_type_ == l2->elem_type_;
     }
     if (t1.subtype_ == Ref_Value::sty_struct_type) {
         auto st1 = (const Struct_Type*)(&t1);
@@ -329,7 +331,7 @@ unsigned Type::rank() const
     unsigned rank = 0;
     while (t->subtype_ == Ref_Value::sty_array_type)
     {
-        t = &*((const Array_Type*)(t))->elem_type_;
+        t = &*((const Array_Type*)(t))->elem_type_.data_;
         ++rank;
     }
     return rank;
@@ -341,7 +343,7 @@ Shared<const Type> Type::plex_array_base() const
     while (t->subtype_ == Ref_Value::sty_array_type
            && t->plex_type_ == Plex_Type::missing)
     {
-        t = &*((const Array_Type*)(t))->elem_type_;
+        t = &*((const Array_Type*)(t))->elem_type_.data_;
     }
     return share(*t);
 }
@@ -353,7 +355,7 @@ unsigned Type::plex_array_rank() const
     while (t->subtype_ == Ref_Value::sty_array_type
            && t->plex_type_ == Plex_Type::missing)
     {
-        t = &*((const Array_Type*)(t))->elem_type_;
+        t = &*((const Array_Type*)(t))->elem_type_.data_;
         ++rank;
     }
     return rank;
@@ -370,7 +372,7 @@ unsigned Type::plex_array_dim(unsigned i) const
     {
         auto li = (const Array_Type*)(t);
         dims.push_back(li->count_);
-        t = &*li->elem_type_;
+        t = &*li->elem_type_.data_;
     }
     return dims.at(i);
 }
