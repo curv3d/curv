@@ -5,9 +5,10 @@
 #ifndef LIBCURV_LOCATION_H
 #define LIBCURV_LOCATION_H
 
+#include <libcurv/fname.h>
+#include <libcurv/range.h>
 #include <libcurv/source.h>
 #include <libcurv/token.h>
-#include <libcurv/range.h>
 #include <ostream>
 
 namespace curv {
@@ -72,6 +73,39 @@ public:
         unsigned start_line_begin;
     };
     Line_Info line_info() const;
+};
+
+// A Func_Loc is location data used to print an element of a stack trace.
+struct Func_Loc
+{
+    Func_Loc(Src_Loc srcloc)
+    :
+        srcloc_(srcloc)
+    {}
+    Func_Loc(FName fn, Src_Loc srcloc)
+    :
+        fname_(fn), srcloc_(srcloc)
+    {}
+    // Name of function whose definition lexically encloses the srcloc, or null.
+    // This function is determined dynamically (taken from the stack frame).
+    // In theory, we could have statically associated the name of the enclosing
+    // function to the srcloc at parse or analysis time. But that's inadequate
+    // if there are several aliases referring to the same lexical function
+    // definition. In that case, we want dynamic information, so we can report
+    // the function name used in the function call.
+    FName fname_;
+    // Source code location of a phrase that caused a run time panic, or
+    // that was a function call on the stack at the time of the panic.
+    // It may be a function call, in which case, the function is `fname_`.
+    Src_Loc srcloc_;
+
+    // Output a stack trace element, which is printed as part of
+    // an exception message (no final newline). See Exception::write().
+    // The `colour` flag enables colour text using ANSI ESC sequences.
+    // The `many` flag is true if the stack trace has more than one element.
+    void write(std::ostream&, bool colour, bool many) const;
+
+    void write_json(std::ostream&) const;
 };
 
 } // namespace curv

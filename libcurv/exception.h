@@ -8,7 +8,7 @@
 #include <exception>
 #include <list>
 #include <ostream>
-#include <libcurv/func_loc.h>
+#include <libcurv/location.h>
 #include <libcurv/string.h>
 
 namespace curv {

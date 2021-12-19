@@ -6,8 +6,8 @@
 #define LIBCURV_CONTEXT_H
 
 #include <list>
-#include <libcurv/func_loc.h>
 #include <libcurv/frame.h>
+#include <libcurv/location.h>
 
 namespace curv {
 
