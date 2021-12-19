@@ -6,14 +6,13 @@
 #define LIBCURV_SHAPE_H
 
 #include <libcurv/frame.h>
-#include <libcurv/sc_compiler.h>
+#include <libcurv/function.h>
 #include <libcurv/location.h>
 #include <libcurv/vec.h>
 #include <cmath>
 
 namespace curv {
 
-struct Function;
 struct Context;
 struct System;
 struct Program;

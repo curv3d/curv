@@ -23,11 +23,17 @@ At_SC_Frame::rewrite_message(Shared<const String> msg) const
     return sc_frame_rewrite_message(&call_frame_, msg);
 }
 
-Shared<const Function> sc_frame_caller(const SC_Frame& f)
+FName sc_frame_caller(const SC_Frame& f)
 {
     if (auto pf = f.parent_frame_)
-        return pf->func_;
-    return nullptr;
+        return pf->func_->fname_;
+    return {};
+}
+FName sc_frame_func(const SC_Frame& fm)
+{
+    if (auto pf = fm.func_)
+        return pf->fname_;
+    return {};
 }
 void
 get_sc_frame_locations(const SC_Frame* f, std::list<Func_Loc>& locs)
@@ -59,7 +65,7 @@ void
 At_SC_Phrase::get_locations(std::list<Func_Loc>& locs) const
 {
     if (phrase_)
-        locs.emplace_back(call_frame_.func_, phrase_->location());
+        locs.emplace_back(sc_frame_func(call_frame_), phrase_->location());
     get_sc_frame_locations(&call_frame_, locs);
 }
 System& At_SC_Phrase::system() const { return call_frame_.sc_.sstate_.system_; }

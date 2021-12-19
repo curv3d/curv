@@ -5,15 +5,15 @@
 #ifndef LIBCURV_SC_COMPILER_H
 #define LIBCURV_SC_COMPILER_H
 
+#include <libcurv/function.h>
+#include <libcurv/meaning.h>
+#include <libcurv/sc_frame.h>
 #include <unordered_map>
 #include <vector>
-#include <libcurv/sc_frame.h>
-#include <libcurv/meaning.h>
 
 namespace curv {
 
 struct Context;
-struct Function;
 
 /// SubCurv is a low level, strongly-typed subset of Curv
 /// that can be efficiently translated into a low level language (currently

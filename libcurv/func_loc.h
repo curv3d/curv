@@ -6,7 +6,7 @@
 #define LIBCURV_FUNC_LOC_H
 
 #include <libcurv/location.h>
-#include <libcurv/function.h>
+#include <libcurv/fname.h>
 
 namespace curv {
 
@@ -15,21 +15,20 @@ struct Func_Loc
 {
     Func_Loc(Src_Loc srcloc)
     :
-        func_(nullptr), srcloc_(srcloc)
+        srcloc_(srcloc)
     {}
-    Func_Loc(Shared<const Function> func, Src_Loc srcloc)
+    Func_Loc(FName fn, Src_Loc srcloc)
     :
-        func_(func), srcloc_(srcloc)
+        fname_(fn), srcloc_(srcloc)
     {}
-    // Function whose definition lexically encloses the srcloc, or null.
+    // Name of function whose definition lexically encloses the srcloc, or null.
     // This function is determined dynamically (taken from the stack frame).
-    // The thing we want from the function is its name (aka its metadata).
     // In theory, we could have statically associated the name of the enclosing
     // function to the srcloc at parse or analysis time. But that's inadequate
     // if there are several aliases referring to the same lexical function
     // definition. In that case, we want dynamic information, so we can report
     // the function name used in the function call.
-    Shared<const Function> func_;
+    FName fname_;
     // Source code location of a phrase that caused a run time panic, or
     // that was a function call on the stack at the time of the panic.
     // It may be a function call, in which case, the function is `func_`.

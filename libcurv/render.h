@@ -13,7 +13,6 @@ namespace curv {
 
 struct Record;
 struct Context;
-struct Function;
 
 struct Render_Opts
 {

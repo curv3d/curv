@@ -5,6 +5,7 @@
 #ifndef LIBCURV_MEANINGS_H
 #define LIBCURV_MEANINGS_H
 
+#include <libcurv/function.h>
 #include <libcurv/list.h>
 #include <libcurv/meaning.h>
 #include <libcurv/pattern.h>
@@ -13,8 +14,6 @@
 #include <vector>
 
 namespace curv {
-
-struct Lambda;
 
 // Execute statements in a context like a `do` expression,
 // where only pure actions are permitted.

@@ -9,6 +9,7 @@
 #include <libcurv/format.h>
 #include <libcurv/function.h>
 #include <libcurv/glsl.h>
+#include <libcurv/sc_compiler.h>
 #include <libcurv/shape.h>
 #include <cmath>
 

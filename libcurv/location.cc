@@ -184,13 +184,12 @@ Func_Loc::write(std::ostream& out, bool colour, bool many) const
     }
 
     // Output filename and function name, followed by newline.
-    if (many || !srcloc_.filename().empty() || (func_ && func_->fname_)) {
+    if (many || !srcloc_.filename().empty() || fname_) {
         out << "at";
         if (!srcloc_.filename().empty())
             out << " file \"" << srcloc_.filename() << "\"";
-        if (func_ && func_->fname_) {
-            out << " function " << func_->fname_;
-        }
+        if (fname_)
+            out << " function " << fname_;
         out << ":\n";
     }
 
