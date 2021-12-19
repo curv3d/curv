@@ -6,6 +6,7 @@
 #define LIBCURV_FUNCTION_H
 
 #include <libcurv/fail.h>
+#include <libcurv/fname.h>
 #include <libcurv/list.h>
 #include <libcurv/meaning.h>
 #include <libcurv/pattern.h>
@@ -22,19 +23,14 @@ struct Function : public Ref_Value
     // size of call frame
     slot_t nslots_;
 
-    // Suppose this function is the result of partial application of a named
-    // function. Then this is the # of arguments that were applied to get here,
-    // and `name_` is the name of the base function.
-    unsigned argpos_ = 0;
-
-    // optional name of function
-    Symbol_Ref name_{};
+    // name of function (optional)
+    FName fname_{};
 
     Function(slot_t nslots, Symbol_Ref name)
     :
         Ref_Value(ty_function),
         nslots_(nslots),
-        name_(name)
+        fname_(name)
     {
     }
 
@@ -233,8 +229,8 @@ struct Closure : public Function
         expr_(lambda.expr_),
         nonlocals_(share(const_cast<Module&>(nonlocals)))
     {
-        name_ = lambda.name_;
-        argpos_ = lambda.argpos_;
+        fname_.name_ = lambda.name_;
+        fname_.argpos_ = lambda.argpos_;
     }
 
     void print_help(std::ostream&) const override;

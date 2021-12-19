@@ -1169,8 +1169,8 @@ struct F_match : public Function
             cases.push_back(fn);
         }
         auto mf = make<Piecewise_Function>(cases);
-        mf->name_ = name_;
-        mf->argpos_ = 1;
+        mf->fname_.name_ = fname_.name_;
+        mf->fname_.argpos_ = 1;
         return {mf};
     }
 };
@@ -1188,8 +1188,8 @@ struct F_compose : public Function
             cases.push_back(fn);
         }
         auto mf = make<Composite_Function>(cases);
-        mf->name_ = name_;
-        mf->argpos_ = 1;
+        mf->fname_.name_ = fname_.name_;
+        mf->fname_.argpos_ = 1;
         return {mf};
     }
 };

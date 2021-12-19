@@ -772,8 +772,8 @@ Lambda_Expr::eval(Frame& fm) const
         body_,
         nonlocals_->eval_module(fm),
         nslots_);
-    c->name_ = name_;
-    c->argpos_ = argpos_;
+    c->fname_.name_ = name_;
+    c->fname_.argpos_ = argpos_;
     return Value{c};
 }
 

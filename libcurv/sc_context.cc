@@ -96,10 +96,10 @@ At_SC_Arg_Expr::get_locations(std::list<Func_Loc>& locs) const
 Shared<const String>
 At_SC_Arg_Expr::rewrite_message(Shared<const String> msg) const
 {
-    if (func_.name_.empty())
+    if (!func_.fname_)
         msg = stringify("function argument: ",msg);
     else
-       msg = stringify("argument #",func_.argpos_+1," of ",func_.name_,": ",msg);
+       msg = stringify("argument #",func_.fname_.argpos_+1," of ",func_.fname_.name_,": ",msg);
     return sc_frame_rewrite_message(&parent_frame_, msg);
 }
 System&

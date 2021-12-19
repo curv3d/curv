@@ -178,9 +178,9 @@ const Phrase& At_Arg::syntax() const
 Shared<const String>
 At_Arg::rewrite_message(Shared<const String> msg) const
 {
-    if (func_.name_.empty())
+    if (!func_.fname_)
         return stringify("function argument: ",msg);
-    return stringify("argument #",func_.argpos_+1," of ",func_.name_,": ",msg);
+    return stringify("argument #",func_.fname_.argpos_+1," of ",func_.fname_.name_,": ",msg);
 }
 
 // At_Metacall

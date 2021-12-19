@@ -45,11 +45,8 @@ void
 Function::print_repr(std::ostream& out, Prec) const
 {
     out << "<function";
-    if (!name_.empty()) {
-        out << " " << name_;
-        for (unsigned i = 0; i < argpos_; ++i)
-            out << " _";
-    }
+    if (fname_)
+        out << " " << fname_;
     out << ">";
 }
 
@@ -88,8 +85,8 @@ Curried_Function::call(Value arg, Fail fl, Frame& fm) const
     if (!validate_arg(0, arg, fl, At_Arg(*this, fm)))
         return missing;
     Shared<Partial_Application> pa =
-        Partial_Application::make({arg}, nargs(), name_, share(*this));
-    pa->argpos_ = 1;
+        Partial_Application::make({arg}, nargs(), fname_.name_, share(*this));
+    pa->fname_.argpos_ = 1;
     return {pa};
 }
 bool
@@ -101,20 +98,20 @@ Curried_Function::validate_arg(unsigned, Value, Fail, const Context&) const
 Value
 Partial_Application_Base::call(Value arg, Fail fl, Frame& fm) const
 {
-    if (argpos_ == nargs() - 1) {
-        for (unsigned i = 0; i < argpos_; ++i)
+    if (fname_.argpos_ == nargs() - 1) {
+        for (unsigned i = 0; i < fname_.argpos_; ++i)
             fm[i] = array_[i];
-        fm[argpos_] = arg;
+        fm[fname_.argpos_] = arg;
         return cfunc_->ccall(*this, fl, fm);
     } else {
         Shared<Partial_Application> pa = Partial_Application::make(
-            argpos_+1, nargs(), name_, cfunc_);
-        for (unsigned i = 0; i < argpos_; ++i)
+            fname_.argpos_+1, nargs(), fname_.name_, cfunc_);
+        for (unsigned i = 0; i < fname_.argpos_; ++i)
             pa->array_[i] = array_[i];
-        if (!cfunc_->validate_arg(argpos_, arg, fl, At_Arg(*this, fm)))
+        if (!cfunc_->validate_arg(fname_.argpos_, arg, fl, At_Arg(*this, fm)))
             return missing;
-        pa->array_[argpos_] = arg;
-        pa->argpos_ = argpos_+1;
+        pa->array_[fname_.argpos_] = arg;
+        pa->fname_.argpos_ = fname_.argpos_ + 1;
         return {pa};
     }
 }
