@@ -168,10 +168,8 @@ struct Predicate_Pattern : public Pattern
             return type->contains(arg, cx);
         }
         if (auto fun = maybe_function(val, cx)) {
-            std::unique_ptr<Frame> f2 {
-                Frame::make(fun->nslots_, fm.sstate_, &fm,
-                    fm.func_, call_phrase())
-            };
+            std::unique_ptr<Frame> f2 = make_tail_array<Frame>(fun->nslots_,
+                fm.sstate_, &fm, fm.func_, call_phrase());
             auto result = fun->call(arg, Fail::hard, *f2);
             return result.to_bool(At_Phrase(*call_phrase(), fm));
         }
@@ -618,7 +616,8 @@ record_pattern_each_parameter(
     const Closure& call, Source_State& sstate,
     std::function<void(Symbol_Ref, Value, Value, Shared<const Phrase>)> f)
 {
-    auto frame = Frame::make(call.nslots_, sstate, nullptr, nullptr, nullptr);
+    auto frame = make_tail_array<Frame>(call.nslots_,
+        sstate, nullptr, nullptr, nullptr);
     auto rpat = dynamic_cast<const Record_Pattern*>(&*call.pattern_);
     if (rpat == nullptr)
         throw Exception(At_Phrase(*call.pattern_->syntax_, *frame),

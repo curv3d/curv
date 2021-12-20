@@ -108,7 +108,7 @@ public: \
 ///   don't support variable-size objects.
 /// * You can't assign to it, copy it or move it.
 template<class Base>
-class Tail_Array final : public Base
+class Tail_Array : public Base
 {
     using _value_type = typename Base::value_type;
 public:
@@ -282,7 +282,7 @@ public:
         free(p);
     }
 
-private:
+public:
     using Base::Base; // no public constructors
     Tail_Array& operator=(Tail_Array const&) = delete;
     Tail_Array& operator=(Tail_Array &&) = delete;
@@ -305,6 +305,40 @@ private:
         }
     }
 };
+
+/// Construct a tail array. Array elements are default constructed.
+template<typename TA, typename... Rest>
+std::unique_ptr<TA> make_tail_array(size_t size, Rest&&... rest)
+{
+    using value_type = typename TA::value_type;
+    // allocate the object
+    void* mem = malloc(sizeof(TA) + size*sizeof(value_type));
+    if (mem == nullptr)
+        throw std::bad_alloc();
+    TA* r = (TA*)mem;
+
+    // construct the array elements
+    if (!std::is_trivially_default_constructible<value_type>::value) {
+        static_assert(
+            std::is_nothrow_default_constructible<value_type>::value,
+            "value_type default constructor must be declared noexcept");
+        for (size_t i = 0; i < size; ++i)
+        {
+            new((void*)&r->array_[i]) value_type();
+        }
+    }
+
+    // then construct the rest of the object
+    try {
+        new(mem) TA(std::forward<Rest>(rest)...);
+        r->size_ = size;
+    } catch(...) {
+        r->destroy_array(size);
+        free(mem);
+        throw;
+    }
+    return std::unique_ptr<TA>(r);
+}
 
 } // namespace
 #endif // header guard

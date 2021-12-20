@@ -29,8 +29,7 @@ struct Source_State;
 /// A program (source file) has a frame for evaluating the top level
 /// program expression.
 /// Calls to builtin and user-defined functions have call frames.
-using Frame = Tail_Array<Frame_Base>;
-
+struct Frame;
 struct Frame_Base
 {
     // sstate_ contains shared state for processing the current source file,
@@ -94,6 +93,10 @@ struct Frame_Base
 
     Frame_Base(Source_State&, Frame* parent,
         Shared<const Function> caller, Shared<const Phrase> call_phrase);
+};
+struct Frame final : public Tail_Array<Frame_Base>
+{
+    using Tail_Array<Frame_Base>::Tail_Array;
 };
 
 // Shared state while analysing/evaluating a source file.

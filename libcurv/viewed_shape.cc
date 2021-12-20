@@ -101,10 +101,9 @@ Viewed_Shape::Viewed_Shape(const Shape_Program& shape, const Render_Opts& opts)
                     cparams->fields_[name] = value;
                 }
             });
-        std::unique_ptr<Frame> f2 {
-            Frame::make(sh_constructor->nslots_, shape.sstate_, nullptr,
-                nullptr, nullptr)
-        };
+        std::unique_ptr<Frame> f2 = make_tail_array<Frame>(
+            sh_constructor->nslots_, shape.sstate_, nullptr,
+            nullptr, nullptr);
         Value result = sh_constructor->call({cparams}, Fail::hard, *f2);
         //std::cerr << "parametric shape: " << result << "\n";
 

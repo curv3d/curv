@@ -47,8 +47,8 @@ std_eval(const Phrase& ph, Environ& env)
     Builtin_Environ benv(
         env.sstate_.system_.std_namespace(), env.sstate_);
     auto op = analyse_op(ph, benv);
-    auto frame = Frame::make(benv.frame_maxslots_, env.sstate_,
-        env.sstate_.file_frame_, nullptr, nullptr);
+    auto frame = make_tail_array<Frame>(benv.frame_maxslots_,
+        env.sstate_, env.sstate_.file_frame_, nullptr, nullptr);
     return op->eval(*frame);
 }
 

@@ -1243,8 +1243,8 @@ struct File_Expr : public Just_Expression
         // Each call to `file pathname` has its own stack frame,
         // which permits calls to `file pathname` to appear in stack traces.
         auto& callphrase = dynamic_cast<const Call_Phrase&>(*syntax_);
-        std::unique_ptr<Frame> f2 =
-            Frame::make(0, fm.sstate_, &fm, fm.func_, &callphrase);
+        std::unique_ptr<Frame> f2 = make_tail_array<Frame>(0,
+            fm.sstate_, &fm, fm.func_, &callphrase);
         At_Metacall_With_Call_Frame cx("file", 0, *f2);
 
         // construct file pathname from argument

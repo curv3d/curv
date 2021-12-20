@@ -42,8 +42,8 @@ Program::compile(Shared<const Source> source, Scanner_Opts scopts,
     } else {
         meaning_ = phrase_->analyse(env, terp);
     }
-    frame_ = {Frame::make(env.frame_maxslots_, sstate_, sstate_.file_frame_,
-        nullptr, nullptr)};
+    frame_ = {make_tail_array<Frame>(env.frame_maxslots_,
+        sstate_, sstate_.file_frame_, nullptr, nullptr)};
 }
 
 void
