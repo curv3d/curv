@@ -34,14 +34,12 @@ inline std::ostream& operator<<(std::ostream& out, SC_Value v)
     return out;
 }
 
-struct SC_Frame_Base;
-using SC_Frame = Tail_Array<SC_Frame_Base>;
-
-/// A function call frame used by the Shape Compiler.
+/// SC_Frame: A function call frame used by the Shape Compiler.
 ///
 /// The SC compilation process is a kind of abstract evaluation.
 /// That's really clear when you see that SC_Frame is isomorphic to Frame,
 /// with local slot Values replaced by SC_Values.
+struct SC_Frame;
 struct SC_Frame_Base
 {
     SC_Compiler& sc_;
@@ -89,6 +87,10 @@ struct SC_Frame_Base
         SC_Frame* parent,
         Shared<const Function> func,
         Shared<const Phrase> src);
+};
+struct SC_Frame final : public Tail_Array<SC_Frame_Base>
+{
+    using Tail_Array<SC_Frame_Base>::Tail_Array;
 };
 
 } // namespace

@@ -137,7 +137,7 @@ Tuple_Function::sc_call_expr(
     Operation& arg, Shared<const Phrase> call_phrase, SC_Frame& fm)
 const
 {
-    auto f2 = SC_Frame::make(nslots_, fm.sc_, nullptr, &fm,
+    auto f2 = make_tail_array<SC_Frame>(nslots_, fm.sc_, nullptr, &fm,
         share(*this), call_phrase);
     if (nargs_ == 1)
         (*f2)[0] = sc_eval_op(fm, arg);
@@ -208,7 +208,7 @@ SC_Value
 Closure::sc_call_expr(Operation& arg, Shared<const Phrase> cp, SC_Frame& fm) const
 {
     // create a frame to call this closure
-    auto f2 = SC_Frame::make(nslots_, fm.sc_, nullptr, &fm,
+    auto f2 = make_tail_array<SC_Frame>(nslots_, fm.sc_, nullptr, &fm,
         share(*this), cp);
     f2->nonlocals_ = &*nonlocals_;
     // match pattern against argument, store formal parameters in frame
