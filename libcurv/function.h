@@ -165,7 +165,10 @@ struct Partial_Application_Base : public Function
     Shared<const Curried_Function> cfunc_;
     TAIL_ARRAY_MEMBERS(Value)
 };
-using Partial_Application = Tail_Array<Partial_Application_Base>;
+struct Partial_Application : public Tail_Array<Partial_Application_Base>
+{
+    using Tail_Array<Partial_Application_Base>::Tail_Array;
+};
 
 /// The run-time representation of a compiled lambda expression.
 ///

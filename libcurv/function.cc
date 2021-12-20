@@ -85,8 +85,8 @@ Curried_Function::call(Value arg, Fail fl, Frame& fm) const
 {
     if (!validate_arg(0, arg, fl, At_Arg(*this, fm)))
         return missing;
-    Shared<Partial_Application> pa =
-        Partial_Application::make({arg}, nargs(), fname_.name_, share(*this));
+    Shared<Partial_Application> pa = make_tail_array<Partial_Application>
+        ({arg}, nargs(), fname_.name_, share(*this));
     pa->fname_.argpos_ = 1;
     return {pa};
 }
@@ -105,8 +105,8 @@ Partial_Application_Base::call(Value arg, Fail fl, Frame& fm) const
         fm[fname_.argpos_] = arg;
         return cfunc_->ccall(*this, fl, fm);
     } else {
-        Shared<Partial_Application> pa = Partial_Application::make(
-            fname_.argpos_+1, nargs(), fname_.name_, cfunc_);
+        Shared<Partial_Application> pa = make_tail_array<Partial_Application>
+            (fname_.argpos_+1, nargs(), fname_.name_, cfunc_);
         for (unsigned i = 0; i < fname_.argpos_; ++i)
             pa->array_[i] = array_[i];
         if (!cfunc_->validate_arg(fname_.argpos_, arg, fl, At_Arg(*this, fm)))

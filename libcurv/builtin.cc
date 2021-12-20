@@ -911,7 +911,7 @@ Value F_dot::dot(Value a, Value b, Fail fl, const At_Arg& cx) const
         rty = aty;
     else
         throw Exception(cx, stringify("dot[",a,",",b,"]: invalid arguments"));
-    Shared<List_Expr> args = List_Expr::make(
+    Shared<List_Expr> args = make_tail_array<List_Expr>(
         {to_expr(a, cx.syntax()), to_expr(b, cx.syntax())},
         share(cx.syntax()));
     args->init();
@@ -953,8 +953,8 @@ struct F_mag : public Tuple_Function
                 arg_op = rx->expr();
         } else {
             TRY_DEF(list, args[0].to<List>(fl, At_Arg(*this, args)));
-            Shared<List_Expr> rlist =
-                List_Expr::make(list->size(),arg_part(args.call_phrase_));
+            Shared<List_Expr> rlist = make_tail_array<List_Expr>
+                (list->size(),arg_part(args.call_phrase_));
             arg_op = rlist;
             for (unsigned i = 0; i < list->size(); ++i) {
                 Value val = list->at(i);

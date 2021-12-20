@@ -346,7 +346,10 @@ struct List_Expr_Base : public Just_Expression
     virtual void print_repr(std::ostream&, Prec) const override;
     TAIL_ARRAY_MEMBERS(Shared<Operation>)
 };
-using List_Expr = Tail_Array<List_Expr_Base>;
+struct List_Expr : public Tail_Array<List_Expr_Base>
+{
+    using Tail_Array<List_Expr_Base>::Tail_Array;
+};
 
 struct Paren_List_Expr_Base : public List_Expr_Base
 {

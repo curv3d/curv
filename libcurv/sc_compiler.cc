@@ -112,7 +112,7 @@ SC_Compiler::define_function(
     if (params.size() == 1)
         arg_expr = make<SC_Data_Ref>(nullptr, params[0]);
     else {
-        auto param_list = List_Expr::make(params.size(),nullptr);
+        auto param_list = make_tail_array<List_Expr>(params.size(),nullptr);
         for (unsigned i = 0; i < params.size(); ++i) {
             param_list->at(i) = make<SC_Data_Ref>(nullptr, params[i]);
         }
