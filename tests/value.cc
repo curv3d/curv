@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #undef FAIL
 #include <libcurv/value.h>
+#include <libcurv/frame.h>
 #include <libcurv/function.h>
 #include <libcurv/string.h>
 #include <libcurv/context.h>

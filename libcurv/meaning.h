@@ -5,14 +5,15 @@
 #ifndef LIBCURV_MEANING_H
 #define LIBCURV_MEANING_H
 
-#include <libcurv/frame.h>
 #include <libcurv/phrase.h>
 #include <libcurv/sc_frame.h>
+#include <libcurv/sstate.h>
 #include <libcurv/symbol.h>
 #include <libcurv/value.h>
 
 namespace curv {
 
+struct Frame;
 struct Operation;
 
 // An abstract base class representing a semantically analysed Phrase.

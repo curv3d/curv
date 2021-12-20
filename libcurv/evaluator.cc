@@ -4,6 +4,7 @@
 
 #include <libcurv/context.h>
 #include <libcurv/exception.h>
+#include <libcurv/frame.h>
 #include <libcurv/function.h>
 #include <libcurv/tree.h>
 #include <libcurv/list.h>

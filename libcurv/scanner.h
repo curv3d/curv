@@ -8,7 +8,7 @@
 #include <vector>
 #include <libcurv/source.h>
 #include <libcurv/token.h>
-#include <libcurv/frame.h>
+#include <libcurv/sstate.h>
 
 namespace curv {
 

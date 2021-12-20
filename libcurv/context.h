@@ -5,15 +5,18 @@
 #ifndef LIBCURV_CONTEXT_H
 #define LIBCURV_CONTEXT_H
 
-#include <list>
-#include <libcurv/frame.h>
 #include <libcurv/location.h>
+#include <libcurv/sstate.h>
+#include <list>
 
 namespace curv {
 
 struct Phrase;
 struct Environ;
+struct Function;
+struct Frame;
 struct Scanner;
+struct SState;
 struct System;
 
 /// The primary use of a Context is to describe the source code Location and

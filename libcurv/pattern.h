@@ -5,19 +5,20 @@
 #ifndef LIBCURV_PATTERN_H
 #define LIBCURV_PATTERN_H
 
-#include <libcurv/value.h>
-#include <libcurv/frame.h>
+#include <libcurv/phrase.h>
 #include <libcurv/sc_frame.h>
+#include <libcurv/sstate.h>
+#include <libcurv/value.h>
 
 namespace curv {
 
-struct Environ;
-struct Scope;
-struct Phrase;
-struct Context;
-struct Record;
 struct Closure;
+struct Context;
+struct Environ;
+struct Frame;
 struct Operation;
+struct Record;
+struct Scope;
 
 struct Pattern : public Shared_Base
 {

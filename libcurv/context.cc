@@ -4,6 +4,7 @@
 
 #include <libcurv/analyser.h>
 #include <libcurv/context.h>
+#include <libcurv/frame.h>
 #include <libcurv/scanner.h>
 #include <libcurv/exception.h>
 

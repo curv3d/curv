@@ -16,6 +16,7 @@
 namespace curv {
 
 struct Context;
+struct Frame;
 
 /// A function value.
 struct Function : public Ref_Value

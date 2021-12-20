@@ -8,6 +8,7 @@
 #include <libcurv/definition.h>
 #include <libcurv/die.h>
 #include <libcurv/exception.h>
+#include <libcurv/frame.h>
 #include <libcurv/function.h>
 #include <libcurv/phrase.h>
 #include <libcurv/prim_expr.h>

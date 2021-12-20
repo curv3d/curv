@@ -5,8 +5,10 @@
 #ifndef LIBCURV_ANALYSER_H
 #define LIBCURV_ANALYSER_H
 
-#include <libcurv/meaning.h>
 #include <libcurv/builtin.h>
+#include <libcurv/meaning.h>
+#include <libcurv/slot.h>
+#include <libcurv/sstate.h>
 
 namespace curv {
 

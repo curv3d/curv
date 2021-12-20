@@ -5,6 +5,7 @@
 #include <libcurv/vec.h>
 
 #include <libcurv/context.h>
+#include <libcurv/list.h>
 
 namespace curv {
 
