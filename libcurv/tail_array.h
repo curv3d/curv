@@ -306,7 +306,7 @@ public:
     }
 };
 
-/// Construct a tail array. Array elements are default constructed.
+// Construct a tail array. Array elements are default constructed.
 template<typename TA, typename... Rest>
 std::unique_ptr<TA> make_tail_array(size_t size, Rest&&... rest)
 {
@@ -338,6 +338,53 @@ std::unique_ptr<TA> make_tail_array(size_t size, Rest&&... rest)
         throw;
     }
     return std::unique_ptr<TA>(r);
+}
+
+// Construct a tail array. Copy array elements from another array.
+template<typename T, typename... Rest>
+std::unique_ptr<T> copy_tail_array(
+    const typename T::value_type* a, size_t size, Rest&&... rest)
+{
+    using value_type = typename T::value_type;
+
+    // allocate the object
+    void* mem = malloc(sizeof(T) + size*sizeof(value_type));
+    if (mem == nullptr)
+        throw std::bad_alloc();
+    T* r = (T*)mem;
+
+    // construct the array elements
+    if (std::is_trivially_copy_constructible<value_type>::value) {
+        memcpy((void*)r->array_, (void*)a, size*sizeof(value_type));
+    } else if (std::is_nothrow_copy_constructible<value_type>::value) {
+        for (size_t i = 0; i < size; ++i)
+        {
+            new((void*)&r->array_[i]) value_type(a[i]);
+        }
+    } else {
+        size_t i = 0;
+        try {
+            while (i < size) {
+                new((void*)&r->array_[i]) value_type(a[i]);
+                ++i;
+            }
+        } catch (...) {
+            r->destroy_array(i);
+            free(mem);
+            throw;
+        }
+    }
+
+    // then construct the rest of the object
+    try {
+        new(mem) T(std::forward<Rest>(rest)...);
+        r->size_ = size;
+    } catch(...) {
+        r->destroy_array(size);
+        free(mem);
+        throw;
+    }
+    return std::unique_ptr<T>(r);
 }
 
 } // namespace

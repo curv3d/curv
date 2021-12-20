@@ -511,8 +511,8 @@ Scope_Executable::eval_module(Frame& fm) const
     assert(module_slot_ != (slot_t)(-1));
     assert(module_dictionary_ != nullptr);
 
-    Shared<Module> module =
-        Module::make(module_dictionary_->size(), module_dictionary_);
+    Shared<Module> module = make_tail_array<Module>
+        (module_dictionary_->size(), module_dictionary_);
     fm[module_slot_] = {module};
     Action_Executor aex;
     for (auto action : actions_)
@@ -604,7 +604,8 @@ Module_Expr::eval(Frame& fm) const
 Shared<Module>
 Enum_Module_Expr::eval_module(Frame& fm) const
 {
-    Shared<Module> module = Module::make(exprs_.size(), dictionary_);
+    Shared<Module> module = make_tail_array<Module>
+        (exprs_.size(), dictionary_);
     for (size_t i = 0; i < exprs_.size(); ++i)
         module->at(i) = exprs_[i]->eval(fm);
     return module;

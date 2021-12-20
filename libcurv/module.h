@@ -18,6 +18,7 @@ namespace curv {
 ///
 /// Each module value constructed from the same module literal shares the
 /// same dictionary. Only the value list is different.
+struct Module;
 struct Module_Base : public Record
 {
     /// A Dictionary maps field names onto slot indexes.
@@ -136,14 +137,16 @@ struct Module_Base : public Record
         return std::make_unique<Iter>(*this);
     }
 
-protected:
+public:
     // interface used by Tail_Array. Must be declared last.
     using value_type = Value;
     size_t size_;
     Value array_[0];
 };
-
-using Module = Tail_Array<Module_Base>;
+struct Module : public Tail_Array<Module_Base>
+{
+    using Tail_Array<Module_Base>::Tail_Array;
+};
 
 } // namespace curv
 #endif // header guard

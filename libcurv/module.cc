@@ -60,7 +60,7 @@ Module_Base::hasfield(Symbol_Ref name) const
 Shared<Record>
 Module_Base::clone() const
 {
-    return Module::make_copy(&array_[0], size(), dictionary_);
+    return copy_tail_array<Module>(&array_[0], size(), dictionary_);
 }
 
 Value*
