@@ -46,7 +46,7 @@ Record::each_field(
 Shared<List>
 Record::fields() const
 {
-    auto list = List::make(size());
+    auto list = make_tail_array<List>(size());
     int i = 0;
     for (auto f = iter(); !f->empty(); f->next()) {
         list->at(i) = f->key().to_value();

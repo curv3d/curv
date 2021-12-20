@@ -66,7 +66,7 @@ void
 List_Executor::push_field(
     Symbol_Ref name, Value elem, const Context& cstmt)
 {
-    Shared<List> pair = List::make({name.to_value(),elem});
+    Shared<List> pair = make_tail_array<List>({name.to_value(),elem});
     list_.push_back(Value(pair));
 }
 
@@ -134,7 +134,7 @@ Value record_at(Value rec, Symbol_Ref id, const Context& cx)
 {
 #if 0
     if (auto list = rec.maybe<const List>()) {
-        Shared<List> result = List::make(list->size());
+        Shared<List> result = make_tail_array<List>(list->size());
         for (unsigned i = 0; i < list->size(); ++i)
             result->at(i) = record_at(list->at(i), id, cx);
         return {result};
@@ -492,7 +492,7 @@ Assoc::eval(Frame& fm) const
 {
     auto name = name_.eval(fm);
     auto elem = definiens_->eval(fm);
-    Shared<List> pair = List::make({name.to_value(),elem});
+    Shared<List> pair = make_tail_array<List>({name.to_value(),elem});
     return {pair};
 }
 
@@ -562,7 +562,7 @@ Indexed_Locative::store(Frame& fm, Value val, const At_Syntax& valcx) const
 Value
 List_Locative::fetch(Frame& fm) const
 {
-    Shared<List> list = List::make(locs_.size());
+    Shared<List> list = make_tail_array<List>(locs_.size());
     for (unsigned i = 0; i < locs_.size(); ++i) {
         list->at(i) = locs_[i]->fetch(fm);
     }

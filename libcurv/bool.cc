@@ -25,7 +25,7 @@ void assert_bool(Value a, const Context& cx)
 Shared<const List>
 nat_to_bool32(unsigned n)
 {
-    Shared<List> result = List::make(32);
+    Shared<List> result = make_tail_array<List>(32);
     for (unsigned i = 0; i < 32; ++i)
         result->at(i) = {(n & (1 << i)) != 0};
     return result;

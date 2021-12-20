@@ -20,13 +20,12 @@ struct List_Base;
 struct Reactive_Value;
 struct Type;
 
-/// List of boxed values.
-///
-/// This is a variable length object: the size and the value array
-/// are in the same object. This is very efficient for small lists:
-/// only a single cache hit is required to access both the size and the data.
-using List = Tail_Array<List_Base>;
-
+// List of boxed values.
+//
+// This is a variable length object: the size and the value array
+// are in the same object. This is very efficient for small lists:
+// only a single cache hit is required to access both the size and the data.
+struct List;
 struct List_Base : public Abstract_List
 {
     List_Base() : Abstract_List(sty_list) {}
@@ -43,6 +42,10 @@ struct List_Base : public Abstract_List
     static const char name[];
     TAIL_ARRAY_MEMBERS_MOD_SIZE(Value)
 };
+struct List : public Tail_Array<List_Base>
+{
+    using Tail_Array<List_Base>::Tail_Array;
+};
 
 inline std::ostream&
 operator<<(std::ostream& out, const List_Base& list)
@@ -53,7 +56,7 @@ operator<<(std::ostream& out, const List_Base& list)
 
 inline Shared<List> make_list(size_t size)
 {
-    auto list = List::make(size);
+    auto list = make_tail_array<List>(size);
     return {move(list)};
 }
 

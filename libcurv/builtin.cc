@@ -483,7 +483,7 @@ struct Lshift_Prim : public Shift_Prim
         At_Index acx(0, cx);
         At_Index bcx(1, cx);
         unsigned n = (unsigned) num_to_int(b, 0, a->size()-1, bcx);
-        Shared<List> result = List::make(a->size());
+        Shared<List> result = make_tail_array<List>(a->size());
         for (unsigned i = 0; i < n; ++i)
             result->at(i) = {false};
         for (unsigned i = n; i < a->size(); ++i)
@@ -509,7 +509,7 @@ struct Rshift_Prim : public Shift_Prim
         At_Index acx(0, cx);
         At_Index bcx(1, cx);
         unsigned n = (unsigned) num_to_int(b, 0, a->size()-1, bcx);
-        Shared<List> result = List::make(a->size());
+        Shared<List> result = make_tail_array<List>(a->size());
         for (unsigned i = a->size()-n; i < a->size(); ++i)
             result->at(i) = {false};
         for (unsigned i = 0; i < a->size()-n; ++i)
@@ -873,7 +873,7 @@ Value F_dot::dot(Value a, Value b, Fail fl, const At_Arg& cx) const
     auto bv = b.maybe<List>();
     if (av && bv) {
         if (av->size() > 0 && av->at(0).maybe<List>()) {
-            Shared<List> result = List::make(av->size());
+            Shared<List> result = make_tail_array<List>(av->size());
             for (size_t i = 0; i < av->size(); ++i) {
                 TRY_DEF(v, dot(av->at(i), b, fl, cx));
                 result->at(i) = v;
@@ -1032,7 +1032,7 @@ struct F_fields : public Tuple_Function
             return {record->fields()};
       #if 0
         else if (auto list = arg.maybe<List>()) {
-            Shared<List> result = List::make(list->size());
+            Shared<List> result = make_tail_array<List>(list->size());
             for (unsigned i = 0; i < list->size(); ++i)
                 result->at(i) = fields(list->at(i), cx);
             return {result};
@@ -1065,7 +1065,7 @@ Value to_char(Value arg, Fail fl, const Context& cx)
             if (val.is_char())
                 s->at(i) = val.to_char_unsafe();
             else {
-                Shared<List> result = List::make(list->size());
+                Shared<List> result = make_tail_array<List>(list->size());
                 for (unsigned j = 0; j < i; ++j)
                     result->at(j) = Value(s->at(j));
                 result->at(i) = val;
@@ -1589,7 +1589,7 @@ struct Defined_Expression : public Just_Expression
             return {rec->hasfield(id)};
       #if 0
         else if (auto list = val.maybe<List>()) {
-            Shared<List> result = List::make(list->size());
+            Shared<List> result = make_tail_array<List>(list->size());
             for (unsigned i = 0; i < list->size(); ++i)
                 result->at(i) = defined_at(list->at(i), id);
             return {result};

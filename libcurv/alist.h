@@ -23,7 +23,7 @@ namespace curv {
 struct Abstract_List : public Ref_Value
 {
     Abstract_List(int sty) : Ref_Value(ty_abstract_list, sty) {}
-protected:
+public:
     size_t size_;
 public:
     size_t size() const noexcept { return size_; }

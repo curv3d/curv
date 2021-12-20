@@ -72,7 +72,7 @@ Value
 String_Builder::get_value()
 {
     auto s = str(); // copies the data
-    if (s.empty()) return {List::make(0)};
+    if (s.empty()) return {make_tail_array<List>(0)};
     return {make_string(s.data(), s.size())}; // copies the data again
 }
 

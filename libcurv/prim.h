@@ -144,7 +144,7 @@ struct Unary_Array_Op
     static Value
     element_wise_op(Fail fl, const At_Syntax& cx, List& xs)
     {
-        Shared<List> result = List::make(xs.size());
+        Shared<List> result = make_tail_array<List>(xs.size());
         for (unsigned i = 0; i < xs.size(); ++i) {
             TRY_DEF(r, call(fl, cx, xs[i]));
             (*result)[i] = r;
@@ -343,7 +343,7 @@ struct Binary_Array_Op
     static Value
     broadcast_left(Fail fl, const At_Syntax& cx, List& xlist, Value y)
     {
-        Shared<List> result = List::make(xlist.size());
+        Shared<List> result = make_tail_array<List>(xlist.size());
         for (unsigned i = 0; i < xlist.size(); ++i) {
             TRY_DEF(r, call(fl, cx, xlist[i], y));
             (*result)[i] = r;
@@ -354,7 +354,7 @@ struct Binary_Array_Op
     static Value
     broadcast_right(Fail fl, const At_Syntax& cx, Value x, List& ylist)
     {
-        Shared<List> result = List::make(ylist.size());
+        Shared<List> result = make_tail_array<List>(ylist.size());
         for (unsigned i = 0; i < ylist.size(); ++i) {
             TRY_DEF(r, call(fl, cx, x, ylist[i]));
             (*result)[i] = r;
@@ -370,7 +370,7 @@ struct Binary_Array_Op
                 "mismatched list sizes (",
                 xs.size(),",",ys.size(),") in array operation"));
         }
-        Shared<List> result = List::make(xs.size());
+        Shared<List> result = make_tail_array<List>(xs.size());
         for (unsigned i = 0; i < xs.size(); ++i) {
             TRY_DEF(r, call(fl, cx, xs[i], ys[i]));
             (*result)[i] = r;

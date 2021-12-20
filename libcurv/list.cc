@@ -86,7 +86,7 @@ void Generic_List::amend_at(size_t i, Value newval, const At_Syntax& cx)
     if (this->is_boxed_list()) {
         if (list_->use_count > 1) {
             auto& bl = get_boxed_list();
-            list_ = List::make_copy(bl.begin(), bl.size());
+            list_ = copy_tail_array<List>(bl.begin(), bl.size());
         }
         get_boxed_list().at(i) = newval;
     }
@@ -99,7 +99,7 @@ void Generic_List::amend_at(size_t i, Value newval, const At_Syntax& cx)
             get_string().at(i) = newval.to_char_unsafe();
         } else {
             auto& str = get_string();
-            auto li = List::make(str.size());
+            auto li = make_tail_array<List>(str.size());
             for (unsigned j = 0; j < str.size(); ++j)
                 li->at(j) = Value{str[j]};
             li->at(i) = newval;
@@ -265,16 +265,16 @@ Value List_Builder::get_value()
 {
     if (in_string_) {
         if (string_.empty())
-            return {List::make(0)};
+            return {make_tail_array<List>(0)};
         return {make_string(string_)};
     }
-    Shared<List> result = List::make_elements(list_);
+    Shared<List> result = move_tail_array<List>(list_);
     return {result};
 }
 
 Shared<List> List_Base::clone() const
 {
-    return List::make_copy(array_, size_);
+    return copy_tail_array<List>(array_, size_);
 }
 
 Value* List_Base::ref_element(Value index, bool need_value, const Context& cx)

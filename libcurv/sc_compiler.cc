@@ -452,7 +452,7 @@ Value sc_constify(const Operation& op, SC_Frame& fm)
         return fm.nonlocals_->get(b->second);
     }
     else if (auto list = cast_list_expr(op)) {
-        Shared<List> listval = List::make(list->size());
+        Shared<List> listval = make_tail_array<List>(list->size());
         for (size_t i = 0; i < list->size(); ++i) {
             (*listval)[i] = sc_constify(*(*list)[i], fm);
         }

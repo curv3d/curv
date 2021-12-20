@@ -50,7 +50,7 @@ struct SC_Test_Action : public Just_Action
         Value arg = arg_->eval(f);
         At_Phrase cx(*arg_->syntax_, f);
         auto rec = arg.to<Record>(cx);
-        Value nil = Value{List::make(0)};
+        Value nil = Value{make_tail_array<List>(0)};
         rec->each_field(cx, [&](Symbol_Ref name, Value val)->void {
             At_Field test_cx{name.c_str(), cx};
             auto func = maybe_function(val, test_cx);
