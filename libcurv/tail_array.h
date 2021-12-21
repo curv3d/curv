@@ -17,7 +17,7 @@ namespace curv {
 // A call to this macro must be the very last statement in the tail array
 // class definition, because array_ must be the last data member.
 #define TAIL_ARRAY_MEMBERS(T) \
-public: \
+protected: \
     size_t size_; \
 public: \
     size_t size() const noexcept { return size_; } \
@@ -26,7 +26,7 @@ public: \
 
 // Used by subclasses of Abstract_List, which defines size_,size,empty.
 #define TAIL_ARRAY_MEMBERS_MOD_SIZE(T) \
-public: \
+protected: \
     T array_[0]; \
 public: \
     using value_type = T; \
@@ -121,11 +121,21 @@ public:
         free(p);
     }
 
-public:
+protected:
     using Base::Base; // no public constructors
     Tail_Array& operator=(Tail_Array const&) = delete;
     Tail_Array& operator=(Tail_Array &&) = delete;
     void* operator new(std::size_t) = delete;
+    template<typename T, typename... Rest>
+        friend std::unique_ptr<T> make_tail_array(size_t size, Rest&&... rest);
+    template<typename T, typename... Rest>
+        friend std::unique_ptr<T> make_tail_array(
+        std::initializer_list<typename T::value_type> il, Rest&&... rest);
+    template<typename T, typename... Rest>
+        friend std::unique_ptr<T> copy_tail_array(
+        const typename T::value_type* a, size_t size, Rest&&... rest);
+    template<typename T, typename C, typename... Rest>
+        friend std::unique_ptr<T> move_tail_array(C&& c, Rest&&... rest);
 
     void* operator new(std::size_t size, void* ptr) noexcept
     {

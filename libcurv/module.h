@@ -137,7 +137,7 @@ struct Module_Base : public Record
         return std::make_unique<Iter>(*this);
     }
 
-public:
+protected:
     // interface used by Tail_Array. Must be declared last.
     using value_type = Value;
     size_t size_;
