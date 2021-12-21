@@ -644,7 +644,7 @@ parse_string(Scanner& scanner, Token begin)
         auto tok = scanner.get_token();
         switch (tok.kind_) {
         case Token::k_quote:
-            return String_Phrase::make_elements(
+            return move_tail_array<String_Phrase>(
                 segments, *scanner.source_, begin, tok);
         case Token::k_string_segment:
             segments.push_back(make<String_Segment_Phrase>(*scanner.source_, tok));

@@ -145,45 +145,6 @@ public:
         return std::unique_ptr<Tail_Array>(r);
     }
 
-    /// Allocate an instance. Move elements from another collection.
-    template<class C, typename... Rest>
-    static std::unique_ptr<Tail_Array> make_elements(C&& c, Rest&&... rest)
-    {
-        // allocate the object
-        auto size = c.size();
-        void* mem = malloc(sizeof(Tail_Array) + size*sizeof(_value_type));
-        if (mem == nullptr)
-            throw std::bad_alloc();
-        Tail_Array* r = (Tail_Array*)mem;
-
-        // construct the array elements
-        decltype(size) i = 0;
-        auto ptr = c.begin();
-        try {
-            while (i < size) {
-                new((void*)&r->Base::array_[i]) _value_type();
-                std::swap(r->Base::array_[i], *ptr);
-                ++ptr;
-                ++i;
-            }
-        } catch (...) {
-            r->destroy_array(i);
-            free(mem);
-            throw;
-        }
-
-        // then construct the rest of the object
-        try {
-            new(mem) Tail_Array(std::forward<Rest>(rest)...);
-            r->Base::size_ = size;
-        } catch(...) {
-            r->destroy_array(size);
-            free(mem);
-            throw;
-        }
-        return std::unique_ptr<Tail_Array>(r);
-    }
-
     ~Tail_Array()
     {
         destroy_array(Base::size_);

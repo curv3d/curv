@@ -19,8 +19,7 @@ struct Definition;
 struct Meaning;
 struct Operation;
 struct Segment;
-struct String_Expr_Base;
-using String_Expr = Tail_Array<String_Expr_Base>;
+struct String_Expr;
 struct Environ;
 struct Interp;
 
@@ -145,7 +144,10 @@ struct String_Phrase_Base : public Phrase
 
     TAIL_ARRAY_MEMBERS(Shared<const Segment_Phrase>)
 };
-using String_Phrase = Tail_Array<String_Phrase_Base>;
+struct String_Phrase : public Tail_Array<String_Phrase_Base>
+{
+    using Tail_Array<String_Phrase_Base>::Tail_Array;
+};
 
 struct Unary_Phrase : public Phrase
 {

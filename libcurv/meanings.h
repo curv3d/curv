@@ -764,7 +764,10 @@ struct String_Expr_Base : public Just_Expression
     Symbol_Ref eval_symbol(Frame&) const;
     TAIL_ARRAY_MEMBERS(Shared<Segment>)
 };
-using String_Expr = Tail_Array<String_Expr_Base>;
+struct String_Expr : public Tail_Array<String_Expr_Base>
+{
+    using Tail_Array<String_Expr_Base>::Tail_Array;
+};
 
 struct Symbol_Expr
 {

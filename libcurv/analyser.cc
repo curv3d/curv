@@ -309,7 +309,7 @@ String_Phrase_Base::analyse_string(Environ& env) const
     std::vector<Shared<Segment>> ops;
     for (Shared<const Segment_Phrase> seg : *this)
         ops.push_back(seg->analyse(env, Interp::expr()));
-    return String_Expr::make_elements(ops, this);
+    return move_tail_array<String_Expr>(ops, this);
 }
 
 Shared<Meaning>
