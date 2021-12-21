@@ -157,7 +157,10 @@ struct Compound_Definition_Base : public Definition
     TAIL_ARRAY_MEMBERS(Shared<Definition>)
     void resize(size_t n) { size_ = n; }
 };
-using Compound_Definition = Tail_Array<Compound_Definition_Base>;
+struct Compound_Definition : public Tail_Array<Compound_Definition_Base>
+{
+    using Tail_Array<Compound_Definition_Base>::Tail_Array;
+};
 
 // A Scope is set of user-defined variables defined over a lexical scope.
 struct Scope : public Environ

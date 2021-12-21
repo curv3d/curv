@@ -112,39 +112,6 @@ class Tail_Array : public Base
 {
     using _value_type = typename Base::value_type;
 public:
-    /// Allocate an instance. Array elements are default constructed.
-    template<typename... Rest>
-    static std::unique_ptr<Tail_Array> make(size_t size, Rest&&... rest)
-    {
-        // allocate the object
-        void* mem = malloc(sizeof(Tail_Array) + size*sizeof(_value_type));
-        if (mem == nullptr)
-            throw std::bad_alloc();
-        Tail_Array* r = (Tail_Array*)mem;
-
-        // construct the array elements
-        if (!std::is_trivially_default_constructible<_value_type>::value) {
-            static_assert(
-                std::is_nothrow_default_constructible<_value_type>::value,
-                "value_type default constructor must be declared noexcept");
-            for (size_t i = 0; i < size; ++i)
-            {
-                new((void*)&r->Base::array_[i]) _value_type();
-            }
-        }
-
-        // then construct the rest of the object
-        try {
-            new(mem) Tail_Array(std::forward<Rest>(rest)...);
-            r->Base::size_ = size;
-        } catch(...) {
-            r->destroy_array(size);
-            free(mem);
-            throw;
-        }
-        return std::unique_ptr<Tail_Array>(r);
-    }
-
     ~Tail_Array()
     {
         destroy_array(Base::size_);

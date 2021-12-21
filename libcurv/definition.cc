@@ -103,7 +103,7 @@ Include_Definition::add_to_scope(Scope& scope)
     // construct an Include_Setter from the record argument.
     unsigned unit = scope.add_unit(share(*this));
     Shared<Include_Setter> setter =
-        {Include_Setter::make(record->size(), syntax_)};
+        {make_tail_array<Include_Setter>(record->size(), syntax_)};
     size_t i = 0;
     record->each_field(cx, [&](Symbol_Ref name, Value value)->void {
         auto b = scope.add_binding(name, *syntax_, unit);
@@ -174,7 +174,7 @@ Shared<Operation>
 Compound_Definition_Base::add_to_sequential_scope(Scope& scope)
 {
     // This function is called to analyse 'local (a=1, b=2)'.
-    Shared<Compound_Op> setter = Compound_Op::make(size_, syntax_);
+    Shared<Compound_Op> setter = make_tail_array<Compound_Op>(size_, syntax_);
     for (unsigned i = 0; i < size_; ++i)
         setter->at(i) = at(i)->add_to_sequential_scope(scope);
     return setter;
@@ -377,8 +377,8 @@ Recursive_Scope::make_function_setter(size_t nunits, Unit** units)
 
     Shared<Enum_Module_Expr> nonlocals = make<Enum_Module_Expr>(
         syntax, nonlocal_dictionary, nonlocal_exprs);
-    Shared<Function_Setter> setter =
-        Function_Setter::make(nunits, syntax, executable_.module_slot_, nonlocals);
+    Shared<Function_Setter> setter = make_tail_array<Function_Setter>
+        (nunits, syntax, executable_.module_slot_, nonlocals);
     for (size_t i = 0; i < nunits; ++i)
         setter->at(i) = {funs[i]->slot_, funs[i]->lambda_};
     return setter;

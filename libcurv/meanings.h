@@ -356,7 +356,10 @@ struct Paren_List_Expr_Base : public List_Expr_Base
     using List_Expr_Base::List_Expr_Base;
     virtual void exec(Frame&, Executor&) const override;
 };
-using Paren_List_Expr = Tail_Array<Paren_List_Expr_Base>;
+struct Paren_List_Expr : public Tail_Array<Paren_List_Expr_Base>
+{
+    using Tail_Array<Paren_List_Expr_Base>::Tail_Array;
+};
 
 // Used by the SubCurv compiler, which treats List_Expr and Paren_List_Expr
 // identically. TODO: remove when (a,b,c) is no longer an expression.
@@ -519,7 +522,10 @@ struct Function_Setter_Base : public Just_Action
     };
     TAIL_ARRAY_MEMBERS(Element)
 };
-using Function_Setter = Tail_Array<Function_Setter_Base>;
+struct Function_Setter : public Tail_Array<Function_Setter_Base>
+{
+    using Tail_Array<Function_Setter_Base>::Tail_Array;
+};
 
 struct Include_Setter_Base : public Just_Action
 {
@@ -537,7 +543,10 @@ struct Include_Setter_Base : public Just_Action
     };
     TAIL_ARRAY_MEMBERS(Element)
 };
-using Include_Setter = Tail_Array<Include_Setter_Base>;
+struct Include_Setter : public Tail_Array<Include_Setter_Base>
+{
+    using Tail_Array<Include_Setter_Base>::Tail_Array;
+};
 
 struct Compound_Op_Base : public Just_Action
 {
@@ -549,7 +558,10 @@ struct Compound_Op_Base : public Just_Action
 
     TAIL_ARRAY_MEMBERS(Shared<Operation>)
 };
-using Compound_Op = Tail_Array<Compound_Op_Base>;
+struct Compound_Op : public Tail_Array<Compound_Op_Base>
+{
+    using Tail_Array<Compound_Op_Base>::Tail_Array;
+};
 
 // Execute a statement list, then evaluate the body, which is an expression.
 struct Do_Expr : public Just_Expression

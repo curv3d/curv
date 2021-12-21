@@ -197,7 +197,7 @@ Empty_Phrase::analyse(Environ& env, Interp) const
 Shared<Definition>
 Empty_Phrase::as_definition(Environ& env, Fail) const
 {
-    return Compound_Definition::make(0, share(*this));
+    return make_tail_array<Compound_Definition>(0, share(*this));
 }
 
 Shared<Meaning>
@@ -492,21 +492,21 @@ analyse_do(
     Shared<Compound_Op> actions;
     stmts = strip_parens(stmts);
     if (isa<const Empty_Phrase>(stmts))
-        actions = Compound_Op::make(0, stmts);
+        actions = make_tail_array<Compound_Op>(0, stmts);
     else if (auto commas = cast<const Comma_Phrase>(stmts)) {
         throw Exception(
             At_Token(commas->args_.front().separator_, *stmts, env),
             "syntax error");
     }
     else if (auto semis = cast<const Semicolon_Phrase>(stmts)) {
-        actions = Compound_Op::make(semis->args_.size(), stmts);
+        actions = make_tail_array<Compound_Op>(semis->args_.size(), stmts);
         for (size_t i = 0; i < semis->args_.size(); ++i) {
             actions->at(i) =
                 analyse_stmt(semis->args_[i].expr_, scope, terp.to_stmt());
         }
     }
     else {
-        actions = Compound_Op::make(1, stmts);
+        actions = make_tail_array<Compound_Op>(1, stmts);
         actions->at(0) = analyse_stmt(stmts, scope, terp.to_stmt());
     }
 
@@ -897,7 +897,8 @@ Listing_Phrase::analyse(Environ& env, Interp terp) const
 {
     Scope scope(env);
     terp = terp.deepen();
-    Shared<Compound_Op> compound = Compound_Op::make(args_.size(), share(*this));
+    Shared<Compound_Op> compound = make_tail_array<Compound_Op>
+        (args_.size(), share(*this));
     for (size_t i = 0; i < args_.size(); ++i)
         compound->at(i) = analyse_stmt(args_[i].expr_, scope, terp.to_stmt());
     env.frame_maxslots_ = scope.frame_maxslots_;
@@ -908,7 +909,7 @@ Shared<Definition>
 Listing_Phrase::as_definition(Environ& env, Fail fl) const
 {
     Shared<Compound_Definition> compound =
-        Compound_Definition::make(args_.size(), share(*this));
+        make_tail_array<Compound_Definition>(args_.size(), share(*this));
     size_t j = 0;
     bool contains_statement = false;
     for (size_t i = 0; i < args_.size(); ++i) {
@@ -963,7 +964,7 @@ Paren_Phrase::analyse(Environ& env, Interp terp) const
                 "Using '()' as the empty list is deprecated. "
                 "Use '[]' instead.");
         }
-        return Paren_List_Expr::make(0, share(*this));
+        return make_tail_array<Paren_List_Expr>(0, share(*this));
     }
     if (auto commas = dynamic_cast<const Comma_Phrase*>(&*body_)) {
         if (terp.is_expr()) {
@@ -974,7 +975,7 @@ Paren_Phrase::analyse(Environ& env, Interp terp) const
         }
         auto& items = commas->args_;
         Shared<Paren_List_Expr> list =
-            Paren_List_Expr::make(items.size(), share(*this));
+            make_tail_array<Paren_List_Expr>(items.size(), share(*this));
         for (size_t i = 0; i < items.size(); ++i)
             (*list)[i] = analyse_op(*items[i].expr_, env);
         list->init();
