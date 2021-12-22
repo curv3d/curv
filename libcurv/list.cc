@@ -45,8 +45,7 @@ bool Generic_List::has_elem_type(const Type& type, const At_Syntax& cx) const
             if (!type.contains(list.val_at(i), cx)) return false;
         return true;
     } else {
-        return Type::equal(*get_reactive_value().sctype_.elem_type().type_,
-            type);
+        return Type::equal(*get_reactive_value().sctype_.elem_type(), type);
     }
 }
 

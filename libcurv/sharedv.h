@@ -86,8 +86,9 @@ public:
     operator Shared<T>() const noexcept { return Shared<T>(this->get()); }
     static SharedV from_value(Value v)
       { return {v.maybe<T>()}; }
-    template<class U> bool isa() { return (**this).subtype_ == U::subtype; }
-    template<class U> SharedV<U> cast() {
+    template<class U> bool isa() const
+      { return (**this).subtype_ == U::subtype; }
+    template<class U> SharedV<U> cast() const {
         if ((**this).subtype_ == U::subtype)
             return SharedV<U>((U*)this->get());
         else
