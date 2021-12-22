@@ -125,5 +125,6 @@ void tmc_mesher(
     std::cerr.flush();
 
     auto stats = write_mesh(format, mesh, shape, opts, out);
+    (void) stats;
     //print_mesh_stats(stats);
 }

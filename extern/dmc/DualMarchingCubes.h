@@ -722,7 +722,7 @@ namespace dmc {
 					quads[4 * f + 3] = m_[v3];
 				}
 				// copy back
-				const int nr_nv = static_cast<int>(nv.size());
+				//const int nr_nv = static_cast<int>(nv.size());
 				//std::cout << " ... nr. of unused vertices removed: " << (nr_v - nr_nv) << std::endl;
 				v.assign(nv.begin(), nv.end());
 				n.assign(nn.begin(), nn.end());
