@@ -47,7 +47,7 @@ SC_Type
 SC_Type::elem_type() const
 {
     auto t = cast<const Array_Type>(type_);
-    return {t ? t->elem_type_.data_ : Type::Error()};
+    return {t ? t->elem_type_ : Type::Error()};
 }
 
 unsigned SC_Type::count() const {

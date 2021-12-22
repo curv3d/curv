@@ -91,7 +91,7 @@ Curried_Function::call(Value arg, Fail fl, Frame& fm) const
     return {pa};
 }
 bool
-Curried_Function::validate_arg(unsigned, Value, Fail, const Context&) const
+Curried_Function::validate_arg(unsigned, Value, Fail, const At_Syntax&) const
 {
     return true;
 }

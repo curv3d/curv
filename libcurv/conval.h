@@ -54,8 +54,10 @@ namespace curv {
 //
 // operator bool returns false if the value is missing.
 // This is for compatibility with C++ stdlib conventions and the TRY_DEF macro.
-//     explicit operator bool() const noexcept { ... }
-// (Note: potential confusion when using CBool. Use is_missing() instead?)
+//     constexpr explicit operator bool() const noexcept { ... }
+// (Note: potential confusion when using CBool.)
+// An explicit test if the value is missing (from std::optional):
+//     constexpr bool has_value() const noexcept
 //
 // Equality: a==b has Curv equality semantics.
 // Note: Traversing a directory module requires a context, but in Curv.next,

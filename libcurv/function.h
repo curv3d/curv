@@ -145,7 +145,7 @@ struct Curried_Function : public Function
 
     // call the function, with arguments stored in the frame.
     virtual Value ccall(const Function&, Fail, Frame& args) const = 0;
-    virtual bool validate_arg(unsigned, Value, Fail, const Context&) const;
+    virtual bool validate_arg(unsigned, Value, Fail, const At_Syntax&) const;
 };
 
 // A Partial_Application is the result of calling a Curried_Function.

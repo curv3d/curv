@@ -16,20 +16,20 @@
 
 namespace curv {
 
-Shared<const Type> Type::Error() {
-    static const auto type = make<Error_Type>();
+CType Type::Error() {
+    static const auto type = makev<Error_Type>();
     return type;
 }
-Shared<const Type> Type::Bool() {
-    static const auto type = make<Bool_Type>();
+CType Type::Bool() {
+    static const auto type = makev<Bool_Type>();
     return type;
 }
-Shared<const Type> Type::Bool32() {
-    static const auto type = make<Array_Type>(32, Type::Bool());
+CType Type::Bool32() {
+    static const auto type = makev<Array_Type>(32, Type::Bool());
     return type;
 }
-Shared<const Type> Type::Num() {
-    static const auto type = make<Num_Type>();
+CType Type::Num() {
+    static const auto type = makev<Num_Type>();
     return type;
 }
 
@@ -54,12 +54,12 @@ const char* glsl_plex_type_name[] = {
 
 const char Type::name[] = "type";
 
-Shared<const Type> value_to_type(Value v, Fail fl, const Context& cx)
+CType CType::from_value(Value v, Fail fl, const At_Syntax& cx)
 {
     static Symbol_Ref Tkey = make_symbol("T");
     for (;;) {
         if (auto type = v.maybe<const Type>())
-            return type;
+            return {type};
         if (auto rec = v.maybe<const Record>()) {
             if (rec->hasfield(Tkey)) {
                 v = rec->getfield(Tkey, cx);
@@ -126,7 +126,7 @@ bool Array_Type::contains(Value val, const At_Syntax& cx) const
     Generic_List list(val);
     if (!list.is_list()) return false;
     if (list.size() != count_) return false;
-    return list.has_elem_type(*elem_type_.data_, cx);
+    return list.has_elem_type(*elem_type_, cx);
 }
 void Array_Type::print_repr(std::ostream& out, Prec rprec) const
 {
@@ -134,7 +134,7 @@ void Array_Type::print_repr(std::ostream& out, Prec rprec) const
     out << "Array[" << count_;
     auto ety = elem_type_;
     for (;;) {
-        if (auto aty = cast<const Array_Type>(ety.data_)) {
+        if (auto aty = ety.cast<const Array_Type>()) {
             out << "," << aty->count_;
             ety = aty->elem_type_;
         } else {
@@ -150,7 +150,7 @@ bool List_Type::contains(Value val, const At_Syntax& cx) const
 {
     Generic_List list(val);
     if (!list.is_list()) return false;
-    return list.has_elem_type(*elem_type_.data_, cx);
+    return list.has_elem_type(*elem_type_, cx);
 }
 void List_Type::print_repr(std::ostream& out, Prec rprec) const
 {
@@ -216,7 +216,7 @@ void Record_Type::print_repr(std::ostream& out, Prec rprec) const
     close_paren(out, rprec, Prec::postfix);
 };
 
-Plex_Type Array_Type::make_plex_type(unsigned count, Shared<const Type> etype)
+Plex_Type Array_Type::make_plex_type(unsigned count, CType etype)
 {
     if (etype->plex_type_ == Plex_Type::Bool) {
         if (count >= 2 && count <= 4)
@@ -262,7 +262,7 @@ void Any_Type::print_repr(std::ostream& out, Prec) const
 
 bool Type_Type::contains(Value val, const At_Syntax& cx) const
 {
-    return value_to_type(val, Fail::soft, cx) != nullptr;
+    return CType::from_value(val, Fail::soft, cx).has_value();
 }
 void Type_Type::print_repr(std::ostream& out, Prec) const
 {
@@ -331,7 +331,7 @@ unsigned Type::rank() const
     unsigned rank = 0;
     while (t->subtype_ == Ref_Value::sty_array_type)
     {
-        t = &*((const Array_Type*)(t))->elem_type_.data_;
+        t = &*((const Array_Type*)(t))->elem_type_;
         ++rank;
     }
     return rank;
@@ -343,7 +343,7 @@ Shared<const Type> Type::plex_array_base() const
     while (t->subtype_ == Ref_Value::sty_array_type
            && t->plex_type_ == Plex_Type::missing)
     {
-        t = &*((const Array_Type*)(t))->elem_type_.data_;
+        t = &*((const Array_Type*)(t))->elem_type_;
     }
     return share(*t);
 }
@@ -355,7 +355,7 @@ unsigned Type::plex_array_rank() const
     while (t->subtype_ == Ref_Value::sty_array_type
            && t->plex_type_ == Plex_Type::missing)
     {
-        t = &*((const Array_Type*)(t))->elem_type_.data_;
+        t = &*((const Array_Type*)(t))->elem_type_;
         ++rank;
     }
     return rank;
@@ -372,7 +372,7 @@ unsigned Type::plex_array_dim(unsigned i) const
     {
         auto li = (const Array_Type*)(t);
         dims.push_back(li->count_);
-        t = &*li->elem_type_.data_;
+        t = &*li->elem_type_;
     }
     return dims.at(i);
 }

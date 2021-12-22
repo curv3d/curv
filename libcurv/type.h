@@ -5,8 +5,7 @@
 #ifndef LIBCURV_TYPE_H
 #define LIBCURV_TYPE_H
 
-#include <libcurv/context.h>
-#include <libcurv/conval.h>
+#include <libcurv/sharedv.h>
 #include <libcurv/value.h>
 
 namespace curv {
@@ -37,14 +36,15 @@ enum class Plex_Type : short
 
 extern const char* glsl_plex_type_name[];
 
+struct CType;
 struct Type : public Ref_Value
 {
     Plex_Type plex_type_;
     Type(int st, Plex_Type pt) : Ref_Value(ty_type, st), plex_type_(pt) {}
-    static Shared<const Type> Error();
-    static Shared<const Type> Bool();
-    static Shared<const Type> Bool32();
-    static Shared<const Type> Num();
+    static CType Error();
+    static CType Bool();
+    static CType Bool32();
+    static CType Num();
 
     static bool equal(const Type&, const Type&);
     virtual bool contains(Value, const At_Syntax&) const = 0;
@@ -57,8 +57,6 @@ struct Type : public Ref_Value
     static const char name[];
 };
 
-Shared<const Type> value_to_type(Value, Fail, const Context&);
-
 inline std::ostream&
 operator<<(std::ostream& out, const Type& type)
 {
@@ -67,35 +65,21 @@ operator<<(std::ostream& out, const Type& type)
 }
 
 // A concrete value class for Curv type values.
-struct CType : public Concrete_Value
+struct CType : public SharedV<const Type>
 {
-    Shared<const Type> data_;
-    CType() : data_(nullptr) {}
-    CType(Shared<const Type> data) : data_(std::move(data)) {}
-    CType(Value v, const At_Syntax& cx) : data_(v.to<const Type>(cx)) {}
-    /*
-    static CType from_value(Value v, const At_Syntax&)
-      { return {v.maybe<const Type>()}; }
-    static CType from_value(Value v, Fail fl, const At_Syntax&cx)
-      { return {v.to<const Type>(fl,cx)}; }
-     */
+    using SharedV<const Type>::SharedV;
+    CType(SharedV<const Type> t) : SharedV<const Type>(t) {}
+
     static CType from_value(Value v, const At_Syntax& cx)
-      { return {value_to_type(v, Fail::soft, cx)}; }
-    static CType from_value(Value v, Fail fl, const At_Syntax& cx)
-      { return {value_to_type(v, fl, cx)}; }
-    Value to_value() const { return Value{data_}; }
+      { return from_value(v, Fail::soft, cx); }
+    static CType from_value(Value v, Fail fl, const At_Syntax& cx);
     bool operator==(CType t) const
-      { return Type::equal(*data_, *t.data_); }
+      { return Type::equal(**this, *t); }
     bool operator!=(CType t) const
-      { return !Type::equal(*data_, *t.data_); }
-    void print_repr(std::ostream& o, Prec p) const { data_->print_repr(o,p); }
-    void print_string(std::ostream& o) const { data_->print_string(o); }
-    friend std::ostream& operator<<(std::ostream& o, CType t)
-      { t.print_repr(o,Prec::item); return o; }
-    explicit operator bool() const noexcept { return data_ != nullptr; }
+      { return !Type::equal(**this, *t); }
 
     bool contains(Value v, const At_Syntax& cx) const
-      { return data_->contains(v, cx); }
+      { return (*this)->contains(v, cx); }
 };
 
 } // namespace curv

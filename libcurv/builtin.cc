@@ -106,7 +106,7 @@ struct F_as : public Curried_Function
     virtual Value ccall(const Function& self, Fail fl, Frame& args)
     const override {
         At_Arg cx(*this, args);
-        auto type = value_to_type(args[0], Fail::hard, cx);
+        auto type = CType::from_value(args[0], Fail::hard, cx);
         if (type->contains(args[1], cx))
             return args[1];
         if (fl == Fail::soft)
@@ -114,9 +114,9 @@ struct F_as : public Curried_Function
         throw Exception(At_Arg(self, args),
             stringify(args[1]," is not a ",*type));
     }
-    virtual bool validate_arg(unsigned i, Value a, Fail fl, const Context& cx)
+    virtual bool validate_arg(unsigned i, Value a, Fail fl, const At_Syntax& cx)
     const override {
-        return value_to_type(a, fl, cx) != nullptr;
+        return CType::from_value(a, fl, cx).has_value();
     }
 };
 struct F_is : public Curried_Function
@@ -125,12 +125,12 @@ struct F_is : public Curried_Function
     virtual Value ccall(const Function& self, Fail, Frame& args)
     const override {
         At_Arg cx(*this, args);
-        auto type = value_to_type(args[0], Fail::hard, cx);
+        auto type = CType::from_value(args[0], Fail::hard, cx);
         return type->contains(args[1], cx);
     }
-    virtual bool validate_arg(unsigned i, Value a, Fail fl, const Context& cx)
+    virtual bool validate_arg(unsigned i, Value a, Fail fl, const At_Syntax& cx)
     const override {
-        return value_to_type(a, fl, cx) != nullptr;
+        return CType::from_value(a, fl, cx).has_value();
     }
 };
 struct F_Tuple : public Function
@@ -200,7 +200,7 @@ struct F_Array : public Curried_Function
         }
         return make_array_type(0, axes, etype).to_value();
     }
-    virtual bool validate_arg(unsigned i, Value a, Fail fl, const Context& cx)
+    virtual bool validate_arg(unsigned i, Value a, Fail fl, const At_Syntax& cx)
     const override {
         auto xlist = a.to<const List>(fl, cx);
         if (xlist == nullptr) return false;

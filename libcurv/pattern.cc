@@ -165,7 +165,7 @@ struct Predicate_Pattern : public Pattern
         // TODO: arg and func contexts distinguished
         Value val = predicate_expr_->eval(fm);
         At_Frame cx(fm);
-        if (auto type = value_to_type(val, Fail::soft, cx)) {
+        if (auto type = CType::from_value(val, Fail::soft, cx)) {
             return type->contains(arg, cx);
         }
         if (auto fun = maybe_function(val, cx)) {
