@@ -337,7 +337,7 @@ unsigned Type::rank() const
     return rank;
 }
 
-Shared<const Type> Type::plex_array_base() const
+CType Type::plex_array_base() const
 {
     auto t = this;
     while (t->subtype_ == Ref_Value::sty_array_type
@@ -345,7 +345,7 @@ Shared<const Type> Type::plex_array_base() const
     {
         t = &*((const Array_Type*)(t))->elem_type_;
     }
-    return share(*t);
+    return sharev(*t);
 }
 
 unsigned Type::plex_array_rank() const

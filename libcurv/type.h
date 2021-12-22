@@ -50,7 +50,7 @@ struct Type : public Ref_Value
     virtual bool contains(Value, const At_Syntax&) const = 0;
     unsigned rank() const;
 
-    Shared<const Type> plex_array_base() const;
+    CType plex_array_base() const;
     unsigned plex_array_rank() const;
     unsigned plex_array_dim(unsigned) const;
 

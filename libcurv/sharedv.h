@@ -34,7 +34,7 @@ private:
     template<typename U, class... Args>
       friend SharedV<U> makev(Args&&... args);
     template<class U>
-      friend SharedV<U> sharedv(U& obj);
+      friend SharedV<U> sharev(U& obj);
 public:
     // These must be public due to a GCC bug.
     SharedV(T*p) : boost::intrusive_ptr<T>(p) {}
@@ -116,7 +116,7 @@ inline SharedV<T> makev(Args&&... args)
 }
 
 template<class T>
-inline SharedV<T> sharedv(T& obj)
+inline SharedV<T> sharev(T& obj)
 {
     assert(obj.use_count > 0);
     return SharedV<T>(&obj);
