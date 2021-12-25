@@ -1,0 +1,58 @@
+WGSL Types
+==========
+Contexts where types occur:
+* pointer types: ptr<SC,T,A> -- T is storable, restricted by SC
+* array types: array<T,N> or array<T> -- T is static plain type
+* let variable (immutable): module constant, or function scope constant
+  * module scope: constructible type. If declared pipeline-overrideable,
+    must have scalar type.
+  * function scope: constructible type or pointer type.
+* variable: `var ident : T`: storable type (restricted by storage class)
+* formal parameter: constructible, pointer, texture or sampler
+  * pointer type storage classes are Function, Private, Workgroup
+* function return type: constructible
+
+Phases (cf. Shader Lifecycle)
+* static (value determined at Shader Module Creation time)
+* pipeline (value determined at Pipeline Creation time)
+* uniform (value determined at Shader Execution Start)
+* dynamic
+
+Storage classes:
+* Function -- function scope -- constructible type
+* Private -- module scope, this invocation -- constructible type
+* Workgroup -- module scope, shared with compute shader workgroup
+  -- pipeline plain type
+* module scope, all invocations in same shader stage:
+  * Uniform -- constructible host-shareable type (uniform buffers)
+  * Storage -- host-shareable (storage buffers)
+  * Handle -- sampler and texture types
+
+Kinds of types:
+* storable: plain, texture or sampler
+* plain: scalar, atomic or composite
+* scalar: bool, i32, u32, f32
+* composite: vector, matrix, array, structure
+* array: fixed-size array<T,N> or runtime-sized array<T>
+* static plain (creation-fixed footprint):
+  size is statically determined (at shader creation time)
+  * array whose element count is literal, or a module-scope constant
+    that is not pipeline-overrideable
+  * structure whose members are static plain
+* constructible: static plain, excluding atomic types
+* pipeline plain (fixed footprint): element count of an outermost array
+  may be a pipeline-overrideable constant. Can only be used as the type
+  of a Workgroup variable (see Workgroup storage class).
+* host-shareable: numeric scalar|numeric vector|matrix|atomic|static array
+  type with host-shareable element|runtime-sized array with host-shareable
+  element|structure with host-shareable elements
+  * a runtime-sized array may only appear as the last element in the structure
+    type that is the store type of a storage buffer variable.
+  * I think the above is babble, and the following is correct:
+    * a 'static plain numeric' type is a static plain type, except that none
+      of the components are 'bool'
+    * a host-shareable type is one of:
+      * static plain numeric,
+      * a runtime-sized array of static-plain-numeric,
+      * a struct whose final member is a runtime-sized array of
+        static-plain-numeric, and whose other members are static plain numeric.
