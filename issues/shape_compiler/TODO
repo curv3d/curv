@@ -4,8 +4,6 @@ Next:
 * Type values.
   * New type/module style core API replacing predicates and constructor
     functions with algebras. Eg, is_char/char => Char.
-    * Tuple[Num,Num] => Array[2]Num
-    * primitive type constructors: Record Struct
     * primitive algebras: Char Bool Symbol
     * deprecations
       * a mechanism for deprecating standard bindings
@@ -20,7 +18,25 @@ Next:
   * Migrate incrementally to new representation.
     Initially, SC_Value and Operation are interconvertible.
     SC_Frame now contains operations.
+
 Deferred:
 * Types:
   * replacement for is_primitive_func (and consider types as well)
   * primitive types: Index
+* Concrete value class refactoring
+  * refactor foo_Type constructors to use Cfoo<> templates to eliminate
+    boiler plate in value conversion, printing, etc.
+    * Array_Type
+      * F_Array value->axisList. Use Curv List(Nat) or C++ CList<CNat>?
+        Latter is contiguous array of unboxed elements, with size.
+        CList<CAny> contains an Abstract_List object. Thus a CMyType class
+        contains an unboxed repr type.
+      * F_Array Curried_Function validate_arg code dup
+    * Tuple_Type
+    * Record_Type
+    * Struct_Type
+  * some buggy code to clean up:
+    * fix If_Else_Op::print_repr -- bad code, grammar is ambiguous
+    * fix &&, || print_repr
+    * fix List has_expr_type to use CType not const Type&.
+  * generally convert Shared<valuetype> to SharedV<valuetype>

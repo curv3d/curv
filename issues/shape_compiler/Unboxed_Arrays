@@ -1,0 +1,137 @@
+Unboxed Flat Arrays
+===================
+
+Types
+-----
+Curv type values may be used:
+* To type check arguments of library functions, for good error messages.
+* When translating statically typed shader programs to Curv code, to declare
+  parameter, result and variable types. All of the WGSL types map to Curv types,
+  and these type annotations are preserved in the generated shader program.
+* To construct typed array values with unboxed elements, including GPU buffers.
+
+ConVal: Concrete Value Classes
+------------------------------
+Concrete Value Classes are C++ classes and template classes that correspond
+to Curv types and type constructors. These classes are types, that represent
+unboxed data, with Curv and C++ value semantics.
+* They contain nonvirtual member functions implementing Curv VM operations:
+  boxing, unboxing, print_str & print_repr, Curv equality using operator==.
+* They let us implement new Curv primitives in C++ using a simple, high level
+  notation that resembles Curv code, reducing boilerplate.
+
+Ultimately we want to implement most of these primitives in Curv, not C++.
+The ConVal project helps to visualize what the software engineering dialect
+of Curv looks like.
+
+CType
+CString -- replaces String_Ref and Shared<const String>
+CSymbol -- replaces Symbol_Ref
+CVec2 -- replace Vec2, unbox_vec2
+CVec3 -- replace Vec3, value_to_vec3
+CBBox -- replace BBox
+CShape -- ?? we have Shape, Shape_Program <: Shape, Compiled_Shape <: Shape
+       -- two different unboxed representations, no to_value()
+CList<T> -- CList<CNat> used by F_Array to parse the first argument into an
+            unboxed list of axes.
+CTuple<T1>, CTuple<T1,T2>, CTuple<T1,T2,T3>
+    Used by Curried_Function<ArgTuple> to represent argument values in
+    a partially applied function.
+CArray<N,T> -- a flat fixed-size array
+CStruct<T> -- T is a flat struct type implementing some required nonvirtual
+    member functions. CStruct<T>::to_value() heap allocates a Ref_Struct<T>
+    which is a subclass of Record.
+
+Efficient List Representations
+------------------------------
+There's a proposal to make lists faster, more compact and efficient by using
+a larger set of internal representations.
+
+* 3 kinds of fixed-list, like std::array: general, character, bit.
+  Represented as a Tail_Array.
+* 3 kinds of flex-list, like std::vector. Data is stored in a fixed-list,
+  which may have unused elements at the end.
+  This is used in a List_Executor to accumulate values produced by a generator.
+  (But if the number of elements produced by a generator is known at compile
+  time, then we preallocate a fixed-array of the correct size.)
+  There are O(1) push and pop operations that add/remove elements at the end
+  of a list, and which convert fixed-lists to flex-lists.
+* 3 kinds of list-span (like std::span). Efficiently implements head and tail
+  operations, for iterating over a list in Lisp-style. For [a,...b] patterns.
+  For list slicing using contiguous ranges.
+* Numeric range.
+* Plus reactive lists.
+
+Use Ropes in the flex-array data structure? Efficient concatenation of arrays
+with different representations, instead of copying elements.
+
+How do Curv primitives choose which list representation to use?
+How do you optimize Curv code to use these list representations? Ideas:
+* `[a,b,c]` is a fixed-list.
+* `clear list` returns an empty flex-list.
+* `L.[i..j]` returns a list-span.
+* There is a `compactify` operation for converting a list to a fixed-list
+  representation, copying the data if necessary. Semantically it is the identity
+  function on lists.
+* Maybe: Use specialized list types to force a specific representation.
+
+What's the C++ class hierarchy?
+* All concrete list classes descend from Abstract_List.
+* Abstract_List subclasses: AList<CAny>, AList<CChar>, AList<CBool>.
+* AList<CChar> subclasses: FixList<CChar>, FlexList<CChar>, ListSpan<CChar>
+
+How does this interact with ConVal and CList<T>,CString etc?
+* CList<T> encapsulates a reference to an AList<T> object.
+* CString is a subclass of CList<CChar>.
+
+Unboxed Subarrays in libcurv
+----------------------------
+In a large array of Vec3, each element should have a flat representation,
+not be a reference to a heap object with a Ref_Value header. Ditto for a
+2D array of RGB values. An RGB triple should have a flat representation.
+
+If an array element is represented as an unboxed array, rather than as a
+pointer, then how do we access these elements in the interpreter? How do
+we box them?
+* The subarray is copied to a heap object. Copying the entire subarray is
+  O(N) -- expensive if the subarray is large.
+* A ListSpan object is created that references the parent array. The cost
+  of creating the span is constant, but it keeps the parent alive, which might
+  be a memory leak.
+* Indexing into a tree using a path is a primitive operation that doesn't
+  require boxing each intermediate subarray.
+
+In libcurv, CVec3 is a flat array of float (not a reference to
+heap memory). from_value converts from a List ref. to_value converts to
+a List ref (allocating memory). In libcurv, ConVal list classes are chosen
+to be heaped or flat on a per-class basis. Maybe CArray<N,T> is flat.
+When using CArray, you trade off the cost of conversion to a Value against
+the efficiency of the flat no-alloc representation.
+
+Given CVec3, we can construct FixedList<CVec3> and create a Curv value
+containing an array of flat Vec3 values. This makes Abstract_List::val_at()
+expensive (allocates a FixedList object for each element, on each access).
+
+Unboxed Flat Arrays in Curv
+---------------------------
+Curv can construct flat large arrays of efficiently encoded unboxed values.
+Examples include: images, triangle meshes, sampled SDFs, GPU buffers.
+
+What Curv code do you write to create an unboxed array?
+ 1. Imperative. Allocate an array populated with default values.
+    Then use imperative code to update the array to the desired values.
+    (The array is initialized twice.)
+ 2. Functional. Use code (an unevaluated generator) to specify the
+    initial list values. Each list element is initialized only once.
+ 3. Construct a boxed list, then convert it to boxed form specifying a type.
+    The space is allocated twice, the data is copied.
+     * eg, `as (List T) [...]`.
+
+Implementation:
+* A buffer shared between CPU and GPU must be allocated using the WebGPU API.
+* It's good if we know the size of the large array before allocating space.
+  From a generator we could pre-calculate the number of elements that will be
+  generated.
+
+make_list T gen
+    T is an element type, gen is an unevaluated generator.

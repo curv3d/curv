@@ -116,12 +116,26 @@ Two types with the same value set and representation should compare equal.
 And will therefore print the same. Thus,
     String.T == List Char
     BVec.T == List Bool
+    Tuple[Num] == Array[1]Num
     Tuple[Num,Num] == Array[2]Num
+    Tuple[Num,Num,Num] == Array[3]Num
+    ...
     Array 0 T == T
     Array 1 T == List T
     Array[]T == T
     Array[0]T == Tuple[]
     Array[M](Array[N]T) == Array[M,N]T
+
+Tuple/Array normalization:
+    Tuple[] <= Array[0]Num
+    Tuple[Num] => Array[1]Num
+    Tuple[Num,Num] => Array[2]Num
+    Tuple[Num,Num,Num] => Array[3]Num
+    ...
+    note: Array[1,2]T <= Tuple[Array[2]T]
+          Array[2,1]T <= Array[2](Tuple[T])
+          Array[0,2]T => Tuple[]
+          Array[2,0]T => Array[2](Tuple[])
 
 An exception to the equality rule is `All predicate`. Later, when functions
 have Natural Equality.
