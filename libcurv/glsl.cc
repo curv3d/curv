@@ -12,14 +12,11 @@
 
 namespace curv {
 
-const char glsl_header[] = "";
-
 void glsl_function_export(const Shape_Program& shape, std::ostream& out)
 {
-    SC_Compiler sc(out, SC_Target::glsl, shape.sstate_);
+    SC_Compiler sc(SC_Target::glsl, shape.sstate_);
     At_Program cx(shape);
 
-    out << glsl_header;
     if (shape.viewed_shape_) {
         // output uniform variables for parametric shape
         for (auto& p : shape.viewed_shape_->param_) {
@@ -31,6 +28,7 @@ void glsl_function_export(const Shape_Program& shape, std::ostream& out)
         shape.dist_fun_, cx);
     sc.define_function("colour", SC_Type::Num(4), SC_Type::Num(3),
         shape.colour_fun_, cx);
+    sc.emit_objects(out);
 }
 
 } // namespace

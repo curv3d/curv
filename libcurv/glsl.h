@@ -11,9 +11,6 @@ namespace curv {
 
 struct Shape_Program;
 
-// GLSL library functions
-extern const char glsl_header[];
-
 // Export a shape's dist and colour functions as a set of GLSL definitions.
 void glsl_function_export(const Shape_Program&, std::ostream&);
 

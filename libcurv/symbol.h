@@ -5,6 +5,7 @@
 #ifndef LIBCURV_SYMBOL_H
 #define LIBCURV_SYMBOL_H
 
+#include <libcurv/hash.h>
 #include <libcurv/string.h>
 #include <map>
 #include <vector>
@@ -105,6 +106,7 @@ public:
     {
         a1.swap(a2);
     }
+    inline size_t hash() const noexcept { return strhash(c_str()); }
     friend std::ostream& operator<<(std::ostream& out, Symbol_Ref a);
     Value to_value() const;
     bool is_identifier() const;
@@ -143,4 +145,12 @@ struct Symbol_Map : public std::map<Symbol_Ref, T>
 };
 
 } // namespace curv
+
+template<>
+struct std::hash<curv::Symbol_Ref>
+{
+    std::size_t operator()(curv::Symbol_Ref s) const noexcept
+      { return s.hash(); }
+};
+
 #endif // header guard

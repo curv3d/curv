@@ -8,6 +8,7 @@
 #include <libcurv/function.h>
 #include <libcurv/meaning.h>
 #include <libcurv/sc_frame.h>
+#include <tsl/ordered_map.h>
 #include <unordered_map>
 #include <vector>
 
@@ -57,10 +58,14 @@ struct Op_Hash_Eq
 using Op_Cache =
     std::unordered_map<Shared<const Operation>, SC_Value, Op_Hash, Op_Hash_Eq>;
 
+struct SC_Object : public Shared_Base
+{
+    virtual void emit(SC_Compiler&, std::ostream&) const = 0;
+};
+
 /// Global state for the GLSL/C++ code generator.
 struct SC_Compiler
 {
-    std::ostream& out_;
     std::stringstream constants_{};
     std::stringstream body_{};
     bool in_constants_ = false;
@@ -70,10 +75,11 @@ struct SC_Compiler
     std::unordered_map<Value, SC_Value, Value::Hash, Value::Hash_Eq>
         valcache_{};
     std::vector<Op_Cache> opcaches_{};
+    tsl::ordered_map<Symbol_Ref, Shared<const SC_Object>> objects_;
 
-    SC_Compiler(std::ostream& s, SC_Target t, Source_State& ss)
+    SC_Compiler(SC_Target t, Source_State& ss)
     :
-        out_(s), target_(t), valcount_(0), sstate_(ss)
+        target_(t), valcount_(0), sstate_(ss)
     {
     }
 
@@ -96,13 +102,32 @@ struct SC_Compiler
         Shared<const Function> func,
         const Context& cx);
 
-    void begin_function();
-    void end_function();
+    void emit_objects(std::ostream&);
 
     inline SC_Value newvalue(SC_Type type)
     {
         return SC_Value(valcount_++, type);
     }
+};
+
+struct SC_Function : public SC_Object
+{
+    Symbol_Ref name_;
+    std::vector<SC_Value> params_;
+    SC_Value result_;
+    std::stringstream constants_{};
+    std::stringstream body_{};
+    SC_Function(
+        Symbol_Ref n, std::vector<SC_Value> p, SC_Value r,
+        std::stringstream c, std::stringstream b)
+    :
+        name_(n),
+        params_(p),
+        result_(r),
+        constants_(std::move(c)),
+        body_(std::move(b))
+    {}
+    virtual void emit(SC_Compiler&, std::ostream&) const override;
 };
 
 // Encapsulate an SC_Value as an expression (Operation).

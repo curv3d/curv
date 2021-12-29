@@ -72,41 +72,18 @@ SC_Compiler::define_function(
     Shared<const Function> func,
     const Context& cx)
 {
-    begin_function();
+    valcount_ = 0;
+    valcache_.clear();
+    opcaches_.clear();
+    opcaches_.emplace_back(Op_Cache{});
+    constants_.str("");
+    body_.str("");
 
-    // function prologue
-    if (target_ == SC_Target::cpp)
-        out_ << "extern \"C\" void " << name << "(";
-    else
-        out_ << result_type << " " << name << "(";
-    bool first = true;
     std::vector<SC_Value> params;
-    int n = 0;
     for (auto& ty : param_types) {
         params.push_back(newvalue(ty));
-        if (!first) out_ << ", ";
-        first = false;
-        if (target_ == SC_Target::cpp)
-            out_ << "const " << ty << "* param" << n++;
-        else
-            out_ << ty << " " << params.back();
     }
-    if (target_ == SC_Target::cpp) {
-        if (!first) out_ << ", ";
-        out_ << result_type << "* result)\n";
-    } else
-        out_ << ")\n";
-    out_ << "{\n";
-    if (target_ == SC_Target::cpp) {
-        n = 0;
-        for (unsigned i = 0; i < params.size(); ++i) {
-            out_ << "  " << param_types[i] << " " << params[i]
-                 << " = *param" << n++ << ";\n";
-        }
-    }
-
-    // function body
-    auto f = make_tail_array<SC_Frame>(0,
+    auto fm = make_tail_array<SC_Frame>(0,
         *this, &cx, nullptr, nullptr, nullptr);
     Shared<Operation> arg_expr;
     if (params.size() == 1)
@@ -118,39 +95,67 @@ SC_Compiler::define_function(
         }
         arg_expr = move(param_list);
     }
-    auto result = func->sc_call_expr(*arg_expr, nullptr, *f);
+    auto result = func->sc_call_expr(*arg_expr, nullptr, *fm);
     if (result.type != result_type) {
         throw Exception(cx, stringify(name," function returns ",result.type));
     }
-    end_function();
+
+    auto f = make<SC_Function>(make_symbol(name), std::move(params), result,
+         std::move(constants_), std::move(body_));
+    objects_.insert(std::pair<Symbol_Ref,Shared<const SC_Object>>{f->name_, f});
+}
+
+void
+SC_Function::emit(SC_Compiler& sc, std::ostream& out) const
+{
+    // function prologue
+    if (sc.target_ == SC_Target::cpp)
+        out << "extern \"C\" void " << name_ << "(";
+    else
+        out << result_.type << " " << name_ << "(";
+    bool first = true;
+    for (auto& p : params_) {
+        int n = 0;
+        if (!first) out << ", ";
+        first = false;
+        if (sc.target_ == SC_Target::cpp)
+            out << "const " << p.type << "* param" << n++;
+        else
+            out << p.type << " " << p;
+    }
+    if (sc.target_ == SC_Target::cpp) {
+        if (!first) out << ", ";
+        out << result_.type << "* result)\n";
+    } else
+        out << ")\n";
+    out << "{\n";
+    if (sc.target_ == SC_Target::cpp) {
+        int n = 0;
+        for (auto p : params_) {
+            out << "  " << p.type << " " << p << " = *param" << n++ << ";\n";
+        }
+    }
+
+    // function body
+    out << "  /* constants */\n";
+    out << constants_.str();
+    out << "  /* body */\n";
+    out << body_.str();
 
     // function epilogue
-    if (target_ == SC_Target::cpp) {
-        out_ << "  *result = " << result << ";\n";
+    if (sc.target_ == SC_Target::cpp) {
+        out << "  *result = " << result_ << ";\n";
     } else {
-        out_ << "  return " << result << ";\n";
+        out << "  return " << result_ << ";\n";
     }
-    out_ << "}\n";
+    out << "}\n";
 }
-
 void
-SC_Compiler::begin_function()
+SC_Compiler::emit_objects(std::ostream& out)
 {
-    valcount_ = 0;
-    valcache_.clear();
-    opcaches_.clear();
-    opcaches_.emplace_back(Op_Cache{});
-    constants_.str("");
-    body_.str("");
-}
-
-void
-SC_Compiler::end_function()
-{
-    out_ << "  /* constants */\n";
-    out_ << constants_.str();
-    out_ << "  /* body */\n";
-    out_ << body_.str();
+    for (auto& obj : objects_)
+        obj.second->emit(*this, out);
+    objects_.clear();
 }
 
 struct Set_Purity

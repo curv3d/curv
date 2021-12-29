@@ -39,7 +39,7 @@ Cpp_Program::Cpp_Program(Source_State& ss)
     tempfile_id_{make_tempfile_id()},
     path_{register_tempfile(tempfile_id_,".cpp")},
     file_{path_.c_str()},
-    sc_{file_, SC_Target::cpp, ss}
+    sc_{SC_Target::cpp, ss}
 {
     if (file_.fail()) {
         throw Exception{At_SState{ss},
@@ -62,6 +62,7 @@ Cpp_Program::~Cpp_Program()
 void
 Cpp_Program::compile(const Context& cx)
 {
+    sc_.emit_objects(file_);
     file_.close();
 
     // compile C++ to optimized object code

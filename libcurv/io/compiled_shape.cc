@@ -32,7 +32,7 @@ Compiled_Shape::Compiled_Shape(Shape_Program& rshape)
 void
 export_cpp(Shape_Program& shape, std::ostream& out)
 {
-    SC_Compiler sc(out, SC_Target::cpp, shape.sstate_);
+    SC_Compiler sc(SC_Target::cpp, shape.sstate_);
     At_Program cx(shape);
 
     out << Cpp_Program::standard_header;
@@ -40,6 +40,7 @@ export_cpp(Shape_Program& shape, std::ostream& out)
         shape.dist_fun_, cx);
     sc.define_function("colour", SC_Type::Num(4), SC_Type::Num(3),
         shape.colour_fun_, cx);
+    sc.emit_objects(out);
 }
 
 }} // namespace
