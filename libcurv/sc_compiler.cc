@@ -100,19 +100,25 @@ SC_Compiler::define_function(
         throw Exception(cx, stringify(name," function returns ",result.type));
     }
 
-    auto f = make<SC_Function>(make_symbol(name), std::move(params), result,
+    auto f = make<SC_Function>(std::move(params), result,
          std::move(constants_), std::move(body_));
-    objects_.insert(std::pair<Symbol_Ref,Shared<const SC_Object>>{f->name_, f});
+    push_object(make_symbol(name), f);
 }
 
 void
-SC_Function::emit(SC_Compiler& sc, std::ostream& out) const
+SC_Uniform_Variable::emit(SC_Compiler& sc, Symbol_Ref name, std::ostream& out)
+    const
+{
+    out << "uniform " << type_ << " " << name << ";\n";
+}
+void
+SC_Function::emit(SC_Compiler& sc, Symbol_Ref name, std::ostream& out) const
 {
     // function prologue
     if (sc.target_ == SC_Target::cpp)
-        out << "extern \"C\" void " << name_ << "(";
+        out << "extern \"C\" void " << name << "(";
     else
-        out << result_.type << " " << name_ << "(";
+        out << result_.type << " " << name << "(";
     bool first = true;
     for (auto& p : params_) {
         int n = 0;
@@ -154,7 +160,7 @@ void
 SC_Compiler::emit_objects(std::ostream& out)
 {
     for (auto& obj : objects_)
-        obj.second->emit(*this, out);
+        obj.second->emit(*this, obj.first, out);
     objects_.clear();
 }
 

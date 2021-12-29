@@ -20,8 +20,8 @@ void glsl_function_export(const Shape_Program& shape, std::ostream& out)
     if (shape.viewed_shape_) {
         // output uniform variables for parametric shape
         for (auto& p : shape.viewed_shape_->param_) {
-            out << "uniform " << p.second.pconfig_.sctype_ << " "
-                << p.second.identifier_ << ";\n";
+            sc.push_object(make_symbol(p.second.identifier_),
+                make<SC_Uniform_Variable>(p.second.pconfig_.sctype_));
         }
     }
     sc.define_function("dist", SC_Type::Num(4), SC_Type::Num(),

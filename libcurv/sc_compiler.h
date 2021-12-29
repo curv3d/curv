@@ -60,7 +60,7 @@ using Op_Cache =
 
 struct SC_Object : public Shared_Base
 {
-    virtual void emit(SC_Compiler&, std::ostream&) const = 0;
+    virtual void emit(SC_Compiler&, Symbol_Ref, std::ostream&) const = 0;
 };
 
 /// Global state for the GLSL/C++ code generator.
@@ -102,6 +102,8 @@ struct SC_Compiler
         Shared<const Function> func,
         const Context& cx);
 
+    inline void push_object(Symbol_Ref n, Shared<const SC_Object> o)
+      { objects_.insert(std::pair<Symbol_Ref,Shared<const SC_Object>>{n,o}); }
     void emit_objects(std::ostream&);
 
     inline SC_Value newvalue(SC_Type type)
@@ -110,24 +112,29 @@ struct SC_Compiler
     }
 };
 
+struct SC_Uniform_Variable : public SC_Object
+{
+    SC_Type type_;
+    SC_Uniform_Variable(SC_Type t) : type_(t) {}
+    virtual void emit(SC_Compiler&, Symbol_Ref, std::ostream&) const override;
+};
+
 struct SC_Function : public SC_Object
 {
-    Symbol_Ref name_;
     std::vector<SC_Value> params_;
     SC_Value result_;
     std::stringstream constants_{};
     std::stringstream body_{};
     SC_Function(
-        Symbol_Ref n, std::vector<SC_Value> p, SC_Value r,
+        std::vector<SC_Value> p, SC_Value r,
         std::stringstream c, std::stringstream b)
     :
-        name_(n),
         params_(p),
         result_(r),
         constants_(std::move(c)),
         body_(std::move(b))
     {}
-    virtual void emit(SC_Compiler&, std::ostream&) const override;
+    virtual void emit(SC_Compiler&, Symbol_Ref, std::ostream&) const override;
 };
 
 // Encapsulate an SC_Value as an expression (Operation).
