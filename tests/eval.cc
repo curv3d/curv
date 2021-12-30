@@ -252,13 +252,13 @@ TEST(curv, eval)
     // runtime operations
     SUCCESS("-0", "-0");
     SUCCESS("-inf", "-inf");
-    FAILMSG("1+null", "1 + #null: domain error");
+    FAILMSG("1+null", "1 + #null: illegal arguments");
     SUCCESS("[10,20]-3", "[7,17]");
     SUCCESS("5-[1,2]", "[4,3]");
     SUCCESS("[1,2]-[10,20]", "[-9,-18]");
-    FAILMSG("inf-inf","inf - inf: domain error");
+    FAILMSG("inf-inf","inf - inf: illegal arguments");
     FAILMSG("[]-[1]","mismatched list sizes (0,1) in array operation");
-    FAILMSG("0/0", "0 / 0: domain error");
+    FAILMSG("0/0", "0 / 0: illegal arguments");
     SUCCESS("1/0", "inf");
     SUCCESS("sqrt(2)", "1.4142135623730951");
     SUCCESS("max(1,2,)", "2"); // test syntax: trailing , after last argument
@@ -316,7 +316,7 @@ TEST(curv, eval)
     SUCCESS("null!=false", "#true");
     SUCCESS("0 < 1", "#true");
     SUCCESS("-0 < +0", "#false");
-    FAILMSG("0 < null", "0 < #null: domain error");
+    FAILMSG("0 < null", "0 < #null: illegal arguments");
     SUCCESS("0 <= 1", "#true");
     SUCCESS("1 > 0", "#true");
     SUCCESS("1 >= 0", "#true");
@@ -324,7 +324,7 @@ TEST(curv, eval)
     SUCCESS("4^0.5", "2");
     SUCCESS("4^-1", "0.25");
     SUCCESS("-2^2", "-4");
-    FAILMSG("(-1)^0.5","-1 ^ 0.5: domain error");
+    FAILMSG("(-1)^0.5","-1 ^ 0.5: illegal arguments");
 
     // list index operator L[i,j,k]
     SUCCESS("[1,2,3][1]","2");
@@ -532,7 +532,7 @@ TEST(curv, eval)
         "    h x = x + 1;\n"
         "in f true\n"
     ,
-        "#true + 1: domain error\n"
+        "#true + 1: illegal arguments\n"
         "at function h:\n"
         "4|     h x = x + 1;\n"
         "             ^^^^^ \n"

@@ -183,29 +183,15 @@ struct Binary_Array_Op
     using Prim = PRIM;
 
     static Exception domain_error(
-        const At_Syntax& cx, unsigned i, Value x, Value y)
-    {
-        if (dynamic_cast<const At_Arg*>(&cx)) {
-            return Exception(At_Index(i,cx),
-                stringify(i==0?x:y,": domain error"));
-        }
-        if (auto ap = dynamic_cast<const At_Phrase*>(&cx)) {
-            if (auto bin = cast<const Binary_Phrase>(ap->phrase_))
-                return Exception(cx,
-                    stringify(x," ",bin->opname()," ",y,": domain error"));
-        }
-        return Exception(cx, stringify(i==0?x:y,": domain error"));
-    }
-
-    static Exception domain_error(
         const At_Syntax& cx, Value x, Value y)
     {
-        if (auto ap = dynamic_cast<const At_Phrase*>(&cx)) {
-            if (auto bin = cast<const Binary_Phrase>(ap->phrase_))
-                return Exception(cx,
-                    stringify(x," ",bin->opname()," ",y,": domain error"));
+        if (Prim::prec == Prec::postfix) {
+            return Exception(cx,
+                stringify(Prim::name,"[",x,",",y,"]: illegal arguments"));
+        } else {
+            return Exception(cx,
+                stringify(x," ",Prim::name," ",y,": illegal arguments"));
         }
-        return Exception(cx, stringify("[",x,",",y,"]: domain error"));
     }
 
     static Value
@@ -311,12 +297,12 @@ struct Binary_Array_Op
                         return reactive_op(cx, x, y);
                     }
                 }
-                throw domain_error(cx,1,x,y);
+                throw domain_error(cx,x,y);
             case Ref_Value::ty_reactive:
                 return reactive_op(cx, x, y);
             }
         }
-        throw domain_error(cx,0,x,y);
+        throw domain_error(cx,x,y);
     }
     static SC_Value
     sc_op(const At_Syntax& cx, Operation& argx, SC_Frame& fm)
