@@ -1,0 +1,71 @@
+How is the body of a `parametric` expression evaluated?
+
+What's the goal, the desired result?
+
+ 1. To reduce the body expression to "weak head-normal form"?
+    "Normal order evaluation" can get us there. So can the current evaluator
+    with reactive expressions, if the evaluator is fixed to never fail on an RE,
+    and always return a thunk or partially evaluated expression instead if it
+    can't proceed.
+
+    In Curv, "weak head-normal form" includes dynamic record constructors where
+    we don't know (some of) the fields due to unevaluated conditional code.
+    * We could use Record{...} types to describe the types of such expressions.
+
+ 2. To reduce the body expression to an "abstract value" that denotes a
+    structured set of values (aka a Type). If all the values in this set
+    are shapes, then we can display a shape.
+
+Some unsolved problems:
+ 1. parametric A :: int_slider[0,1] = 0 in if (A==0) sphere else cube
+ 2. parametric A :: int_slider[0,1] = 0 in union[if (A==0) sphere, cube]
+
+Problem #1: symbolic `if` expression
+------------------------------------
+`parametric A :: int_slider[0,1] = 0 in if (A==0) sphere else cube`
+* workaround: `morph A [sphere,cube]`
+* if-else expression evaluation when condition is symbolic:
+  * Evaluate then and else clauses, union the resulting types?
+* sphere and cube are both records. 'type-unioning' these values produces
+    { dist: if(a==0) sphere.dist else cube.dist, ... }
+  A second iteration of unioning pushes the if(A==0) inside a function, so
+      dist: pt->if(A==0) sphere.dist pt else cube.dist pt
+* this method converts the symbolic if expr to head-normal form.
+* this method should be applied lazily.
+
+Problem #2: symbolic `if` generator
+-----------------------------------
+parametric A :: int_slider[0,1] = 0 in union[if (A==0) sphere, cube]
+ * workaround: union[morph A [sphere, nothing], cube]
+ * workaround: union[if(A==0)sphere else nothing, cube], assuming #1 is done
+ * Assign a 'generator type' to 'if(A==0)sphere'.
+ * Given `union = reduce[nothing,_union2]`, can we apply `union` to this
+   symbolic list?
+ * Tricky. What if 'reduce' is a primitive with special logic for a symbolic
+   list argument?
+    * We know 'nothing' is the zero element, so replace
+        if (A==0) sphere
+      with
+        if (A==0) sphere else nothing
+
+Problem #3: symbolic `for` generator
+------------------------------------
+union[for (i in 0..A) myshape i]
+ * Assign a 'generator' type to the symbolic for generator. Does it help?
+ * The argument to union is a symbolic list. Maybe solve this at the level
+   of 'union', special handling for a symbolic argument.
+ * I think it's necessary to put the for loop inside the dist and colour
+   functions -- can't inline expand the for loop as happens normally,
+   and as happens in solution #2. Also this has better performance.
+ * Union of a symbolic list:
+    * For each shape in list, min of shape.dist pt, with zero=inf.
+    * union shapes = make_shape {
+        dist pt = reduce [inf, [s1,s2]->min[s1.dist pt,s2.dist pt]] shapes,
+        dist pt = min (map (s->s.dist pt) shapes),
+        ...
+      }
+ * min of a symbolic list, compiled into GLSL:
+     float n = inf;
+     for each el in the list
+       n = min(n, el);
+   This is just a reduce, so this code could be produced by 'reduce'.
