@@ -321,7 +321,7 @@ struct F_is_func : public Function
 
 struct Bit_Prim : public Unary_Bool_To_Num_Prim
 {
-    static const char* name() { return "bit"; }
+    static inline constexpr const char name[] = "bit";
     static constexpr Prec prec = Prec::postfix;
     static Value call(bool b, const Context&) { return {double(b)}; }
     static SC_Value sc_call(SC_Frame& fm, SC_Value arg)
@@ -337,7 +337,7 @@ using F_bit = Unary_Array_Func<Bit_Prim>;
 #define UNARY_NUMERIC_FUNCTION(Func_Name,curv_name,c_name,glsl_name) \
 struct Func_Name##Prim : public Unary_Num_SCVec_Prim \
 { \
-    static const char* name() { return #curv_name; } \
+    static inline constexpr const char name[] = #curv_name; \
     static constexpr Prec prec = Prec::postfix; \
     static Value call(double x, const Context&) { return {c_name(x)}; } \
     static SC_Value sc_call(SC_Frame& fm, SC_Value arg) \
@@ -375,7 +375,7 @@ UNARY_NUMERIC_FUNCTION(F_atanh, atanh, atanh, atanh)
 
 struct Phase_Prim : public Unary_Vec2_To_Num_Prim
 {
-    static const char* name() { return "phase"; }
+    static inline constexpr const char name[] = "phase";
     static constexpr Prec prec = Prec::postfix;
     static Value call(Vec2 v, const Context&) { return {atan2(v.y,v.x)}; }
     static SC_Value sc_call(SC_Frame& fm, SC_Value arg) {
@@ -389,7 +389,7 @@ using F_phase = Unary_Array_Func<Phase_Prim>;
 
 struct Max_Prim : public Binary_Num_SCVec_Prim
 {
-    static const char* name() { return "max"; }
+    static inline constexpr const char name[] = "max";
     static constexpr Prec prec = Prec::postfix;
     static Value zero() { return {-INFINITY}; }
     static Value call(double x, double y, const Context&)
@@ -401,7 +401,7 @@ using F_max = Monoid_Func<Max_Prim>;
 
 struct Min_Prim : public Binary_Num_SCVec_Prim
 {
-    static const char* name() { return "min"; }
+    static inline constexpr const char name[] = "min";
     static constexpr Prec prec = Prec::postfix;
     static Value zero() { return {INFINITY}; }
     static Value call(double x, double y, const Context&)
@@ -418,7 +418,7 @@ using F_not = Unary_Array_Func<Not_Prim>;
 #define BOOL_OP(CppName,Name,Zero,LogOp,BitOp)\
 struct CppName##_Prim : public Binary_Bool_Prim\
 {\
-    static const char* name() { return Name; } \
+    static inline constexpr const char name[] = Name; \
     static constexpr Prec prec = Prec::postfix; \
     static Value zero() { return {Zero}; }\
     static Value call(bool x, bool y, const Context&) { return {x LogOp y}; }\
@@ -454,7 +454,7 @@ BOOL_OP(or,"or",false,||,|)
 
 struct Xor_Prim : public Binary_Bool_Prim
 {
-    static const char* name() { return "xor"; }
+    static inline constexpr const char name[] = "xor";
     static constexpr Prec prec = Prec::postfix;
     static Value zero() { return {false}; }
     static Value call(bool x, bool y, const Context&) { return {x != y}; }
@@ -476,7 +476,7 @@ using F_xor = Monoid_Func<Xor_Prim>;
 
 struct Lshift_Prim : public Shift_Prim
 {
-    static const char* name() { return "lshift"; }
+    static inline constexpr const char name[] = "lshift";
     static constexpr Prec prec = Prec::postfix;
     static Value call(Shared<const List> a, double b, const Context &cx)
     {
@@ -502,7 +502,7 @@ using F_lshift = Binary_Array_Func<Lshift_Prim>;
 
 struct Rshift_Prim : public Shift_Prim
 {
-    static const char* name() { return "rshift"; }
+    static inline constexpr const char name[] = "rshift";
     static constexpr Prec prec = Prec::postfix;
     static Value call(Shared<const List> a, double b, const Context &cx)
     {
@@ -528,7 +528,7 @@ using F_rshift = Binary_Array_Func<Rshift_Prim>;
 
 struct Bool32_Sum_Prim : public Binary_Bool32_Prim
 {
-    static const char* name() { return "bool32_sum"; }
+    static inline constexpr const char name[] = "bool32_sum";
     static constexpr Prec prec = Prec::postfix;
     static Value zero()
     {
@@ -551,7 +551,7 @@ using F_bool32_sum = Monoid_Func<Bool32_Sum_Prim>;
 
 struct Bool32_Product_Prim : public Binary_Bool32_Prim
 {
-    static const char* name() { return "bool32_product"; }
+    static inline constexpr const char name[] = "bool32_product";
     static constexpr Prec prec = Prec::postfix;
     static Value zero()
     {
@@ -577,7 +577,7 @@ struct F_bool32_to_nat : public Function
     using Function::Function;
     struct Prim : public Unary_Bool32_To_Num_Prim
     {
-        static const char* name() { return "bool32_to_nat"; }
+        static inline constexpr const char name[] = "bool32_to_nat";
         static constexpr Prec prec = Prec::postfix;
         static Value call(unsigned n, const Context&)
         {
@@ -604,7 +604,7 @@ struct F_nat_to_bool32 : public Function
     using Function::Function;
     struct Prim : public Unary_Num_To_Bool32_Prim
     {
-        static const char* name() { return "nat_to_bool32"; }
+        static inline constexpr const char name[] = "nat_to_bool32";
         static constexpr Prec prec = Prec::postfix;
         static Value call(double n, const Context& cx)
         {
@@ -642,7 +642,7 @@ struct F_nat_to_bool32 : public Function
 
 struct Bool32_To_Float_Prim : public Unary_Bool32_To_Num_Prim
 {
-    static const char* name() { return "bool32_to_float"; }
+    static inline constexpr const char name[] = "bool32_to_float";
     static constexpr Prec prec = Prec::postfix;
     static Value call(unsigned n, const Context&)
     {
@@ -661,7 +661,7 @@ using F_bool32_to_float = Unary_Array_Func<Bool32_To_Float_Prim>;
 
 struct Float_To_Bool32_Prim : public Unary_Num_To_Bool32_Prim
 {
-    static const char* name() { return "bool32_to_float"; }
+    static inline constexpr const char name[] = "bool32_to_float";
     static constexpr Prec prec = Prec::postfix;
     static Value call(double n, const Context&)
     {

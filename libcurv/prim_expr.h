@@ -14,7 +14,7 @@ namespace curv {
 
 struct Positive_Prim : public Unary_Num_SCMat_Prim
 {
-    static const char* name() {return "+";};
+    static inline constexpr const char name[] = "+";
     static Value call(double x, const Context&) { return {+x}; }
     static SC_Value sc_call(SC_Frame& fm, SC_Value x)
         { return sc_unary_call(fm, x.type, "+", x); }
@@ -24,7 +24,7 @@ using Positive_Expr = Unary_Op_Expr<Positive_Op>;
 
 struct Negative_Prim : public Unary_Num_SCMat_Prim
 {
-    static const char* name() {return "-";};
+    static inline constexpr const char name[] = "-";
     static Value call(double x, const Context&) { return {-x}; }
     static SC_Value sc_call(SC_Frame& fm, SC_Value x)
         { return sc_unary_call(fm, x.type, "-", x); }
@@ -34,7 +34,7 @@ using Negative_Expr = Unary_Op_Expr<Negative_Op>;
 
 struct Not_Prim : public Unary_Bool_Prim
 {
-    static const char* name() {return "not";};
+    static inline constexpr const char name[] = "not";
     static Value call(bool x, const Context&) { return {!x}; }
     static SC_Value sc_call(SC_Frame& fm, SC_Value x) {
         if (x.type.is_bool())
@@ -63,7 +63,7 @@ struct Cat_Op : public Binary_Op
         return lb.get_value();
     }
     struct Prim {
-        static const char* name() {return "++";};
+        static inline constexpr const char name[] = "++";
         static constexpr Prec prec = Prec::sum;
     };
 };
@@ -71,7 +71,7 @@ using Cat_Expr = Binary_Op_Expr<Cat_Op>;
 
 struct Add_Prim : public Binary_Num_SCMat_Prim
 {
-    static const char* name() {return "+";};
+    static inline constexpr const char name[] = "+";
     static constexpr Prec prec = Prec::sum;
     static Value zero() { return {0.0}; }
     static Value call(double x, double y, const Context&) { return {x + y}; }
@@ -83,7 +83,7 @@ using Add_Expr = Binary_Op_Expr<Add_Op>;
 
 struct Multiply_Prim : public Binary_Num_SCMat_Prim
 {
-    static const char* name() { return "*"; }
+    static inline constexpr const char name[] = "*";
     static constexpr Prec prec = Prec::product;
     static Value zero() { return {1.0}; }
     static Value call(double x, double y, const Context&) { return {x * y}; }
@@ -99,7 +99,7 @@ using Multiply_Expr = Binary_Op_Expr<Multiply_Op>;
 
 struct Subtract_Prim : public Binary_Num_SCMat_Prim
 {
-    static const char* name() {return "-";};
+    static inline constexpr const char name[] = "-";
     static constexpr Prec prec = Prec::sum;
     static Value call(double x, double y, const Context&) { return {x - y}; }
     static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y)
@@ -110,7 +110,7 @@ using Subtract_Expr = Binary_Op_Expr<Subtract_Op>;
 
 struct Divide_Prim : public Binary_Num_SCMat_Prim
 {
-    static const char* name() {return "/";};
+    static inline constexpr const char name[] = "/";
     static constexpr Prec prec = Prec::product;
     static Value call(double x, double y, const Context&) { return {x / y}; }
     static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y)
@@ -121,7 +121,7 @@ using Divide_Expr = Binary_Op_Expr<Divide_Op>;
 
 struct Power_Prim : public Binary_Num_SCVec_Prim
 {
-    static const char* name() {return "^";};
+    static inline constexpr const char name[] = "^";
     static constexpr Prec prec = Prec::power;
     static Value call(double x, double y, const Context&) { return {pow(x,y)}; }
     static SC_Value sc_call(SC_Frame& fm, SC_Value x, SC_Value y)
@@ -133,7 +133,7 @@ using Power_Expr = Binary_Op_Expr<Power_Op>;
 #define RELATION(Class,LT,lessThan) \
 struct Class##_Prim : public Binary_Num_To_Bool_Prim \
 { \
-    static const char* name() { return #LT; } \
+    static inline constexpr const char name[] = #LT; \
     static constexpr Prec prec = Prec::relation; \
     static Value call(double a, double b, const Context& cx) \
         { return {a LT b}; } \

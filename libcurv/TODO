@@ -91,12 +91,12 @@ Standardize format of Prim error messages
 -----------------------------------------
 Binary_Array_Op::domain_error: use Prim::name rather than dig into cx.syntax
     is_C_identifier in symbol.h
-+        if (is_C_identifier(Prim::name())) {
++        if (is_C_identifier(Prim::name)) {
 +            return Exception(cx,
-+                stringify(Prim::name(),"[",x,",",y,"]: invalid argument"));
++                stringify(Prim::name,"[",x,",",y,"]: invalid argument"));
 +        } else {
 +            return Exception(cx,
-+                stringify(x," ",Prim::name()," ",y,": invalid argument"));
++                stringify(x," ",Prim::name," ",y,": invalid argument"));
     Standardized error messages in Prim. For the same Prim, errors can occur:
      * in a Call_Expr function call expression
      * in a Unary_Prim_Expr or Binary_Prim_Expr (part of a reactive expr)

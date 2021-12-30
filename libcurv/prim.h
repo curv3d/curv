@@ -52,7 +52,7 @@ struct Unary_Op_Expr : public Prefix_Expr_Base
     static bool idchr(char c)
         { return (c>='a'&&c<='z')||(c>='A'&&c<='Z')||c=='_'; }
     virtual void print_repr(std::ostream& out, Prec rprec) const override {
-        const char* name = Op::Prim::name();
+        const char* name = Op::Prim::name;
         Prec prec, argprec;
         if (idchr(name[0])) {
             prec = Prec::postfix; argprec = Prec::primary;
@@ -80,7 +80,7 @@ struct Binary_Op_Expr : public Infix_Expr_Base
     virtual void print_repr(std::ostream& out, Prec rprec) const override {
         open_paren(out, rprec, Op::Prim::prec);
         if (Op::Prim::prec == Prec::postfix) {
-            out << Op::Prim::name() << "[";
+            out << Op::Prim::name << "[";
             arg1_->print_repr(out, Prec::item);
             out << ",";
             arg2_->print_repr(out, Prec::item);
@@ -88,12 +88,12 @@ struct Binary_Op_Expr : public Infix_Expr_Base
         } else if (Op::Prim::prec == Prec::power) {
             // right associative
             arg1_->print_repr(out, Prec::postfix);
-            out << " " << Op::Prim::name() << " ";
+            out << " " << Op::Prim::name << " ";
             arg2_->print_repr(out, Prec::power);
         } else {
             // left associative
             arg1_->print_repr(out, Op::Prim::prec);
-            out << " " << Op::Prim::name() << " ";
+            out << " " << Op::Prim::name << " ";
             arg2_->print_repr(out, Prec(int(Op::Prim::prec)+1));
         }
         close_paren(out, rprec, Op::Prim::prec);
