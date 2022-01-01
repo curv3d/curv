@@ -1,0 +1,96 @@
+Lambda Types (SubCurv Function Types)
+=====================================
+An SC function type (aka a Lambda type) is identified with a specific function.
+* Each primitive function has its own singleton lambda type.
+* Each nonprimitive function has a lambda type that is identified with a
+  lambda expression source code location, with one field for each non-const
+  member of the closure's environment.
+* A const function by definition has no nonconst members in its environment,
+  so it has a singleton lambda type.
+
+This design allows functions to be first class values in SubCurv.
+Polymorphic Curv functions can be stored in GLSL variables or as elements of
+GLSL data structures, passed as arguments to GLSL functions, returned as
+results. It's a miracle. At the point where a SubCurv dynamic function value
+is called, we use static knowledge about the function definition encoded in
+the type to create, at compile time, a specialized version of the function
+with a static GLSL type. (Specialization fails if the result type of the
+specialized function isn't a SubCurv type. At least until we introduce
+SubCurv union types, not in MVP.)
+
+A lambda type repr must include the function name and source location,
+so that SC error messages including lambda types can be understood (and
+support queries about these error messages can be answered).
+  Lambda<sin> -- primitive
+  Lambda<union lib/curv/std.curv:794:0> -- branded nonprimitive
+  Lambda<foo.curv:8:4> -- anonymous nonprimitive
+In theory, a non-singleton Lambda type could also print the type of its
+environment data, but this isn't used to distinguish the identities of
+distinct Lambda types, so I'm leaving it out. (That information could be
+printed using the `help` command.)
+
+Function reprs should contain at least the same information, so that we can
+match up function values to the printed rep of Lambda types.
+  <function sin> -- primitive
+  <function union lib/curv/std.curv:794:0> -- branded nonprimitive
+  <function foo.curv:8:4> -- anonymous nonprimitive
+
+In all other cases, SC types are printed as type constructor expressions.
+Maybe also for lambda types? So there is a Lambda type constructor that takes
+a function as an argument. In weird cases it could be useful in code.
+
+Do We Need This Yet?
+--------------------
+The following was written on the assumption that branded functions are
+required to be constants. But the Lambda type design doesn't require this.
+So the following is deferred until Curv.next unless I discover otherwise.
+
+Every lexically bound variable is classified at analysis time as const
+or dynamic. Every expression is classified as const or dynamic.
+ * The top level expression of a *.curv file is const.
+ * If a module is const, then all its bindings are const.
+   Thus: all the bindings in a top level module are const,
+   and, all the standard bindings from std.curv are const.
+ * Builtin bindings like 'sin' are const.
+ * A `let` binding is const if the definiens is const. (*)
+ * Literals like 42 and "foo" are const.
+ * A composite expression is const if its components are const.
+   Eg, if F is const and X is const, then F X is const.
+
+These constness rules are part of language semantics, so I don't want to make
+them too complicated. Don't want to include arbitrary peephole optimizations
+in the formal semantics.
+
+(*) As per Curv.next, change the meaning of let bindings so that they
+aren't mutable. `local` bindings in a do clause are mutable (even if they
+aren't assigned) and aren't const.
+
+Branding affects function types.
+* A branded const function has a singleton type.
+* An unbranded const function that is constructed from a combinator
+  expression has the function type of the combinator, which contains all
+  the functions constructed by that combinator (hence not a singleton).
+
+Since this, in turn, affects GLSL code generation, we will introduce a
+small subset of Curv.next branded values. Only functions can be branded.
+   def f = funcexpr
+is only legal if funcexpr is const (a restriction of the full design).
+
+Function equality follows from function types and Curv.next equality rules.
+
+Function printing follows Curv.next and provides information needed to
+understand the function's SC type and SC code generation.
+(Or 'help' provides this information.)
+* branded function: print name, source location
+* lambda: print lambda expr + its source location + nonconst nonlocal bindings
+* partial application: print base function + arg values
+
+Critique
+--------
+Do users need to understand and derive SC function types? In rare cases, yes.
+How is an SC function type printed? As a unique representation which
+indicates the function's name and source location.
+Is there a case where we print an SC function type in an error message,
+and the user needs to see precise information about the function type?
+Yes, when the then-arg and else-arg of an if-else expression are functions
+with conflicting types -- this is a type error.
