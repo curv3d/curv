@@ -1,0 +1,101 @@
+The new Partial Evaluator is a feature of the subcurv compiler.
+It is no longer a feature of the evaluator.
+See [[Unify_PE_SC]].
+
+The new SC compiler will need to duplicate everything that the current
+evaluator (augmented with Reactive Values) already does, including
+full compile-time expression evaluation and statement execution.
+
+Strawman goals:
+* The PE algorithm is fast and conservative. It never diverges.
+* There is no blowup in code size due to unrolling loops or inlining function
+  calls. Functions are specialized to SC type parameters, not finer than that
+  (eg, not to numeric constants).
+
+Counterpoint:
+* We may need aggressive PE to avoid residual code that isn't SubCurv.
+
+Algorithm
+---------
+Maybe offline for imperative code and online for functional code?
+
+Partial Evaluation of Statements
+--------------------------------
+A do-expression is either fully evaluated to a Constant result,
+or it is partially evaluated to a residual expression containing statements
+and subexpressions that could not be fully evaluated.
+
+Partial Evaluation of Numerical Programs in Fortran
+https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.495.4557&rep=rep1&type=pdf
+
+They use offline partial evaluation. First, there is binding time analysis,
+where every expression and statement is marked as static or dynamic, based
+on data dependencies.
+
+The specialization phase follows the annotations made by the binding-time
+analysis: it executes static statements, reduces partially static expressions,
+and specializes dynamic program points (functions, procedures, basic blocks).
+During the specialization of a dynamic basic block the partial evaluator runs
+through the sequence of statements step-by-step, executing static statements
+and generating code for dynamic ones. When a dynamic conditional, e.g. an IF,
+is met, both branches are specialized.
+
+A polyvariant program point specialization is used for the specialization of
+dynamic program points [9,15]: the same program point may be specialized with
+respect to different static storages. Program point specialization includes
+function and procedure specialization, and specialization of target points for
+jumps. The specialization of dynamic functions and procedures is depth-first.
+It is necessary to specialize a function or procedure before the statements
+following the call are specialized, because of the effects a procedure or
+function can have on the static storage. A done- and a pending-list are used
+to keep track of already specialized program points and program points pending
+to be specialized
+
+Offline PE makes sense to me for imperative code. I can't fathom how online
+PE would work for imperative. (Sakharov also says that offline is "considered
+more appropriate for imperative".)
+
+Specialization of Imperative Programs Through Analysis of Relational Expressions
+Alexander Sakharov
+http://sakharov.net/download/lncs.pdf
+
+^^ An offline PE that uses "advanced data flow analysis". It can reduce more
+code statically than simpler algorithms:
+  Expressions whose variables are not static can be classified as static by
+this analysis.
+  Analysis of relational expressions and other propositions expands partial
+evaluation horizons: not only static values of variables but also other
+assertions may serve as pre-conditions for partial evaluation
+
+"Polyvariant program point specialization" (referenced by the Fortran paper)
+can produce huge residual programs. Sakharov's technique generates smaller
+programs. He uses a Control Flow Graph program representation. Curv has
+exceptionally simple control flow graphs (no gotos, no loop breaks, no
+return statement).
+
+Partial Evaluation of Expressions
+---------------------------------
+Tutorial on Online Partial Evaluation
+https://www.cs.utexas.edu/~wcook/tutorial/PEnotes.pdf
+
+This tutorial suggests that on-line evaluation is simpler for pure functional
+languages. It can also find more opportunities to reduce code.
+
+* When an if-else condition is symbolic, the then- and else- branches must
+  both be partially evaluated. This can cause divergence when the normal
+  program would terminate, unless extra effort is made.
+* Function calls and recursion cause extra complication.
+
+The tutorial's initial 'naive' partial evaluator is like mine:
+* When an if-else condition is symbolic, then partially evaluate both the
+  then- and else- branches, and return a symbolic if expression.
+* Non-primitive function calls are effectively inlined.
+These two features mean that a recursive function can recurse forever,
+if the termination condition remains symbolic in each recursive call.
+
+Proper treatment of recursive functions requires from us to synthesize residual
+programs instead of just residual expressions based on naive inlining.
+
+When we call a non-primitive function, we generate a specialized version of
+the function, and construct a symbolic call to the specialized version.
+(We track if the required specialized version has already been generated.)

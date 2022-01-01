@@ -1,0 +1,192 @@
+Unify the Partial Evaluator with the SubCurv Compiler
+=====================================================
+This is an extreme refactor of the Curv core to reduce code duplication
+and make the code more maintainable.
+ 1. Reactive_Value is removed. All Values are concrete. The evaluator is
+    simplified. The maintenance burden of Reactive value support is removed.
+    Many TODOs are eliminated. Value::equal returns bool, not Ternary.
+ 2. Partial evaluation (used by the `parametric` implementation) is now done
+    with the SC compiler, not the evaluator.
+ 3. Expression-level abstract values are currently represented using SC_Value,
+    Shared<const Operation> and Shared<const Reactive_Value>. These 3 reps
+    are replaced by a single subcurv IR representation.
+
+The unified abstract evaluator will work at the expression level, and it will
+work uniformly on statically typed expressions (not dynamically typed values).
+
+There will still be two versions of each primitive operator, at the value
+level and at the expression level, but the code will be more disjoint
+and cleaner.
+ * In the abstract evaluator, if the arguments to a const operation are const,
+   then generic code will invoke the evaluator, so the ir_eval function is only
+   invoked in the non-const case, and is not a superset of the eval function.
+   That will reduce code dup and make the code cleaner.
+ * Value-level list equality: no more ternary logic. Just compare two
+   concrete values and return bool.
+ * Expression-level list equality: List expressions are more complicated
+   than list values whose elements may be Reactive. A List_Expr contains
+   a list of generators, which may be expressions or statements. And we'll
+   support equality on that (impossible with the current PE due to how
+   List values are represented). So compare two list expressions and return
+   Constant(true), Constant(false) or a non-const Bool expr.
+
+This means I am nuking "reactive values" and "time" from orbit.
+That whole future development is removed from the timeline.
+This was blocking me from seeing the correct design for the shape compiler.
+
+The Unified Partial-Eval/SC-Compile Algorithm
+---------------------------------------------
+In the New Shape Compiler MVP, we have a one-pass bottom-up SC compile
+algorithm that compiles a function value to IR code.
+ * The input: a named closure.
+ * The output: an IR module (a collection of specialized and statically typed
+   IR functions, type decls, data defs).
+In one pass, we assign SC types to expressions, apply generic optimizations:
+  constant folding (aka evaluation), CSE (common subexpression elimination),
+and operator-specific optimizations:
+  if(A)B else B => B, and[true,X]=>X, specialize calls to generic functions
+
+The partial evaluator starts with a closure, synthesizes opaque expression
+tokens representing the parameters, then abstractly evaluates the closure
+body with the nonlocal array. Exactly the same as SC compile!!! But using
+a disjoint code value (eval, not sc_eval), and using different representations.
+
+So now `parametric` partial evaluation uses the SC compiler.
+A parametric record's `call` function is called with uniform variable
+expressions as arguments, and that function call is compiled into a result
+expression and an IR module. The type of the result expression is required
+to be a shape record type (or error).
+ * We expect is_2d and is_3d to have singleton boolean types.
+ * We don't care about bbox.
+ * We expect dist and colour to be functions. I'm fuzzy on this.
+   Is the IR code for these functions ready to use, or will an additional
+   specialization and code gen step be needed?
+    * We haven't specified that dist and colour have a Vec4 parameter,
+      so how could the code have been generated yet?
+
+The new SC compiler will need to duplicate everything that the current
+evaluator (augmented with Reactive Values) already does, including
+full compile-time expression evaluation and statement execution.
+
+This means a do-expression is either fully evaluated to a Constant result,
+or it is partially evaluated to a residual expression containing statements
+and subexpressions that could not be fully evaluated.
+
+Remove code duplication between the SubCurv compiler and the Partial Evaluator
+==============================================================================
+Curv 0.5 effectively has two different IR representations in SC compiler.
+ * SC_Value
+ * Shared<const Operation>
+Unify these representations to simplify the code.
+
+There is code duplication between the SC compiler and the Partial Evaluator.
+ * In the PE, a concrete value is represented by a concrete Value,
+   while an expression is represented by a Reactive_Value.
+ * In the SC, a concrete value is represented by a Constant,
+   while a general expression is represented by an Operation.
+And this leads to code duplication between eval and sc_eval methods.
+
+Unify all the reps!!!
+
+Note that Reactive_Value need not be treated as a proper value.
+The implementation of `parametric` (which uses the PE) does not leak
+reactive values to the outside world. (My `time` experiment exposes reactive
+values, but it's not documented or working, and worrying about this may be
+blocking a good solution to the shape compiler problem.)
+
+New Rep:
+ * A proper Value represents a Constant at the meta level.
+ * Expressions are represented by improper values, which are the unification
+   of SC_Value, Shared<const Operation> and Shared<const Reactive_Value>.
+   Maybe Operation becomes an improper value subclass of Ref_Value.
+
+But what about Constant::syntax_? Maybe we have both annotated and unannotated
+values plus generic interfaces to smooth over the difference.
+
+[Another approach is to use generic programming to eliminate code dup between
+value-level and expression-level algorithms.]
+
+Example: F_dot
+--------------
+SC_Value F_dot::sc_tuple_call(SC_Frame& fm) const override
+{
+    auto a = fm[0];
+    auto b = fm[1];
+    if (a.type.is_num_vec() && a.type == b.type)
+        return sc_bincall(fm, SC_Type::Num(), "dot", a, b);
+    if (a.type.is_num_vec() && b.type.is_mat()
+        && a.type.count() == b.type.count())
+    {
+        return sc_binop(fm, a.type, b, "*", a);
+    }
+    if (a.type.is_mat() && b.type.is_num_vec()
+        && a.type.count() == b.type.count())
+    {
+        return sc_binop(fm, b.type, b, "*", a);
+    }
+    if (a.type.is_mat() && b.type.is_mat()
+        && a.type.count() == b.type.count())
+    {
+        return sc_binop(fm, a.type, b, "*", a);
+    }
+    throw Exception(At_SC_Frame(fm), stringify(
+        "dot: invalid argument type [",a.type,",",b.type,"]"));
+}
+Value F_dot::dot(Value a, Value b, Fail fl, const At_Arg& cx) const
+{
+    auto av = a.maybe<List>();
+    auto bv = b.maybe<List>();
+    if (av && bv) {
+        if (av->size() > 0 && av->at(0).maybe<List>()) {
+            Shared<List> result = make_tail_array<List>(av->size());
+            for (size_t i = 0; i < av->size(); ++i) {
+                TRY_DEF(v, dot(av->at(i), b, fl, cx));
+                result->at(i) = v;
+            }
+            return {result};
+        } else {
+            if (av->size() != bv->size())
+                throw Exception(cx, stringify("list of size ",av->size(),
+                    " can't be multiplied by list of size ",bv->size()));
+            Value result = {0.0};
+            for (size_t i = 0; i < av->size(); ++i) {
+                TRY_DEF(prod, Multiply_Op::call(fl, cx, av->at(i), bv->at(i)));
+                TRY_DEF(sum, Add_Op::call(fl, cx, result, prod));
+                result = sum;
+            }
+            return result;
+        }
+    }
+    // Handle the case where a or b is a reactive list,
+    // and return a reactive result.
+    //   This is copied and modified from F_dot::sc_tuple_call.
+    //   The code ought to be identical in both cases.
+    //   The reactive result should contain SubCurv IR code,
+    //   which is simultaneously code that can be evaluated by the interpreter.
+    auto aty = sc_type_of(a);
+    auto bty = sc_type_of(b);
+    SC_Type rty;
+    if (aty.is_num_vec() && aty == bty)
+        rty = SC_Type::Num();
+    else if (aty.is_num_vec() && bty.is_mat() && aty.count() == bty.count())
+        rty = bty;
+    else if (aty.is_mat() && bty.is_num_vec() && aty.count() == bty.count())
+        rty = aty;
+    else if (aty.is_mat() && bty.is_mat() && aty.count() == bty.count())
+        rty = aty;
+    else
+        throw Exception(cx, stringify("dot[",a,",",b,"]: invalid arguments"));
+    Shared<List_Expr> args = make_tail_array<List_Expr>(
+        {to_expr(a, cx.syntax()), to_expr(b, cx.syntax())},
+        share(cx.syntax()));
+    args->init();
+    return {make<Reactive_Expression>(
+        rty,
+        make<Call_Expr>(
+            cx.call_frame_.call_phrase_,
+            make<Constant>(
+                func_part(cx.call_frame_.call_phrase_),
+                Value{share(*this)}),
+            args),
+        cx)};
+}

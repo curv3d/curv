@@ -70,6 +70,15 @@ If we can't assign an SC_Type to a reactive expression (eg, because it would
 require a union type), then fail (mark those parameters as regen). Like,
 throw a special exception containing the Reactive_Value that I couldn't handle.
 
+Unified Parametric Shape Compiler
+---------------------------------
+The latest idea is to integrate the partial evaluator into the SC compiler.
+Remove partial evaluation from the evaluator. [[Unify_PE_SC]]
+
+We keep the "no-fail" idea, where if the PE fails to assign an SC_Type to
+a dynamic (GPU) expression, we throw an exception, mark the parameters in the
+dynamic expression as static (CPU), and try again.
+
 Towards a Smarter Partial Evaluator
 -----------------------------------
 How is the body of a `parametric` expression evaluated?
@@ -183,26 +192,3 @@ symbolic expression.)
 
 In the literature of partial evaluation, you have more options on how to
 deal with function calls.
-
-Tutorial on Online Partial Evaluation
--------------------------------------
-https://www.cs.utexas.edu/~wcook/tutorial/PEnotes.pdf
-
-* When an if-else condition is symbolic, the then- and else- branches must
-  both be partially evaluated. This can cause divergence when the normal
-  program would terminate, unless extra effort is made.
-* Function calls and recursion cause extra complication.
-
-The tutorial's initial 'naive' partial evaluator is like mine:
-* When an if-else condition is symbolic, then partially evaluate both the
-  then- and else- branches, and return a symbolic if expression.
-* Non-primitive function calls are effectively inlined.
-These two features mean that a recursive function can recurse forever,
-if the termination condition remains symbolic in each recursive call.
-
-Proper treatment of recursive functions requires from us to synthesize residual
-programs instead of just residual expressions based on naive inlining.
-
-When we call a non-primitive function, we generate a specialized version of
-the function, and construct a symbolic call to the specialized version.
-(We track if the required specialized version has already been generated.)
