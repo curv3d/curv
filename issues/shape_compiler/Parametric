@@ -1,3 +1,77 @@
+Parametric Shapes
+-----------------
+There are problems compiling a parametric shape into GLSL:
+ * The compile process can fail: the compilation method that ensures that
+   sliders can be tweaked without the need to regenerate the GLSL doesn't
+   support the entire Curv language, and can fail or diverge. The holes in
+   the language are significant.
+ * The evaluator was extended to work as a partial evaluator, and this adds
+   significant complexity. The needed changes are only half-implemented,
+   several years after parametric was added.
+ * The partial evaluator also creates code bloat.
+
+Goals:
+ * Eliminate the problem where GLSL compilation can fail or diverge.
+ * From a user perspective: parametric should support the full Curv language,
+   even if we need to regenerate the GLSL when a picker parameter is changed.
+ * From an implementation perspective: It would be nice to remove the
+   partial evaluator. But then I'd lose the smoothness of tweaking a slider
+   without regenerating and recompiling the shader. Therefore, fix the
+   partial evaluator so that the entire language is supported, and structure
+   the code so that this support is maintained going forward.
+ * The partial evaluator inlines function calls when a non-primitive function
+   is passed a symbolic argument. This generates a lot of code bloat. Fix this.
+
+It's relatively easy to implement sliders if we regenerate the GLSL after
+each parameter change. It's just the partial evaluator that makes things
+difficult.
+
+Switch to a hybrid design that marks each picker parameter as either
+implemented by a uniform variable, or as requiring the shader to be regenerated.
+(A regen picker could be highlit in the GUI by a red mark, indicating an
+opportunity to make the shape compiler more sophisticated.)
+
+Note: this creates greater coupling between the Viewer and the Core.
+The current "GPU file" abstraction is impacted. The Viewer and Core must
+now reside in the same process.
+
+A more ambitious design could in some cases designate a Curv function that
+must be run by the Viewer to transform the picker parameter into uniform data,
+avoiding a full shader regen.
+
+No-Fail Parametric Shape Compiler (MVP)
+---------------------------------------
+Initial goals are:
+* Eliminate cases where GLSL compilation can fail or diverge.
+  If the shape compiles without picker parameters, then adding pickers should
+  not introduce a new compilation failure.
+* Eliminate code bloat. Adding picker parameters should not significantly
+  increase the size of the generated GLSL code.
+
+Making the partial evaluator smarter will happen later.
+
+In cases where the partial evaluator gives up and reports an error, we
+should instead examine the reactive expression that triggered the error:
+mark each reactive variable in that expression as Regen, and restart the
+partial evaluator using the default values of those parameters.
+* Maybe print a warning, and provide a syntax for marking a parameter as regen?
+* I need a way to debug exactly why a parameter is being marked as regen,
+  but users don't need to see all that debug info.
+
+The partial evaluator should not blindly inline function calls. This is the
+root cause of code bloat and divergence. Instead, nonprimitive functions
+should be specialized to SC parameter and return types, when a symbolic
+parameter is passed. In exactly the same way that the regular SC compiler
+will specialize non-primitive functions instead of inlining them.
+(Result should be: same amount of code bloat, not more.) If I don't synthesize
+an SC_Type as the return type when specializing the function, then fail.
+
+If we can't assign an SC_Type to a reactive expression (eg, because it would
+require a union type), then fail (mark those parameters as regen). Like,
+throw a special exception containing the Reactive_Value that I couldn't handle.
+
+Towards a Smarter Partial Evaluator
+-----------------------------------
 How is the body of a `parametric` expression evaluated?
 
 What's the goal, the desired result?
@@ -69,3 +143,66 @@ union[for (i in 0..A) myshape i]
      for each el in the list
        n = min(n, el);
    This is just a reduce, so this code could be produced by 'reduce'.
+
+Symbolic Evaluation
+-------------------
+It's a two phase process:
+ 1. Operations on reactive variables usually aren't evaluated, they turn into
+    symbolic expressions that must be evaluated later.
+ 2. But sometimes we can perform an operation on a symbolic expression and
+    get back a normalized value. This is important:
+     * For transforming a parametric body into weak head-normal form, so that
+       we can recognize and display parametric shapes. Normalization won't
+       succeed in all cases (the user gets an error message), and we want to
+       succeed as frequently as possible.
+     * For partially evaluating as much of the parametric body as possible
+       on the CPU, so that the GPU has less work to do.
+    Often this process is guided by assigning types to symbolic expressions.
+So,
+ * How eagerly do we attempt to convert expressions to head normal form?
+ * What type system do we need to maximize our success?
+
+Examples of when we can normalize a symbolic expression S (produce weak
+head-normal form):
+ * Containment. [S], {a:S}, x->S
+ * Typing. We assign a type to a symbolic expression S. Then `is T S`
+   can (sometimes) return #true or #false. Useful for selecting the correct
+   branch of a `match` and discarding the other branches.
+ * If-Distribution. if(A)[B]else[C] => [if (A) B else C], similar for other
+   containers. This is required if the top level expression is not normalized.
+   But in other cases it can pessimize GPU code.
+
+The current implementation performs inlining. `F S` is evaluated, and
+the result is a symbolic expression comprising the body of F with each
+occurence of the formal parameter replaced by S. This produces major code
+bloat, and I'm trying to reduce bloat now.
+
+It would be desirable to generate SC-specialized versions of functions,
+rather than inlining all calls. (So I'll need to know the SC_Type of a
+symbolic expression.)
+
+In the literature of partial evaluation, you have more options on how to
+deal with function calls.
+
+Tutorial on Online Partial Evaluation
+-------------------------------------
+https://www.cs.utexas.edu/~wcook/tutorial/PEnotes.pdf
+
+* When an if-else condition is symbolic, the then- and else- branches must
+  both be partially evaluated. This can cause divergence when the normal
+  program would terminate, unless extra effort is made.
+* Function calls and recursion cause extra complication.
+
+The tutorial's initial 'naive' partial evaluator is like mine:
+* When an if-else condition is symbolic, then partially evaluate both the
+  then- and else- branches, and return a symbolic if expression.
+* Non-primitive function calls are effectively inlined.
+These two features mean that a recursive function can recurse forever,
+if the termination condition remains symbolic in each recursive call.
+
+Proper treatment of recursive functions requires from us to synthesize residual
+programs instead of just residual expressions based on naive inlining.
+
+When we call a non-primitive function, we generate a specialized version of
+the function, and construct a symbolic call to the specialized version.
+(We track if the required specialized version has already been generated.)
