@@ -1,0 +1,11 @@
+Union Types in SubCurv
+======================
+This is post-MVP (of the new shape compiler).
+
+Support union types in SubCurv, so that
+    if (cond) Texpr else Eexpr
+will compile when Texpr and Eexpr have disjoint SubCurv types.
+The run-time representation is a tag, followed by data that is interpreted
+relative to the tag.
+
+The goal is to expand the subset of Curv supported by the shape compiler.
