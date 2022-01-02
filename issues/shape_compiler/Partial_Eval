@@ -38,7 +38,51 @@ Strawman goals:
 
 Algorithm
 ---------
-Maybe offline for imperative code and online for functional code?
+Offline for imperative code. Online for expressions and declarative generators.
+
+In the SC, each expression has a phase:
+ * Static: value known at SubCurv compile time.
+ * Uniform: value known at beginning of frame in Viewer render loop,
+   aka Shader Execution Start in WebGPU.
+ * Dynamic: value varies per GPU shader thread.
+
+FP In SubCurv
+-------------
+Assume #[...] is a lazy list.
+  union shapes = make_shape {
+    dist pt = min (map (s->s.dist pt) shapes);
+    ... }
+If shapes is a lazy list then any for loops in the list constructor
+are executed on the GPU. Otherwise shapes is static & for loops are unrolled.
+
+In many cases, shapes will have an SC tuple type.
+
+Suppose map is builtin. In map::ir_call[f,list], f and list are IR expressions,
+and the result is an IR list constructor expression (more abstract than GLSL
+code). Here, f is a dynamic function. Suppose
+ * list is an array.
+   We generate a for loop over the array, producing an array of results.
+ * list is a tuple.
+   We unroll the loop and call different specializations of f on different
+   list elements.
+ * list is lazy. No need to construct a generator for the result list
+   constructor, just use the generator given us.
+
+No need for map to be builtin. Here's the current definition:
+    map f list = [for (x in list) f x]
+That's perfect. The above logic for constructing an IR list constructor
+expression is taken care of by For_Stmt::ir_exec.
+
+min is builtin. By default, min eagerly evaluates its argument, then iterates
+over the elements of the resulting list (stored in GPU memory) to compute
+the result. It can also optimize, with a special case when the argument is a
+list constructor, in which case it avoids generating an intermediate list value
+if it isn't a plex. This optimization is shared by all reduction operators
+using shared code in Binary_Array_Op.
+
+`reduce` should be builtin. The above is a complex optimization, I'm not sure
+how to write a Curv definition of `reduce` that could be optimized this way.
+(It requires a smart optimizing SC compiler which is nowhere near MVP.)
 
 Partial Evaluation of Statements
 --------------------------------
@@ -85,6 +129,8 @@ The generator within a list constructor must have a static count.
    static list is guaranteed to have a subcurv array type. All static values
    have subcurv types.)
  * '... list' has a static count if 'list' has a subcurv type.
+
+We want to support for loops over tuples. See 'FP in SubCurv'.
 
 In a record constructor, all of the field names must be known statically,
 and each field element must have a subcurv type.
