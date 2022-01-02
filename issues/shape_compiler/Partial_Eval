@@ -1,19 +1,40 @@
-The new Partial Evaluator is a feature of the subcurv compiler.
-It is no longer a feature of the evaluator.
-See [[Unify_PE_SC]].
+I once thought that Curv 0.5 had an interpreter and an SC compiler.
+I now realize that it has two partial evaluators, and that both are naive
+(both generate way too much code, and both can "diverge", generating
+infinite code). I need to redesign the Curv core based on an understanding
+of how "real" partial evaluators work.
 
-The new SC compiler will need to duplicate everything that the current
-evaluator (augmented with Reactive Values) already does, including
-full compile-time expression evaluation and statement execution.
+The proposed new core has:
+ * A pure interpreter that only works on "proper" values, not reactive values.
+   It reduces an expression to a proper value.
+ * A partial evaluator (SC, the shape compiler) that maps a set of parameters
+   and an expression over those parameters onto a residual expression, at
+   the same time lowering dynamically typed Curv to statically typed SubCurv.
+    * If all parameters are static (constant values), then the SC behaves like
+      the interpreter: the expression is evaluated as dynamically typed Curv,
+      yielding a constant value as the result.
+    * If all parameters are dynamic (opaque typed identifiers), then the
+      expression is lowered to a SubCurv expression.
+   In both cases, the "residual expression" that is generated includes a set
+   of SubCurv bindings. Static function calls are simply evaluated by the
+   interpreter and replaced by their result. Non-static calls to non-primitive
+   functions cause the function to be compiled into SubCurv and added as a
+   binding. The same function, when called with different argument types,
+   is specialized into multiple definitions. Curv functions are naturally
+   polymorphic, but SubCurv functions are statically typed, and each
+   specialization has a different parameter type.
+There is now only one partial evaluator, see [[Unify_PE_SC]].
 
 Strawman goals:
-* The PE algorithm is fast and conservative. It never diverges.
 * There is no blowup in code size due to unrolling loops or inlining function
-  calls. Functions are specialized to SC type parameters, not finer than that
-  (eg, not to numeric constants).
-
-Counterpoint:
-* We may need aggressive PE to avoid residual code that isn't SubCurv.
+  calls. It's impossible for the SC to diverge and generate infinite code.
+  Functions are specialized only so that parameters have SC types. They aren't
+  specialized finer than that (eg, so that a parameter is specialized to a
+  numeric constant and disappears).
+* In "normal" partial evaluators, the goal is to make a program run faster on
+  the same platform. Here, the goal is evaluate as much of the code as possible
+  on the CPU, leaving only code that depends on GPU-dynamic parameters as
+  residual code.
 
 Algorithm
 ---------
@@ -25,6 +46,75 @@ A do-expression is either fully evaluated to a Constant result,
 or it is partially evaluated to a residual expression containing statements
 and subexpressions that could not be fully evaluated.
 
+Strawman implementation: offline PE. First, binding analysis.
+  Given a do clause, all nonlocals are annotated as static (known constants)
+  or dynamic. Within the statement list, all local variables are mutable
+  (they are assigned to) or immutable. Immutable variables are static if their
+  definiens are static. A mutable variable is dynamic if an RHS expression
+  in an assignment to it is dynamic, OR IF it is assigned within control flow
+  that depends on a dynamic variable.
+Next, specialization.
+  * If all local variables are static, then execute the statements.
+    The residual is a set of static bindings.
+  * If all local variables are dynamic, then compile the statement list
+    into SubCurv without executing it.
+  What if there is a mix of static and dynamic local variables?
+  * Static immutable variables are only referenced in expressions, where they
+    are substituted for their value when the expression is PE'ed.
+  * If the first N top level statements in the statement list are static,
+    then they can be executed statically and replaced by static bindings.
+This meets requirements. No superfluous code bloat (eg I'm not using polyvariant
+program point specialization to inline loops).
+
+Partial Evaluation of Generators
+--------------------------------
+In a list contructor, the count must be known statically, and each list
+element must have a subcurv type. This is trivially true if the list
+constructor is fully static.
+
+The generator within a list constructor must have a static count.
+ * A compound generator a,b,c has a static count if each individual generator
+   has a static count.
+ * 'if (cond) gen' has a static count if 'cond' is static and gen has a static
+   count.
+ * 'if (cond) gen1 else gen2' has a static count if:
+     * cond is static and the selected arm has a static count.
+     * cond is dynamic and both arms have the same static count.
+ * 'for (i in list) gen' has a static count if list has a subcurv array type
+   and gen has a static count. (If list is static, that suffices, because a
+   static list is guaranteed to have a subcurv array type. All static values
+   have subcurv types.)
+ * '... list' has a static count if 'list' has a subcurv type.
+
+In a record constructor, all of the field names must be known statically,
+and each field element must have a subcurv type.
+
+In the future, a list constructor, that doesn't have a static count, and only
+depends on uniform GPU variables (not non-uniform GPU variables), could be
+executed on the CPU each time the uniform variable changes, and the resulting
+list made available in a uniform buffer with a runtime-determined count.
+In other cases, the list could be generated using an earlier compute shader
+pipeline stage.
+
+Partial Evaluation of Expressions
+---------------------------------
+Use online PE. Static function calls are replaced by their result.
+Non-static function calls are not inlined. If the called function is
+nonprimitive,
+ * The function is specialized for the SC type of the actual argument
+   and lowered to SubCurv. An auxiliary module-level binding is generated.
+ * The specialization fails if the result does not have a subcurv type.
+ * The function must not be recursive.
+
+To PE an if-else expression,
+ * When the condition is static, just PE the selected branch.
+ * When the condition is dynamic, the then- and else- branches must
+   both be partially evaluated, and the results must have the same SC type.
+   This type constraint might be liftable using [[Union_Types]].
+
+Imperative PE Research
+----------------------
+## Fortran
 Partial Evaluation of Numerical Programs in Fortran
 https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.495.4557&rep=rep1&type=pdf
 
@@ -55,6 +145,10 @@ Offline PE makes sense to me for imperative code. I can't fathom how online
 PE would work for imperative. (Sakharov also says that offline is "considered
 more appropriate for imperative".)
 
+## Polyvariant Program Point Specialization
+Used by [Fortran]. [Sakharov] warns may generate huge residual programs.
+
+## Sakharov
 Specialization of Imperative Programs Through Analysis of Relational Expressions
 Alexander Sakharov
 http://sakharov.net/download/lncs.pdf
@@ -73,8 +167,8 @@ programs. He uses a Control Flow Graph program representation. Curv has
 exceptionally simple control flow graphs (no gotos, no loop breaks, no
 return statement).
 
-Partial Evaluation of Expressions
----------------------------------
+Functional PE Research
+----------------------
 Tutorial on Online Partial Evaluation
 https://www.cs.utexas.edu/~wcook/tutorial/PEnotes.pdf
 
@@ -98,4 +192,5 @@ programs instead of just residual expressions based on naive inlining.
 
 When we call a non-primitive function, we generate a specialized version of
 the function, and construct a symbolic call to the specialized version.
-(We track if the required specialized version has already been generated.)
+(We track if the required specialized version has already been generated
+or if the generation is currently in progress.)
