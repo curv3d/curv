@@ -1,0 +1,26 @@
+For the "FP in SubCurv" feature, I need lazy lists. [[Partial_Eval]]
+(Efficient union of a large list comprehension of shapes.)
+
+They are also used for efficiently constructing large unboxed arrays
+(they specify the size and initial element values). [[Unboxed_Arrays]]
+    make_list T list
+
+#[ <generator> ] is a lazy list.
+This is the same as an "unevaluated generator" in an earlier proposal,
+and allows general abstraction over generator phrases.
+
+Some primitive operators are provided that work efficiently on lazy lists,
+without first converting it to an eager list.
+
+map and reduce are primitives.
+
+map on an eager list, returns an eager list.
+map on a lazy list, returns a lazy list.
+
+reduce works on both eager and lazy lists.
+* reduce of a lazy list works incrementally, without copying all of the
+  list elements into a list temporary first.
+* reduce is the ideal primitive for injecting code into a generator,
+  corresponding to the Executor class in libcurv.
+  The function argument can also be 'a -> proc state -> state', which gives
+  us efficient imperative semantics.
