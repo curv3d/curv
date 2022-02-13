@@ -121,6 +121,10 @@ data tags. But there's no real requirement for this, and it's better to keep
 data type semantics simple. If you need a type with multiple constructors,
 where each constructor has its own type, then you can use theories for this.)
 
+Why do we need both constructor syntaxes? One is compatible with the creative
+coding dialect, and one is more familiar to Haskell programmers? What about:
+    data LispList (Enum[#nil, #pair[Any, LispList])
+
 Singleton Data Types
 --------------------
 It looks like we should be able to extend data product definitions to have zero
@@ -183,6 +187,7 @@ be a description of the data type that can be copied without losing its
 identity.
 
 I have two alternative proposals for restoring referential transparency:
+ 0. Unconditioned equivalence -- solves the problem
  1. nominal equivalence
  2. structural equivalence
 

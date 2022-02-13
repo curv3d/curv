@@ -19,7 +19,8 @@ To call an action in a statement or generator context, use:
 Note that `!` is a generalization of (and replacement for) `exec`.
 It's more general because `!a` is a generator.
 
-`print` and `warning` become functions that return actions. So you write:
+`print`, `warning` and `error` become functions that return actions.
+`error` is renamed to `panic`. So you write:
     !print "hello world"
 
 This eliminates the confusion in previous versions of Curv, where you write
@@ -30,9 +31,10 @@ in the middle of a list constructor would add a value to the list.
 The new syntax makes it clear that `!print msg` is not an ordinary function
 call expression.
 
-`error` becomes an ordinary function (no magic required). You can write:
-    !error "oops"
-in a statement or generator context, and it works because error does not return.
+The `error` action becomes `panic`, an ordinary function that maps a message
+argument onto an action value. This action doesn't panic until executed
+using `!`. If we used the original Curv 0.5 error function, then `error "oops"`
+would be subject to constant folding, causing a compile time error.
 
 Predicate: `is_action`.
 

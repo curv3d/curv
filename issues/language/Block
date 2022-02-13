@@ -1,0 +1,251 @@
+Blocks
+======
+This is a proposal to reinvent definition syntax using blocks,
+in response to the difficulties of the [[Mutable]] proposal.
+
+goals:
+ * distinguish mutable and immutable local variables
+ * simultaneous scoping: D1, D2, D3
+ * recursive scoping: rec D1, D2, D3
+ * sequential scoping: D1; D2; D3
+ * prefix a phrase with a definition
+ * imperative statement sequencing: S1; S2; S3
+ * combined statement/definition sequencing
+ * modules: {{ D1, D2, D3 }}
+ * Unify 'let D in S' with 'D; S'?
+
+Mutable Variables
+-----------------
+In this proposal, mutable and immutable local variables both become
+first class language features.
+ * Immutable variables are part of the functional/declarative dialect.
+   They have substitution semantics.
+ * Mutable variables are part of the imperative dialect.
+
+In the REPL, you now choose whether a variable is mutable or immutable
+when you define it, using this definition syntax:
+    let x = 0
+    let mut y := 1
+
+This same syntax is used to define local variables.
+Module members may not be mutable.
+
+In a change from Curv 0.5, `include` bindings and for-loop iterator variables
+are now immutable. If you need to mutate an immutable local variable, then you
+can define a new mutable variable with the same name as an immutable variable
+from a surrounding scope. For example,
+    let mut pt := pt;  // pt is a function parameter
+
+Rationale:
+ * Old imperative languages (like Scheme and Python) don't force you to specify
+   whether a local variable is mutable or immutable. So this might appear to
+   be an unnecessary complication.
+ * But Curv isn't a pure imperative language, it's a hybrid of pure functional
+   and imperative. The distinction makes sense in this context.
+ * Substitution semantics for immutable variables make it easier to reason
+   about constant expressions, which is relevant to the new partial evaluator.
+   That's why I'm thinking about this feature right now.
+
+Definition Syntax
+-----------------
+We now have two distinct definition syntaxes.
+ * Member definitions appear in module literals.
+ * Local definitions appear in blocks and as REPL commands.
+
+<Member Definition> ::=
+    <equate>
+    include <expr>
+    test <statement>
+<Local Definition> ::=
+    let <vardefs>       -- simultaneous scope
+    let rec <vardefs>   -- recursive scope
+    include <expr>
+    test <statement>
+
+<equate> ::=
+    <pattern> = <expression>
+    <id> <param>+ = <expression>
+<vardef> ::=
+    <equate>
+    mut <pattern> := <expression>
+<vardefs> ::= comma list of <vardef>
+
+Note, `let rec ...` is the same as `include {{...}}`.
+Replace both of these using
+    with {{ ... }}
+    with <module-expression>
+Notes:
+ * In `with <module-expression>`, what scope is the expr analysed in?
+   Currently it's the std scope (parent scope of source file).
+ * `with {{...}}` is a special case: the ... lives in surrounding scope.
+   Since this is magic syntax anyway, is it more or less cognitive load
+   than `let rec (...)`?
+
+Syntax Rationale:
+ * Local variables can be mutable, but module members cannot be.
+ * Local variables can be either simultaneously or recursively scoped.
+   The prefixes `let` and `let rec` make this distinction in blocks and
+   in the REPL. But in modules, scoping is always recursive, and we don't
+   need the prefix.
+ * Distinguishing the local variable `let x = 1` from the module member
+   `x = 1` pays off in avoiding ambiguity/confusion in record/module literals.
+ * This new syntax for local variables is terser than the Curv 0.5 syntax.
+
+Block Syntax
+------------
+Get rid of 'let...in...' and 'do...in...'.
+Replace them with blocks.
+
+Compound definition uses comma.
+Compound generator uses comma.
+Semicolons are only used to separate statements (and in blocks).
+
+Principle block syntax:
+    <statement-list> ; <phrase>
+Alternate block syntax:
+    begin <statement-list> in <phrase>
+    block <statement-list> in <phrase>
+
+A block is a sequence of phrases separated by semicolons.
+
+A statement block is a compound statement: a sequence of statements,
+separated by semicolons.
+Local definitions appear in statement position within blocks.
+They introduce sequentially scoped local bindings.
+
+An expression block is a statement block, followed by `; expression`.
+ * Or, there is an optional `return` keyword: `...; return expr`
+
+A generator block is:
+ * A mixture of statements and generators separated by semicolons.
+   This gives us: lightweight imperative generators, without using procedures
+   and the generator protocol.
+ * Or, it is `<statement>; <generator>`.
+
+A module is {{ <member-definitions> }} and has recursive scope.
+The {{ }} syntax is required by [[Module]]. {a=1} is now illegal.
+
+A REPL command is a statement, expression or generator.
+You need to type `let x = 0` or `let rec fact x = ...` to define something.
+There is a strong correspondence between the syntax of a block and a
+sequence of REPL commands.
+
+Benefits:
+ * It's a more mainstream syntax, like Reason and Rust.
+ * Correspondence to REPL: a block is like a sequence of REPL commands.
+ * In the REPL, you can now distinguish simultaneous from recursive scoping.
+ * Parsimony: unified local variable syntax.
+    * You don't choose between declarative and imperative style when first
+      creating a function. No choice between `let x=0 in S`, `do x=0 in S`
+      and `local x=0; S`.
+    * You can trivially add imperative statements to a declarative block,
+      pivoting from declarative to imperative code without changing let to do.
+ * Nicer for imperative code.
+ * One less level of indentation in declarative-style function definitions.
+       f x = (        f x =         f x = begin    f x =
+         let n = 1;     let           let n = 1;     begin
+         x + n            n = 1;    in                 let n = 1;
+       );               in x + n;     x + 1;         in x + 1;
+Drawbacks of principal syntax:
+ * Harder to edit: Need to parenthesize a phrase in order to add local
+   variables, rather than add a prefix clause.
+ * Uglier in generators (and functional code).
+ * Maybe indentation as syntax eliminates the parens, fixing the problem?
+   See [[Indent]].
+ * By eliminating `let..in..`, we lose the ability to express name abstraction
+   over definitions. It's a niche thing though, with limited applicability.
+   Only example is the `local` keyword in SML. Can use `include {{module}}`
+   as a workaround (abstract over the module argument).
+
+Backward compatible blocks:
+ * Drop the 'mut' keyword. All local variables are mutable.
+ * Use 'local' instead of 'let'.
+
+Generator Blocks
+----------------
+Haskell  ``[n | x <- [1..10], let n = x*x, n `mod` 2 == 0]``
+Python   ``[n for x in range(1,11) for n in (x*x,) if n % 2 == 0]``
+Curv     ``[for (x in 1..10) (let n = x*x; if (n `mod` 2 == 0) n)]``
+      or ``[for (x in 1..10) begin let n = x*x in if (n `mod` 2 == 0) n]``
+
+declarative:
+ [
+   for (x in 1..10) (
+     let n = x*x;
+     !print "x=$x, n=$n, n`mod`2=$(n `mod` 2)";
+     if (n `mod` 2 == 0)
+       n
+   )
+ ]
+imperative:
+ [
+   let mut i := 1;
+   while (i <= 5) (
+     i;                 <-- or use: yield i;
+     i := i + 1;
+   );
+ ]
+procedural:
+ [
+   ... proc out -> (
+     let mut i := 1;
+     while (i <= 5) (
+       out!push i;
+       i := i + 1;
+     );
+   )
+ ]
+
+Standard ML
+-----------
+Declarations:
+    val pat1=expr1 and pat2=expr2 and pat3=expr3 -- simultaneous scoping
+    val rec pat1=expr1 and pat2=expr2 and pat3=expr3 -- recursive scoping
+    fun f1 p1 = e1 and f2 p2 = e2 -- recursive scoping
+    D1; D2; D3 -- compound decl, sequential scoping
+    -- these Declaration phrases may be used in the REPL
+Expressions:
+    let D in E end
+    (E1 ; E2 ; E3) -- sequential evaluation with side effects; return E3
+
+OCaml
+-----
+REPL has a `#` prompt, you type a phrase terminated by `;;`.
+Can type an expression or a definition.
+
+Definitions:
+    let pi = 3 and ...
+    let f x = x + 1 and ...
+    let rec f x = ...f... and ...
+  These can be typed into the REPL.
+Expressions:
+    let ... in <expression>
+    (E1 ; E2 ; E3)
+Top level definitions:
+    let ... ;; -- seems to be a top level definition in a source file
+
+The word 'let' is too heavily overloaded. Don't like `;;`.
+
+OCaml Revised Syntax
+--------------------
+no more ;; in structures.
+    let x = 42;;  =>   value x = 42;
+compound imperative expressions
+    e1; e2; e3    =>   do { e1; e2; e3 }
+
+F#
+--
+
+Reason
+------
+let x = 0;  -- immutable let binding
+let f = (a,b) => a + b;  -- function definition
+let rec infinite = () -> infinite(); -- recursive let binding
+let twentyThree = () => {
+  let x = 10;
+  let x = x + 10;
+  /* x + 3 is the implicit return of the function. */
+  x + 3;
+};
+let r = {foo: 10, bar: "hello"}; r.foo
+module Foo = { let bar = 10; }

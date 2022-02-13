@@ -5,53 +5,15 @@ I want to clean up and improve the imperative programming features.
 Long term plan:
 * compound locatives: add {a:loc1,b:loc2}, document
 * mutate statements: loc!f -- document
-* Deprecate and remove imperative generators.
-* New action syntax.
 * New syntax for imperative definitions. [[Definitions]]
 * Switch statement.
 * Procedures.
-* Generator metaprogramming.
+* New generators [[Generator]]
+* New debug actions [[Action]]
 Speculative:
 * Objects (imperative i/o)
 * Imperative metaprogramming (macros)
 * New syntax for control structures. [[Mixfix]]
-
-Deprecate and remove imperative generators
-------------------------------------------
-Generators are declarative. You can't declare mutable local variables
-and you can't mutate a local variable inherited from an outer scope.
-* Simplifies the syntax of generators.
-* No longer have two competing local variable syntaxes in generators.
-* Eliminates need for ';' inside a list constructor or dynamic record
-  constructor. Now only commas, only declarative code.
-* Imperative Generators conflict with New Imperative Definition Syntax.
-* Imperative Generators conflict with Procedures.
-* Imperative Generators conflict with Generator Metaprogramming.
-* Imperative Generators conflict with Imperative Metaprogramming.
-
-Generator Metaprogramming
--------------------------
-#(<generator>) is a reified generator value, an unevaluated generator G.
-To execute G within a generator, use `!G`.
-
-A Generator Value is actually a procedure whose argument is a collection
-variable C. Within a generator,
-* An expression generator E is equivalent to `C!add E`.
-* A spread generator `...E` is equivalent to `C!append E`.
-* A bang generator `!P` is equivalent to `C!P`.
-
-New Action Syntax
------------------
-`!print "foo"` instead of `print "foo"`.
-`print "foo"` is an action value. You need !<action> to cause the side effect.
-This works in declarative generators and in imperative code.
-* You can add print statements to a generator, even once imperative generators
-  are removed. The `!` prevents confusion with a function call
-  which would add a value to the value stream.
-
-By itself, `print "foo"` is an identity function that prints to the
-console log as a side effect.
-The `!F` statement in an imperative context is equivalent to `[]!F`.
 
 Procedures
 ----------

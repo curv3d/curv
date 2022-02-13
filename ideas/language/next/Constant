@@ -1,3 +1,37 @@
+We introduce a semantic distinction between constant (or static) expressions
+vs dynamic expressions. There are two ways to do it.
+ 1. Simple Constants
+    * Outside of any function literal, expressions are static.
+    * Inside a function literal, most subexpressions are dynamic.
+      Constant bindings, defined outside any function, are static,
+      and so are dot expressions whose LHS is static.
+ 2. Staged Evaluation
+    This is more complex, because we partially evaluate the body of function
+    literals, and automatically classify expressions in the body of a function
+    as static or dynamic. (This proposal allows compile-time evaluation of
+    divergent expressions, and is a tarpit.)
+
+Why are constant expressions semantically important?
+* Within SubCurv code, constants can use the full Curv language.
+  (We partially evaluate the bodies of distance functions, and the bodies
+  of parametric shape expressions, in order to enlarge the subset of Curv that
+  works in those contexts. Requires Staged Evaluation.)
+* MetaFunctions are now first class values, but a metafunction value
+  in function position must be constant in order to call it.
+  (Can use Simple Constants.)
+* Branded modules and functions cannot reference non-constant nonlocals
+  unless they are parameters of a surrounding branded function.
+  From the Unconditioned Identity proposal. (Can use Simple Constants.)
+* When an anonymous function is printed, the function body is printed,
+  and also the values of non-constant nonlocals. From Full Metal Equality.
+  Can use Simple Constants.
+* In Visual Curv, graphical value expressions can be displayed and edited
+  graphically in source code if they are constant. (Staged Evaluation.)
+* Could be the basis for more liberal rules on the argument to `include`.
+
+---------
+The following is an early preview of staged evaluation.
+
 Constant expressions are part of the language *semantics* in Curv-Next.
 * Literals such as `42` and `#foo` are constant.
 * An immutable local variable is constant if its definiens is constant.
@@ -5,18 +39,6 @@ Constant expressions are part of the language *semantics* in Curv-Next.
   constant.
 * A function call expression `f x` is constant if `f` is constant
   and `x` is constant.
-
-Why are constant expressions semantically important?
-* Within SubCurv code, constants can use the full Curv language.
-* MetaFunctions are now first class values, but a metafunction value
-  in function position must be constant in order to call it.
-* Branded modules and functions cannot reference non-constant nonlocals
-  unless they are parameters of a surrounding branded function.
-  (Unconditioned Identity proposal.)
-* When an anonymous function is printed, the function body is printed,
-  and also the values of non-constant nonlocals. (Full Metal Equality.)
-* In Visual Curv, graphical value expressions can be displayed and edited
-  graphically in source code if they are constant.
 
 Semantic syntax colouring gives us a way to see constants in the code.
 Constants have a different colour than dynamic expressions.

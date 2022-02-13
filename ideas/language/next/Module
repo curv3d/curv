@@ -1,9 +1,37 @@
 Modules are code, Records are data
 ==================================
-In this proposal, Module and Record are disjoint types.
-
 A module is a set of recursive definitions.
 A record is a mapping from names (symbols) to values.
+
+Modules and Records are not exactly the same.
+ * Modules are Records with extra metadata.
+   Every Module value can be projected onto a corresponding Record value
+   by removing the module metadata.
+   This is a typical characteristic of a subtype in PLT.
+There are some primitive operations that distinguish records from modules.
+ * The `==` operator distinguishes modules from records. {} != {{}}.
+ * `repr`: Records and modules print differently.
+ * `set`: Field assignment on a module would only work if the module was first
+   converted to a record, discarding metadata. I don't like this, it violates
+   the rule that record fields are independently updateable (no spooky action).
+ * `def <id> = <module>` creates a branded module. This doesn't work on
+   records, maybe? (Arguably it should though, so you can built a module using
+   record metaprogramming.)
+
+Is there a subtype relationship between Record and Module?
+ * If considered as sets of values, then Record and Module are disjoint sets.
+ * If considered behaviourally, then there is a Has_Fields theory (naming?).
+   Record and Module are disjoint datatypes that implement this theory.
+   Some module values also implement the Function and Type theories.
+ * Curv does not have subtype relationships between datatypes (aka, no
+   implementation inheritance).
+ * I suspect that for code values like modules and functions,
+   each module literal or lambda expression has its own data type (in ADA).
+   Code values have the source location of their constructor expression as
+   part of their identity, and this information is likely stored in the
+   data type part of the value.
+
+Critique: this distinction is an example of The Onerous Choice.
 
 An anonymous module literal is {{defns}}, with {{ }} as the empty module.
 Directory syntax also creates a module.
@@ -33,11 +61,15 @@ code that generated the module is preserved in the value.
 A record prints as a record literal, with name/value pairs.
 
 Modules and records both support dot notation:
-A.x selects member/field x of module/record A.
+A.x is an expression selecting member/field x of module/record A.
+A.[#x] is equivalent to A.x for all A.
+`indices A` returns the field names of A, for both records and modules.
+`... M` is legal, it ignores module metadata.
 
-Module members are not assignable using `:=`.
+Module members are not assignable using `:=` or `set`.
+(Attempting to modify a module member will panic.)
 Records are updatable data structures that support Index values:
-R.[#x] is a locative.
+R.x and R.[#x] are locatives.
 Record fields are individually and independently updatable.
 
 Modules have two magic member names (call and T):
@@ -53,24 +85,27 @@ Two records are equal if they are the same mapping from keys to elements.
 
 With the Object proposal, a module can contain object bindings.
 
-You can explicitly convert a Module to a Record (with loss of metadata).
- * And possible failure if the module contains object bindings.
+You can explicitly convert a Module to a Record (with loss of metadata,
+and possible failure if the module contains object bindings).
+Eg, using `{...M}`.
+
 You can explicitly convert a Record to a Module (an isomorphism).
+Eg, using {{include R}}.
+
+In SubCurv, a record value maps to a GLSL struct.
+Module types work like lambda types. A module type is identified with the
+source code location of the module literal. If the module literal is const,
+then the module type is a singleton type. Otherwise, the module type carries
+one data field for each non-const non-local reference in the module literal.
 
 Modules belong to the software engineering dialect.
 Records belong to the creative coding dialect.
 
 Issues
 ------
-* Can I use `indices M` or `M.[#foo]` without converting to a record?
-  * Yes, but assignment of M.[#foo] panics, same as assignment of `M.foo`.
-    It's good that a.foo and a.[#foo] are equivalent in all contexts.
-  * A bad alternative is: M is converted to a record, with loss of metadata.
-    Which violates the axiom that record fields are independently updatable
-    (no spooky action...).
-* Is `... M` legal? Yes.
 * Is `include R` legal? Sure why not. Records and modules are interchangeable
-  everywhere it makes sense.
+  everywhere it makes sense. We want to be able to construct modules at
+  runtime using metaprogramming, and right now records are how you do that.
 * Metaprogramming for modules.
 * What about the planned idiom for selective module import,
     include M >> get{#foo,#bar}
@@ -84,6 +119,7 @@ Critique and Rationale
 I didn't want to do this, because it introduces two subtly incompatible ways
 of expressing the same thing, it forces you to make a choice between similar
 but not identical concepts. Should I write {a:1} or {{a=1}}?
+See: [[The Onerous Choice]].
 
 But consider:
  * We already had two record syntaxes in Curv 0.5, and it was always unclear

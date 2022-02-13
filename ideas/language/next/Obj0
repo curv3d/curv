@@ -14,29 +14,45 @@ Compound Locatives
 
 Procedures
 ----------
-`locative!op` is a statement.
-  op is a function mapping state->newstate, or a procedure
-
-`locative?op` is an impure expression.
-  op is a query function or a query procedure
-    query function: maps state->[newstate,result]
-  An impure expression is legal in a limited set of contexts:
-  * as a REPL command.
-  * as the right side of a LOCAL definition.
-  * as the right side of an assignment statement.
-  * as a <generator> phrase, if locative is in scope for assignment.
-
-  Can `loc?op` return a locative?
-  Yes, for constructing a new object (not in Object0).
-  Otherwise we would be returning a borrowed locative (like a lens call).
-  And there is only one object argument, so we are mutating and lensing
-  the same object. Too weird to support as a special case. Leave it out.
-
 proc <locative-pattern> is <statement>
-    procedure, effectively a function in imperative form.
+proc <locative-pattern> -> <statement>
+   A procedure can be called as a function: the argument is assigned to a
+   local variable, which is mutated by statement, then the variable contains
+   the function call result.
+   Or, a procedure P be invoked as `loca!P` to mutate a locative.
+
+`locative!op` is a statement.
+   op is a function mapping state -> newstate, or a procedure.
 
 proc <locative-pattern> is begin <statements> in <expression>
-    query procedure, effectively a query function in imperative form.
+proc <locative-pattern> -> begin <statements> in <expression>
+proc <locative-pattern> -> (<statements>; <expression>)
+   Query procedure, effectively a query function in imperative form.
+
+`locative?op` is an impure expression.
+   where op is a query proc or a query func mapping state->[newstate,result].
+   Impure expressions are legal in a limited set of contexts:
+    * as a REPL command.
+    * as the right side of a LOCAL definition.
+    * as a <generator> phrase, if locative is in scope for assignment.
+   These contexts uphold the principle that at most one locative gets mutated
+   per statement.
+
+Rationale for `loc?op` syntax. Suppose we use
+    <pattern> <- <locative> ! op
+or
+    let <pattern> = <locative> ! op
+instead. (First syntax inspired by Haskell do exprs and F# sequence exprs.)
+Then the meaning of loc!F is context sensitive: which part of the result of
+the function call F(loc) is assigned back to the locative depends on whether
+loc!F appears in expression or statement context. If loc!F appears in a
+weak context (a REPL command) then what happens?
+
+Can `loc?op` return a locative?
+Yes, for constructing a new object (not in Object0).
+Otherwise we would be returning a borrowed locative (like a lens call).
+And there is only one object argument, so we are mutating and lensing
+the same object. Too weird to support as a special case. Leave it out.
 
 Both kinds of procedure answer true to `is_func` (and is_primitive_func?).
 

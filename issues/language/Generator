@@ -1,0 +1,106 @@
+Generators
+==========
+
+Reified Generators
+------------------
+The syntax #[gen] reifies a generator phrase as a procedural list value,
+similar to a lazy list, supporting list operations like map and reduce.
+Supports recursive definitions.
+Use `... #[gen]` to convert a reified generator to a generator phrase.
+
+Benefits:
+ * Abstraction over generator phrases.
+ * Implementing "procedural union" in the shape library.
+   Injecting procedural code for iterating over a shape sequence into
+   a distance function, to make shorter faster GLSL shader code.
+
+Switch generator
+----------------
+Parallel to the new switch statement, there is a switch generator,
+needed to complete the story of full abstraction over generator phrases.
+
+Note,
+    switch arg [
+        pat1 -> gen1,
+        pat2 -> gen2,
+    ]
+is equivalent to:
+    ... arg >> match [
+        pat1 -> #[gen1],
+        pat2 -> #[gen2],
+    ]
+
+Procedural Generators
+---------------------
+This is a way to code the logic of a generator as an imperative procedure.
+ * A 'procedural generator' is a procedure that takes an output stream argument,
+   eg called `out`.
+ * An expression generator E corresponds to the statement `out!push E`.
+ * A spread generator `...C` corresponds to the statement `out!append C`.
+ * To convert a procedure P to a generator phrase, use `...P`.
+ * To convert a generator phrase G to a procedure, use `append #[G]`.
+
+Benefits:
+ * You can implement a generator as an imperative state machine, and you can
+   use procedures to abstract over the state.
+ * This is a metaprogramming API, a desugaring of generator syntax so that you
+   have full imperative (SubCurv) programmability.
+
+Rationale:
+ * The `push` and `append` functions are part of the List API.
+   In Curv, all of the APIs for reading and writing streams of values are
+   operations on list values.
+ * Why am I not using recursive functional programs over lazy lists?
+   Well, this design is SubCurv compatible, can be used for procedural union.
+
+Imperative Generators
+---------------------
+Using the latest proposal for definition syntax (Blocks), you write
+    <statements> ; <generator>
+to introduce local definitions into a generator, *or* to execute arbitrary
+imperative code to set up the values of mutable variables, prior to executing
+a generator. However, with this syntax, you still can't generate values from
+the body of an imperative `while` statement, unless you rewrite the imperative
+generator logic to use generator procedures.
+
+If Curv.next supports imperative generators (like Curv 0.5 does), then
+generators and statements are integrated into a single syntactic category,
+and you will be able to generate values inside a while statement.
+But this adds complexity:
+ * It's essentially a third generator syntax, half way between declarative
+   generators (which use `,`) and procedural generators (which use `;` and
+   `out!push x`).
+ * Embedding expression generators in imperative code is weird.
+   A function call f(x) yields a new value, which is unexpected in an
+   imperative programming context -- the same syntax means a procedure call
+   with side effects in other languages. We really want more explicit syntax
+   for yielding a value.
+ * You can't directly abstract over an imperative generator.
+   An imperative generator is made of statements, but they are special
+   statements that can't be abstracted over using procedures.
+   By contrast, you can abstract over a declarative generator using #[gen] and
+   recursive functions.
+
+So maybe imperative generators should be omitted from the language.
+Statements and generators become disjoint syntactic categories,
+as they were in Curv 0.4.
+
+Action Generators
+-----------------
+We no longer support imperative generator syntax. But we still support
+debug actions? Instead of writing
+    ... proc _ -> ( !print "foo" )
+you can write
+    !print "foo"
+
+Old Brainstorming
+-----------------
+* Simplifies the syntax of generators.
+* No longer have two competing local variable syntaxes in generators:
+  'let (x=expr) in ...' vs 'local x=expr;...'.
+* Eliminates need for ';' inside a list constructor or dynamic record
+  constructor. Now only commas, only declarative code.
+* Imperative Generators conflict with New Imperative Definition Syntax.
+* Imperative Generators conflict with Procedures.
+* Imperative Generators conflict with Generator Metaprogramming.
+* Imperative Generators conflict with Imperative Metaprogramming.

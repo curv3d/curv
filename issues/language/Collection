@@ -56,7 +56,7 @@ clear C
     Construct a new empty instance of the datatype of C.
     The imperative form C!clear removes all elements from an existing
     collection and is a standard member of OOP Collection classes.
-add E C
+push E C
     Add one element/field to the end of C (for a record, overriding an existing
     member with the same field name).
 append C1 C
@@ -64,14 +64,28 @@ append C1 C
     Note that C1 and C may have different collection datatypes,
     and the result has the same type as C.
 
-Using clear/add/append we can write generic algorithms that create new
+// output stream interface
+push E C
+append C1 C
+
+// input stream interface (lazy lists, and iterating over a collection)
+is_empty C
+    like count C == 0, but efficient for lazy collections
+first C
+    if C is a list, same as C.[0]
+rest C
+pull C = [first C, rest C]
+    Used in the context: C?pull
+    when imperative code uses a collection variable as an iterator.
+
+Using clear/push/append we can write generic algorithms that create new
 collections from existing collections.
 
-See [[vm/Array_Rep]] for an efficient implementation of clear/add/append.
+See [[vm/Array_Rep]] for an efficient implementation of clear/push/append.
 It's a growable list representation that behaves like std::vector in C++.
 
 The Generator Protocol works by creating an empty collection variable C,
-then calling `C!add E` if an expression generator evaluates to E,
+then calling `C!push E` if an expression generator evaluates to E,
 and calling `C!append C1` if `... C1` is executed.
 
 apply C X
@@ -88,9 +102,9 @@ filter F C
     Copy of C from which elements X for which F X is false are removed.
 
 Two ways for map/filter to work on records:
- * Operate on elements, like capply.
+ * Operate on elements, like apply.
      map F R <=> {for (nm=>el in R) nm=>F el}
- * Operate on fields, like for/add/append.
+ * Operate on fields, like for/first/rest/push/append.
      map F R <=> {for (fld in R) F fld}
    Then `map` can change key values in a record and introduce duplicate keys.
    Just like `for`.

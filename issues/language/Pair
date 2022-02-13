@@ -28,8 +28,8 @@ you can write:
     for (key=>val in myrecord) ...
 
 Similar features in other languages:
- * The a=>b syntax comes from Ruby/PHP/Perl/Raku, where it denotes a key/value
-   pair in a hash/array literal. PHP also has 'a=>b' patterns.
+ * The a=>b syntax comes from Ruby/PHP/Perl/Raku/Julia, where it denotes
+   a key/value pair in a hash/array literal. PHP also has 'a=>b' patterns.
  * The dotted pair in Lisp -- `(a . b)` -- which is used to represent
    name=>value pairs in property lists.
  * std::pair in C++ -- `std::pair(a, b)` -- which is used to represent

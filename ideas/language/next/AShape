@@ -18,9 +18,13 @@ What is a small, useful subset to implement first?
 Goals:
 * Shapes constructed using the shape library are branded values that print
   as constructor expressions. The CSG tree is preserved in the shape value.
-  You can pattern match on shape constructors.
-* Can map shapes onto a high level CSG repr like SVG without modifying the
-  shape library for each mapping. (aka The Expression Problem.)
+* Define new operations with different implementions for different shape types,
+  with dynamic dispatch.
+  * Pattern match on shape constructors.
+  * Eventually, put these operations in Theories so that new overloads can
+    be added by third party shape libraries.
+  * Can map shapes onto a high level CSG repr like SVG without modifying the
+    shape library for each mapping. (aka The Expression Problem.)
 * In a SubCurv stack trace, function names are `dist` if the argument to
   make_shape is a scoped record, or function name is missing if argument
   is a dynamic record. With ADA, I'd like to see qualified names like
@@ -37,10 +41,84 @@ for user defined theories.
 def Shape = theory T {
     distance: [Num,Num,Num] T => Num;
     colour: [Num,Num,Num] T => Num;
-    bounds: T => BBox;
-    is_2d: T => Bool;
-    is_3d: T => Bool;
+    data bounds: T => BBox;
+    data is_2d: T => Bool;
+    data is_3d: T => Bool;
 };
+
+The keyword 'data' is optional. It can only apply to functions of T.
+It causes the function result to be computed and cached when the Shape
+instance is constructed (and then recomputed whenever a prerequisite
+field value changes). Without the 'data' tag, the bounds, is_2d and is_3d
+are computed by traversing the CSG tree each time they are requested.
+
+Varieties of Shape Primitives
+-----------------------------
+* niladic shapes: `everything`, `nothing`.
+* monadic prototypes. Primitive shapes like `cube` which take a single
+  record argument as an argument, all of the record fields have default
+  values, and `cube` is an instance of itself, equivalent to `cube {}`.
+* combinators, with one or more arguments, and at least one argument is a
+  shape or list of shapes.
+
+In all cases, the shape primitive without arguments is also a Shape Algebra,
+so that primitive distance functions in a stack trace print as:
+* everything.distance
+* cube.distance
+* rotate.distance
+
+This shape algebra may be extended with shape-specific static values and
+operations (not part of any theory), where appropriate.
+
+Monadic Prototypes
+------------------
+Maybe
+    make_parametric <single-sorted-theory> {fields} {algebra definitions}
+returns a prototypical value which is:
+ * An instance of the algebra. It's record-like: each of the fields is an
+   assignable instance field.
+ * A Function that maps a parameter record to an instance of the Algebra.
+ * An Algebra implementing the specified Theory, with T bound to the datatype.
+   It's module-like: the module members are not assignable, although they
+   belong to the same namespace as the instance fields.
+
+def sphere = make_parametric Shape {d = 2} {
+    distance self [x,y,z] = mag[x,y,z] - self.d/2;
+    bounds self = (let r=self.d/2; [[-r,-r,-r],[r,r,r]]);
+    is_3d self = true;
+};
+
+Maybe
+    parametric <single-sorted-theory> {fields+members} <expr>
+is a generalization of Curv 0.5 `parametric`, returning a prototypical value
+derived from <expr> (or wrapping <expr>).
+
+std.cube has a `circumratio` field.
+I've already introduced `static` members to theories. How about:
+    def cube = parametric Shape {
+        d = 2,
+        static circumratio = sqrt 3,
+    } box[d,d,d]
+
+std.cube has `exact` and `mitred` fields. How about:
+    def cube = parametric Shape {
+        d = 2,
+        static circumratio = sqrt 3,
+        static mitred d = (
+            let r = d / 2;
+            make_shape {
+                dist[x,y,z,t] = max(abs[x,y,z] - r);
+                bbox = [[-r, -r, -r], [r,r,r]];
+                is_3d = true;
+            }
+        ),
+        static exact d = box.exact[d,d,d],
+    } exact d
+
+The obvious implementation of `parametric` is to create a wrapper around
+the <expr> value, a proxy that forwards Theory operations to the wrapped
+value. This could be optimized in the case where the <expr> is a call to
+a statically known constructor.
 
 Shape Library (in ADA)
 ----------------------

@@ -80,7 +80,7 @@ Options
     special keyword `end` can be used to terminate the mixfix form when the
     previous argument is an offside phrase.
  3. Like #2, except mixfix keywords are stropped (uppercase).
- 3. Like #1, except with stropping.
+ 4. Like #1, except with stropping.
 
 Option #1 will be most familiar to pythonists.
     if ... then

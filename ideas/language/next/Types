@@ -231,6 +231,23 @@ The 'is <type> <val>' function requires the first argument to be a type.
 as sc x -- Fail if `x` is not in the schema's domain. Otherwise, normalize
 'x' and return the normalized result.
 
+Schemas as Algebras
+-------------------
+Schemas could be represented as algebras with T and call members.
+The T is the type, and the call is a constructor function that converts
+an argument to type T. The patterns
+    <pat> :: <type>
+    <pat> <: <function>
+can take a schema as right argument.
+
+So then
+    Shape = Record {
+        dist::Func, colour::Func=p->yellow, bbox::BBox=everything.bbox,
+        is_3d::Bool=false, is_2d::Bool=false,
+        test (assert is_2d || is_3d)
+    }
+could be syntax for a schema.
+
 Function Types
 ==============
 An idea for future research.

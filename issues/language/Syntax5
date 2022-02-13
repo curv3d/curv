@@ -1,7 +1,7 @@
 Syntax changes and standard coding style for Curv 0.5
 =====================================================
 * Record locatives
-* Uniform control structure syntax.
+* Uniform control structure syntax? I'm less sure about uniform mixfix now.
   * deprecate 'do' in favour of 'begin'.
 * Flatten precedence of algebraic left-assoc infix to <pipeline> precedence.
   * Deprecate expressions that won't associate correctly with new syntax.
@@ -9,7 +9,38 @@ Syntax changes and standard coding style for Curv 0.5
   * Get rid of :: expression. Use require instead, which can be curried.
     Now :: is purely a pattern operator with <pattern> precedence
     (higher than <pipeline>). But I also want to claim :: for Type declarations.
-* Consider adding the `func` keyword, then deprecate non-func fundefs?
+* Argument lambda. A lambda can be used as a function argument, without
+  being parenthesized. This is useful for:
+   * Capturing a value in the middle of a pipeline.
+   * Combinators that take a function as final argument.
+   * The syntax of name-binding imperative control structures.
+     Zig's 'for' loop uses this syntax:
+       for (string) |character| { ... }
+  Requires a reserved operator or keyword to start a lambda. For example,
+    \x->...
+    fn x->...
+    |x|...
+  Prior art:
+   * Roc, uses \x->...
+   * Swift has "trailing closure syntax", a special case function call syntax,
+     permitting a final lambda argument to be placed after the funcall
+     arg parens. However, note that Swift lambdas are enclosed in braces, they
+     don't gobble all tokens to the next , or ; as I am proposing for Curv.
+* Right grouping operator
+  Instead of pipeline lambda or argument lambda, provide a unary symbol that
+  groups all following tokens (to the end of an item) into a subphrase,
+  like parens but without the closing paren. Eg,
+      <primary> ::= '<<' <item>
+  This is an alternative to using a symbol like \ or fn to introduce a lambda,
+  and also replaces the << operator, since this symbol converts the following
+  tokens into a primary phrase, which is a function argument.
+  Possible syntax: @ $ \ : <<
+
+f = |x,y| x+y
+switch (a) [
+  |#zero| 0,
+  |#succ n| f n + 1,
+]
 
 Yes:
 * Uniform control structure syntax:

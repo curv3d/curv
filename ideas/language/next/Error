@@ -1,0 +1,711 @@
+New Error Handling
+==================
+Error handling is a software engineering feature. Experience suggests it is
+not normally used during creative coding.
+
+Fail and Panic
+--------------
+`fail M` -- `fail` is a function that always fails, with error message M.
+Replaces the `error` function. `fail` is the identity elem to `match`, etc.
+
+`panic M` -- `panic` is an ordinary function that maps message M to an action
+that causes a panic when executed via `!panic M`.
+Replaces the `error` action.
+
+`error` is replaced by `panic` and `fail`. That's good, because:
+* The names distinguish the two kinds of errors that can be reported during a
+  function call, and document code that uses these functions.
+* `error` is a magic metavalue but `fail` and `panic` are first class functions.
+* A Curv static analyser should report a problem if it can prove that a
+  subexpression of the program will panic when evaluated.
+  The problem with `error` is that `error "foo"` is an expression that panics,
+  so using it should be reported as a bug? `panic` fixes this problem.
+`fail "foo"` panics, so you shouldn't do this directly. `fail` will be used
+with combinators that are used for abstracting over failure.
+
+Reified Result Values
+---------------------
+A reified function result is a value, either `#value V` or `#error M`.
+  Result = Enum[#value Any, #error Any]
+Alternative: Rust, `#ok V` or `#err M`
+
+`catch F x`
+  The argument F is an arbitrary function.
+  `catch F` is a function that maps F's successes to `#value V`
+  and maps F's failures to `#error M`.
+  Eg, `catch id V` returns `#value V` and `catch fail M` returns `#error M`.
+
+`unwrap R`
+  If R is `#value V`, then return V.
+  If R is `#error M`, then fail with error message M.
+  Otherwise panic.
+  Use cases:
+   * 'unwrap R' converts a Result to a value, or panics on error.
+   * 'unwrap' as a combinator argument. Eg, compose[F,unwrap].
+     Eg, compose with match.
+
+`funwrap F x = compose[F, unwrap] x`
+  The dual of `catch`, raises unwrap to the function level.
+  Use case: unwrapping a match without using the compose operator.
+
+Operator expressions such as '-x', 'x+y' and 'a&&b' ought to be catchable.
+ * For ordinary operators, we could desugar their calls, and use:
+     catch negate x
+     catch '+' [x,y]
+ * For 'a&&b',
+    * Use failable expressions: catch([]->try a&&b) []
+    * Use 'catch(a&&b)'. Catch is now uncurried, a magic operator.
+      Maybe use 'fcatch' for the combinator form.
+      fcatch F x = catch(F x)
+    * '&&' is a macro, and use: catch '&&' [a,b]
+      Macros are values, catch is overloaded over functions and macros.
+   These solutions require Operation::eval has a soft-fail option.
+A benefit of curried 'catch' is that it's obvious which function is
+being operated on. In `catch(a+b+c)` it's not obvious that only the
+second + is being caught.
+
+I should carefully consider what standard combinators do when a function
+argument fails.
+ * match skips failing function arguments
+ * compose fails if a function argument fails
+ * map F A -- 
+
+For ordinary programming, library APIs should succeed and fail, not return
+a Result. Result values are a metaprogramming feature, allowing you to
+distinguish between success and failure at different levels of a
+metaprogramming stack.
+
+Critique:
+ * We can now write functions that fail with a specific message (not possible
+   before, although a `fail_with M F` combinator was proposed).
+ * The Result/catch/throw metaprogramming API makes it possible to generate
+   and handle errors imperatively in a general way. The old combinator API
+   is very hard to understand and use.
+ * BUT, we now provide access to error messages from primitive functions.
+    * good: Can construct new messages from prior messages.
+    * bad: Refining API error messages can now break existing client code.
+ * Two ways to do it: a function can fail or return #error E.
+   Can we just have one way? (Like Zig, Swift.)
+ * Missing feature: ability to create error messages that pinpoint the
+   element of a compound function argument that triggered the error.
+ * Lack of convenience: Still no 'failure monad' for conveniently propagating
+   errors (like Rust ? or Swift try or even Go if (err!=nil){return err}).
+
+Guarded Functions
+-----------------
+A function or procedure can now have a guard clause:
+    <pattern> when <guard> -> <body>
+    proc <pattern> when <guard> -> <body>
+    f <pattern>... when <guard> = <body>
+    proc f <pattern> when <guard> = <body>
+
+The <guard> expression returns #true, #false or `#err msg`.
+ * #true means that the parameter belongs to the function domain
+ * #false means the parameter is not in the function's domain.
+   A suitable error message will be provided.
+ * `#err msg` is like #false, except the error message is specified.
+
+If the guard expression is a block, then local variables defined at the top
+level of the block are visible in the body. This supports an idiom where
+the guard uses an algorithm to transform the arguments into a different
+data structure, one that has no way of representing an invalid state, and
+one that can be processed more efficiently by the body. This new representation
+is stored in local variables within the guard, which are accessed by the body.
+The goal is to cleanly separate validation code from processing code.
+
+The guard expression has no side effects. If the guarded function is a
+procedure, then statements in the guard expression are not permitted to
+mutate the argument. This is because procedures must fail atomically,
+without partially mutating their argument and leaving them in an indefinite
+state.
+
+Function guards are a DSL for specifying the input contract of a function.
+A static analyser could analyse guards to determine if you are calling a
+function wrong.
+
+Early Exit Blocks
+-----------------
+In imperative error handling code, it is idiomatic to check for errors
+and exit early from a function once each error is detected, by throwing
+an exception or returning an error value. In Curv, this must happen
+in a function guard.
+
+To support this idiom, we introduce `earlyexit` blocks. This is a control
+structure that supports early exit from an expression block.
+It can be used in a function guard.
+
+Prior art:
+ * Lisp has a `prog` macro with a `return` form.
+ * Common Lisp has `block`: named blocks, a generalization of `prog`.
+   This supports multi-level exits when blocks are nested.
+ * BCPL valof/resultis
+ * Haskell's `do` expression supports early exit, depending on the monad.
+ * F# has computation expressions, with a `return` statement.
+ * In Zig, 'break :label expr' returns a value from a labeled block.
+   (Rust has the same feature in unstable, but may never be standardized.)
+ * stable Rust: loop { ...; if C {break earlyval;} ...; break finalval; }
+ * In JS, (function(){...; return x; ...})() is the idiom for early exit
+   from an expression.
+
+Syntax:
+    earlyexit ( <expression-block> )
+Within the <expression-block>, you can use a statement to jump out the block
+early and supply a result:
+ * `return <expr>` exit and yield <expr> as the result.
+ * `throw <msg>` -- same as `return #err (msg)`.
+ * 'try <pattern> = F x' is a definition statement. It evaluates the function
+   call 'F x'. On success, then it binds names to the result value.
+   On failure, it returns an error value.
+ * 'try Obj!Proc' tries to execute 'Obj!Proc', but if Proc fails with an error,
+   then that error is returned.
+
+f x when earlyexit (...) = <body>
+
+In [[Block]] I mention noisier alternate syntaxes for expression blocks:
+    begin <stmts> in <expr>
+    block <stmts> in <expr>
+These could also be used for early exit.
+
+Early exit from statements
+--------------------------
+Curv does not have 'break' and 'continue' statements in loops.
+We could generalize earlyexit to support breaking out of a compound
+statement, and to support labels, so that you can break out of nested
+earlyexits. Syntax:
+    earlyexit <label> ( <statement> )
+To exit the statement early, use:
+    break <label>
+
+So,
+    earlyexit loop (
+        while (x < 10) (
+            ...;
+            if (reason) break loop;
+            ...
+        );
+    );
+
+Guarded Function (Imperative)
+-----------------------------
+If a function <guard> is a block, then it can contain statements (that are only
+legal in a guard) for triggering a failure:
+ * 'try <pattern> = F x' is a definition statement. It evaluates the function
+   call 'F x'. On success, then it binds names to the result value.
+   On failure, then the guarded function immediately fails with the same error.
+ * 'try Obj!Proc' tries to execute 'Obj!Proc', but if it fails, then the
+   function call immediately fails with the same error.
+ * `throw <msg>` is a statement, causing the function call to fail with error
+   message <msg>. Same as 'try _ = fail <msg>'.
+
+### Unwrap
+How do you implement `unwrap` using this feature?
+Imperative:
+    a when
+      let mut guard := #false;
+      let mut result := #null;
+      switch (a) [
+        #ok V -> (guard := #true; result := V);
+        #err M -> throw M;
+      ];
+      guard
+    -> result
+
+For declarative, maybe the guard value should be an extended boolean:
+    Enum[#true,#false,#err Any]
+Then,
+    a when
+      let [guard, result] =
+        switch (a) [
+          #ok V -> [#true, V],
+          #err M -> [#err M, #null],
+        ];
+      guard
+    -> result
+
+Or maybe I reintroduce `delimited failable expressions`, where the guard
+clause is the delimiter.
+  
+### Rationale
+I've explored the idea that the body of a function can be a "failable
+expression". If the body fails then the arguments weren't part of the
+function's domain. But this design leads to some confusions:
+
+ * If 'try' and 'throw' statements appear to the right of the '->'
+   then there is confusion about their scope when combinator control
+   structures and used and functions are nested: which function is failing?
+ * Failable bodies map well onto old-school imperative coding style.
+   See "begin phrases".
+   But it's not a great way to structure code. See "Parse Don't Validate".
+   This advocates two things:
+    * Don't intermix argument validation and processing code. Separate these
+      into a validation phase followed by a processing phase.
+    * Don't just "validate" your arguments, "parse" them by transforming
+      them into a new data structure that can't represent invalid state,
+      and that is more efficient to process.
+
+In Erlang, a function can have a guard clause which restricts the function
+domain, but it can't have side effects and it occurs *before* the `-> body`.
+So all the code that determines the domain occurs before the body.
+    <pattern> [when <guard>] -> body
+By the above argument, it's good that validation happens before the '->'.
+
+Suppose you want to parse, instead of merely validating. Then the guard
+clause could be a block, and local variables defined in that block
+could be visible in the body. So the guard can parse the arguments into a new
+representation, reporting any errors, then store that new representation
+in local variables that are processed by the body.
+
+Design issues:
+ * "Validation" code is a boolean expression over the parameters.
+    * The Erlang 'when <condition>' syntax works.
+   "Parsing" code is a block that initializes local variables,
+   and there's a way to report parse failures without panicing.
+    * We could use the statement language of begin phrases, with 'try'
+      and 'throw' statements.
+ * What error message is issued when the guard fails?
+   If it's a simple expression like 'a > b' then we could emit the expression.
+   If it's a complex, compound expression, we could say "failing guard"
+   then report the source location of the subexpression that failed.
+ * Maybe you can throw customized error messages.
+    * Using 'if (not okay) throw "not okay"' statements?
+ * If a procedure fails, then it should fail atomically (without mutating its
+   argument). The implementation of this requirement isn't fully designed.
+   Perhaps we impose a static restriction on the 'when' clause of a procedure,
+   that it doesn't mutate its argument?
+
+Begin phrases
+-------------
+Begin phrases are a DSL that embeds 'early exit' imperative idioms in Curv,
+for ease of use in the software engineering dialect.
+
+Everything you can do with begin phrases can be accomplished in other ways.
+There are limits on composability, but that doesn't matter. A fully
+composable DSL would be more complicated, less familiar, harder to use.
+
+A begin phrase acts as a delimiter for statements that cause early exits.
+There is an expression form:
+    begin <statements> in <expr>
+and there is a statement form:
+    begin <statements> end
+
+If a begin phrase contains 'throw' or 'try' statements, then it is failable,
+and this restricts the contexts where it is legal.
+ * A failable expression can be used as the body of a function or query proc.
+ * A failable statement can be used as the body of a procedure.
+In these cases, failure of the function or procedure body causes the function
+itself to fail (the function domain is restricted by the body).
+
+Within a begin phrase,
+ * `return <expr>` is a statement, causing a begin expression to immediately
+   exit and yield <expr> as its result.
+ * `return` is a statement, cause a begin statement to immediately exit.
+ * `throw <msg>` is a statement, causing the begin block to fail with error
+   message <msg>
+ * 'try <pattern> = F x' is a definition statement. It evaluates the function
+   call 'F x'. On success, then it binds names to the result value.
+   On failure, then the begin phrase fails with the same error.
+ * 'try Obj!Proc' tries to execute 'Obj!Proc', but if it fails, then the
+   begin block immediately fails with the same error.
+
+Rationale:
+ * Early exit commands such as `return` and `throw` are essentially gotos.
+   They introduce non-local effects, something that Curv generally forbids
+   (no non-local reasoning). In order to limit the damage, you can't use these
+   goto-like constructs in a phrase unless it is prefixed with a special
+   keyword, `begin`, which is a warning to readers.
+ * We need an explicitly marked delimiter for return statements.
+   Defaulting to the smallest enclosing function is not good, because it leads
+   to confusion when combinators are used and functions are nested, especially
+   when using match expressions.
+ * Likewise, we need an explictly marked delimiter for throw statements,
+   otherwise we are duplicating past language design mistakes (C++ style
+   exception handling, undelimited continuations).
+
+Begin phrases are a heavyweight abstraction. They are are distinct from
+ordinary compound statements and expression blocks -- the latter also support
+statements and local definitions, but have a lighter syntax and do not
+delimit return and throw statements.
+    let f x = (
+        let y = x + 1;
+        y
+    );
+    let g x = begin
+        if (x < 0) throw "negative";
+        if (x == 0) return #zero;
+    in x;
+
+There is no 'break' statement, but you could use a begin statement to
+exit early from a loop.
+    begin
+        while (cond) (
+            ...
+            if (some cond) return;
+            ...
+        );
+    end
+Maybe the word 'return' should be replaced with something more neutral.
+If I want to simulate both 'break' and 'continue' in C loops, then
+I need labelled begin blocks. This generality makes it tricky to generate
+WGSL because I'll need to introduce auxiliary are_we_exiting variables.
+
+Or, restrict begin phrases to the bodies of funcs/procs in all cases
+and keep the word 'return'.
+
+Pattern Directed Evaluation
+---------------------------
+Here, we have a general notion of a pattern match failing or a function
+call failing, plus the ability to direct evaluation based on this failure.
+
+Prior art:
+* "Pattern Guards and Transformational Patterns", Simon Peyton Jones
+* "Goal directed evaluation" in Icon. Pattern matches are boolean conditions
+  that can be combined with && and ||. There is backtracking on failure.
+  More generally, an expression generates a stream of 0 or more results:
+  a pattern match often generates 0 or 1 results; boolean false corresponds
+  to 0 results.
+
+If Pattern Matches Expression Then ...:
+`if (pat <- expr) stmt1`
+`if (pat <- expr) stmt1 else stmt2`
+`<-` is pronounced "matches". `pat<-expr` is a pattern matching phrase,
+which either succeeds (and binds some identifiers) or fails.
+The bindings from pat are visible in stmt1.
+There are compound PM phrases:
+  PM ::= pat <- expr
+  PM ::= PM1 && PM2 | PM1 && expr | expr && PM2
+         // PM1 and PM2 must define disjoint bindings.
+         // PM1 bindings are visible in PM2 and in expr.
+         // 'expr' is equivalent to the PM '_ if expr <- null'.
+  PM ::= PM1 || PM2
+         // PM1 and PM2 must define coincident bindings.
+         // PM || expr isn't legal because bindings from PM aren't
+         // initialized if PM fails.
+
+Guarded Expressions:
+* Inspired by Haskell 2010 guarded equations, but more general.
+* A 'guarded expression' is an expression that either yields a value or fails
+  due to pattern match failure.
+* If the body of a function is a guarded expression GE, then pattern
+  match failure of the GE is pattern match failure of the function.
+* `try function_call`
+  `try function_call else expression`
+  Eg, `try arg >> pat->result` is like: `if (pat <- arg) result`.
+  `try` can be used to classify function arguments based on their parameter
+  patterns.
+* Syntax:
+  GE ::= if (...) expr
+       | if (...) GE
+       | if (...) GE else GE
+       | try expr
+       | try expr else GE
+       | expr
+* Used with if(pat<-expr)...
+* PM ::= pat <- GE
+  PM fails if GE fails.
+  Eg, if (r <- try f x) <do something with r if f x succeeds>
+
+Idioms and Examples
+-------------------
+Rust 'f(x).unwrap()`:
+    => unwrap(f x)
+    This is not a Curv idiom. Normally we don't write public APIs that return
+    Results. We use failure instead. When a function call `f x` fails in a
+    normal expression context, then the failure is converted to a panic.
+
+Call a function and explicitly handle both success and failure:
+    switch (catch f x) [
+    #value V -> ...,
+    #error M -> ...
+    ]
+
+Error Handling Philosophy
+=========================
+There are different kinds of error, which should be handled differently:
+ 1. Virtual machine error.
+     * Fail: The virtual machine can't continue running the program, because
+       it has run out of resources: no more stack space, no more heap memory,
+       or the program has run out of "gas".
+       Terminate the process or thread of execution (there could be multiple
+       processes). Recover resources that had been consumed by the process.
+     * Panic: A bug has been detected in the VM.
+       Terminate program, report bug to VM developer.
+ 2. Logic error, aka contract violation, aka bug in the program.
+     * precondition violation: bad argument to function, bug in caller.
+     * assertion failure or postcondition violation: bug in function.
+    Panic & terminate process. Atomic state update of state outside of the
+    process: on panic, no state changes are committed.
+    Report bug to program developer.
+ 3. Recoverable error: function's preconditions satisfied, but couldn't produce
+    a result. Report an error that can be handled higher up the call stack.
+
+The old, broken exception handling model used by C++, Java, Python, .NET, etc,
+uses exceptions for recoverable errors, contract violations, and virtual machine
+errors, which creates a mess. Herb Sutter describes the problems in C++:
+   https://www.youtube.com/watch?v=ARYP83yNAWk
+Also an issue outside C++:
+> With contracts, 90% of the use of exceptions in .NET and Java become
+> preconditions. All of the ArgumentNullException, ArgumentOutOfRangeException,
+> manual checks gone.
+
+For most C++ programs, badalloc exceptions are never thrown. Common C++ standard
+container implementations crash or corrupt themselves if the standard allocator
+throws badalloc. This situation is not tested, and the code doesn't work if it
+does happen. In future C++, allocation failure will be treated as virtual
+machine failure, not as a recoverable error, but you can opt in to get badalloc
+errors in those special cases where you need them.
+
+C++ contracts are a future language feature. A contract is a set
+of preconditions, postconditions and assertions in a function.
+  double sqrt(double x)
+    [[expects: x>=0]]                   -- precondition
+    [[ensures result: result >=0]];     -- postcondition
+By default, contract violation terminates the program.
+
+In an imperative language, a "recoverable error" is reported when some state
+outside the function being called contains the wrong values. In a pure
+functional language, all state and data accessible to a function is passed
+as an argument. So in this context (Curv), the only kind of recoverable error
+is when the argument is not in the domain of the function.
+
+In Curv, functions have a domain (the set of values they accept as arguments).
+By default, calling a function with an argument outside its domain violates the
+contract (is a precondition failure) and causes a panic. However, there is a
+way to explicitly catch function failure -- in effect, you are using the
+function to test if an argument is in the function's domain. This is the only
+kind of recoverable error.
+
+Declaring Notreached and Failing Code
+=====================================
+The `error` function has problems for its intended use cases.
+* If I introduce static evaluation, then it appears `error "foo"` should
+  be evaluated statically (because of the static argument), thus the error
+  message appears at compile time. We need a declarative way to indicate
+  errors, that doesn't expose evaluation order.
+* We need to distinguish two kinds of errors: panic and failure.
+* No easy way to control the error message if a partial `match` fails.
+  Can't use `error` for this.
+* There's no natural coding style for writing a function with complex control
+  flow, where some of the conditionals lead to a failure (not panic). I don't
+  want to just recapitulate imperative style here, I also want to produce good
+  error messages for these failures, indicating what element of what function
+  argument was bad.
+  * Riffing on "parse don't validate": are parser combinators a starting point?
+
+The big ideas:
+* Support a simple and natural style of coding for functions with complex
+  domains.
+* Replace `error msg` calls with declarative syntax for two cases:
+  * This point in the control flow cannot be reached, it should be
+    logically impossible. Solution:
+      !panic msg
+    where `panic` is an ordinary function mapping a message to an action value.
+    The action is executed using `!`.
+  * At this point, we have detected an argument value that is not in the
+    function's domain. The function must now fail. Solution:
+     1. `fail msg` -- `fail` is an ordinary function that always fails.
+     2. There is some kind of "failure monad" syntax where an enclosing function
+        F can perform a function call `G x` and fail if G fails.
+  Thus `error` is replaced by `panic` and `fail`. The names distinguish the
+  two different kinds of errors that can be reported during a function call.
+  Now `fail` is the identity element for `match`.
+
+Partial Match with Custom Error
+-------------------------------
+match [f1, f2, error: message]
+The 'error: msg' clause is optional, and must the final element in the list.
+If all of the cases fail, then the match fails using the specified error message.
+
+If you want to replace the error message reported by an arbitrary function F
+when there is a domain error, then you can use match[F, error: msg].
+
+Instead of writing `if (C) E else error msg`
+you can write `C >> match [#true->E, error: msg]`
+or `switch (C) [#true->E, error: msg]`.
+
+Failable Expressions
+--------------------
+The goal here is to abstract over expression success/failure,
+without introducing reified result values.
+
+In Curv 0.5, an expression either succeeds or panics. The failure semantics
+of functions are only honoured by certain combinators like match, compose.
+Abstraction over failure requires difficult combinator programming.
+
+To better support abstraction over failure, we will introduce expressions
+that fail, and we will support abstraction over failable expressions.
+
+We need a syntactic marker, that marks an expression as failable.
+The `try` keyword of Zig/Swift has essentially these semantics.
+
+The expression `try F x` fails if the function F fails when applied to x.
+
+A compound expression is failable if any of its components are failable.
+
+If the body of a function is failable, then failure of the body causes a
+call to the function to fail.
+
+Where this falls apart is in combinator programming, and especially in
+conditional expressions using `match`:
+    unwrap = match [
+      #value V -> V,
+      #error M -> try fail M,   -- DOESN'T WORK, case is skipped
+    ];
+Using `switch` would work, since switch is a magic macro, and the cases
+are not functions. But then using 'match' syntax for switch creates confusion:
+    unwrap R = switch (R) [
+      #value V -> V,
+      #error M -> try fail M,   -- cannot convert this code to use match
+    ];
+It's a composability problem, fixed by the Result proposal.
+
+This problem is similar to the problem in imperative languages of abstracting
+over compound statements that use `return` within a function, using combinators.
+Smalltalk solves the problem by distinguishing a 'block' from a 'method'.
+Ruby distinguishes 'block' and 'lambda' literals in the way they handle returns.
+Curv 0.5 avoids this mess, it doesn't have a 'return' statement.
+
+This problem with determining the scope of a return could be solved using
+labelled return scopes. The same could work for failure. 'Failure Abstraction'
+introduces a kind of goto. See also delimited continuations?
+
+Delimited Failable Expressions
+------------------------------
+This is going to be way too weird and complicated, not unlike my opinion
+of continuations in general.
+
+A "resultis" expression defines a lexical scope for a result (success or
+failure). Within it, subexpressions directly specify the result (success or
+failure), calling a continuation that causes the resultis expression
+to yield its result. Something like
+    resultis Name Expr
+and within Expr you can invoke `Name.value V` or `Name.error M`.
+
+Or instead use
+    resultof Expr
+and within Expr use `return V` and `try Expr`.
+
+Or this:
+    begin <statements> in <expr>
+is an imperative programming feature.
+Within a begin block,
+ * return <expr> causes the begin block to immediately return <expr>
+ * throw <msg> cause the begin block to fail with error message <msg>
+ * 'try F x' evaluates the function call 'F x'. If it succeeds, then
+   immediately yield the result expression. If it fails, then the begin block
+   fails with the same error. The 'begin' keyword delimits the scope of
+   returns and throws.
+
+But `begin` is imperative only. This doesn't directly support guarded
+expressions, a class of failable expressions used in Haskell. How about
+    resultof (block | expression)
+which supports both imperative and declarative forms.
+
+Lambdas that invoke a resultof continuation are *not* first class values,
+or we destroy local reasoning. It's more like how objects are handled in TUPL.
+
+Algorithmic Failure (Recoverable Error)
+---------------------------------------
+How to write a complex algorithm that runs a state machine over the function's
+argument, and eventually decides that the argument is outside the functions'
+domain.
+
+
+### Failure Monad
+This is a pattern where you try to call a partial function, and fail early if
+the function call failed. Whatever syntax supports this could use `fail msg`
+(fail is a function that always fails) to specify unconditional failure.
+
+Failing early out of imperative code is similar to returning early out of
+imperative code. I earlier decided not to support this because of
+non-local reasoning, structured programming, single-entrance/single-exit.
+Early returns require a 'return' statement which only has meaning relative
+to an enclosing function, leading to composability problems if you want to
+abstract code into auxiliary functions.
+ * Haskell has monads with 'early exit' semantics. Does Haskell avoid the
+   composability problem?
+
+Prior art
+=========
+libcurv: TRY_DEF is a failable definition
+
+Go:
+    ok, error := db.DoesUserExistinDB(user)
+    if error != nil {
+        return fmt.Errorf("error in db while checking: %w", err)
+    }
+
+Rust:
+    enum Result<T, E> {
+        Ok(T),
+        Err(E),
+    }
+
+    let f = File::open("hello.txt");
+    let f = match f {
+        Ok(file) => file,
+        Err(error) => panic!("Problem opening the file: {:?}", error),
+    };
+
+    // panic if f is not Ok -- two options:
+    let f = File::open("hello.txt").unwrap();
+    let f = File::open("hello.txt").expect("Failed to open hello.txt");
+
+    // propagate the error -- two options:
+    let f = File::open("hello.txt");
+    let mut f = match f {
+        Ok(file) => file,
+        Err(e) => return Err(e),
+    };
+    let mut f = File::open("hello.txt")?;
+
+    The ? operator is suffixed to a Result expression. It causes the expression
+    to either return an unwrapped Ok value, or return a wrapped Err.
+
+Zig:
+    Error values are magic names in a global namespace. There are standard
+    error names, and you define new error names using the `error` keyword.
+    A function fails by returning an error value (return error.Overflow;).
+    A return type of !u64 means the function returns either a u64, or an error.
+
+    // Call a function and explicitly handle both success and failure:
+    fn doAThing(str: []u8) void {
+        if (parseU64(str, 10)) |number| {
+            doSomethingWithNumber(number);
+        } else |err| switch (err) {
+            error.Overflow => {
+                // handle overflow...
+            },
+            // we promise that InvalidChar won't happen (or crash in debug mode if it does)
+            error.InvalidChar => unreachable,
+        }
+    }
+
+    // Panic by default if function call fails (older docs).
+    _ = openFile("does_not_exist.txt", .{});
+    // In current docs, above is an error and panic must be explicit:
+    _ = openFile("does_not_exist.txt", .{}) catch unreachable;
+
+    // catch a function call failure:
+    const file = openFile("does_not_exist.txt", .{}) catch |err| label: {
+        std.debug.print("unable to open file: {e}\n", .{err});
+        const stderr = std.io.getStdErr();
+        break :label stderr;
+    };
+
+    // try is a shortcut for catch |err| return err
+    const file = try std.fs.cwd().openFile("does_not_exist/foo.txt", .{});
+
+    When an error is printed, you see an "error return trace", a stack trace
+    that shows each source location where an error was reported or forwarded
+    or renamed and forwarded.
+
+Swift
+    Swift uses throw/catch syntax. Functions that throw must have 'throws' in
+    their type signature. Thrown errors cannot be implicitly forwarded (unlike
+    C++ etc -- the invisible control flow problem). Instead, you explicitly
+    forward an error using `try <procedure call>`, or you catch it.
+
+* Haskell
+According to https://wiki.haskell.org/Failure,
+Haskell is a big mess of incompatible error handling mechanisms,
+with no overarching philosophy, requiring lots of glue code.

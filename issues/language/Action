@@ -1,0 +1,50 @@
+Debug Actions
+=============
+goals:
+* New syntax for action phrases, that doesn't look like a function call.
+  !print "foo"
+* Action verbs like `print` are ordinary values, not macros.
+* User defined actions. Abstraction over action phrases.
+* Advanced debugger interface.
+
+Advanced Debugger Interface
+---------------------------
+from an old TODO item:
+* `debug identifier action` -- locally bind identifier in the scope of action
+  to a debug object, used to query and modify the state of the debugger.
+  This is a generalized debugger interface, which doesn't let debugger data
+  or shared mutable state escape into the model. The debug object is a record,
+  the individual named objects are perhaps top level bindings in the CLI when
+  interacting with the debugger.
+
+So, there is a debug object. Debug actions can access to this object,
+mutate it, and read data from it. But data read from the debug object can
+only be used locally for debugging: it cannot escape from debug code
+and affect the model we are generating. (In other words: we guarantee that
+debug code can be deleted (or suppressed using a global option) without
+changing the meaning of a program.)
+
+Maybe there is a `debug` module, used as a namespace for advanced debug
+procedures and functions, and used to clarify that debug actions are
+for debugging. Eg, use `!debug.print "foo"`, so that Curv is not mistaken
+for a Unix scripting language with the ability to output to stdout.
+
+Reified Action Values
+---------------------
+An action value is a procedure. Two designs:
+ 1. The procedure is passed the debug object as an argument, can query
+    and mutate the debug object.
+ 2. An action procedure ignores its argument, so it is effectively
+    an identity function with side effects. To access the debug object, use:
+        !debug(d->statement)
+    This matches the current VM implementation of actions,
+    and allows the `!action` syntax to be used in a monad-like DSL
+    where `!action` invokes a procedure with the implicit state as arg.
+
+`print "foo"` is an action value (aka debug procedure).
+
+This is an action phrase:
+    !<expression>
+where <expression> evaluates to a debug procedure.
+
+Action phrases may be used as statements or as generators.

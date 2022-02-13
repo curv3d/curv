@@ -1,0 +1,34 @@
+Decision Fatigue and The Onerous Choice
+=======================================
+One way that Curv reduces cognitive load is by reducing decision fatigue.
+This can be caused by the need to make high stakes choices among nearly
+identical but subtly different language features that do the same thing.
+
+A choice between two different ways to write the same code is not always
+an "onerous choice". Here's a benign example:
+  'a < b' vs 'b > a'
+Not a problem, because:
+ * These two expressions are guaranteed to have identical results in all
+   contexts. You don't have to think hard about which choice will work better.
+ * This is a purely local choice, that doesn't affect code elsewhere in
+   the program. You can change your mind later for zero cost.
+
+The cost of making a choice goes up when:
+ * The two alternatives you are choosing between are not isomorphic;
+   they are instead nearly equivalent, but with subtle differences.
+ * There is a high cost of switching from one alternative to the other.
+
+It's not too bad if the capabilities and interface of one alternative is a
+strict subset of the other alternative. You could start with the restricted
+version, then later switch to the more capable superset version when you run
+into limitations. The fact that the second version is a strict superset implies
+that you won't need to rewrite a lot of code, because the core API doesn't
+change, you just get more operations that you can perform.
+
+It's worse when both alternatives have features that the other lacks.
+Now you potentially lose out regardless of which alternative you choose,
+so you need to think harder.
+
+It's worse if the two alternatives have different/incompatible APIs for
+the capabilities that they have in common, because now the switching cost
+is higher.
