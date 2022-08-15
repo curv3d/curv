@@ -1,0 +1,16 @@
+Mesh Decompiler
+===============
+A program that converts triangle meshes into human editable CSG trees.
+
+InverseCSG: converts STL to OpenSCAD. SigGraph Asia 2018.
+https://github.com/yijiangh/InverseCSG
+
+Szalinski, June 2020
+An optimizer that simplifies the output of a mesh decompiler.
+paper: https://dl.acm.org/doi/abs/10.1145/3385412.3386012
+install: https://dl.acm.org/do/10.1145/3395645/full/
+
+LambdaCAD
+A purely functional CSG language. They provide both a compiler to mesh,
+and a decompiler.
+https://dl.acm.org/doi/10.1145/3236794
