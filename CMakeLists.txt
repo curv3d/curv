@@ -109,6 +109,7 @@ add_library(imgui
     extern/imgui/imgui.cpp
     extern/imgui/imgui_demo.cpp
     extern/imgui/imgui_draw.cpp
+    extern/imgui/imgui_tables.cpp
     extern/imgui/imgui_widgets.cpp)
 target_include_directories(imgui
     PUBLIC extern/imgui extern/imgui/examples
@@ -246,7 +247,7 @@ if (NOT DEFINED MSYS)
     add_library(TBB::tbb ALIAS dummy)
     if (NOT LEAN_BUILD)
         add_subdirectory(extern/openvdb/openvdb/openvdb EXCLUDE_FROM_ALL)
-        set_property(TARGET openvdb_static PROPERTY CXX_STANDARD 14)
+        set_property(TARGET openvdb_static PROPERTY CXX_STANDARD 17)
     endif()
     add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
 endif ()
