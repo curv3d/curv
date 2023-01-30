@@ -104,14 +104,15 @@ set_property(TARGET glad PROPERTY CXX_STANDARD 17)
 
 # Dear IMGUI library
 add_library(imgui
-    extern/imgui/examples/imgui_impl_glfw.cpp
-    extern/imgui/examples/imgui_impl_opengl3.cpp
+    extern/imgui/backends/imgui_impl_glfw.cpp
+    extern/imgui/backends/imgui_impl_opengl3.cpp
     extern/imgui/imgui.cpp
     extern/imgui/imgui_demo.cpp
     extern/imgui/imgui_draw.cpp
     extern/imgui/imgui_widgets.cpp)
 target_include_directories(imgui
-    PUBLIC extern/imgui extern/imgui/examples)
+    PUBLIC extern/imgui extern/imgui/examples
+    extern/imgui/backends)
 target_link_libraries(imgui PUBLIC glfw glad)
 target_compile_definitions(imgui PUBLIC
     IMGUI_IMPL_OPENGL_LOADER_GLAD )
@@ -234,9 +235,9 @@ endif()
 if (NOT DEFINED MSYS)
     # On MSYS we use MinGW packages for OpenVDB and GoogleTest.
     # Copy or stub definitions from extern/openvdb/CMakeLists.txt
-    set(OpenVDB_MAJOR_VERSION 8)
-    set(OpenVDB_MINOR_VERSION 1)
-    set(OpenVDB_PATCH_VERSION 0)
+    set(OpenVDB_MAJOR_VERSION 10)
+    set(OpenVDB_MINOR_VERSION 0)
+    set(OpenVDB_PATCH_VERSION 1)
     set(OpenVDB_ABI ${OpenVDB_MAJOR_VERSION})
     set(OPENVDB_ABI_VERSION_NUMBER ${OpenVDB_MAJOR_VERSION})
     set(OPENVDB_INSTALL_INCLUDEDIR openvdb_install_includedir)
