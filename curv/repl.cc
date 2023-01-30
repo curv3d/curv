@@ -256,7 +256,7 @@ void color_input(std::string const& context, Replxx::colors_t& colors,
 
         case Token::k_bad_token:
         case Token::k_bad_utf8:
-          col = Color::ERROR;
+          col = Color::RED;
           break;
 
         // numerals
@@ -323,7 +323,7 @@ void color_input(std::string const& context, Replxx::colors_t& colors,
     }
   } catch (Exception& e) {
     auto tok = e.loc_.front().srcloc_.token();
-    set_colour(colors, tok, Color::ERROR);
+    set_colour(colors, tok, Color::RED);
   }
 }
 
