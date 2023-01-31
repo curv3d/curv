@@ -17,9 +17,6 @@ jobs:
       with:
         submodules: recursive
     - run: brew install boost ilmbase tbb@2020 glm eigen
-    - run: brew reinstall llvm
-    - run: brew install --build-from-source libomp
-    - run: ls /usr/local/Cellar/llvm/
 
     - name: Run tests
       run: make test

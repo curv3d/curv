@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
+# Thanks https://stackoverflow.com/a/50313990
+# Now how do we make this robust
 if (APPLE)
     set(CMAKE_C_COMPILER "/usr/local/Cellar/llvm/15.0.7_1/bin/clang")
     set(CMAKE_CXX_COMPILER "/usr/local/Cellar/llvm/15.0.7_1/bin/clang++")
@@ -198,6 +200,7 @@ target_link_libraries(tester PUBLIC gtest pthread libcurv libcurv_io double-conv
 
 set_property(TARGET curv libcurv libcurv_io tester PROPERTY CXX_STANDARD 17)
 
+# Thanks https://stackoverflow.com/a/50313990, and no thanks Apple
 if (APPLE)
     set(ompflags "")
     if(CMAKE_C_COMPILER_ID MATCHES "Clang")
