@@ -45,7 +45,7 @@ if (MSYS)
     # On MSYS we use MinGW packages for OpenVDB and GoogleTest
 else ()
     include_directories(
-	extern/googletest/googletest/include
+	#extern/googletest/googletest/include
 	extern/openvdb/openvdb)
 endif ()
 
@@ -103,6 +103,13 @@ target_compile_definitions(replxx PRIVATE REPLXX_STATIC=1)
 file(GLOB DoubleConversionSrc "extern/double-conversion/double-conversion/*.cc")
 add_library(double-conversion ${DoubleConversionSrc})
 set_property(TARGET double-conversion PROPERTY CXX_STANDARD 17)
+
+# shaderc library
+set(SHADERC_SKIP_INSTALL true)
+set(SHADERC_SKIP_TESTS true)
+set(SHADERC_SKIP_EXAMPLES true)
+set(SHADERC_SKIP_COPYRIGHT_CHECK true)
+add_subdirectory(extern/shaderc/)
 
 # glad library, an OpenGL loader
 add_library(glad
@@ -190,7 +197,8 @@ set(Libs
     libcurv_io libcurv imgui glfw glad ${LibOpenGL} replxx double-conversion
     tmc ${FatLibraries}
     Boost::iostreams Boost::system
-    pthread ${LibDl})
+    pthread ${LibDl}
+    shaderc)
 
 target_link_libraries(curv PUBLIC ${Libs})
 
@@ -268,7 +276,7 @@ if (NOT DEFINED MSYS)
         add_subdirectory(extern/openvdb/openvdb/openvdb EXCLUDE_FROM_ALL)
         set_property(TARGET openvdb_static PROPERTY CXX_STANDARD 17)
     endif()
-    add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
+    #add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
 endif ()
 
 add_subdirectory(extern/glfw EXCLUDE_FROM_ALL)

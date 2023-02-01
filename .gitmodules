@@ -22,3 +22,6 @@
 [submodule "extern/libfive"]
 	path = extern/libfive
 	url = https://github.com/libfive/libfive
+[submodule "extern/shaderc"]
+	path = extern/shaderc
+	url = git@github.com:google/shaderc.git

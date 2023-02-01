@@ -1,3 +1,5 @@
+#include "shaderc/shaderc.h"
+
 #include "shader.h"
 
 #include "text.h"
@@ -148,63 +150,81 @@ bool Shader::isInUse() const {
 GLuint Shader::compileShader(
     const std::string& _src, GLenum _type, bool verbose)
 {
-    std::string prolog = "";
-    const char* epilog = "";
+    shaderc_compiler_t compiler = shaderc_compiler_initialize();
+    shaderc_compile_options_t options = shaderc_compile_options_initialize();
+    shaderc_compile_options_set_optimization_level(options, shaderc_optimization_level_size);
+    shaderc_compilation_result_t result;
+    GLuint shader;
 
-    prolog += curv::viewer::glsl_version;
-    prolog += "\n#define GLSLVIEWER 1\n";
+    std::string src_copy = "";
+    src_copy += curv::viewer::glsl_version;
+    src_copy += "\n#define GLSLVIEWER 1\n";
 
     // Test if this is a shadertoy.com image shader. If it is, we need to
     // define some uniforms with different names than the glslViewer standard,
     // and we need to add prolog and epilog code.
     if (_type == GL_FRAGMENT_SHADER && find_id(_src, "mainImage")) {
-        prolog +=
+        src_copy +=
             "uniform vec2 u_resolution;\n"
             "#define iResolution vec3(u_resolution, 1.0)\n"
             "out vec4 oFragColour;\n"
             "\n";
         m_time = true;
-        prolog +=
+        src_copy +=
             "uniform float u_time;\n"
             "#define iGlobalTime u_time\n"
             "#define iTime u_time\n"
             "\n";
         m_delta = find_id(_src, "iTimeDelta");
         if (m_delta) {
-            prolog +=
+            src_copy +=
                 "uniform float u_delta;\n"
                 "#define iTimeDelta u_delta\n"
                 "\n";
         }
         m_date = find_id(_src, "iDate");
         if (m_date) {
-            prolog +=
+            src_copy +=
                 "uniform vec4 u_date;\n"
                 "#define iDate u_date\n"
                 "\n";
         }
         m_imouse = find_id(_src, "iMouse");
         if (m_imouse) {
-            prolog +=
+            src_copy +=
                 "uniform vec4 iMouse;\n"
                 "\n";
         }
-        epilog =
+
+        src_copy += _src;
+
+        src_copy +=
             "\n"
             "void main(void) {\n"
             "    mainImage(oFragColour, gl_FragCoord.st);\n"
             "}\n";
+
+        result = shaderc_compile_into_preprocessed_text(
+          compiler, src_copy.c_str(), src_copy.length(), shaderc_glsl_fragment_shader,
+          "main.frag", "main", options);
+        shader =  glCreateShader(GL_FRAGMENT_SHADER);
+    } else {
+        src_copy += _src;
+        result = shaderc_compile_into_preprocessed_text(
+          compiler, src_copy.c_str(), src_copy.length(), shaderc_glsl_vertex_shader,
+          "main.vert", "main", options);
+        shader =  glCreateShader(GL_VERTEX_SHADER);
     }
 
-    const GLchar* sources[3] = {
-        (const GLchar*) prolog.c_str(),
-        (const GLchar*) _src.c_str(),
-        (const GLchar*) epilog,
-    };
+    const char* spirv_bytes = shaderc_result_get_bytes(result);
 
-    GLuint shader = glCreateShader(_type);
-    glShaderSource(shader, 3, sources, NULL);
+    const GLchar *source = (const GLchar *)spirv_bytes;
+    glShaderSource(shader, 1, &source, 0);
     glCompileShader(shader);
+
+    shaderc_result_release(result);
+    shaderc_compile_options_release(options);
+    shaderc_compiler_release(compiler);
 
     GLint isCompiled;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
@@ -224,7 +244,7 @@ GLuint Shader::compileShader(
         }
         std::cerr << "shader:\n" << &infoLog[0] << std::endl
             << "---source---\n"
-            << prolog << _src << epilog
+            << src_copy
             << "---EOF---\n";
     }
 
