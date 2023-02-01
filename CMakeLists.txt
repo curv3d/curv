@@ -1,4 +1,14 @@
 cmake_minimum_required(VERSION 3.12)
+
+# Thanks https://stackoverflow.com/a/50313990
+# Now how do we make this robust
+if (APPLE)
+    set(CMAKE_C_COMPILER "/usr/local/Cellar/llvm/15.0.7_1/bin/clang")
+    set(CMAKE_CXX_COMPILER "/usr/local/Cellar/llvm/15.0.7_1/bin/clang++")
+    set(OPENMP_LIBRARIES "/usr/local/Cellar/llvm/15.0.7_1/lib")
+    set(OPENMP_INCLUDES "/usr/local/Cellar/llvm/15.0.7_1/include")
+endif ()
+
 project(curv)
 
 if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
@@ -44,12 +54,9 @@ if (APPLE)
     # or /opt/homebrew for Apple Silicon (bug #128)
     # Also, we now depend on tbb@2020, not tbb, due to openvdb not supporting
     # latest version (June 5 2021).
-    include_directories(SYSTEM
-	/usr/local/opt/tbb@2020/include /opt/homebrew/opt/tbb@2020/include
-	/usr/local/include /opt/homebrew/include)
-    link_directories(
-	/usr/local/opt/tbb@2020/lib /opt/homebrew/opt/tbb@2020/lib
-	/usr/local/lib /opt/homebrew/lib)
+    include_directories(SYSTEM /usr/local/include)
+    include_directories(/usr/local/opt/tbb@2020/include)
+    link_directories(/usr/local/opt/tbb@2020/lib)
 endif (APPLE)
 
 # Libraries
@@ -104,14 +111,16 @@ set_property(TARGET glad PROPERTY CXX_STANDARD 17)
 
 # Dear IMGUI library
 add_library(imgui
-    extern/imgui/examples/imgui_impl_glfw.cpp
-    extern/imgui/examples/imgui_impl_opengl3.cpp
+    extern/imgui/backends/imgui_impl_glfw.cpp
+    extern/imgui/backends/imgui_impl_opengl3.cpp
     extern/imgui/imgui.cpp
     extern/imgui/imgui_demo.cpp
     extern/imgui/imgui_draw.cpp
+    extern/imgui/imgui_tables.cpp
     extern/imgui/imgui_widgets.cpp)
 target_include_directories(imgui
-    PUBLIC extern/imgui extern/imgui/examples)
+    PUBLIC extern/imgui extern/imgui/examples
+    extern/imgui/backends)
 target_link_libraries(imgui PUBLIC glfw glad)
 target_compile_definitions(imgui PUBLIC
     IMGUI_IMPL_OPENGL_LOADER_GLAD )
@@ -145,14 +154,6 @@ endif ()
 # Boost library (Windows port required 1.72, 1.65 is latest for Ubuntu 18.04)
 find_package(Boost 1.65 REQUIRED COMPONENTS iostreams system)
 
-# imdemo, broken in v1.65 of ImGui, need to upgrade to headrev
-#add_executable(imdemo
-#    extern/imgui/examples/example_glfw_opengl3/main.cpp)
-#target_include_directories(imdemo
-#    PUBLIC extern/imgui/examples/example_glfw_opengl3)
-#target_link_libraries(imdemo PUBLIC glfw glad imgui ${LibOpenGL})
-#set_property(TARGET imdemo PROPERTY CXX_STANDARD 17)
-
 # Libraries End
 # ===============================================
 
@@ -180,11 +181,6 @@ if (MSYS)
 else ()
     set(LibDl "dl")
 endif ()
-if (APPLE)
-    set(LibOmp "omp")
-else ()
-    set(LibOmp "")
-endif ()
 if (LEAN_BUILD)
     set(FatLibraries "")
 else ()
@@ -194,7 +190,7 @@ set(Libs
     libcurv_io libcurv imgui glfw glad ${LibOpenGL} replxx double-conversion
     tmc ${FatLibraries}
     Boost::iostreams Boost::system
-    pthread ${LibDl} ${LibOmp})
+    pthread ${LibDl})
 
 target_link_libraries(curv PUBLIC ${Libs})
 
@@ -204,11 +200,36 @@ target_link_libraries(tester PUBLIC gtest pthread libcurv libcurv_io double-conv
 
 set_property(TARGET curv libcurv libcurv_io tester PROPERTY CXX_STANDARD 17)
 
+# Thanks https://stackoverflow.com/a/50313990, and no thanks Apple
 if (APPLE)
-    set(ompflags "-Xpreprocessor -fopenmp")
+    set(ompflags "")
+    if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+        set(OpenMP_C "${CMAKE_C_COMPILER}")
+        set(OpenMP_C_FLAGS "-fopenmp=libomp -Wno-unused-command-line-argument")
+        set(OpenMP_C_LIB_NAMES "libomp" "libgomp" "libiomp5")
+        set(OpenMP_libomp_LIBRARY ${OpenMP_C_LIB_NAMES})
+        set(OpenMP_libgomp_LIBRARY ${OpenMP_C_LIB_NAMES})
+        set(OpenMP_libiomp5_LIBRARY ${OpenMP_C_LIB_NAMES})
+    endif()
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        set(OpenMP_CXX "${CMAKE_CXX_COMPILER}")
+        set(OpenMP_CXX_FLAGS "-fopenmp=libomp -Wno-unused-command-line-argument")
+        set(OpenMP_CXX_LIB_NAMES "libomp" "libgomp" "libiomp5")
+        set(OpenMP_libomp_LIBRARY ${OpenMP_CXX_LIB_NAMES})
+        set(OpenMP_libgomp_LIBRARY ${OpenMP_CXX_LIB_NAMES})
+        set(OpenMP_libiomp5_LIBRARY ${OpenMP_CXX_LIB_NAMES})
+    endif()
+    if (OPENMP_FOUND)
+        include_directories("${OPENMP_INCLUDES}")
+        link_directories("${OPENMP_LIBRARIES}")
+        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+        # set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+    endif(OPENMP_FOUND)
 else ()
-    set(ompflags "-fopenmp")
+    set(ompflags ${OpenMP_C_FLAGS})
 endif ()
+
 set(gccflags "-Wall -Wno-unused-result ${ompflags}" )
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${gccflags}" )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${gccflags}" )
@@ -234,9 +255,9 @@ endif()
 if (NOT DEFINED MSYS)
     # On MSYS we use MinGW packages for OpenVDB and GoogleTest.
     # Copy or stub definitions from extern/openvdb/CMakeLists.txt
-    set(OpenVDB_MAJOR_VERSION 8)
-    set(OpenVDB_MINOR_VERSION 1)
-    set(OpenVDB_PATCH_VERSION 0)
+    set(OpenVDB_MAJOR_VERSION 10)
+    set(OpenVDB_MINOR_VERSION 0)
+    set(OpenVDB_PATCH_VERSION 1)
     set(OpenVDB_ABI ${OpenVDB_MAJOR_VERSION})
     set(OPENVDB_ABI_VERSION_NUMBER ${OpenVDB_MAJOR_VERSION})
     set(OPENVDB_INSTALL_INCLUDEDIR openvdb_install_includedir)
@@ -245,7 +266,7 @@ if (NOT DEFINED MSYS)
     add_library(TBB::tbb ALIAS dummy)
     if (NOT LEAN_BUILD)
         add_subdirectory(extern/openvdb/openvdb/openvdb EXCLUDE_FROM_ALL)
-        set_property(TARGET openvdb_static PROPERTY CXX_STANDARD 14)
+        set_property(TARGET openvdb_static PROPERTY CXX_STANDARD 17)
     endif()
     add_subdirectory(extern/googletest/googletest EXCLUDE_FROM_ALL)
 endif ()

@@ -26,7 +26,6 @@
 #include <glm/gtx/matrix_transform_2d.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-#include "scale_picker.h"
 #include "shapes.h"
 
 #include <imgui.h>
@@ -237,7 +236,10 @@ bool Viewer::draw_frame()
                     "CTRL+click to edit value as text.\n");
                 break;
             case Picker::Type::scale_picker:
-                run_scale_picker(i->first.c_str(), &i.value().pstate_.num_);
+                ImGui::SliderFloat(
+                  i->first.c_str(), &i.value().pstate_.num_,
+                  FLT_MIN, FLT_MAX, "%g", ImGuiSliderFlags_Logarithmic
+                );
                 ImGui::SameLine(); ShowHelpMarker(
                     "Drag and hold to adjust value.\n"
                     "SHIFT+drag changes value more quickly.\n"
