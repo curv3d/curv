@@ -217,6 +217,10 @@ GLuint Shader::compileShader(
     }
 
     const char* spirv_bytes = shaderc_result_get_bytes(result);
+    std::cout << "BEFORE OPTIMIZED\n";
+    std::cout << src_copy;
+    std::cout << "AFTER OPTIMIZED\n";
+    std::cout << spirv_bytes;
 
     const GLchar *source = (const GLchar *)spirv_bytes;
     glShaderSource(shader, 1, &source, 0);
