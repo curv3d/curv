@@ -8,12 +8,6 @@
 #include <chrono>
 #include <thread>
 #include <glm/geometric.hpp>
-//#include <omp.h>
-
-#ifdef _WIN32
-// workaround for bug https://github.com/libfive/libfive/issues/522
-#define _MSC_VER 1
-#endif
 
 #include <libfive/oracle/oracle_storage.hpp>
 #include <libfive/oracle/oracle_clause.hpp>
@@ -24,7 +18,6 @@
 
 #include "export.h"
 #include "mesher.h"
-//#include <libcurv/io/compiled_shape.h>
 #include <libcurv/io/mesh.h>
 #include <libcurv/shape.h>
 #include <libcurv/exception.h>
