@@ -164,35 +164,42 @@ GLuint Shader::compileShader(
     // define some uniforms with different names than the glslViewer standard,
     // and we need to add prolog and epilog code.
     if (_type == GL_FRAGMENT_SHADER && find_id(_src, "mainImage")) {
+        std::string uniform_block = "layout(binding = 0) uniform UniformBlockC {\n"
+          "vec2 u_resolution;\n"
+          "float u_time;\n"
+          "vec4 u_date;\n"
+          "float u_delta;\n"
+          "vec4 iMouse;\n"
+        "};\n";
+
+        src_copy += uniform_block;
+
+        src_copy += "#define iResolution vec3(u_resolution, 1.0)\n";
+
         src_copy +=
-            "uniform vec2 u_resolution;\n"
-            "#define iResolution vec3(u_resolution, 1.0)\n"
-            "out vec4 oFragColour;\n"
+            "layout(location = 0) out vec4 oFragColour;\n"
             "\n";
+
         m_time = true;
         src_copy +=
-            "uniform float u_time;\n"
             "#define iGlobalTime u_time\n"
             "#define iTime u_time\n"
             "\n";
         m_delta = find_id(_src, "iTimeDelta");
         if (m_delta) {
             src_copy +=
-                "uniform float u_delta;\n"
                 "#define iTimeDelta u_delta\n"
                 "\n";
         }
         m_date = find_id(_src, "iDate");
         if (m_date) {
             src_copy +=
-                "uniform vec4 u_date;\n"
                 "#define iDate u_date\n"
                 "\n";
         }
         m_imouse = find_id(_src, "iMouse");
         if (m_imouse) {
             src_copy +=
-                "uniform vec4 iMouse;\n"
                 "\n";
         }
 
@@ -204,27 +211,32 @@ GLuint Shader::compileShader(
             "    mainImage(oFragColour, gl_FragCoord.st);\n"
             "}\n";
 
-        result = shaderc_compile_into_preprocessed_text(
+        result = shaderc_compile_into_spv(
           compiler, src_copy.c_str(), src_copy.length(), shaderc_glsl_fragment_shader,
-          "main.frag", "main", options);
+          "main", "main", options);
         shader =  glCreateShader(GL_FRAGMENT_SHADER);
     } else {
         src_copy += _src;
-        result = shaderc_compile_into_preprocessed_text(
+        result = shaderc_compile_into_spv(
           compiler, src_copy.c_str(), src_copy.length(), shaderc_glsl_vertex_shader,
-          "main.vert", "main", options);
+          "main", "main", options);
         shader =  glCreateShader(GL_VERTEX_SHADER);
     }
 
     const char* spirv_bytes = shaderc_result_get_bytes(result);
-    std::cout << "BEFORE OPTIMIZED\n";
-    std::cout << src_copy;
-    std::cout << "AFTER OPTIMIZED\n";
-    std::cout << spirv_bytes;
+    size_t spirv_bytes_length = shaderc_result_get_length(result);
 
-    const GLchar *source = (const GLchar *)spirv_bytes;
-    glShaderSource(shader, 1, &source, 0);
-    glCompileShader(shader);
+     auto status = shaderc_result_get_compilation_status(result);
+     std::cout << "  Result code " << int(status) << std::endl;
+     if (status != shaderc_compilation_status_success) {
+       std::cout << "error: " << shaderc_result_get_error_message(result)
+                 << std::endl;
+     }
+
+    glShaderBinary(1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv_bytes, spirv_bytes_length);
+    glSpecializeShader(shader, "main", 0, nullptr, nullptr);
+
+    std::cout << src_copy;
 
     shaderc_result_release(result);
     shaderc_compile_options_release(options);

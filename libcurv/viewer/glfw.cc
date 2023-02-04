@@ -28,11 +28,11 @@ void glfw_set_context_parameters()
 }
 
 // This #version statement is required for ImGui to run on MacOS.
-const char glsl_version[] = "#version 330";
+const char glsl_version[] = "#version 430";
 
 bool opengl_init()
 {
-    return gladLoadGL() != 0;
+    return gladLoadGL(glfwGetProcAddress) != 0;
 }
 
 }} // namespaces

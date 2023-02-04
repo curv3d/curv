@@ -40,7 +40,7 @@ include_directories(.
     extern/stb
     extern/glfw/include
     extern/glm
-    extern/glad)
+    extern/glad/include)
 if (MSYS)
     # On MSYS we use MinGW packages for OpenVDB and GoogleTest
 else ()
@@ -113,7 +113,7 @@ add_subdirectory(extern/shaderc/)
 
 # glad library, an OpenGL loader
 add_library(glad
-    extern/glad/glad/glad.c)
+    extern/glad/src/gl.c)
 set_property(TARGET glad PROPERTY CXX_STANDARD 17)
 
 # Dear IMGUI library

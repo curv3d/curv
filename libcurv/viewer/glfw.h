@@ -14,7 +14,7 @@
 // * We use GLFW as a platform-independent API for creating windows,
 //   creating OpenGL contexts, reading keyboard and mouse input.
 
-#include <glad/glad.h>
+#include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
 namespace curv { namespace viewer {
