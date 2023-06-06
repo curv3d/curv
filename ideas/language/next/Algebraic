@@ -357,6 +357,17 @@ For modularity, an overload declaration linking a constructor to an algebra
 is only permitted in the module defining the constructor, or in the module
 defining the theory.
 
+  In Rust, this restriction (on traits) is called "coherence".
+  It prevents conflict between modules, at the cost of creating another
+  modularity problem:
+    There’s serde, which defines serialization interface, and there’s
+    time, which defines date-time types. With ML modules, we’d have
+    serde-time crate which depends on the two and defines serialization
+    for date-time. With traits, of them has to depend on the other. That
+    obviously sucks, so we use conditional compilation to make time depend
+    on serde only if that’s enabled on build time.
+  There's got to be a way to fix this dynamic-dispatch modularity problem.
+
 Which means we need to define what module identity is.
 * A 20th century idea: there is no internet, just your local machine.
   Constructing a module causes the side effect of allocating a module id
