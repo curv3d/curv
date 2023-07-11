@@ -1,18 +1,24 @@
-Pairs are a primitive, general purpose data structure.
-The expression `a => b` is an ordered pair containing arbitrary values 
+Directed pairs are a primitive, general purpose data structure.
+The expression `a => b` is a directed pair containing arbitrary values 
 `a` and `b`.
 
-Pairs are used to represent key/value pairs when
-constructing and deconstructing record values.
-That is why the syntax uses `=>`. To further motivate this choice:
-in mathematics, a function (eg, from N -> N) is considered to be
-a set of argument=>result pairs. Using the => symbol to denote one of
-these pairs reminds us of the role these pairs play in specifying a function,
-when the function is being thought of as a mapping. Records are also
-mappings from field names to values.
+Curv provides two ways to represent an ordered pair: the list [a,b]
+and the directed pair a=>b. The latter is used in those cases where
+the arrow syntax is more suggestive of the mathematical structure
+that is being represented. Here are two cases from mathematics where
+directed pairs appear.
+ 1. In mathematics, a function is considered to be a set of
+    argument=>result pairs. By extension, you use a directed pair a=>b
+    whenever you want to represent an element of a function-like mapping.
+ 2. A directed graph is considered to be a set of directed pairs
+    n1=>n2, where both elements are nodes in the graph.
 
-Since records are keyed using symbols, a pair whose first element is a
-symbol is called a "field". And there is a special shorthand syntax
+Directed pairs are used to represent key/value pairs when
+constructing and deconstructing record values.
+(Since records are mappings from field names to values.)
+
+Since records are keyed using symbols, a directed pair whose first element
+is a symbol is called a "field". And there is a special shorthand syntax
 for fields:
     #foo => 1
 can be written as:
@@ -35,35 +41,35 @@ Similar features in other languages:
  * std::pair in C++ -- `std::pair(a, b)` -- which is used to represent
    key=>value pairs in maps (such as std::map).
 
-Curv uses pairs for:
+Curv uses directed pairs for:
  * constructing records. {a: 1, b: 2} or {#a => 1, #b => 2}
  * deconstructing records. `for (name => val in some_record) ...`
  * later, sparse arrays are {1=>x,2=>y,7=>k}
 
-Could in theory be used to encode Swift style function argument lists, which
-have a mix of labeled and unlabeled arguments and are ordered.
+Fields could in principle be used to encode Swift style function argument
+lists, which have a mix of labeled and unlabeled arguments and are ordered.
     range[1, to: 10]
 
 There's a proposal for adding Python-like ordered dictionaries.
-With pairs, I don't need to add special syntax for the constructor:
+With directed pairs, I don't need to add special syntax for the constructor:
     dict[key1=>elem1, key2=>elem2]
 
-Maybe use pairs for function types?
+Maybe use directed pairs for function types?
     Func(ArgType => ResultType)
 Or dictionary types?
     Dict(KeyType => ElemType)
 
 Syntax Confusion
 ----------------
-=> will be confused with <= by novice programmers.
+=> can be confused with <= by novice programmers.
 
-Javascript (and C#, D, Scala) uses => not -> in lambda expressions.
+Javascript (and C#, D, Scala, SML) uses => not -> in lambda expressions.
 So Javascript programmers may be confused.
 But many other languages use -> in lambda expressions: Java, Julia,
-the ML family of functional languages (Haskell, OCaml etc).
+many functional languages (Haskell, OCaml, F#).
 
-Creative Uses of Pair Syntax
-----------------------------
+Creative Uses of Directed Pair Syntax
+-------------------------------------
 APIs can choose to use a=>b pair syntax in preference to [a,b]
 in contexts where the => symbol is more evocative of the API semantics.
 
@@ -80,7 +86,7 @@ of a segment index (see [[Slice]]).
 Critique: is it a good idea to overload the meaning of pair values,
 going beyond the mathematical origins of a mapping from one value to another?
 * This critique is all about the syntax a=>b that's I've chosen for
-  ordered pairs.
+  directed pairs.
 * There is no general problem with having a generalized ordered pair data
   type and using it in a wide variety of contexts (both as key=>value pairs,
   and as other kinds of pairs). Eg,
