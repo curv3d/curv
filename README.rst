@@ -4,6 +4,8 @@ Curv: a language for making art using mathematics
 
 By Doug Moen <doug@moens.org>
 
+*Note: This repository has migrated to <https://codeberg.org/doug-moen/curv>.*
+
 |twistor| |shreks_donut|
 
 .. |twistor| image:: docs/images/torus.png
