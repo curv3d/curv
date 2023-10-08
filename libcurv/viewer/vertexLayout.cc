@@ -81,24 +81,31 @@ std::string VertexLayout::getDefaultVertShader() {
 "precision mediump float;\n"
 "#endif\n"
 "\n"
-"uniform mat4 u_modelViewProjectionMatrix;\n"
-"uniform mat4 u_modelMatrix;\n"
-"uniform mat4 u_viewMatrix;\n"
-"uniform mat4 u_projectionMatrix;\n"
-"uniform mat4 u_normalMatrix;\n"
+"layout(binding = 0) uniform UniformBlockC {\n"
+  "vec2 u_resolution;\n"
+  "float u_time;\n"
+  "vec4 u_date;\n"
+  "float u_delta;\n"
+  "vec4 iMouse;\n"
+"};\n"
 "\n"
-"uniform float u_time;\n"
-"uniform vec2 u_mouse;\n"
-"uniform vec2 u_resolution;\n"
-"\n";
+"layout(binding = 2) uniform UniformBlockA {\n"
+  "mat4 u_modelViewProjectionMatrix;\n"
+  "mat4 u_modelMatrix;\n"
+  "mat4 u_viewMatrix;\n"
+  "mat4 u_projectionMatrix;\n"
+  "mat4 u_normalMatrix;\n"
+  "\n"
+"};\n";
 
     for (unsigned int i = 0; i < m_attribs.size(); i++) {
         int size = m_attribs[i].size;
         if (m_positionAttribIndex == int(i)) {
             size = 4;
         }
-        rta += "in vec" + toString(size) + " a_" + m_attribs[i].name + ";\n";
-        rta += "out vec" + toString(size) + " v_" + m_attribs[i].name + ";\n";
+        uint j = i + 1;
+        rta += "layout (location = " + std::to_string(j*2)   + ") in vec" + toString(size) + " a_" + m_attribs[i].name + ";\n";
+        rta += "layout (location = " + std::to_string((j*2)+1) + ") out vec" + toString(size) + " v_" + m_attribs[i].name + ";\n";
     }
 
     rta += "\n"

@@ -22,3 +22,6 @@
 [submodule "extern/libfive"]
 	path = extern/libfive
 	url = https://github.com/curv3d/libfive
+[submodule "extern/shaderc"]
+	path = extern/shaderc
+	url = https://github.com/google/shaderc.git

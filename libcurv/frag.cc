@@ -138,9 +138,11 @@ void export_frag_3d(
         "const float ray_max_depth = " << dfmt(opts.ray_max_depth_, dfmt::EXPR) << ";\n";
     out <<
         "const float contrast = " << dfmt(opts.contrast_, dfmt::EXPR) << ";\n"
-        "uniform vec3 u_eye3d;\n"
-        "uniform vec3 u_centre3d;\n"
-        "uniform vec3 u_up3d;\n";
+        "layout(binding = 1) uniform UniformBlockB {\n"
+          "vec3 u_eye3d;\n"
+          "vec3 u_centre3d;\n"
+          "vec3 u_up3d;\n"
+        "};\n";
 
     glsl_function_export(shape, out);
 
